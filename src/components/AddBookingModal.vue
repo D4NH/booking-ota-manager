@@ -27,7 +27,7 @@ const form = ref({
 const checkIn = ref<string>('');
 const checkOut = ref<string>('');
 
-// Ensure date strings adhere to ISO YYYY-MM-DD format
+// Ensure date string stick to ISO YYYY-MM-DD format
 const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
     const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
     if (!rawVal) return;
@@ -40,7 +40,7 @@ const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
     }
 };
 
-// Auto-calculate nights whenever checkIn or checkOut changes
+// Calculate nights whenever checkIn or checkOut changes
 watch(
     () => [form.value.checkIn, form.value.checkOut],
     ([start, end]) => {
@@ -89,7 +89,6 @@ const handleSubmit = (): void => {
                 </button>
             </div>
 
-            <!-- Form Inputs -->
             <form
                 class="space-y-4"
                 @submit.prevent="handleSubmit">
@@ -112,9 +111,9 @@ const handleSubmit = (): void => {
                 <!-- Booking ID & Guest Name -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400"
-                            >Booking ID</label
-                        >
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Booking ID
+                        </label>
                         <input
                             v-model="form.bookingId"
                             type="text"
@@ -124,9 +123,9 @@ const handleSubmit = (): void => {
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400"
-                            >Guest Name</label
-                        >
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Guest Name
+                        </label>
                         <input
                             v-model="form.guestName"
                             type="text"
@@ -151,9 +150,9 @@ const handleSubmit = (): void => {
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400"
-                            >Check Out</label
-                        >
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Check Out
+                        </label>
                         <input
                             v-model="form.checkOut"
                             type="date"
@@ -207,9 +206,9 @@ const handleSubmit = (): void => {
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400"
-                            >Payout (IDR)</label
-                        >
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Payout (IDR)
+                        </label>
                         <input
                             v-model.number="form.payout"
                             type="number"
@@ -221,9 +220,9 @@ const handleSubmit = (): void => {
 
                 <!-- Notes -->
                 <div>
-                    <label class="mb-1 block text-xs font-medium text-mist-400"
-                        >Notes (Optional)</label
-                    >
+                    <label class="mb-1 block text-xs font-medium text-mist-400">
+                        Notes (Optional)
+                    </label>
                     <textarea
                         v-model="form.notes"
                         rows="2"
