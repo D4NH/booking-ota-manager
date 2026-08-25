@@ -13,12 +13,9 @@ const { bookings, isLoading } = storeToRefs(bookingStore);
 
 const {
     accessToken,
-    isAuthorizing,
     authError,
-    initAuth,
-    clearToken,
-    fetchSheetRows,
     appendSheetRow,
+    updateSheetRowByBookingId,
     deleteSheetRowByBookingId,
 } = useGoogleSheets();
 
@@ -85,78 +82,6 @@ const resetFilters = (): void => {
     searchQuery.value = '';
 };
 
-const handleConnectGoogle = async (): Promise<void> => {
-    try {
-        if (accessToken.value) {
-            clearToken();
-            syncStatus.value = 'Disconnected Google Drive.';
-            return;
-        }
-        await initAuth();
-        syncStatus.value = 'Connected Google Drive successfully.';
-    } catch (err) {
-        console.error('OAuth connection error:', err);
-    }
-};
-
-const handleSyncPropertyFile = async (propertyId: PropertyId): Promise<void> => {
-    const config = PROPERTY_CONFIGS[propertyId];
-
-    if (!config?.spreadsheetId) {
-        syncStatus.value = `Missing spreadsheet ID for ${config?.name || propertyId} in .env.local`;
-        return;
-    }
-
-    syncStatus.value = `Fetching ${config.name}...`;
-
-    try {
-        const rows = await fetchSheetRows(config.spreadsheetId, config.defaultRange);
-
-        if (rows.length === 0) {
-            syncStatus.value = `No records found in ${config.name}.`;
-            return;
-        }
-
-        const { added, updated } = await bookingStore.importFromGoogleSheetRows(rows, propertyId);
-        syncStatus.value = `${config.name} synced: ${added} added, ${updated} updated.`;
-    } catch (err) {
-        console.error(`Sync error for ${propertyId}:`, err);
-        syncStatus.value = `Failed to sync ${config.name}.`;
-    }
-};
-
-const handleSyncAllFiles = async (): Promise<void> => {
-    syncStatus.value = 'Syncing all property files...';
-    let totalAdded = 0;
-    let totalUpdated = 0;
-
-    const propertyKeys: PropertyId[] = ['piyungan', 'wonosari', 'imogiri'];
-
-    try {
-        for (const propId of propertyKeys) {
-            const config = PROPERTY_CONFIGS[propId];
-            if (!config?.spreadsheetId) continue;
-
-            syncStatus.value = `Syncing ${config.name}...`;
-            const rows = await fetchSheetRows(config.spreadsheetId, config.defaultRange);
-
-            if (rows.length > 0) {
-                const { added, updated } = await bookingStore.importFromGoogleSheetRows(
-                    rows,
-                    propId
-                );
-                totalAdded += added;
-                totalUpdated += updated;
-            }
-        }
-
-        syncStatus.value = `Batch sync complete: ${totalAdded} added, ${totalUpdated} updated.`;
-    } catch (err) {
-        console.error('Batch sync error:', err);
-        syncStatus.value = 'Batch sync failed.';
-    }
-};
-
 // Clear All Local Records
 const handleClearAll = async (): Promise<void> => {
     const confirmed = confirm(
@@ -181,18 +106,24 @@ const openEditModal = (booking: Booking): void => {
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     try {
         if (bookingToEdit.value) {
-            await bookingStore.updateBooking({ ...bookingToEdit.value, ...payload });
-            syncStatus.value = 'Booking updated locally.';
-        } else {
-            await bookingStore.addBookingWithRemoteSync(
-                payload,
-                accessToken.value ? { appendSheetRow } : undefined
+            syncStatus.value = 'Updating booking locally and in Google Sheets...';
+
+            await bookingStore.updateBookingWithRemoteSync(
+                { ...bookingToEdit.value, ...payload },
+                { updateSheetRowByBookingId }
             );
-            syncStatus.value = 'New booking saved and queued to Drive.';
+
+            syncStatus.value = 'Booking updated successfully.';
+        } else {
+            syncStatus.value = 'Saving booking and syncing to Google Sheets...';
+
+            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
+
+            syncStatus.value = 'New booking saved and synced.';
         }
     } catch (err) {
-        console.error('Save error:', err);
-        syncStatus.value = 'Error saving booking record.';
+        console.error('Save/Sync error:', err);
+        syncStatus.value = 'Saved locally, but Google Sheet sync failed.';
     }
 };
 
@@ -445,15 +376,15 @@ onMounted(async () => {
                         <td class="px-4 py-3 text-right space-x-2">
                             <button
                                 type="button"
-                                class="text-mist-400 hover:text-mist-200"
+                                class="cursor-pointer text-mist-400 hover:text-mist-200"
                                 @click="openEditModal(booking)">
-                                Edit
+                                <fa-icon icon="pen-to-square" /> Edit
                             </button>
                             <button
                                 type="button"
-                                class="text-rose-400 hover:text-rose-300"
+                                class="cursor-pointer text-rose-400 hover:text-rose-300"
                                 @click="handleDeleteBooking(booking)">
-                                Delete
+                                <fa-icon icon="trash-can" /> Delete
                             </button>
                         </td>
                     </tr>

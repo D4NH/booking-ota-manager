@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import type { Booking } from '@/db';
@@ -10,6 +11,7 @@ import type { Booking } from '@/db';
 const route = useRoute();
 const bookingStore = useBookingStore();
 const { bookings, isLoading } = storeToRefs(bookingStore);
+const { updateSheetRowByBookingId } = useGoogleSheets();
 
 const isModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
@@ -112,8 +114,16 @@ const openEditModal = (booking: Booking): void => {
 };
 
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    if (bookingToEdit.value) {
-        await bookingStore.updateBooking({ ...bookingToEdit.value, ...payload });
+    if (!bookingToEdit.value) return;
+
+    try {
+        // Sync update to both Dexie IndexedDB and the target Google Sheet file
+        await bookingStore.updateBookingWithRemoteSync(
+            { ...bookingToEdit.value, ...payload },
+            { updateSheetRowByBookingId }
+        );
+    } catch (err) {
+        console.error('Failed to sync booking update to Google Sheets:', err);
     }
 };
 </script>

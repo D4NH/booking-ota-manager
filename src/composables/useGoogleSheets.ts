@@ -1,5 +1,3 @@
-// src/composables/useGoogleSheets.ts
-
 import { ref } from 'vue';
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -101,7 +99,11 @@ export function useGoogleSheets() {
         range: string = 'A:J'
     ): Promise<void> => {
         if (!spreadsheetId) throw new Error('Target spreadsheet ID is missing.');
-        if (!accessToken.value) await initAuth();
+
+        // Auto-trigger auth if token is missing
+        if (!accessToken.value) {
+            await initAuth();
+        }
 
         const res = await fetch(
             `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
@@ -117,11 +119,65 @@ export function useGoogleSheets() {
 
         if (res.status === 401) {
             clearToken();
+            await initAuth(); // Retry once after refreshing expired session token
+            throw new Error('Unauthorized token. Session refreshed.');
+        }
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(
+                errData.error?.message || 'Failed to append row to target Google Sheet'
+            );
+        }
+    };
+
+    const updateSheetRowByBookingId = async (
+        spreadsheetId: string,
+        bookingId: string,
+        values: (string | number)[],
+        range: string = 'A2:A500'
+    ): Promise<void> => {
+        if (!spreadsheetId) throw new Error('Target spreadsheet ID is missing.');
+        if (!accessToken.value) await initAuth();
+
+        // 1. Fetch column A to find matching row index
+        const rows = await fetchSheetRows(spreadsheetId, range);
+        const rowIndex = rows.findIndex((r) => r[0]?.trim() === bookingId.trim());
+
+        if (rowIndex === -1) {
+            console.warn(
+                `Booking ID ${bookingId} not found in target Google Sheet. Appending instead.`
+            );
+            await appendSheetRow(spreadsheetId, values);
+            return;
+        }
+
+        const targetRowNumber = rowIndex + 2;
+        const targetRange = `A${targetRowNumber}:J${targetRowNumber}`;
+
+        // 2. Update the specific row
+        const res = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}?valueInputOption=USER_ENTERED`,
+            {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${accessToken.value}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ values: [values] }),
+            }
+        );
+
+        if (res.status === 401) {
+            clearToken();
             throw new Error('Unauthorized token');
         }
 
         if (!res.ok) {
-            throw new Error('Failed to append row to target Google Sheet');
+            const errData = await res.json();
+            throw new Error(
+                errData.error?.message || `Failed to update row ${targetRowNumber} in Google Sheet`
+            );
         }
     };
 
@@ -179,6 +235,7 @@ export function useGoogleSheets() {
         clearToken,
         fetchSheetRows,
         appendSheetRow,
+        updateSheetRowByBookingId,
         deleteSheetRowByBookingId,
     };
 }

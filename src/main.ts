@@ -22,10 +22,18 @@ import {
     faArrowsRotate,
     faPenToSquare,
     faChevronLeft,
+    faTrashCan,
 } from '@fortawesome/free-solid-svg-icons';
 // import { faCalendar, faFilePdf } from '@fortawesome/free-regular-svg-icons';
 
-library.add(faMapMarkerAlt, faCalendarDay, faArrowsRotate, faPenToSquare, faChevronLeft);
+library.add(
+    faMapMarkerAlt,
+    faCalendarDay,
+    faArrowsRotate,
+    faPenToSquare,
+    faChevronLeft,
+    faTrashCan
+);
 
 const app = createApp(App);
 const head = createHead();

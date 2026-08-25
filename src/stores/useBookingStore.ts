@@ -1,17 +1,13 @@
-// src/stores/useBookingStore.ts
-
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { db, type Booking, type Property } from '@/db';
 import { PROPERTY_CONFIGS, type PropertyId } from '@/config/properties';
 
 export const useBookingStore = defineStore('bookings', () => {
-    // Store State
     const bookings = ref<Booking[]>([]);
     const properties = ref<Property[]>([]);
     const isLoading = ref<boolean>(false);
 
-    // Initialize Dexie IndexedDB
     const initDatabase = async (): Promise<void> => {
         isLoading.value = true;
         try {
@@ -22,12 +18,10 @@ export const useBookingStore = defineStore('bookings', () => {
         }
     };
 
-    // Load local bookings from Dexie
     const loadBookings = async (): Promise<void> => {
         bookings.value = await db.bookings.toArray();
     };
 
-    // Load local properties from Dexie
     const loadProperties = async (): Promise<void> => {
         properties.value = await db.properties.toArray();
     };
@@ -166,13 +160,50 @@ export const useBookingStore = defineStore('bookings', () => {
         return newBooking;
     };
 
-    // Update existing booking locally
     const updateBooking = async (updatedBooking: Booking): Promise<void> => {
         await db.bookings.put(updatedBooking);
         await loadBookings();
     };
 
-    // Delete local booking with optional remote Google Sheet clear
+    const updateBookingWithRemoteSync = async (
+        updatedBooking: Booking,
+        sheetsApi?: {
+            updateSheetRowByBookingId: (
+                spreadsheetId: string,
+                bookingId: string,
+                values: (string | number)[]
+            ) => Promise<void>;
+        }
+    ): Promise<void> => {
+        // 1. Update local state using local helper
+        await updateBooking(updatedBooking);
+
+        // 2. Sync remotely if API is available
+        const propertyId = updatedBooking.propertyId as PropertyId;
+        const targetSpreadsheetId = PROPERTY_CONFIGS[propertyId]?.spreadsheetId;
+
+        if (sheetsApi && targetSpreadsheetId) {
+            const sheetRow = [
+                updatedBooking.bookingId,
+                updatedBooking.listing,
+                updatedBooking.guestName,
+                updatedBooking.checkIn,
+                updatedBooking.checkOut,
+                updatedBooking.nights,
+                updatedBooking.payout,
+                '',
+                updatedBooking.status,
+                updatedBooking.notes || '',
+            ];
+
+            await sheetsApi.updateSheetRowByBookingId(
+                targetSpreadsheetId,
+                updatedBooking.bookingId,
+                sheetRow
+            );
+        }
+    };
+
     const deleteBookingWithRemoteSync = async (
         id: string,
         bookingId: string,
@@ -191,13 +222,11 @@ export const useBookingStore = defineStore('bookings', () => {
         }
     };
 
-    // Delete single property
     const deleteProperty = async (id: string): Promise<void> => {
         await db.properties.delete(id);
         await loadProperties();
     };
 
-    // Purge all records from local IndexedDB
     const clearAllBookings = async (): Promise<void> => {
         await db.bookings.clear();
         await loadBookings();
@@ -212,7 +241,7 @@ export const useBookingStore = defineStore('bookings', () => {
         loadProperties,
         importFromGoogleSheetRows,
         addBookingWithRemoteSync,
-        updateBooking,
+        updateBookingWithRemoteSync,
         deleteBookingWithRemoteSync,
         deleteProperty,
         clearAllBookings,

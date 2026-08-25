@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import AddPropertyModal from '@/components/AddPropertyModal.vue';
@@ -10,6 +11,7 @@ import type { Booking } from '@/db';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const { updateSheetRowByBookingId } = useGoogleSheets();
 
 const selectedPropertyFilter = ref<string>('all');
 const isModalOpen = ref<boolean>(false);
@@ -132,8 +134,16 @@ const openEditModal = (booking: Booking): void => {
 };
 
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    if (bookingToEdit.value) {
-        await bookingStore.updateBooking({ ...bookingToEdit.value, ...payload });
+    if (!bookingToEdit.value) return;
+
+    try {
+        // Sync update to both Dexie IndexedDB and the target Google Sheet file
+        await bookingStore.updateBookingWithRemoteSync(
+            { ...bookingToEdit.value, ...payload },
+            { updateSheetRowByBookingId }
+        );
+    } catch (err) {
+        console.error('Failed to sync booking update to Google Sheets:', err);
     }
 };
 
@@ -410,27 +420,29 @@ const getPropertyConfig = (id: string) => {
                 </div>
             </RouterLink>
             <div class="relative block h-full overflow-hidden rounded-lg">
-                <img
-                    loading="lazy"
-                    src="https://placehold.co/300x400?text=Coming+soon"
-                    class="h-68.75 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
+                <a href="/wonosari">
+                    <img
+                        loading="lazy"
+                        src="https://placehold.co/300x400?text=Coming+soon"
+                        class="h-68.75 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
 
-                <div class="absolute top-0 text-right inset-x-0 p-2">
-                    <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
-                        Wonosari
-                    </p>
-                </div>
+                    <div class="absolute top-0 text-right inset-x-0 p-2">
+                        <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
+                            Wonosari
+                        </p>
+                    </div>
 
-                <div class="absolute bottom-0 inset-x-0 p-3">
-                    <h3 class="text-white font-medium truncate">Mai House Jogja</h3>
-                    <p class="text-xs text-neutral-400 mt-1 truncate">
-                        <fa-icon
-                            class="mr-1"
-                            icon="map-marker-alt" />
-                        Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah Istimewa
-                        Yogyakarta 55881
-                    </p>
-                </div>
+                    <div class="absolute bottom-0 inset-x-0 p-3">
+                        <h3 class="text-white font-medium truncate">Mai House Jogja</h3>
+                        <p class="text-xs text-neutral-400 mt-1 truncate">
+                            <fa-icon
+                                class="mr-1"
+                                icon="map-marker-alt" />
+                            Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah
+                            Istimewa Yogyakarta 55881
+                        </p>
+                    </div>
+                </a>
             </div>
             <div class="relative block h-full overflow-hidden rounded-lg">
                 <img
@@ -440,7 +452,7 @@ const getPropertyConfig = (id: string) => {
 
                 <div class="absolute top-0 text-right inset-x-0 p-2">
                     <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
-                        Bantul
+                        Imogiri
                     </p>
                 </div>
 

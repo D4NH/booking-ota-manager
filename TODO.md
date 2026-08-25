@@ -71,8 +71,8 @@
 
 ### 4. Booking Management & Quick Form (`views/BookingsView.vue`)
 
-- [ ] Filterable data table (by property, status, channel, date range, search guest name/ID)
-- [ ] **New/Edit Booking Modal**:
+- [x] Filterable data table (by property, status, channel, date range, search guest name/ID)
+- [x] **New/Edit Booking Modal**:
     - Auto-suggest sequential IDs for WhatsApp bookings (e.g., `MHJ-00032`)
     - Auto-calculate `nights` based on check-in/check-out dates
     - Validation to prevent date conflicts
