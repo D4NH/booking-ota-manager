@@ -1,0 +1,22 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:root {
+    @include inject-theme-vars($theme);
+}
+
+body {
+    background-color: var(--color-bg-main);
+    color: var(--color-text-main);
+}
+
+a {
+    transition:
+        color 0.1s ease-in-out,
+        background-color 0.1s ease-in-out,
+        border-color 0.1s ease-in-out;
+
+    &:hover {
+        color: var(--color-primary);
+    }
+}
