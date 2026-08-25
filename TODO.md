@@ -19,7 +19,7 @@
     - `name`: string (e.g., `'Mai House Jogja'`)
     - `codePrefix`: string (e.g., `'MHJ'`, `'H2'`)
     - `color`: string (UI calendar badge color)
-- [ ] Define `Booking` interface:
+- [x] Define `Booking` interface:
     - `id`: string (UUID internal)
     - `propertyId`: string (foreign key to `Property`)
     - `bookingId`: string (OTA ID or custom `MHJ-00032`)
@@ -41,7 +41,7 @@
     - State: `properties` array initialized with Mai House Jogja
     - State: `selectedPropertyId` (`'all'` or specific ID)
     - Action: `addProperty(payload)`
-- [ ] **`stores/useBookingStore.ts`**:
+- [x] **`stores/useBookingStore.ts`**:
     - Actions: `fetchBookings()`, `addBooking()`, `updateBooking()`, `deleteBooking()`
     - Computed: `filteredBookings` (by selected property and date range)
 
@@ -60,7 +60,7 @@
 - [x] Today's Departure list
 - [x] Current In-House Guests
 - [x] Alert banner for `Waiting for payment` direct WhatsApp bookings
-- [ ] Quick monthly payout & occupancy rate summary cards
+- [x] Quick monthly payout & occupancy rate summary cards
 
 ### 3. Visual Multi-Property Calendar (`views/CalendarView.vue`)
 

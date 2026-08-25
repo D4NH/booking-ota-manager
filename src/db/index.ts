@@ -20,7 +20,13 @@ export interface Booking {
     nights: number;
     payout: number; // IDR
     status:
-        'Booked' | 'Completed' | 'Checked-in' | 'No show' | 'Waiting for payment' | 'Unavailable';
+        | 'Booked'
+        | 'Completed'
+        | 'Checked-in'
+        | 'No show'
+        | 'Waiting for payment'
+        | 'Waiting for payout'
+        | 'Unavailable';
     notes?: string;
     createdAt: string;
 }

@@ -24,6 +24,21 @@ const form = ref({
     status: props.bookingToEdit?.status || 'Booked',
     notes: props.bookingToEdit?.notes || '',
 });
+const checkIn = ref<string>('');
+const checkOut = ref<string>('');
+
+// Ensure date strings adhere to ISO YYYY-MM-DD format
+const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
+    const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
+    if (!rawVal) return;
+
+    const dateObj = new Date(rawVal);
+    if (!isNaN(dateObj.getTime())) {
+        const formatted = dateObj.toISOString().split('T')[0] || '';
+        if (field === 'checkIn') checkIn.value = formatted;
+        else checkOut.value = formatted;
+    }
+};
 
 // Auto-calculate nights whenever checkIn or checkOut changes
 watch(
@@ -129,7 +144,10 @@ const handleSubmit = (): void => {
                             v-model="form.checkIn"
                             type="date"
                             class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                            required />
+                            required
+                            min="2024-01-01"
+                            max="2030-12-31"
+                            @blur="sanitizeDate('checkIn')" />
                     </div>
 
                     <div>
@@ -140,7 +158,10 @@ const handleSubmit = (): void => {
                             v-model="form.checkOut"
                             type="date"
                             class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                            required />
+                            required
+                            :min="checkIn || '2024-01-01'"
+                            max="2030-12-31"
+                            @blur="sanitizeDate('checkOut')" />
                     </div>
 
                     <div>
@@ -178,6 +199,7 @@ const handleSubmit = (): void => {
                             <option value="Booked">Booked</option>
                             <option value="Checked-in">Checked-in</option>
                             <option value="Waiting for payment">Waiting for payment</option>
+                            <option value="Waiting for payout">Waiting for payout</option>
                             <option value="Completed">Completed</option>
                             <option value="No show">No show</option>
                             <option value="Unavailable">Unavailable</option>

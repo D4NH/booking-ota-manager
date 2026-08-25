@@ -12,16 +12,16 @@ export interface PropertyConfig extends Property {
 }
 
 export const PROPERTY_LIST: Property[] = [
-    { id: 'piyungan', name: 'Mai House Jogja - Piyungan', color: '#10b981' },
+    { id: 'piyungan', name: 'Mai House Jogja - Piyungan', color: '#016730' },
     { id: 'wonosari', name: 'Mai House Jogja - Wonosari', color: '#3b82f6' },
-    { id: 'imogiri', name: 'Mai House Jogja - Imogiri', color: '#f59e0b' },
+    { id: 'imogiri', name: 'Mai House Jogja - Imogiri', color: '#884B00' },
 ];
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     piyungan: {
         id: 'piyungan',
         name: 'Mai House Jogja - Piyungan',
-        color: '#10b981',
+        color: '#016730',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN,
         defaultRange: 'A2:J500',
     },
@@ -35,7 +35,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     imogiri: {
         id: 'imogiri',
         name: 'Mai House Jogja - Imogiri',
-        color: '#f59e0b',
+        color: '#884B00',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_IMOGIRI,
         defaultRange: 'A2:J500',
     },

@@ -58,7 +58,7 @@ export const useBookingStore = defineStore('bookings', () => {
 
             if (!bookingId || !guestName || !checkIn || !checkOut) continue;
 
-            const nights = Number(row[4]) || 1;
+            const nights = Number(row[5]) || 1;
             const payout = Number(row[6]?.replace(/[^0-9]/g, '')) || 0;
             const statusRaw = row[8]?.trim() || 'Booked';
             const notes = row[9]?.trim();
@@ -81,6 +81,7 @@ export const useBookingStore = defineStore('bookings', () => {
                 'Checked-in',
                 'No show',
                 'Waiting for payment',
+                'Waiting for payout',
                 'Unavailable',
             ];
             const status = validStatuses.includes(statusRaw as Booking['status'])

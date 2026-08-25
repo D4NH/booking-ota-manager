@@ -25,10 +25,7 @@ onMounted(() => {
 
 <template>
     <div class="flex flex-col min-h-screen px-4 mx-auto">
-        <AppHeader
-            v-model:selected-property-id="bookingStore.selectedPropertyId"
-            :properties="bookingStore.properties"
-            @property-change="bookingStore.loadBookings" />
+        <AppHeader />
 
         <main class="grow">
             <RouterView />

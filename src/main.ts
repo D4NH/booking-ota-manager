@@ -16,10 +16,15 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 //     faInstagram,
 //     faGithubSquare
 // } from '@fortawesome/free-brands-svg-icons';
-import { faMapMarkerAlt, faCalendarDay, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import {
+    faMapMarkerAlt,
+    faCalendarDay,
+    faArrowsRotate,
+    faPenToSquare,
+} from '@fortawesome/free-solid-svg-icons';
 // import { faCalendar, faFilePdf } from '@fortawesome/free-regular-svg-icons';
 
-library.add(faMapMarkerAlt, faCalendarDay, faArrowsRotate);
+library.add(faMapMarkerAlt, faCalendarDay, faArrowsRotate, faPenToSquare);
 
 const app = createApp(App);
 const head = createHead();
