@@ -5,6 +5,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import AddBookingModal from '@/components/AddBookingModal.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 import type { Booking } from '@/db';
 
 const bookingStore = useBookingStore();
@@ -233,8 +234,10 @@ onMounted(async () => {
     <div class="mx-auto max-w-7xl space-y-6">
         <div
             class="flex items-center justify-between rounded-lg border border-amber-500/20 bg-mist-950/60 px-3 py-2 text-xs">
-            Bookings via Trip.com need to be blocked in Tiket.com - Bookings via Tiket.com need to
-            be blocked in Airbnb.com
+            <ul class="list-disc list-outside ml-3">
+                <li>Bookings via Trip.com need to be blocked in Tiket.com</li>
+                <li>Bookings via Tiket.com need to be blocked in Airbnb.com</li>
+            </ul>
         </div>
 
         <div
@@ -251,57 +254,27 @@ onMounted(async () => {
                     type="button"
                     class="rounded-lg bg-white px-3.5 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
                     @click="showSyncButtons = !showSyncButtons">
-                    <fa-icon icon="arrows-rotate" />
+                    <fa-icon icon="chevron-left" />
                 </button>
                 <div
                     v-if="showSyncButtons"
                     class="space-x-3">
-                    <button
-                        type="button"
-                        :disabled="isAuthorizing"
-                        class="inline-flex items-center gap-2 rounded-lg border border-mist-700 bg-mist-900 px-3 py-2 text-xs font-semibold text-mist-200 transition hover:bg-mist-800 disabled:opacity-50"
-                        @click="handleConnectGoogle">
-                        <span
-                            :class="[
-                                'h-2 w-2 rounded-full',
-                                accessToken ? 'bg-lime-400' : 'bg-mist-500',
-                            ]"></span>
-                        {{
-                            isAuthorizing
-                                ? 'Connecting...'
-                                : accessToken
-                                  ? 'Disconnect Google'
-                                  : 'Connect Google'
-                        }}
-                    </button>
+                    <GoogleSyncButton variant="primary" />
 
-                    <button
-                        type="button"
-                        class="rounded-lg bg-lime-500 px-3.5 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
-                        @click="handleSyncAllFiles">
-                        Sync All Files
-                    </button>
+                    <GoogleSyncButton
+                        property-id="piyungan"
+                        variant="outline"
+                        @sync-complete="(res) => console.log('Synced Piyungan:', res)" />
 
-                    <button
-                        type="button"
-                        class="rounded-lg border border-mist-800 bg-mist-900 px-2.5 py-2 text-xs font-medium text-mist-300 transition hover:bg-mist-800"
-                        @click="handleSyncPropertyFile('piyungan')">
-                        Piyungan
-                    </button>
+                    <GoogleSyncButton
+                        property-id="wonosari"
+                        variant="outline"
+                        @sync-complete="(res) => console.log('Synced Wonosari:', res)" />
 
-                    <button
-                        type="button"
-                        class="rounded-lg border border-mist-800 bg-mist-900 px-2.5 py-2 text-xs font-medium text-mist-300 transition hover:bg-mist-800"
-                        @click="handleSyncPropertyFile('wonosari')">
-                        Wonosari
-                    </button>
-
-                    <button
-                        type="button"
-                        class="rounded-lg border border-mist-800 bg-mist-900 px-2.5 py-2 text-xs font-medium text-mist-300 transition hover:bg-mist-800"
-                        @click="handleSyncPropertyFile('imogiri')">
-                        Imogiri
-                    </button>
+                    <GoogleSyncButton
+                        property-id="imogiri"
+                        variant="outline"
+                        @sync-complete="(res) => console.log('Synced Imogiri:', res)" />
 
                     <button
                         type="button"
