@@ -232,6 +232,29 @@ export const useBookingStore = defineStore('bookings', () => {
         await loadBookings();
     };
 
+    const hasDateConflict = (
+        propertyId: PropertyId,
+        checkIn: string,
+        checkOut: string,
+        excludeBookingId?: string
+    ): Booking | null => {
+        if (!checkIn || !checkOut || checkIn >= checkOut) return null;
+
+        const targetBookings = bookings.value.filter(
+            (b) =>
+                b.propertyId === propertyId &&
+                b.status !== 'Unavailable' &&
+                b.bookingId !== excludeBookingId
+        );
+
+        const conflict = targetBookings.find((b) => {
+            // Overlap condition: (StartA < EndB) and (EndA > StartB)
+            return checkIn < b.checkOut && checkOut > b.checkIn;
+        });
+
+        return conflict || null;
+    };
+
     return {
         bookings,
         properties,
@@ -245,5 +268,6 @@ export const useBookingStore = defineStore('bookings', () => {
         deleteBookingWithRemoteSync,
         deleteProperty,
         clearAllBookings,
+        hasDateConflict,
     };
 });

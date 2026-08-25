@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import type { Booking } from '@/db';
+
+const bookingStore = useBookingStore();
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
@@ -27,20 +30,27 @@ const form = ref({
 const checkIn = ref<string>('');
 const checkOut = ref<string>('');
 
-// Ensure date string stick to ISO YYYY-MM-DD format
-const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
-    const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
-    if (!rawVal) return;
+const validationError = computed<string | null>(() => {
+    if (!form.value.checkIn || !form.value.checkOut) return null;
 
-    const dateObj = new Date(rawVal);
-    if (!isNaN(dateObj.getTime())) {
-        const formatted = dateObj.toISOString().split('T')[0] || '';
-        if (field === 'checkIn') checkIn.value = formatted;
-        else checkOut.value = formatted;
+    if (form.value.checkIn >= form.value.checkOut) {
+        return 'Check-out date must be after check-in date.';
     }
-};
 
-// Calculate nights whenever checkIn or checkOut changes
+    const conflictingBooking = bookingStore.hasDateConflict(
+        form.value.propertyId,
+        form.value.checkIn,
+        form.value.checkOut,
+        props.bookingToEdit?.bookingId
+    );
+
+    if (conflictingBooking) {
+        return `Date conflict! Overlaps with booking ${conflictingBooking.bookingId} (${conflictingBooking.guestName}: ${conflictingBooking.checkIn} to ${conflictingBooking.checkOut}).`;
+    }
+
+    return null;
+});
+
 watch(
     () => [form.value.checkIn, form.value.checkOut],
     ([start, end]) => {
@@ -55,6 +65,8 @@ watch(
 );
 
 const handleSubmit = (): void => {
+    if (validationError.value) return;
+
     emit('save', {
         propertyId: form.value.propertyId,
         bookingId: form.value.bookingId.trim(),
@@ -65,9 +77,30 @@ const handleSubmit = (): void => {
         payout: Number(form.value.payout),
         listing: form.value.listing,
         status: form.value.status,
-        notes: form.value.notes.trim() || undefined,
+        notes: form.value.notes?.trim(),
     });
     emit('close');
+};
+
+const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
+    const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
+    if (!rawVal) return;
+
+    const dateObj = new Date(rawVal);
+    if (!isNaN(dateObj.getTime())) {
+        const formatted = dateObj.toISOString().split('T')[0] || '';
+        if (field === 'checkIn') checkIn.value = formatted;
+        else checkOut.value = formatted;
+    }
+};
+
+const calculateNights = (): void => {
+    if (form.value.checkIn && form.value.checkOut) {
+        const start = new Date(form.value.checkIn).getTime();
+        const end = new Date(form.value.checkOut).getTime();
+        const diffDays = Math.ceil((end - start) / (1000 * 3600 * 24));
+        form.value.nights = diffDays > 0 ? diffDays : 1;
+    }
 };
 </script>
 
@@ -87,6 +120,12 @@ const handleSubmit = (): void => {
                     @click="emit('close')">
                     &times;
                 </button>
+            </div>
+
+            <div
+                v-if="validationError"
+                class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                {{ validationError }}
             </div>
 
             <form
@@ -113,12 +152,18 @@ const handleSubmit = (): void => {
                     <div>
                         <label class="mb-1 block text-xs font-medium text-mist-400">
                             Booking ID
+                            <span
+                                v-if="bookingToEdit"
+                                class="text-[10px] font-normal text-amber-400/80">
+                                (Cannot be changed)
+                            </span>
                         </label>
                         <input
                             v-model="form.bookingId"
                             type="text"
-                            placeholder="e.g. HMJ-001"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
+                            placeholder="e.g. MHJ-000000"
+                            :disabled="Boolean(bookingToEdit)"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none disabled:border-gray-700 disabled:bg-gray-800/20"
                             required />
                     </div>
 
@@ -146,7 +191,8 @@ const handleSubmit = (): void => {
                             required
                             min="2024-01-01"
                             max="2030-12-31"
-                            @blur="sanitizeDate('checkIn')" />
+                            @blur="sanitizeDate('checkIn')"
+                            @change="calculateNights" />
                     </div>
 
                     <div>
@@ -160,7 +206,8 @@ const handleSubmit = (): void => {
                             required
                             :min="checkIn || '2024-01-01'"
                             max="2030-12-31"
-                            @blur="sanitizeDate('checkOut')" />
+                            @blur="sanitizeDate('checkOut')"
+                            @change="calculateNights" />
                     </div>
 
                     <div>
@@ -212,7 +259,6 @@ const handleSubmit = (): void => {
                         <input
                             v-model.number="form.payout"
                             type="number"
-                            step="10000"
                             class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                             required />
                     </div>
@@ -240,7 +286,8 @@ const handleSubmit = (): void => {
                     </button>
                     <button
                         type="submit"
-                        class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400">
+                        :disabled="Boolean(validationError)"
+                        class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                         {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
                     </button>
                 </div>
