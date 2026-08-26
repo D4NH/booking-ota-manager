@@ -34,6 +34,14 @@ const validStatuses: Booking['status'][] = [
     'Unavailable',
 ];
 
+const getTodayString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+const todayStr = computed(() => getTodayString());
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
     const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
@@ -174,39 +182,24 @@ const handleClearAllLocal = async (): Promise<void> => {
         setTimeout(() => (syncStatus.value = ''), 3000);
     }
 };
-
-const todayStr = new Date().toISOString().substring(0, 10);
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
-    return todayStr >= checkIn && todayStr <= checkOut && status !== 'Waiting for payout';
+    return (
+        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
+    );
 };
 </script>
 
 <template>
-    <div class="mx-auto space-y-6">
+    <div class="flex flex-col space-y-6">
         <!-- Header -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-bold text-mist-100">Reservations</h1>
+                <h1 class="text-xl font-bold text-mist-100">Bookings</h1>
                 <p class="text-xs text-mist-400">
                     Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
                 </p>
             </div>
-
-            <div class="flex items-center gap-3">
-                <button
-                    type="button"
-                    class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
-                    @click="handleClearAllLocal">
-                    Clear Local DB
-                </button>
-                <GoogleSyncButton :property-id="selectedProperty" />
-                <button
-                    type="button"
-                    class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
-                    @click="openAddModal">
-                    + Add Booking
-                </button>
-            </div>
+            <GoogleSyncButton :property-id="selectedProperty" />
         </div>
 
         <!-- Status Alert -->
@@ -219,11 +212,11 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
         <!-- Filter Bar -->
         <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div>
+                <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
                     <select
                         v-model="selectedProperty"
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                         <option value="all">All Properties</option>
                         <option
                             v-for="prop in PROPERTY_LIST"
@@ -232,13 +225,17 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                             {{ prop.name }}
                         </option>
                     </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                        <fa-icon icon="angle-down" />
+                    </div>
                 </div>
 
-                <div>
+                <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Filter Month</label>
                     <select
                         v-model="selectedMonth"
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                         <option value="all">All Months</option>
                         <option
                             v-for="mKey in availableMonths"
@@ -247,6 +244,10 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                             {{ formatMonthHeader(mKey) }}
                         </option>
                     </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                        <fa-icon icon="angle-down" />
+                    </div>
                 </div>
 
                 <div>
@@ -255,7 +256,7 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                         v-model="searchQuery"
                         type="text"
                         placeholder="Search guest, ID or notes..."
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
                 </div>
             </div>
 
@@ -278,6 +279,13 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
             </div>
         </div>
 
+        <button
+            type="button"
+            class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+            @click="openAddModal">
+            <fa-icon icon="plus" /> Add Booking
+        </button>
+
         <!-- Reservations Table -->
         <div
             v-if="groupedBookings.length === 0"
@@ -299,7 +307,7 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                         <th class="w-32 px-4 py-2.5 text-center">Check In</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Payout</th>
+                        <th class="w-38 px-4 py-2.5 text-center">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
                         <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
@@ -338,7 +346,6 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                         <tr
                             v-for="b in group.bookings"
                             :key="b.id || b.bookingId"
-                            class="hover:bg-mist-800/30"
                             :class="[
                                 'transition',
                                 isCurrentBooking(b.checkIn, b.checkOut, b.status)
@@ -355,10 +362,11 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span
-                                    class="rounded bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 text-[10px] font-semibold text-slate-300 capitalize">
+                                <RouterLink
+                                    :to="{ name: 'property-detail', params: { id: b.propertyId } }"
+                                    class="rounded bg-mist-800/80 border border-mist-700/60 px-2 py-0.5 text-[10px] font-semibold text-mist-300 capitalize">
                                     {{ b.propertyId }}
-                                </span>
+                                </RouterLink>
                             </td>
                             <td class="px-4 py-3 font-medium text-mist-100 truncate">
                                 {{ b.guestName }}
@@ -393,16 +401,16 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                                 <div class="flex items-center justify-end gap-2">
                                     <button
                                         type="button"
-                                        class="text-mist-400 hover:text-mist-100"
+                                        class="cursor-pointer text-mist-400 hover:text-mist-100"
                                         @click="openEditModal(b)">
-                                        Edit
+                                        <fa-icon icon="pen-to-square" />
                                     </button>
                                     <span class="text-mist-700">|</span>
                                     <button
                                         type="button"
-                                        class="text-rose-400 hover:text-rose-300"
+                                        class="cursor-pointer text-rose-400 hover:text-rose-300"
                                         @click="handleDeleteBooking(b)">
-                                        Delete
+                                        <fa-icon icon="trash-can" />
                                     </button>
                                 </div>
                             </td>
@@ -411,6 +419,13 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                 </template>
             </table>
         </div>
+
+        <button
+            type="button"
+            class="self-end rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
+            @click="handleClearAllLocal">
+            Clear Local DB
+        </button>
 
         <AddBookingModal
             v-if="isBookingModalOpen"

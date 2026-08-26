@@ -41,6 +41,13 @@ const getTodayString = (): string => {
 };
 const todayStr = computed(() => getTodayString());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
+
+const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
+    return (
+        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
+    );
+};
+
 const propertyBookings = computed(() => {
     return bookings.value.filter((b) => b.propertyId === currentPropertyId.value);
 });
@@ -501,7 +508,7 @@ watch(
                 type="button"
                 class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
                 @click="openAddModal">
-                + Add Booking
+                <fa-icon icon="plus" /> Add Booking
             </button>
         </div>
         <div
@@ -512,7 +519,7 @@ watch(
         <div
             v-else
             class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
-            <table class="w-full text-left text-xs text-mist-300 table-fixed">
+            <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
                     <tr>
@@ -522,12 +529,11 @@ watch(
                         <th class="w-32 px-4 py-2.5 text-center">Check In</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Payout</th>
+                        <th class="w-38 px-4 py-2.5 text-center">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
                         <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
-
                 <template
                     v-for="group in groupedBookings"
                     :key="group.key">
@@ -554,14 +560,18 @@ watch(
                             </td>
                         </tr>
                     </tbody>
-
                     <tbody
                         v-show="!collapsedMonths.includes(group.key)"
                         class="divide-y divide-mist-800/60">
                         <tr
                             v-for="b in group.bookings"
                             :key="b.id || b.bookingId"
-                            class="hover:bg-mist-800/30">
+                            :class="[
+                                'transition',
+                                isCurrentBooking(b.checkIn, b.checkOut, b.status)
+                                    ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
+                                    : 'hover:bg-mist-800/30',
+                            ]">
                             <td class="px-4 py-3 font-mono text-lime-400 truncate">
                                 {{ b.bookingId }}
                             </td>
@@ -604,16 +614,16 @@ watch(
                                 <div class="flex items-center justify-end gap-2">
                                     <button
                                         type="button"
-                                        class="text-mist-400 hover:text-mist-100"
+                                        class="cursor-pointer text-mist-400 hover:text-mist-100"
                                         @click="openEditModal(b)">
-                                        Edit
+                                        <fa-icon icon="pen-to-square" />
                                     </button>
                                     <span class="text-mist-700">|</span>
                                     <button
                                         type="button"
-                                        class="text-rose-400 hover:text-rose-300"
+                                        class="cursor-pointer text-rose-400 hover:text-rose-300"
                                         @click="handleDeleteBooking(b)">
-                                        Delete
+                                        <fa-icon icon="trash-can" />
                                     </button>
                                 </div>
                             </td>
@@ -626,6 +636,7 @@ watch(
         <AddBookingModal
             v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
+            :current-property="currentPropertyId"
             @close="isBookingModalOpen = false"
             @save="handleSaveBooking" />
     </div>

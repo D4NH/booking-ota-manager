@@ -356,20 +356,16 @@ const propertyImage = (id: string) => {
             </div>
         </div>
 
-        <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
+        <div class="flex items-center justify-between border-b border-mist-800 pb-5 mt-12">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">All properties</p>
             </div>
-
-            <div class="flex items-center gap-2">
-                <button
-                    class="self-end rounded-lg bg-lime-500 px-4 py-2 text-sm font-semibold text-mist-950 hover:bg-lime-400 transition"
-                    @click="isPropertyModalOpen = true">
-                    + Add Property
-                </button>
-            </div>
+            <button
+                class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-semibold text-mist-950 hover:bg-lime-400 transition"
+                @click="isPropertyModalOpen = true">
+                <fa-icon icon="plus" /> Add Property
+            </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
