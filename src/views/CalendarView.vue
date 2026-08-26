@@ -1,5 +1,342 @@
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { usePropertyStore } from '@/stores/usePropertyStore';
+import { useBookingStore } from '@/stores/useBookingStore';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import type { Booking } from '@/db';
+import type { PropertyId } from '@/config/properties';
+
+import AddBookingModal from '@/components/AddBookingModal.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
+
+const route = useRoute();
+const propertyStore = usePropertyStore();
+const bookingStore = useBookingStore();
+
+const { sortedProperties } = storeToRefs(propertyStore);
+const { bookings } = storeToRefs(bookingStore);
+const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
+
+// Route-aware Property Selection
+const routePropertyId = route.params.id as PropertyId | undefined;
+const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
+const selectedCheckInDate = ref<string>('');
+
+watch(
+    () => route.params.id,
+    (newId) => {
+        selectedProperty.value = (newId as PropertyId) || 'all';
+    }
+);
+
+// Month Navigation State
+const currentDate = ref<Date>(new Date());
+
+const currentYear = computed(() => currentDate.value.getFullYear());
+const currentMonth = computed(() => currentDate.value.getMonth());
+
+const formattedMonthYear = computed(() => {
+    return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+});
+
+const prevMonth = (): void => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
+};
+const nextMonth = (): void => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
+};
+const goToToday = (): void => {
+    currentDate.value = new Date();
+};
+
+// Calendar Grid Days Calculation
+interface CalendarDay {
+    dateStr: string; // 'YYYY-MM-DD'
+    dayNumber: number;
+    isCurrentMonth: boolean;
+    isToday: boolean;
+}
+
+// Grid Days Calculation (Monday Start)
+const calendarDays = computed<CalendarDay[]>(() => {
+    const year = currentYear.value;
+    const month = currentMonth.value;
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+
+    // Shift Day index: Sun(0)->6, Mon(1)->0, Tue(2)->1, etc.
+    const rawDayIndex = firstDayOfMonth.getDay();
+    const startingDayOfWeek = (rawDayIndex + 6) % 7;
+
+    const totalDaysInMonth = lastDayOfMonth.getDate();
+
+    // Format today's date string in local time
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    const days: CalendarDay[] = [];
+
+    // Helper to build local YYYY-MM-DD string without UTC offset issues
+    const formatLocalDateStr = (d: Date): string => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dayNum}`;
+    };
+
+    // 1. Previous month padding days
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+        const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
+        const dateStr = formatLocalDateStr(prevDate);
+        days.push({
+            dateStr,
+            dayNumber: prevMonthLastDay - i,
+            isCurrentMonth: false,
+            isToday: dateStr === todayStr,
+        });
+    }
+
+    // 2. Current month days
+    for (let day = 1; day <= totalDaysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        days.push({
+            dateStr,
+            dayNumber: day,
+            isCurrentMonth: true,
+            isToday: dateStr === todayStr,
+        });
+    }
+
+    // 3. Next month padding days to complete 42 cells (6 rows)
+    const remainingCells = 42 - days.length;
+    for (let day = 1; day <= remainingCells; day++) {
+        const nextDate = new Date(year, month + 1, day);
+        const dateStr = formatLocalDateStr(nextDate);
+        days.push({
+            dateStr,
+            dayNumber: day,
+            isCurrentMonth: false,
+            isToday: dateStr === todayStr,
+        });
+    }
+
+    return days;
+});
+// Filtered Bookings for Calendar
+const filteredBookings = computed(() => {
+    return bookings.value.filter((b) => {
+        if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value) {
+            return false;
+        }
+        return b.status !== 'Unavailable';
+    });
+});
+
+// Match bookings active on specific calendar date
+const getBookingsForDate = (dateStr: string): Booking[] => {
+    return filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
+};
+
+// Modal & Sync Handling
+const isBookingModalOpen = ref<boolean>(false);
+const bookingToEdit = ref<Booking | null>(null);
+const syncStatus = ref<string>('');
+
+const handleCellClick = (day: CalendarDay): void => {
+    // 1. If clicking a date with existing bookings, ignore or let user click booking pill
+    const activeBookings = getBookingsForDate(day.dateStr);
+    if (activeBookings.length > 0) return;
+
+    // 2. Set autofill check-in date and reset edit state
+    selectedCheckInDate.value = day.dateStr;
+    bookingToEdit.value = null;
+    isBookingModalOpen.value = true;
+};
+const handleBookingClick = (booking: Booking, event: Event): void => {
+    event.stopPropagation();
+    bookingToEdit.value = booking;
+    isBookingModalOpen.value = true;
+};
+const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
+    try {
+        if (bookingToEdit.value) {
+            syncStatus.value = 'Syncing edit to Google Sheets...';
+            await bookingStore.updateBookingWithRemoteSync(
+                { ...bookingToEdit.value, ...payload },
+                { updateSheetRowByBookingId }
+            );
+            syncStatus.value = 'Booking updated in Google Sheets & local database.';
+        } else {
+            syncStatus.value = 'Syncing new booking to Google Sheets...';
+            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
+            syncStatus.value = 'Booking saved to Google Sheets & local database.';
+        }
+        isBookingModalOpen.value = false;
+    } catch (err: unknown) {
+        console.error('Save failed:', err);
+        const msg = err instanceof Error ? err.message : 'Google Sheets sync failed.';
+        syncStatus.value = `Save failed: ${msg}`;
+    } finally {
+        setTimeout(() => (syncStatus.value = ''), 5000);
+    }
+};
+</script>
+
 <template>
-    <div class="calendar">
-        <h1>This is an calendar page</h1>
+    <div class="space-y-6 p-6">
+        <!-- Header Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
+                <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Property Selector -->
+                <div
+                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                    <button
+                        type="button"
+                        :class="[
+                            'rounded-md px-3 py-1.5 text-xs font-semibold transition',
+                            selectedProperty === 'all'
+                                ? 'bg-mist-800 text-mist-100'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectedProperty = 'all'">
+                        All
+                    </button>
+
+                    <button
+                        v-for="prop in sortedProperties"
+                        :key="prop.id"
+                        type="button"
+                        :class="[
+                            'rounded-md px-3 py-1.5 text-xs font-semibold transition',
+                            selectedProperty === prop.id
+                                ? 'bg-mist-800 text-mist-100'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectedProperty = prop.id as PropertyId">
+                        <span class="capitalize">{{ prop.id }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync Alert Message -->
+        <div
+            v-if="syncStatus"
+            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
+            ℹ️ {{ syncStatus }}
+        </div>
+
+        <!-- Month Navigation Controls -->
+        <div
+            class="flex items-center justify-between rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    class="rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                    @click="goToToday">
+                    Today
+                </button>
+                <button
+                    type="button"
+                    class="rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    @click="prevMonth">
+                    <fa-icon icon="chevron-left" />
+                </button>
+                <button
+                    type="button"
+                    class="rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    @click="nextMonth">
+                    <fa-icon icon="chevron-right" />
+                </button>
+
+                <h2 class="text-base font-bold text-mist-100">{{ formattedMonthYear }}</h2>
+            </div>
+
+            <GoogleSyncButton :property-id="selectedProperty" />
+        </div>
+
+        <!-- Calendar Grid Table -->
+        <div class="overflow-hidden rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
+            <div
+                class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-[11px] font-semibold uppercase text-mist-400">
+                <div class="py-2.5">Mon</div>
+                <div class="py-2.5">Tue</div>
+                <div class="py-2.5">Wed</div>
+                <div class="py-2.5">Thu</div>
+                <div class="py-2.5">Fri</div>
+                <div class="py-2.5">Sat</div>
+                <div class="py-2.5">Sun</div>
+            </div>
+
+            <!-- 42 Day Grid -->
+            <div class="grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
+                <div
+                    v-for="day in calendarDays"
+                    :key="day.dateStr"
+                    :class="[
+                        'min-h-[110px] p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
+                        !day.isCurrentMonth ? 'bg-mist-950/40 opacity-40' : '',
+                        day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
+                    ]"
+                    @click="handleCellClick(day)">
+                    <!-- Day Number Badge -->
+                    <div class="flex items-center justify-between">
+                        <span
+                            :class="[
+                                'text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center',
+                                day.isToday ? 'bg-lime-500 text-mist-950' : 'text-mist-400',
+                            ]">
+                            {{ day.dayNumber }}
+                        </span>
+                    </div>
+
+                    <!-- Reservations on this date -->
+                    <div class="space-y-1 mt-1">
+                        <div
+                            v-for="b in getBookingsForDate(day.dateStr)"
+                            :key="b.id || b.bookingId"
+                            :class="[
+                                'rounded px-1.5 py-1 text-[10px] font-medium truncate border transition shadow-sm',
+                                b.status === 'Booked'
+                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/30'
+                                    : b.status === 'Completed' || b.status === 'Waiting for payout'
+                                      ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/30 opacity-40'
+                                      : b.status === 'Checked-in'
+                                        ? 'border-lime-500/40 bg-lime-500/20 text-lime-300 hover:bg-lime-500/30'
+                                        : b.status === 'Waiting for payment'
+                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                                          : 'border-mist-700 bg-mist-800 text-mist-300',
+                            ]"
+                            :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
+                            @click="handleBookingClick(b, $event)">
+                            <span class="font-bold">{{ b.guestName }}</span>
+                            <span class="block font-light">{{ b.listing }}</span>
+                            <span
+                                v-if="selectedProperty === 'all'"
+                                class="text-[9px] opacity-75 block capitalize">
+                                {{ b.propertyId }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <AddBookingModal
+            v-if="isBookingModalOpen"
+            :booking-to-edit="bookingToEdit"
+            :initial-check-in-date="selectedCheckInDate"
+            :current-property="selectedProperty"
+            @close="isBookingModalOpen = false"
+            @save="handleSaveBooking" />
     </div>
 </template>
