@@ -1,4 +1,4 @@
-export type PropertyId = 'piyungan' | 'wonosari' | 'imogiri';
+export type PropertyId = 'piyungan' | 'wonosari' | 'bantul';
 
 export interface Property {
     id: PropertyId;
@@ -14,7 +14,7 @@ export interface PropertyConfig extends Property {
 export const PROPERTY_LIST: Property[] = [
     { id: 'piyungan', name: 'Mai House Jogja - Piyungan', color: '#016730' },
     { id: 'wonosari', name: 'Mai House Jogja - Wonosari', color: '#3b82f6' },
-    { id: 'imogiri', name: 'Mai House Jogja - Imogiri', color: '#884B00' },
+    { id: 'bantul', name: 'Mai House Jogja - Bantul', color: '#884B00' },
 ];
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
@@ -32,11 +32,11 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
         defaultRange: 'A2:J500',
     },
-    imogiri: {
-        id: 'imogiri',
-        name: 'Mai House Jogja - Imogiri',
+    bantul: {
+        id: 'bantul',
+        name: 'Mai House Jogja - Bantul',
         color: '#884B00',
-        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_IMOGIRI,
+        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_BANTUL,
         defaultRange: 'A2:J500',
     },
 };

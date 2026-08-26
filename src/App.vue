@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useHead } from '@unhead/vue';
 import { onMounted } from 'vue';
-
+import { useHead } from '@unhead/vue';
+import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useBookingStore } from '@/stores/useBookingStore';
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
@@ -15,11 +15,11 @@ useHead({
         },
     ],
 });
-
+const propertyStore = usePropertyStore();
 const bookingStore = useBookingStore();
 
-onMounted(() => {
-    void bookingStore.initDatabase();
+onMounted(async () => {
+    await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()]);
 });
 </script>
 

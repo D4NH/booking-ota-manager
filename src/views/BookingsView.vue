@@ -1,402 +1,406 @@
+<!-- src/views/BookingsView.vue -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
-import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import type { Booking } from '@/db';
+import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
+
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-import type { Booking } from '@/db';
 
 const bookingStore = useBookingStore();
-const { bookings, isLoading } = storeToRefs(bookingStore);
 
-const {
-    accessToken,
-    authError,
-    appendSheetRow,
-    updateSheetRowByBookingId,
-    deleteSheetRowByBookingId,
-} = useGoogleSheets();
+const { bookings } = storeToRefs(bookingStore);
 
-const syncStatus = ref<string>('');
-const isModalOpen = ref<boolean>(false);
-const showSyncButtons = ref<boolean>(false);
-const bookingToEdit = ref<Booking | null>(null);
+const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } = useGoogleSheets();
 
-// Filter States
-const selectedPropertyFilter = ref<string>('all');
-const selectedStatusFilter = ref<string>('all');
-const getCurrentMonthString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-};
-const selectedMonthFilter = ref<string>(getCurrentMonthString());
+// Filters & Local State
+const selectedProperty = ref<PropertyId | 'all'>('all');
+const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
+const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'Unavailable', 'No show']);
+const collapsedMonths = ref<string[]>([]);
 
-const availableMonths = computed(() => {
-    const months = new Set<string>();
-    bookings.value.forEach((b) => {
-        if (b.checkIn) {
-            months.add(b.checkIn.slice(0, 7)); // Extracts 'YYYY-MM'
-        }
-    });
-    return Array.from(months).sort().reverse();
-});
+const isBookingModalOpen = ref<boolean>(false);
+const bookingToEdit = ref<Booking | null>(null);
+const syncStatus = ref<string>('');
 
-const formatMonthLabel = (monthStr: string): string => {
-    const [year, month] = monthStr.split('-');
-    const date = new Date(Number(year), Number(month) - 1, 1);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
-};
+const validStatuses: Booking['status'][] = [
+    'Booked',
+    'Checked-in',
+    'Waiting for payment',
+    'Completed',
+    'No show',
+    'Unavailable',
+];
 
-const filteredBookings = computed(() => {
-    const filtered = bookings.value.filter((b) => {
-        const matchesProperty =
-            selectedPropertyFilter.value === 'all' || b.propertyId === selectedPropertyFilter.value;
-
-        const matchesStatus =
-            selectedStatusFilter.value === 'all' || b.status === selectedStatusFilter.value;
-
-        const matchesMonth =
-            selectedMonthFilter.value === 'all' || b.checkIn.startsWith(selectedMonthFilter.value);
-
-        const matchesSearch =
-            !searchQuery.value.trim() ||
-            b.guestName.toLowerCase().includes(searchQuery.value.trim().toLowerCase()) ||
-            b.bookingId.toLowerCase().includes(searchQuery.value.trim().toLowerCase());
-
-        return matchesProperty && matchesStatus && matchesMonth && matchesSearch;
-    });
-
-    // Sort by Check-in Date Ascending (Oldest on top)
-    return filtered.sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime());
-});
-
-const resetFilters = (): void => {
-    selectedPropertyFilter.value = 'all';
-    selectedStatusFilter.value = 'all';
-    selectedMonthFilter.value = 'all';
-    searchQuery.value = '';
-};
-
-// Clear All Local Records
-const handleClearAll = async (): Promise<void> => {
-    const confirmed = confirm(
-        'Are you sure you want to delete ALL local booking records?\n\nThis will clear your local database. You can re-sync from Google Sheets anytime.'
-    );
-    if (confirmed) {
-        await bookingStore.clearAllBookings();
-        syncStatus.value = 'All local records cleared.';
+// Toggle Inverse Status Filter
+const toggleStatusVisibility = (status: Booking['status']): void => {
+    const index = hiddenStatuses.value.indexOf(status);
+    if (index > -1) {
+        hiddenStatuses.value.splice(index, 1);
+    } else {
+        hiddenStatuses.value.push(status);
     }
 };
 
+// Toggle Collapsible Month Headers
+const toggleMonth = (monthKey: string): void => {
+    const index = collapsedMonths.value.indexOf(monthKey);
+    if (index > -1) {
+        collapsedMonths.value.splice(index, 1);
+    } else {
+        collapsedMonths.value.push(monthKey);
+    }
+};
+
+const formatMonthHeader = (monthKey: string): string => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
+const availableMonths = computed(() => {
+    const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
+    const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
+    return uniqueMonths.sort((a, b) => a.localeCompare(b));
+});
+
+// Filtered Bookings sorted Oldest to Newest (Ascending checkIn)
+const filteredBookings = computed(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+
+    return bookings.value
+        .filter((b) => {
+            if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value)
+                return false;
+            if (selectedMonth.value !== 'all' && !b.checkIn.startsWith(selectedMonth.value))
+                return false;
+            if (hiddenStatuses.value.includes(b.status)) return false;
+            if (query) {
+                const matchName = b.guestName.toLowerCase().includes(query);
+                const matchId = b.bookingId.toLowerCase().includes(query);
+                const matchNotes = b.notes?.toLowerCase().includes(query) || false;
+                if (!matchName && !matchId && !matchNotes) return false;
+            }
+            return true;
+        })
+        .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
+});
+
+// Grouped Bookings by Month
+const groupedBookings = computed(() => {
+    const groups: Record<string, Booking[]> = {};
+
+    filteredBookings.value.forEach((b) => {
+        const monthKey = b.checkIn.substring(0, 7);
+        if (!groups[monthKey]) groups[monthKey] = [];
+        groups[monthKey].push(b);
+    });
+
+    return Object.keys(groups)
+        .sort((a, b) => a.localeCompare(b))
+        .map((key) => ({
+            key,
+            label: formatMonthHeader(key),
+            count: groups[key]?.length,
+            bookings: groups[key],
+        }));
+});
+
+// Handlers
 const openAddModal = (): void => {
     bookingToEdit.value = null;
-    isModalOpen.value = true;
+    isBookingModalOpen.value = true;
 };
-
 const openEditModal = (booking: Booking): void => {
     bookingToEdit.value = booking;
-    isModalOpen.value = true;
+    isBookingModalOpen.value = true;
 };
-
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     try {
         if (bookingToEdit.value) {
-            syncStatus.value = 'Updating booking locally and in Google Sheets...';
-
+            syncStatus.value = 'Syncing update...';
             await bookingStore.updateBookingWithRemoteSync(
                 { ...bookingToEdit.value, ...payload },
                 { updateSheetRowByBookingId }
             );
-
-            syncStatus.value = 'Booking updated successfully.';
+            syncStatus.value = 'Booking updated locally & in Google Sheets.';
         } else {
-            syncStatus.value = 'Saving booking and syncing to Google Sheets...';
-
+            syncStatus.value = 'Syncing new booking...';
             await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-
-            syncStatus.value = 'New booking saved and synced.';
+            syncStatus.value = 'Booking saved locally & in Google Sheets.';
         }
     } catch (err) {
-        console.error('Save/Sync error:', err);
+        console.error('Save Sync Error:', err);
         syncStatus.value = 'Saved locally, but Google Sheet sync failed.';
+    } finally {
+        setTimeout(() => (syncStatus.value = ''), 4000);
     }
 };
-
 const handleDeleteBooking = async (booking: Booking): Promise<void> => {
-    const confirmed = confirm(`Remove reservation for ${booking.guestName}?`);
-    if (!confirmed) return;
+    if (!window.confirm(`Delete booking ${booking.bookingId} (${booking.guestName})?`)) return;
 
     try {
-        syncStatus.value = 'Removing entry...';
-        await bookingStore.deleteBookingWithRemoteSync(
-            booking.id,
-            booking.bookingId,
-            booking.propertyId as PropertyId,
-            accessToken.value ? { deleteSheetRowByBookingId } : undefined
-        );
-        syncStatus.value = 'Booking removed.';
+        syncStatus.value = 'Syncing deletion...';
+        await bookingStore.deleteBookingWithRemoteSync(booking, { deleteSheetRowByBookingId });
+        syncStatus.value = `Booking ${booking.bookingId} deleted locally & in Google Sheets.`;
     } catch (err) {
-        console.error('Deletion error:', err);
-        syncStatus.value = 'Failed to delete booking completely.';
+        console.error('Delete Sync Error:', err);
+        syncStatus.value = 'Deleted locally, but Google Sheet sync failed.';
+    } finally {
+        setTimeout(() => (syncStatus.value = ''), 4000);
     }
 };
+const handleClearAllLocal = async (): Promise<void> => {
+    if (!window.confirm('Wipe ALL local bookings? (Google Sheets files will remain untouched)'))
+        return;
 
-const getPropertyConfig = (id: string) => {
-    return PROPERTY_CONFIGS[id as PropertyId] || { name: id, color: '#64748b' };
-};
-
-onMounted(async () => {
-    // Fallback to 'all' if the current month has no records yet
-    const hasCurrentMonthBookings = bookings.value.some((b) =>
-        b.checkIn.startsWith(selectedMonthFilter.value)
-    );
-    if (!hasCurrentMonthBookings && bookings.value.length > 0) {
-        selectedMonthFilter.value = 'all';
+    try {
+        await bookingStore.clearAllLocalBookings();
+        syncStatus.value = 'All local bookings cleared.';
+    } catch (err) {
+        console.error('Clear DB Error:', err);
+        syncStatus.value = 'Failed to clear local data.';
+    } finally {
+        setTimeout(() => (syncStatus.value = ''), 3000);
     }
-});
+};
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-6">
-        <div
-            class="flex items-center justify-between rounded-lg border border-amber-500/20 bg-mist-950/60 px-3 py-2 text-xs">
-            <ul class="list-disc list-outside ml-3">
-                <li>Bookings via Trip.com need to be blocked in Tiket.com</li>
-                <li>Bookings via Tiket.com need to be blocked in Airbnb.com</li>
-            </ul>
-        </div>
-
-        <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
+    <div class="space-y-6 p-6">
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-mist-100">Bookings Dashboard</h1>
+                <h1 class="text-xl font-bold text-mist-100">Reservations</h1>
                 <p class="text-xs text-mist-400">
-                    Manage reservations across Mai House Jogja properties
+                    Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-3">
                 <button
                     type="button"
-                    class="rounded-lg bg-white px-3.5 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
-                    @click="showSyncButtons = !showSyncButtons">
-                    <fa-icon icon="chevron-left" />
+                    class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
+                    @click="handleClearAllLocal">
+                    Clear Local DB
                 </button>
-                <div
-                    v-if="showSyncButtons"
-                    class="space-x-3">
-                    <GoogleSyncButton variant="primary" />
-
-                    <GoogleSyncButton
-                        property-id="piyungan"
-                        variant="outline"
-                        @sync-complete="(res) => console.log('Synced Piyungan:', res)" />
-
-                    <GoogleSyncButton
-                        property-id="wonosari"
-                        variant="outline"
-                        @sync-complete="(res) => console.log('Synced Wonosari:', res)" />
-
-                    <GoogleSyncButton
-                        property-id="imogiri"
-                        variant="outline"
-                        @sync-complete="(res) => console.log('Synced Imogiri:', res)" />
-
-                    <button
-                        type="button"
-                        class="rounded-lg border border-rose-900/50 bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-400 transition hover:bg-rose-900/50"
-                        @click="handleClearAll">
-                        Clear Local DB
-                    </button>
-                </div>
-
+                <GoogleSyncButton :property-id="selectedProperty" />
                 <button
                     type="button"
-                    class="rounded-lg bg-lime-500 px-3.5 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
+                    class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
                     @click="openAddModal">
                     + Add Booking
                 </button>
             </div>
         </div>
 
-        <div class="text-xs font-medium text-mist-400">
-            <span
-                v-if="syncStatus"
-                class="text-lime-400">
-                {{ syncStatus }}
-            </span>
-            <span
-                v-else-if="authError"
-                class="text-rose-400">
-                {{ authError }}
-            </span>
-            <span v-else>Ready</span>
-        </div>
-
+        <!-- Status Alert -->
         <div
-            class="grid grid-cols-1 gap-3 rounded-xl border border-mist-800 bg-mist-900 p-4 sm:grid-cols-2 lg:grid-cols-5">
-            <div class="lg:col-span-2">
-                <label class="mb-1 block text-[10px] uppercase font-bold text-mist-400">
-                    Search Guest / ID
-                </label>
-                <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="Type guest name or booking ID..."
-                    class="w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
-            </div>
+            v-if="syncStatus"
+            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
+            ℹ️ {{ syncStatus }}
+        </div>
 
-            <div>
-                <label class="mb-1 block text-[10px] uppercase font-bold text-mist-400">
-                    Month
-                </label>
-                <select
-                    v-model="selectedMonthFilter"
-                    class="w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:outline-none">
-                    <option value="all">All Months</option>
-                    <option
-                        v-for="m in availableMonths"
-                        :key="m"
-                        :value="m">
-                        {{ formatMonthLabel(m) }}
-                    </option>
-                </select>
-            </div>
-
-            <div>
-                <label class="mb-1 block text-[10px] uppercase font-bold text-mist-400">
-                    Status
-                </label>
-                <select
-                    v-model="selectedStatusFilter"
-                    class="w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:outline-none">
-                    <option value="all">All Statuses</option>
-                    <option value="Booked">Booked</option>
-                    <option value="Checked-in">Checked-in</option>
-                    <option value="Waiting for payment">Waiting for payment</option>
-                    <option value="Waiting for payout">Waiting for payout</option>
-                    <option value="Completed">Completed</option>
-                    <option value="No show">No show</option>
-                    <option value="Unavailable">Unavailable</option>
-                </select>
-            </div>
-
-            <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label class="text-[10px] uppercase font-bold text-mist-400">Property</label>
-                    <button
-                        type="button"
-                        class="text-[10px] font-medium text-lime-400 hover:underline"
-                        @click="resetFilters">
-                        Reset All
-                    </button>
+        <!-- Filter Bar -->
+        <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
+                    <select
+                        v-model="selectedProperty"
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                        <option value="all">All Properties</option>
+                        <option
+                            v-for="prop in PROPERTY_LIST"
+                            :key="prop.id"
+                            :value="prop.id">
+                            {{ prop.name }}
+                        </option>
+                    </select>
                 </div>
-                <select
-                    v-model="selectedPropertyFilter"
-                    class="w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:outline-none">
-                    <option value="all">All Properties</option>
-                    <option
-                        v-for="prop in PROPERTY_LIST"
-                        :key="prop.id"
-                        :value="prop.id">
-                        {{ prop.name }}
-                    </option>
-                </select>
+
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-mist-400">Filter Month</label>
+                    <select
+                        v-model="selectedMonth"
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                        <option value="all">All Months</option>
+                        <option
+                            v-for="mKey in availableMonths"
+                            :key="mKey"
+                            :value="mKey">
+                            {{ formatMonthHeader(mKey) }}
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-mist-400">Search</label>
+                    <input
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Search guest, ID or notes..."
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- Inverse Status Filter -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-mist-800">
+                <span class="text-xs font-medium text-mist-400">Filter:</span>
+                <button
+                    v-for="status in validStatuses"
+                    :key="status"
+                    type="button"
+                    :class="[
+                        'rounded-full px-2.5 py-1 text-xs border transition',
+                        hiddenStatuses.includes(status)
+                            ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
+                            : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
+                    ]"
+                    @click="toggleStatusVisibility(status)">
+                    {{ status }}
+                </button>
             </div>
         </div>
 
-        <!-- Data Table -->
-        <div class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900">
-            <table class="w-full text-left text-xs">
+        <!-- Empty State -->
+        <div
+            v-if="groupedBookings.length === 0"
+            class="rounded-xl border border-dashed border-mist-800 p-12 text-center">
+            <p class="text-sm text-mist-400">No reservations matching current filters</p>
+        </div>
+
+        <!-- Grouped Table View with Perfect Alignment -->
+        <div
+            v-else
+            class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
+            <table class="w-full text-left text-xs text-mist-300 table-fixed">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/50 text-mist-400 uppercase tracking-wider">
+                    class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
                     <tr>
-                        <th class="px-4 py-3">Property</th>
-                        <th class="px-4 py-3">Booking ID</th>
-                        <th class="px-4 py-3">Guest Name</th>
-                        <th class="px-4 py-3">Dates</th>
-                        <th class="px-4 py-3">Nights</th>
-                        <th class="px-4 py-3">Channel</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Payout</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
+                        <th class="w-42 px-4 py-2.5">ID</th>
+                        <th class="w-28 px-4 py-2.5 text-center">Channel</th>
+                        <th class="w-28 px-4 py-2.5 text-center">Property</th>
+                        <th class="px-4 py-2.5">Guest</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Check In</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
+                        <th class="w-28 px-4 py-2.5 text-center">Nights</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Payout</th>
+                        <th class="w-40 px-4 py-2.5 text-center">Status</th>
+                        <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-mist-800 text-mist-200">
-                    <tr v-if="isLoading">
-                        <td
-                            colspan="9"
-                            class="px-4 py-8 text-center text-mist-500">
-                            Loading records...
-                        </td>
-                    </tr>
-                    <tr v-else-if="filteredBookings.length === 0">
-                        <td
-                            colspan="9"
-                            class="px-4 py-8 text-center text-mist-500">
-                            No matching bookings found.
-                        </td>
-                    </tr>
-                    <tr
-                        v-for="booking in filteredBookings"
-                        :key="booking.id"
-                        class="hover:bg-mist-800/40 transition">
-                        <td class="px-4 py-3 font-medium">
-                            <span
-                                class="capitalize inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold text-white"
-                                :style="{
-                                    backgroundColor: getPropertyConfig(booking.propertyId).color,
-                                }">
-                                {{ getPropertyConfig(booking.propertyId).id }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 font-mono font-semibold text-mist-300">
-                            {{ booking.bookingId }}
-                        </td>
-                        <td class="px-4 py-3 font-medium">{{ booking.guestName }}</td>
-                        <td class="px-4 py-3 text-mist-400">
-                            {{ booking.checkIn }} &rarr; {{ booking.checkOut }}
-                        </td>
-                        <td class="px-4 py-3">{{ booking.nights }}</td>
-                        <td class="px-4 py-3 text-mist-300">{{ booking.listing }}</td>
-                        <td class="px-4 py-3">
-                            <span
-                                class="rounded bg-mist-800 px-2 py-0.5 text-[10px] font-medium text-mist-300">
-                                {{ booking.status }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 font-mono text-lime-400">
-                            Rp {{ booking.payout.toLocaleString() }}
-                        </td>
-                        <td class="px-4 py-3 text-right space-x-2">
-                            <button
-                                type="button"
-                                class="cursor-pointer text-mist-400 hover:text-mist-200"
-                                @click="openEditModal(booking)">
-                                <fa-icon icon="pen-to-square" /> Edit
-                            </button>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-rose-400 hover:text-rose-300"
-                                @click="handleDeleteBooking(booking)">
-                                <fa-icon icon="trash-can" /> Delete
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
+
+                <template
+                    v-for="group in groupedBookings"
+                    :key="group.key">
+                    <tbody class="border-t border-mist-800 bg-mist-950/40">
+                        <tr>
+                            <td
+                                colspan="10"
+                                class="p-0">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
+                                    @click="toggleMonth(group.key)">
+                                    <span class="flex items-center gap-2">
+                                        <span class="text-xs text-mist-400">
+                                            {{ collapsedMonths.includes(group.key) ? '▶' : '▼' }}
+                                        </span>
+                                        {{ group.label }}
+                                    </span>
+                                    <span
+                                        class="rounded-full bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
+                                        {{ group.count }}
+                                    </span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <tbody
+                        v-show="!collapsedMonths.includes(group.key)"
+                        class="divide-y divide-mist-800/60">
+                        <tr
+                            v-for="b in group.bookings"
+                            :key="b.id || b.bookingId"
+                            class="hover:bg-mist-800/30">
+                            <td class="px-4 py-3 font-mono text-lime-400 truncate">
+                                {{ b.bookingId }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span
+                                    class="rounded bg-mist-800 px-2 py-0.5 text-[10px] text-mist-300">
+                                    {{ b.listing }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span
+                                    class="rounded bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 text-[10px] font-semibold text-slate-300 capitalize">
+                                    {{ b.propertyId }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-medium text-mist-100 truncate">
+                                {{ b.guestName }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                {{ b.checkIn }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                {{ b.checkOut }}
+                            </td>
+                            <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
+
+                            <td class="px-4 py-3 font-mono text-center">
+                                Rp {{ b.payout.toLocaleString('id-ID') }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span
+                                    :class="[
+                                        'rounded px-2 py-0.5 text-[10px] font-semibold',
+                                        b.status === 'Booked'
+                                            ? 'bg-lime-500/20 text-lime-400'
+                                            : b.status === 'Checked-in'
+                                              ? 'bg-blue-500/20 text-blue-400'
+                                              : b.status === 'Waiting for payment'
+                                                ? 'bg-amber-500/20 text-amber-400'
+                                                : 'bg-mist-800 text-mist-400',
+                                    ]">
+                                    {{ b.status }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        class="text-mist-400 hover:text-mist-100"
+                                        @click="openEditModal(b)">
+                                        Edit
+                                    </button>
+                                    <span class="text-mist-700">|</span>
+                                    <button
+                                        type="button"
+                                        class="text-rose-400 hover:text-rose-300"
+                                        @click="handleDeleteBooking(b)">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </template>
             </table>
         </div>
 
-        <!-- Add / Edit Modal -->
+        <!-- Booking Modal -->
         <AddBookingModal
-            v-if="isModalOpen"
+            v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
-            @close="isModalOpen = false"
+            @close="isBookingModalOpen = false"
             @save="handleSaveBooking" />
     </div>
 </template>

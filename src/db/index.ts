@@ -1,10 +1,9 @@
 import Dexie, { type EntityTable } from 'dexie';
 
 export interface Property {
-    id: string; // e.g., 'mai-house'
+    id: string; // e.g., 'piyungan'
     name: string; // e.g., 'Mai House Jogja'
     address: string; // e.g., 'Jl. Jalan'
-    area: string; // e.g., 'Jl. Jalan'
     codePrefix: string; // e.g., 'MHJ'
     color: string; // UI color badge
 }

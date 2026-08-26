@@ -2,54 +2,40 @@
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
-import AddBookingModal from '@/components/AddBookingModal.vue';
-import AddPropertyModal from '@/components/AddPropertyModal.vue';
-import maiHouseJogja from '../assets/images/maihousejogja.jpg';
 import type { Booking } from '@/db';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { updateSheetRowByBookingId } = useGoogleSheets();
+const propertyStore = usePropertyStore();
+const { sortedProperties } = storeToRefs(propertyStore);
 
 const selectedPropertyFilter = ref<string>('all');
 const isModalOpen = ref<boolean>(false);
-const showAddModal = ref<boolean>(false);
+const isPropertyModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
-
-// Format today's date into YYYY-MM-DD for comparison
-const getTodayString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 
 const todayStr = computed(() => getTodayString());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
-
 // Filtered base list by selected property
 const propertyBookings = computed(() => {
     if (selectedPropertyFilter.value === 'all') return bookings.value;
     return bookings.value.filter((b) => b.propertyId === selectedPropertyFilter.value);
 });
-
-// 1. Arriving Today (Check-in == today)
 const todaysArrivals = computed(() => {
     return propertyBookings.value.filter(
         (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
     );
 });
-
-// 2. Today's Departures (Check-out == today)
 const todaysDepartures = computed(() => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour > 15) return [];
     return propertyBookings.value.filter(
         (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
     );
 });
-
 // 3. Current In-House Guests (Check-in <= today AND Check-out > today)
 const currentInHouse = computed(() => {
     const currentHour = new Date().getHours(); // 24-hour format (e.g., 10 for 10:00, 13 for 13:00)
@@ -70,7 +56,6 @@ const currentInHouse = computed(() => {
         return b.checkIn === todayStr.value;
     });
 });
-
 // 4. Alert Banner: Direct WhatsApp bookings with 'Waiting for payment' status
 const pendingPaymentAlerts = computed(() => {
     return propertyBookings.value.filter((b) => {
@@ -94,7 +79,6 @@ const pendingPaymentAlerts = computed(() => {
         return alertDateStr === todayStr.value;
     });
 });
-
 // 5. Monthly Summary Calculations (Current Month)
 const monthlySummary = computed(() => {
     const monthBookings = propertyBookings.value.filter(
@@ -128,27 +112,24 @@ const monthlySummary = computed(() => {
     };
 });
 
+// Format today's date into YYYY-MM-DD for comparison
+const getTodayString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 const openEditModal = (booking: Booking): void => {
     bookingToEdit.value = booking;
     isModalOpen.value = true;
 };
-
-const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    if (!bookingToEdit.value) return;
-
-    try {
-        // Sync update to both Dexie IndexedDB and the target Google Sheet file
-        await bookingStore.updateBookingWithRemoteSync(
-            { ...bookingToEdit.value, ...payload },
-            { updateSheetRowByBookingId }
-        );
-    } catch (err) {
-        console.error('Failed to sync booking update to Google Sheets:', err);
-    }
-};
-
 const getPropertyConfig = (id: string) => {
     return PROPERTY_CONFIGS[id as PropertyId] || { name: id, color: '#64748b' };
+};
+const propertyImage = (id: string) => {
+    if (id === 'bantul') return 'https://placehold.co/300x400?text=Bantul';
+    return `/images/${id}.jpg`;
 };
 </script>
 
@@ -162,7 +143,6 @@ const getPropertyConfig = (id: string) => {
             </div>
         </div>
 
-        <!-- Item 4: Alert Banner for 'Waiting for payment' WhatsApp Bookings -->
         <div
             v-if="pendingPaymentAlerts.length > 0"
             class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200 shadow-lg space-y-2">
@@ -196,7 +176,7 @@ const getPropertyConfig = (id: string) => {
             </div>
         </div>
 
-        <!-- Item 5: Monthly Summary Cards -->
+        <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
@@ -244,7 +224,7 @@ const getPropertyConfig = (id: string) => {
 
                 <div
                     v-if="todaysArrivals.length === 0"
-                    class="py-6 text-center text-xs text-mist-500">
+                    class="py-8 text-center text-xs text-mist-500">
                     No arrivals scheduled for today.
                 </div>
                 <div
@@ -291,7 +271,7 @@ const getPropertyConfig = (id: string) => {
 
                 <div
                     v-if="currentInHouse.length === 0"
-                    class="py-6 text-center text-xs text-mist-500">
+                    class="py-8 text-center text-xs text-mist-500">
                     No guests currently in-house.
                 </div>
                 <div
@@ -339,7 +319,7 @@ const getPropertyConfig = (id: string) => {
 
                 <div
                     v-if="todaysDepartures.length === 0"
-                    class="py-6 text-center text-xs text-mist-500">
+                    class="py-8 text-center text-xs text-mist-500">
                     No departures scheduled for today.
                 </div>
                 <div
@@ -374,7 +354,7 @@ const getPropertyConfig = (id: string) => {
         </div>
 
         <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-24">
+            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">All properties</p>
@@ -383,30 +363,31 @@ const getPropertyConfig = (id: string) => {
             <div class="flex items-center gap-2">
                 <button
                     class="self-end rounded-lg bg-lime-500 px-4 py-2 text-sm font-semibold text-mist-950 hover:bg-lime-400 transition"
-                    @click="showAddModal = true">
+                    @click="isPropertyModalOpen = true">
                     + Add Property
                 </button>
             </div>
         </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <RouterLink
-                v-for="property in bookingStore.properties"
+                v-for="property in sortedProperties"
                 :key="property.id"
                 class="relative block h-full overflow-hidden rounded-lg"
                 :to="{ name: 'property-detail', params: { id: property.id } }">
                 <img
                     loading="lazy"
-                    :src="maiHouseJogja"
+                    :src="propertyImage(property.id)"
                     :alt="`Picture of ${property.name}`"
-                    class="h-68.75 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
+                    class="h-62.5 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
 
                 <div class="absolute top-0 text-right inset-x-0 p-2">
-                    <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
-                        Piyungan
+                    <p
+                        class="capitalize inline-block rounded px-1.5 py-0.5 text-[11px] font-bold bg-mist-900 text-white">
+                        {{ property.id }}
                     </p>
                 </div>
-
-                <div class="absolute bottom-0 inset-x-0 p-3">
+                <div class="absolute bottom-0 inset-x-0 p-3 bg-white/30 backdrop-blur-sm">
                     <h3 class="font-medium">
                         {{ property.name }}
                     </h3>
@@ -414,70 +395,10 @@ const getPropertyConfig = (id: string) => {
                         <fa-icon
                             class="mr-1"
                             icon="map-marker-alt" />
-                        Jl. Dusun Bintaran Wetan, Bantaran Wetan, Srimulyo, Piyungan, Bantul
-                        Regency, Special Region of Yogyakarta 55792
+                        {{ property.address }}
                     </p>
                 </div>
             </RouterLink>
-            <div class="relative block h-full overflow-hidden rounded-lg">
-                <a href="/wonosari">
-                    <img
-                        loading="lazy"
-                        src="https://placehold.co/300x400?text=Coming+soon"
-                        class="h-68.75 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
-
-                    <div class="absolute top-0 text-right inset-x-0 p-2">
-                        <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
-                            Wonosari
-                        </p>
-                    </div>
-
-                    <div class="absolute bottom-0 inset-x-0 p-3">
-                        <h3 class="text-white font-medium truncate">Mai House Jogja</h3>
-                        <p class="text-xs text-neutral-400 mt-1 truncate">
-                            <fa-icon
-                                class="mr-1"
-                                icon="map-marker-alt" />
-                            Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah
-                            Istimewa Yogyakarta 55881
-                        </p>
-                    </div>
-                </a>
-            </div>
-            <div class="relative block h-full overflow-hidden rounded-lg">
-                <img
-                    loading="lazy"
-                    src="https://placehold.co/300x400?text=Coming+soon"
-                    class="h-68.75 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
-
-                <div class="absolute top-0 text-right inset-x-0 p-2">
-                    <p class="text-xs inline-block text-white rounded-md bg-black px-2 py-1">
-                        Imogiri
-                    </p>
-                </div>
-
-                <div class="absolute bottom-0 inset-x-0 p-3">
-                    <h3 class="text-white font-medium truncate">Mai House Jogja</h3>
-                    <p class="text-xs text-neutral-400 mt-1 truncate">
-                        <fa-icon
-                            class="mr-1"
-                            icon="map-marker-alt" />
-                        Jl. Mahoni No.Rt.05, Botokenceng, Wirokerten, Kec. Banguntapan, Kabupaten
-                        Bantul, Daerah Istimewa Yogyakarta 55194
-                    </p>
-                </div>
-            </div>
         </div>
-
-        <!-- Edit Modal integration -->
-        <AddBookingModal
-            v-if="isModalOpen"
-            :booking-to-edit="bookingToEdit"
-            @close="isModalOpen = false"
-            @save="handleSaveBooking" />
-
-        <AddPropertyModal
-            v-if="showAddModal"
-            @close="showAddModal = false" />
     </div>
 </template>
