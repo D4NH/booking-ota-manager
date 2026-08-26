@@ -22,7 +22,11 @@ import {
     faArrowsRotate,
     faPenToSquare,
     faChevronLeft,
+    faChevronRight,
+    faAngleDown,
     faTrashCan,
+    faPlus,
+    faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 // import { faCalendar, faFilePdf } from '@fortawesome/free-regular-svg-icons';
 
@@ -32,7 +36,11 @@ library.add(
     faArrowsRotate,
     faPenToSquare,
     faChevronLeft,
-    faTrashCan
+    faChevronRight,
+    faTrashCan,
+    faAngleDown,
+    faPlus,
+    faXmark
 );
 
 const app = createApp(App);

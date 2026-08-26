@@ -8,6 +8,8 @@ const bookingStore = useBookingStore();
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
+    initialCheckInDate?: string; // 'YYYY-MM-DD'
+    currentProperty?: PropertyId | 'all';
 }>();
 
 const emit = defineEmits<{
@@ -15,11 +17,20 @@ const emit = defineEmits<{
     (e: 'save', payload: Omit<Booking, 'id' | 'createdAt'>): void;
 }>();
 
+const resolveInitialProperty = (): PropertyId | '' => {
+    if (props.bookingToEdit?.propertyId) {
+        return props.bookingToEdit.propertyId as PropertyId;
+    }
+    if (props.currentProperty && props.currentProperty !== 'all') {
+        return props.currentProperty;
+    }
+    return '';
+};
 const form = ref({
-    propertyId: (props.bookingToEdit?.propertyId as PropertyId) || 'piyungan',
+    propertyId: resolveInitialProperty(),
     bookingId: props.bookingToEdit?.bookingId || '',
     guestName: props.bookingToEdit?.guestName || '',
-    checkIn: props.bookingToEdit?.checkIn || '',
+    checkIn: props.bookingToEdit?.checkIn || props.initialCheckInDate || '',
     checkOut: props.bookingToEdit?.checkOut || '',
     nights: props.bookingToEdit?.nights || 1,
     payout: props.bookingToEdit?.payout || 0,
@@ -32,6 +43,10 @@ const checkOut = ref<string>('');
 
 const validationError = computed<string | null>(() => {
     if (!form.value.checkIn || !form.value.checkOut) return null;
+
+    if (!form.value.propertyId) {
+        return 'Please select a property.';
+    }
 
     if (form.value.checkIn >= form.value.checkOut) {
         return 'Check-out date must be after check-in date.';
@@ -116,9 +131,9 @@ const calculateNights = (): void => {
                 </h2>
                 <button
                     type="button"
-                    class="text-mist-400 hover:text-mist-200"
+                    class="cursor-pointer text-mist-400 hover:text-mist-200"
                     @click="emit('close')">
-                    &times;
+                    <fa-icon icon="xmark" />
                 </button>
             </div>
 
@@ -138,6 +153,12 @@ const calculateNights = (): void => {
                         v-model="form.propertyId"
                         class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                         required>
+                        <option
+                            value=""
+                            disabled
+                            selected>
+                            Select Property
+                        </option>
                         <option
                             v-for="prop in PROPERTY_LIST"
                             :key="prop.id"
