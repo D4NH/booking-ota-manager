@@ -102,22 +102,24 @@ export const useBookingStore = defineStore('booking', () => {
 
     const addBookingWithRemoteSync = async (
         payload: Omit<Booking, 'id' | 'createdAt'>,
-        sheetsApi?: {
+        sheetsApi: {
             appendSheetRow: (spreadsheetId: string, values: (string | number)[]) => Promise<void>;
         }
     ): Promise<void> => {
-        // 1. Save locally with guaranteed primary key
-        await addBooking(payload);
-
-        // 2. Sync to Google Sheets if target configured
         const targetId = PROPERTY_CONFIGS[payload.propertyId as PropertyId]?.spreadsheetId;
-        if (sheetsApi && targetId) {
-            await sheetsApi.appendSheetRow(targetId, formatSheetRow(payload));
+        if (!targetId) {
+            throw new Error(
+                `Missing Google Sheet configuration for property: ${payload.propertyId}`
+            );
         }
+
+        await sheetsApi.appendSheetRow(targetId, formatSheetRow(payload));
+
+        await addBooking(payload);
     };
     const updateBookingWithRemoteSync = async (
         updated: Booking,
-        sheetsApi?: {
+        sheetsApi: {
             updateSheetRowByBookingId: (
                 spreadsheetId: string,
                 bookingId: string,
@@ -125,36 +127,40 @@ export const useBookingStore = defineStore('booking', () => {
             ) => Promise<void>;
         }
     ): Promise<void> => {
-        // 1. Update local IndexedDB state
-        await updateBooking(updated);
-
-        // 2. Sync to Google Sheets
         const targetId = PROPERTY_CONFIGS[updated.propertyId as PropertyId]?.spreadsheetId;
-        if (sheetsApi && targetId) {
-            await sheetsApi.updateSheetRowByBookingId(
-                targetId,
-                updated.bookingId,
-                formatSheetRow(updated)
+        if (!targetId) {
+            throw new Error(
+                `Missing Google Sheet configuration for property: ${updated.propertyId}`
             );
         }
+
+        await sheetsApi.updateSheetRowByBookingId(
+            targetId,
+            updated.bookingId,
+            formatSheetRow(updated)
+        );
+
+        await updateBooking(updated);
     };
     const deleteBookingWithRemoteSync = async (
         booking: Booking,
-        sheetsApi?: {
+        sheetsApi: {
             deleteSheetRowByBookingId: (spreadsheetId: string, bookingId: string) => Promise<void>;
         }
     ): Promise<void> => {
-        // 1. Delete locally using primary key or bookingId fallback
+        const targetId = PROPERTY_CONFIGS[booking.propertyId as PropertyId]?.spreadsheetId;
+        if (!targetId) {
+            throw new Error(
+                `Missing Google Sheet configuration for property: ${booking.propertyId}`
+            );
+        }
+
+        await sheetsApi.deleteSheetRowByBookingId(targetId, booking.bookingId);
+
         if (booking.id) {
             await deleteBooking(booking.id);
         } else {
             await deleteBooking(booking.bookingId);
-        }
-
-        // 2. Clear row in Google Sheets
-        const targetId = PROPERTY_CONFIGS[booking.propertyId as PropertyId]?.spreadsheetId;
-        if (sheetsApi && targetId) {
-            await sheetsApi.deleteSheetRowByBookingId(targetId, booking.bookingId);
         }
     };
 
