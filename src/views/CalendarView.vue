@@ -19,7 +19,6 @@ const { sortedProperties } = storeToRefs(propertyStore);
 const { bookings } = storeToRefs(bookingStore);
 const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 
-// Route-aware Property Selection
 const routePropertyId = route.params.id as PropertyId | undefined;
 const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
 const selectedCheckInDate = ref<string>('');
@@ -31,7 +30,6 @@ watch(
     }
 );
 
-// Month Navigation State
 const currentDate = ref<Date>(new Date());
 
 const currentYear = computed(() => currentDate.value.getFullYear());
@@ -51,7 +49,6 @@ const goToToday = (): void => {
     currentDate.value = new Date();
 };
 
-// Calendar Grid Days Calculation
 interface CalendarDay {
     dateStr: string; // 'YYYY-MM-DD'
     dayNumber: number;
@@ -126,7 +123,6 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     return days;
 });
-// Filtered Bookings for Calendar
 const filteredBookings = computed(() => {
     return bookings.value.filter((b) => {
         if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value) {
@@ -136,12 +132,10 @@ const filteredBookings = computed(() => {
     });
 });
 
-// Match bookings active on specific calendar date
 const getBookingsForDate = (dateStr: string): Booking[] => {
     return filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
 };
 
-// Modal & Sync Handling
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
