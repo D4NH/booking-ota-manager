@@ -14,10 +14,9 @@ const emit = defineEmits<{
 
 const form = ref({
     id: (props.propertyToEdit?.id as PropertyId) || 'piyungan',
-    name: props.propertyToEdit?.name || 'Mai House Jogja - Piyungan',
+    name: props.propertyToEdit?.name || 'Mai House Jogja',
     color: props.propertyToEdit?.color || '#016730',
     address: props.propertyToEdit?.address || 'Piyungan, Yogyakarta',
-    area: props.propertyToEdit?.area || 'Piyungan',
     codePrefix: props.propertyToEdit?.codePrefix || 'MHJ',
 });
 
@@ -27,7 +26,6 @@ const availablePresets: {
     name: string;
     color: string;
     address: string;
-    area: string;
     codePrefix: string;
 }[] = [
     {
@@ -35,7 +33,6 @@ const availablePresets: {
         name: 'Mai House Jogja - Piyungan',
         color: '#016730',
         address: 'Piyungan, Bantul, Yogyakarta',
-        area: 'Piyungan',
         codePrefix: 'PIY',
     },
     {
@@ -43,15 +40,13 @@ const availablePresets: {
         name: 'Mai House Jogja - Wonosari',
         color: '#3b82f6',
         address: 'Wonosari, Gunungkidul, Yogyakarta',
-        area: 'Wonosari',
         codePrefix: 'WON',
     },
     {
-        id: 'imogiri',
-        name: 'Mai House Jogja - Imogiri',
+        id: 'bantul',
+        name: 'Mai House Jogja - Bantul',
         color: '#884B00',
         address: 'Imogiri, Bantul, Yogyakarta',
-        area: 'Imogiri',
         codePrefix: 'IMO',
     },
 ];
@@ -64,7 +59,6 @@ const handlePresetChange = (event: Event): void => {
         form.value.name = selected.name;
         form.value.color = selected.color;
         form.value.address = selected.address;
-        form.value.area = selected.area;
         form.value.codePrefix = selected.codePrefix;
     }
 };
@@ -75,7 +69,6 @@ const handleSubmit = (): void => {
         name: form.value.name.trim(),
         color: form.value.color,
         address: form.value.address.trim(),
-        area: form.value.area.trim(),
         codePrefix: form.value.codePrefix.trim(),
     });
     emit('close');
@@ -142,15 +135,6 @@ const handleSubmit = (): void => {
                             type="text"
                             placeholder="e.g. PIY"
                             class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-sm text-mist-200 uppercase focus:border-lime-500 focus:outline-none"
-                            required />
-                    </div>
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400">Area</label>
-                        <input
-                            v-model="form.area"
-                            type="text"
-                            placeholder="e.g. Piyungan"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                             required />
                     </div>
                 </div>

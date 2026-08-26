@@ -11,16 +11,14 @@ import AddBookingModal from '@/components/AddBookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
 const bookingStore = useBookingStore();
-
 const { bookings } = storeToRefs(bookingStore);
-
 const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } = useGoogleSheets();
 
 // Filters & Local State
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
-const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'Unavailable', 'No show']);
+const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
 
 const isBookingModalOpen = ref<boolean>(false);
@@ -36,39 +34,11 @@ const validStatuses: Booking['status'][] = [
     'Unavailable',
 ];
 
-// Toggle Inverse Status Filter
-const toggleStatusVisibility = (status: Booking['status']): void => {
-    const index = hiddenStatuses.value.indexOf(status);
-    if (index > -1) {
-        hiddenStatuses.value.splice(index, 1);
-    } else {
-        hiddenStatuses.value.push(status);
-    }
-};
-
-// Toggle Collapsible Month Headers
-const toggleMonth = (monthKey: string): void => {
-    const index = collapsedMonths.value.indexOf(monthKey);
-    if (index > -1) {
-        collapsedMonths.value.splice(index, 1);
-    } else {
-        collapsedMonths.value.push(monthKey);
-    }
-};
-
-const formatMonthHeader = (monthKey: string): string => {
-    const [year, month] = monthKey.split('-');
-    const date = new Date(Number(year), Number(month) - 1, 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-};
-
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
     const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
     return uniqueMonths.sort((a, b) => a.localeCompare(b));
 });
-
-// Filtered Bookings sorted Oldest to Newest (Ascending checkIn)
 const filteredBookings = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
 
@@ -89,8 +59,6 @@ const filteredBookings = computed(() => {
         })
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 });
-
-// Grouped Bookings by Month
 const groupedBookings = computed(() => {
     const groups: Record<string, Booking[]> = {};
 
@@ -110,7 +78,27 @@ const groupedBookings = computed(() => {
         }));
 });
 
-// Handlers
+const toggleStatusVisibility = (status: Booking['status']): void => {
+    const index = hiddenStatuses.value.indexOf(status);
+    if (index > -1) {
+        hiddenStatuses.value.splice(index, 1);
+    } else {
+        hiddenStatuses.value.push(status);
+    }
+};
+const toggleMonth = (monthKey: string): void => {
+    const index = collapsedMonths.value.indexOf(monthKey);
+    if (index > -1) {
+        collapsedMonths.value.splice(index, 1);
+    } else {
+        collapsedMonths.value.push(monthKey);
+    }
+};
+const formatMonthHeader = (monthKey: string): string => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
 const openAddModal = (): void => {
     bookingToEdit.value = null;
     isBookingModalOpen.value = true;
@@ -122,36 +110,54 @@ const openEditModal = (booking: Booking): void => {
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     try {
         if (bookingToEdit.value) {
-            syncStatus.value = 'Syncing update...';
+            syncStatus.value = 'Syncing edit to Google Sheets...';
             await bookingStore.updateBookingWithRemoteSync(
                 { ...bookingToEdit.value, ...payload },
                 { updateSheetRowByBookingId }
             );
-            syncStatus.value = 'Booking updated locally & in Google Sheets.';
+            syncStatus.value = 'Booking updated in Google Sheets & local database.';
         } else {
-            syncStatus.value = 'Syncing new booking...';
+            syncStatus.value = 'Syncing new booking to Google Sheets...';
             await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-            syncStatus.value = 'Booking saved locally & in Google Sheets.';
+            syncStatus.value = 'Booking saved to Google Sheets & local database.';
         }
-    } catch (err) {
-        console.error('Save Sync Error:', err);
-        syncStatus.value = 'Saved locally, but Google Sheet sync failed.';
+
+        isBookingModalOpen.value = false;
+    } catch (err: unknown) {
+        console.error('Save aborted due to sync failure:', err);
+        const errorMessage =
+            err instanceof Error
+                ? err.message
+                : 'Google Sheets sync failed. Local database was not modified.';
+        syncStatus.value = `Save failed: ${errorMessage}`;
     } finally {
-        setTimeout(() => (syncStatus.value = ''), 4000);
+        setTimeout(() => {
+            syncStatus.value = '';
+        }, 5000);
     }
 };
 const handleDeleteBooking = async (booking: Booking): Promise<void> => {
-    if (!window.confirm(`Delete booking ${booking.bookingId} (${booking.guestName})?`)) return;
+    const confirmed = window.confirm(
+        `Are you sure you want to delete booking ${booking.bookingId} (${booking.guestName})?\n\nThis will remove it from Google Sheets first.`
+    );
+
+    if (!confirmed) return;
 
     try {
-        syncStatus.value = 'Syncing deletion...';
+        syncStatus.value = `Deleting reservation ${booking.bookingId} from Google Sheets...`;
         await bookingStore.deleteBookingWithRemoteSync(booking, { deleteSheetRowByBookingId });
-        syncStatus.value = `Booking ${booking.bookingId} deleted locally & in Google Sheets.`;
-    } catch (err) {
-        console.error('Delete Sync Error:', err);
-        syncStatus.value = 'Deleted locally, but Google Sheet sync failed.';
+        syncStatus.value = `Booking ${booking.bookingId} deleted from Google Sheets & local database.`;
+    } catch (err: unknown) {
+        console.error('Delete aborted due to sync failure:', err);
+        const errorMessage =
+            err instanceof Error
+                ? err.message
+                : 'Google Sheets sync failed. Local record was not deleted.';
+        syncStatus.value = `Delete failed: ${errorMessage}`;
     } finally {
-        setTimeout(() => (syncStatus.value = ''), 4000);
+        setTimeout(() => {
+            syncStatus.value = '';
+        }, 5000);
     }
 };
 const handleClearAllLocal = async (): Promise<void> => {
@@ -168,10 +174,15 @@ const handleClearAllLocal = async (): Promise<void> => {
         setTimeout(() => (syncStatus.value = ''), 3000);
     }
 };
+
+const todayStr = new Date().toISOString().substring(0, 10);
+const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
+    return todayStr >= checkIn && todayStr <= checkOut && status !== 'Waiting for payout';
+};
 </script>
 
 <template>
-    <div class="space-y-6 p-6">
+    <div class="mx-auto space-y-6">
         <!-- Header -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -267,18 +278,17 @@ const handleClearAllLocal = async (): Promise<void> => {
             </div>
         </div>
 
-        <!-- Empty State -->
+        <!-- Reservations Table -->
         <div
             v-if="groupedBookings.length === 0"
             class="rounded-xl border border-dashed border-mist-800 p-12 text-center">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
 
-        <!-- Grouped Table View with Perfect Alignment -->
         <div
             v-else
             class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
-            <table class="w-full text-left text-xs text-mist-300 table-fixed">
+            <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
                     <tr>
@@ -328,7 +338,13 @@ const handleClearAllLocal = async (): Promise<void> => {
                         <tr
                             v-for="b in group.bookings"
                             :key="b.id || b.bookingId"
-                            class="hover:bg-mist-800/30">
+                            class="hover:bg-mist-800/30"
+                            :class="[
+                                'transition',
+                                isCurrentBooking(b.checkIn, b.checkOut, b.status)
+                                    ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
+                                    : 'hover:bg-mist-800/30',
+                            ]">
                             <td class="px-4 py-3 font-mono text-lime-400 truncate">
                                 {{ b.bookingId }}
                             </td>
@@ -396,7 +412,6 @@ const handleClearAllLocal = async (): Promise<void> => {
             </table>
         </div>
 
-        <!-- Booking Modal -->
         <AddBookingModal
             v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"

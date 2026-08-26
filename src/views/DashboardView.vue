@@ -24,6 +24,9 @@ const propertyBookings = computed(() => {
     return bookings.value.filter((b) => b.propertyId === selectedPropertyFilter.value);
 });
 const todaysArrivals = computed(() => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour > 16) return [];
     return propertyBookings.value.filter(
         (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
     );
@@ -31,7 +34,7 @@ const todaysArrivals = computed(() => {
 const todaysDepartures = computed(() => {
     const currentHour = new Date().getHours();
 
-    if (currentHour > 15) return [];
+    if (currentHour > 13) return [];
     return propertyBookings.value.filter(
         (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
     );
