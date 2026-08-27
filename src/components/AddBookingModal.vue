@@ -4,18 +4,17 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import type { Booking } from '@/db';
 
-const bookingStore = useBookingStore();
-
 const props = defineProps<{
     bookingToEdit?: Booking | null;
     initialCheckInDate?: string; // 'YYYY-MM-DD'
     currentProperty?: PropertyId | 'all';
 }>();
-
 const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'save', payload: Omit<Booking, 'id' | 'createdAt'>): void;
 }>();
+
+const bookingStore = useBookingStore();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (props.bookingToEdit?.propertyId) {
@@ -69,7 +68,13 @@ const validationError = computed<string | null>(() => {
 
     return null;
 });
-const todayStr = computed(() => getTodayString());
+const todayStr = computed<string>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+});
 
 watch(
     () => [form.value.checkIn, form.value.checkOut],
@@ -119,13 +124,6 @@ const calculateNights = (): void => {
         const diffDays = Math.ceil((end - start) / (1000 * 3600 * 24));
         form.value.nights = diffDays > 0 ? diffDays : 1;
     }
-};
-const getTodayString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
 };
 </script>
 

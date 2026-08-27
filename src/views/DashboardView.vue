@@ -13,10 +13,16 @@ const { sortedProperties } = storeToRefs(propertyStore);
 
 const selectedPropertyFilter = ref<string>('all');
 const isModalOpen = ref<boolean>(false);
-const isPropertyModalOpen = ref<boolean>(false);
+// const isPropertyModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 
-const todayStr = computed(() => getTodayString());
+const todayStr = computed<string>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+});
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
 const propertyBookings = computed(() => {
     if (selectedPropertyFilter.value === 'all') return bookings.value;
@@ -30,19 +36,11 @@ const todaysArrivals = computed(() => {
         (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
     );
 });
-const todaysDepartures = computed(() => {
+const currentInHouse = computed(() => {
     const currentHour = new Date().getHours();
 
-    if (currentHour > 13) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
-    );
-});
-const currentInHouse = computed(() => {
-    const currentHour = new Date().getHours(); // 24-hour format (e.g., 10 for 10:00, 13 for 13:00)
-
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable') return false;
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
 
         // 1. Guests staying multi-day strictly in between check-in and check-out dates
         const isMidStay = b.checkIn < todayStr.value && b.checkOut > todayStr.value;
@@ -56,6 +54,14 @@ const currentInHouse = computed(() => {
         // 3. Afternoon / Evening (>= 12:00): Show guest who is checking in today
         return b.checkIn === todayStr.value;
     });
+});
+const todaysDepartures = computed(() => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour > 13) return [];
+    return propertyBookings.value.filter(
+        (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
+    );
 });
 const pendingPaymentAlerts = computed(() => {
     return propertyBookings.value.filter((b) => {
@@ -111,14 +117,6 @@ const monthlySummary = computed(() => {
     };
 });
 
-// Format today's date into YYYY-MM-DD for comparison
-const getTodayString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 const openEditModal = (booking: Booking): void => {
     bookingToEdit.value = booking;
     isModalOpen.value = true;
@@ -160,8 +158,8 @@ const propertyImage = (id: string) => {
                         <p class="font-semibold text-mist-200">
                             {{ b.guestName }} ({{ b.bookingId }})
                         </p>
-                        <p class="text-[10px] text-amber-300/80">
-                            {{ getPropertyConfig(b.propertyId).name }} &bull; Rp
+                        <p class="capitalize text-[10px] text-amber-300/80">
+                            {{ b.propertyId }} &bull; Rp
                             {{ b.payout.toLocaleString() }}
                         </p>
                     </div>
@@ -237,11 +235,11 @@ const propertyImage = (id: string) => {
                                 {{ b.guestName }}
                             </span>
                             <span
-                                class="rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
+                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
                                 :style="{
                                     backgroundColor: getPropertyConfig(b.propertyId).color,
                                 }">
-                                {{ getPropertyConfig(b.propertyId).name.split('-')[1] }}
+                                {{ b.propertyId }}
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
@@ -286,11 +284,11 @@ const propertyImage = (id: string) => {
                                 {{ b.guestName }}
                             </span>
                             <span
-                                class="rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
+                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
                                 :style="{
                                     backgroundColor: getPropertyConfig(b.propertyId).color,
                                 }">
-                                {{ getPropertyConfig(b.propertyId).name.split('-')[1] }}
+                                {{ b.propertyId }}
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
@@ -333,11 +331,11 @@ const propertyImage = (id: string) => {
                                 {{ b.guestName }}
                             </span>
                             <span
-                                class="rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
+                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
                                 :style="{
                                     backgroundColor: getPropertyConfig(b.propertyId).color,
                                 }">
-                                {{ getPropertyConfig(b.propertyId).name.split('-')[1] }}
+                                {{ b.propertyId }}
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
@@ -361,11 +359,11 @@ const propertyImage = (id: string) => {
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">Managed Homestays & Villas</p>
             </div>
-            <button
+            <!-- <button
                 class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-semibold text-mist-950 hover:bg-lime-400 transition"
                 @click="isPropertyModalOpen = true">
                 <fa-icon icon="plus" /> Add Property
-            </button>
+            </button> -->
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <RouterLink

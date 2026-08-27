@@ -1,11 +1,11 @@
 <script setup lang="ts">
-const getCurrentYear = () => new Date().getFullYear();
+const currentYear = new Date().getFullYear();
 </script>
 
 <template>
     <footer class="w-full mt-12 mb-6 pt-6">
         <div class="grid grid-cols-1">
-            <p class="text-center">© {{ getCurrentYear() }} - Danh Nguyen | Frontend Developer</p>
+            <p class="text-center">© {{ currentYear }} - Danh Nguyen | Frontend Developer</p>
         </div>
     </footer>
 </template>

@@ -1,11 +1,19 @@
-<!-- src/views/BookingsView.vue -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import type { Booking } from '@/db';
-import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+
+const validStatuses: Booking['status'][] = [
+    'Booked',
+    'Checked-in',
+    'Waiting for payment',
+    'Completed',
+    'No show',
+    'Unavailable',
+];
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
@@ -20,21 +28,17 @@ const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
-
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
 
-const validStatuses: Booking['status'][] = [
-    'Booked',
-    'Checked-in',
-    'Waiting for payment',
-    'Completed',
-    'No show',
-    'Unavailable',
-];
-
-const todayStr = computed(() => getTodayString());
+const todayStr = computed<string>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+});
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
     const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
@@ -79,13 +83,6 @@ const groupedBookings = computed(() => {
         }));
 });
 
-const getTodayString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 const toggleStatusVisibility = (status: Booking['status']): void => {
     const index = hiddenStatuses.value.indexOf(status);
     if (index > -1) {
@@ -187,6 +184,9 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
         todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
     );
 };
+const getPropertyConfig = (id: string) => {
+    return PROPERTY_CONFIGS[id as PropertyId] || { name: id, color: '#64748b' };
+};
 </script>
 
 <template>
@@ -230,7 +230,6 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                         <fa-icon icon="angle-down" />
                     </div>
                 </div>
-
                 <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Filter Month</label>
                     <select
@@ -251,7 +250,6 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                             icon="angle-down" />
                     </div>
                 </div>
-
                 <div>
                     <label class="mb-1 block text-xs font-medium text-mist-400">Search</label>
                     <input
@@ -369,7 +367,10 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
                                     :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                    class="capitalize rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
+                                    :style="{
+                                        backgroundColor: getPropertyConfig(b.propertyId).color,
+                                    }"
+                                    class="capitalize rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 hover:text-mist-100 text-nowrap">
                                     {{ b.propertyId }}
                                 </RouterLink>
                             </td>

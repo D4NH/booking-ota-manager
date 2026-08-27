@@ -64,10 +64,10 @@
 
 ### 3. Visual Multi-Property Calendar (`views/CalendarView.vue`)
 
-- [ ] Multi-property stacked timeline grid (properties on Y-axis, dates on X-axis)
-- [ ] Color-coded reservation blocks by channel (Airbnb, Booking.com, Tiket.com, Trip.com, WhatsApp)
+- [x] Multi-property stacked timeline grid (properties on Y-axis, dates on X-axis)
+- [x] Color-coded reservation blocks by channel (Airbnb, Booking.com, Tiket.com, Trip.com, WhatsApp)
 - [ ] Click-and-drag date range selection to open new booking form
-- [ ] Overlap prevention checks when creating new stays
+- [x] Overlap prevention checks when creating new stays
 
 ### 4. Booking Management & Quick Form (`views/BookingsView.vue`)
 

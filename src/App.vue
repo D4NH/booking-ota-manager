@@ -6,6 +6,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
 
+const bookingStore = useBookingStore();
 useHead({
     title: 'BOM - Booking OTA Manager',
     meta: [
@@ -16,7 +17,6 @@ useHead({
     ],
 });
 const propertyStore = usePropertyStore();
-const bookingStore = useBookingStore();
 
 onMounted(async () => {
     await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()]);

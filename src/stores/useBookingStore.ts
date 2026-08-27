@@ -175,6 +175,23 @@ export const useBookingStore = defineStore('booking', () => {
             const guestName = String(row[2] || '').trim();
             const checkIn = String(row[3] || '').trim();
             const checkOut = String(row[4] || '').trim();
+            const rawListing = String(row[1] || '').trim();
+
+            // 2. Map normalized channel to valid union type or fallback to 'Whatsapp'
+            const VALID_LISTINGS = [
+                'Airbnb',
+                'Booking.com',
+                'Tiket.com',
+                'Trip.com',
+                'Whatsapp',
+                'Unavailable',
+            ] as const;
+
+            type ListingType = (typeof VALID_LISTINGS)[number];
+
+            const listing: ListingType = VALID_LISTINGS.includes(rawListing as ListingType)
+                ? (rawListing as ListingType)
+                : 'Whatsapp';
 
             // Skip header or empty rows
             if (
@@ -195,7 +212,7 @@ export const useBookingStore = defineStore('booking', () => {
             const payload: Omit<Booking, 'id'> = {
                 propertyId,
                 bookingId,
-                listing: (row[1] as Booking['listing']) || 'Whatsapp',
+                listing,
                 guestName,
                 checkIn,
                 checkOut,

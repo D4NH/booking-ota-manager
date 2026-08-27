@@ -8,47 +8,6 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import type { Booking } from '@/db';
 import type { PropertyId } from '@/config/properties';
 
-import AddBookingModal from '@/components/AddBookingModal.vue';
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-
-const route = useRoute();
-const propertyStore = usePropertyStore();
-const bookingStore = useBookingStore();
-
-const { sortedProperties } = storeToRefs(propertyStore);
-const { bookings } = storeToRefs(bookingStore);
-const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
-
-const routePropertyId = route.params.id as PropertyId | undefined;
-const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
-const selectedCheckInDate = ref<string>('');
-
-watch(
-    () => route.params.id,
-    (newId) => {
-        selectedProperty.value = (newId as PropertyId) || 'all';
-    }
-);
-
-const currentDate = ref<Date>(new Date());
-
-const currentYear = computed(() => currentDate.value.getFullYear());
-const currentMonth = computed(() => currentDate.value.getMonth());
-
-const formattedMonthYear = computed(() => {
-    return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-});
-
-const prevMonth = (): void => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
-};
-const nextMonth = (): void => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
-};
-const goToToday = (): void => {
-    currentDate.value = new Date();
-};
-
 interface CalendarDay {
     dateStr: string; // 'YYYY-MM-DD'
     dayNumber: number;
@@ -56,7 +15,29 @@ interface CalendarDay {
     isToday: boolean;
 }
 
-// Grid Days Calculation (Monday Start)
+import AddBookingModal from '@/components/AddBookingModal.vue';
+
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
+const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
+const propertyStore = usePropertyStore();
+const { sortedProperties } = storeToRefs(propertyStore);
+const route = useRoute();
+
+const routePropertyId = route.params.id as PropertyId | undefined;
+
+const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
+const selectedCheckInDate = ref<string>('');
+const currentDate = ref<Date>(new Date());
+const isBookingModalOpen = ref<boolean>(false);
+const bookingToEdit = ref<Booking | null>(null);
+const syncStatus = ref<string>('');
+
+const currentYear = computed(() => currentDate.value.getFullYear());
+const currentMonth = computed(() => currentDate.value.getMonth());
+const formattedMonthYear = computed(() => {
+    return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+});
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -132,14 +113,25 @@ const filteredBookings = computed(() => {
     });
 });
 
+watch(
+    () => route.params.id,
+    (newId) => {
+        selectedProperty.value = (newId as PropertyId) || 'all';
+    }
+);
+
+const prevMonth = (): void => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
+};
+const nextMonth = (): void => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
+};
+const goToToday = (): void => {
+    currentDate.value = new Date();
+};
 const getBookingsForDate = (dateStr: string): Booking[] => {
     return filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
 };
-
-const isBookingModalOpen = ref<boolean>(false);
-const bookingToEdit = ref<Booking | null>(null);
-const syncStatus = ref<string>('');
-
 const handleCellClick = (day: CalendarDay): void => {
     selectedCheckInDate.value = day.dateStr;
     bookingToEdit.value = null;
@@ -249,8 +241,6 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
 
                 <h2 class="text-base font-bold text-mist-100">{{ formattedMonthYear }}</h2>
             </div>
-
-            <GoogleSyncButton :property-id="selectedProperty" />
         </div>
 
         <!-- Calendar Grid Table -->

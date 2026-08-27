@@ -20,7 +20,6 @@ const form = ref({
     codePrefix: props.propertyToEdit?.codePrefix || 'MHJ',
 });
 
-// Preset helper updated with missing interface properties
 const availablePresets: {
     id: PropertyId;
     name: string;
@@ -50,7 +49,6 @@ const availablePresets: {
         codePrefix: 'IMO',
     },
 ];
-
 const handlePresetChange = (event: Event): void => {
     const target = event.target as HTMLSelectElement;
     const selected = availablePresets.find((p) => p.id === target.value);
@@ -62,7 +60,6 @@ const handlePresetChange = (event: Event): void => {
         form.value.codePrefix = selected.codePrefix;
     }
 };
-
 const handleSubmit = (): void => {
     emit('save', {
         id: form.value.id,

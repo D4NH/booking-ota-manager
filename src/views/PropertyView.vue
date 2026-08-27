@@ -32,30 +32,30 @@ const currentPropertyId = computed<PropertyId>(() => {
     return 'piyungan';
 });
 const activeConfig = computed(() => PROPERTY_CONFIGS[currentPropertyId.value]);
-const getTodayString = (): string => {
+const todayStr = computed<string>(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-};
-const todayStr = computed(() => getTodayString());
+});
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
-
-const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
-    return (
-        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
-    );
-};
-
 const propertyBookings = computed(() => {
     return bookings.value.filter((b) => b.propertyId === currentPropertyId.value);
+});
+const todaysArrivals = computed(() => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour > 16) return [];
+    return propertyBookings.value.filter(
+        (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
+    );
 });
 const currentInHouse = computed(() => {
     const currentHour = new Date().getHours(); // 24-hour format (e.g., 10 for 10:00, 13 for 13:00)
 
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable') return false;
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
 
         // 1. Guests staying multi-day strictly in between check-in and check-out dates
         const isMidStay = b.checkIn < todayStr.value && b.checkOut > todayStr.value;
@@ -69,14 +69,6 @@ const currentInHouse = computed(() => {
         // 3. Afternoon / Evening (>= 12:00): Show guest who is checking in today
         return b.checkIn === todayStr.value;
     });
-});
-const todaysArrivals = computed(() => {
-    const currentHour = new Date().getHours();
-
-    if (currentHour > 16) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
-    );
 });
 const todaysDepartures = computed(() => {
     const currentHour = new Date().getHours();
@@ -109,7 +101,6 @@ const monthlyStats = computed(() => {
         totalReservations: currentMonthBookings.length,
     };
 });
-
 const filteredBookings = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
 
@@ -149,6 +140,11 @@ const groupedBookings = computed(() => {
         }));
 });
 
+const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
+    return (
+        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
+    );
+};
 const toggleMonth = (monthKey: string): void => {
     const index = collapsedMonths.value.indexOf(monthKey);
     if (index > -1) {

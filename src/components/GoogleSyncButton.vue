@@ -8,8 +8,8 @@ const props = defineProps<{
     propertyId?: PropertyId | 'all';
 }>();
 
-const { isAuthenticated, initAuth, fetchSheetRows } = useGoogleSheets();
 const bookingStore = useBookingStore();
+const { isAuthenticated, initAuth, fetchSheetRows } = useGoogleSheets();
 
 const isSyncing = ref<boolean>(false);
 const syncLabel = ref<string>('');
