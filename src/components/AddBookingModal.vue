@@ -34,7 +34,7 @@ const form = ref({
     checkOut: props.bookingToEdit?.checkOut || '',
     nights: props.bookingToEdit?.nights || 1,
     payout: props.bookingToEdit?.payout || 0,
-    listing: props.bookingToEdit?.listing || 'Whatsapp',
+    listing: props.bookingToEdit?.listing || '',
     status: props.bookingToEdit?.status || 'Booked',
     notes: props.bookingToEdit?.notes || '',
 });
@@ -46,6 +46,10 @@ const validationError = computed<string | null>(() => {
 
     if (!form.value.propertyId) {
         return 'Please select a property.';
+    }
+
+    if (!form.value.listing) {
+        return 'Please select a channel.';
     }
 
     if (form.value.checkIn >= form.value.checkOut) {
@@ -65,6 +69,7 @@ const validationError = computed<string | null>(() => {
 
     return null;
 });
+const todayStr = computed(() => getTodayString());
 
 watch(
     () => [form.value.checkIn, form.value.checkOut],
@@ -90,13 +95,12 @@ const handleSubmit = (): void => {
         checkOut: form.value.checkOut,
         nights: Number(form.value.nights),
         payout: Number(form.value.payout),
-        listing: form.value.listing,
+        listing: form.value.listing as Booking['listing'],
         status: form.value.status,
         notes: form.value.notes?.trim(),
     });
     emit('close');
 };
-
 const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
     const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
     if (!rawVal) return;
@@ -108,7 +112,6 @@ const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
         else checkOut.value = formatted;
     }
 };
-
 const calculateNights = (): void => {
     if (form.value.checkIn && form.value.checkOut) {
         const start = new Date(form.value.checkIn).getTime();
@@ -117,17 +120,24 @@ const calculateNights = (): void => {
         form.value.nights = diffDays > 0 ? diffDays : 1;
     }
 };
+const getTodayString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 </script>
 
 <template>
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/80 p-4 backdrop-blur-sm">
         <div
-            class="w-full max-w-lg space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-6 shadow-2xl">
+            class="w-full max-w-2xl space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-6 shadow-2xl">
             <!-- Modal Header -->
             <div class="flex items-center justify-between border-b border-mist-800 pb-3">
                 <h2 class="text-base font-bold text-mist-100">
-                    {{ bookingToEdit ? 'Edit Booking' : 'Add New Booking' }}
+                    {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                 </h2>
                 <button
                     type="button"
@@ -147,17 +157,17 @@ const calculateNights = (): void => {
                 class="space-y-4"
                 @submit.prevent="handleSubmit">
                 <!-- Property Selection -->
-                <div>
+                <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
                     <select
                         v-model="form.propertyId"
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                         required>
                         <option
                             value=""
                             disabled
                             selected>
-                            Select Property
+                            --
                         </option>
                         <option
                             v-for="prop in PROPERTY_LIST"
@@ -166,6 +176,12 @@ const calculateNights = (): void => {
                             {{ prop.name }}
                         </option>
                     </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
+                    </div>
                 </div>
 
                 <!-- Booking ID & Guest Name -->
@@ -173,18 +189,16 @@ const calculateNights = (): void => {
                     <div>
                         <label class="mb-1 block text-xs font-medium text-mist-400">
                             Booking ID
-                            <span
-                                v-if="bookingToEdit"
-                                class="text-[10px] font-normal text-amber-400/80">
-                                (Cannot be changed)
-                            </span>
                         </label>
                         <input
                             v-model="form.bookingId"
                             type="text"
                             placeholder="e.g. MHJ-000000"
                             :disabled="Boolean(bookingToEdit)"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none disabled:border-gray-700 disabled:bg-gray-800/20"
+                            :class="{
+                                'cursor-not-allowed disabled:bg-mist-900': Boolean(bookingToEdit),
+                            }"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
                             required />
                     </div>
 
@@ -195,74 +209,98 @@ const calculateNights = (): void => {
                         <input
                             v-model="form.guestName"
                             type="text"
-                            placeholder="Full name"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
+                            placeholder="Full Name"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
                             required />
                     </div>
                 </div>
 
                 <!-- Dates & Nights -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div>
+                    <div class="relative">
                         <label class="mb-1 block text-xs font-medium text-mist-400">Check In</label>
                         <input
                             v-model="form.checkIn"
                             type="date"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                             required
-                            min="2024-01-01"
-                            max="2030-12-31"
+                            :min="todayStr"
+                            max="2028-12-31"
                             @blur="sanitizeDate('checkIn')"
                             @change="calculateNights" />
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="calendar-day" />
+                        </div>
                     </div>
-
-                    <div>
+                    <div class="relative">
                         <label class="mb-1 block text-xs font-medium text-mist-400">
                             Check Out
                         </label>
                         <input
                             v-model="form.checkOut"
                             type="date"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                             required
-                            :min="checkIn || '2024-01-01'"
-                            max="2030-12-31"
+                            :min="checkIn"
+                            max="2028-12-31"
                             @blur="sanitizeDate('checkOut')"
                             @change="calculateNights" />
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="calendar-day" />
+                        </div>
                     </div>
-
                     <div>
                         <label class="mb-1 block text-xs font-medium text-mist-400">Nights</label>
                         <input
                             v-model.number="form.nights"
                             type="number"
                             min="1"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
+                            disabled
+                            class="w-full px-3 py-2.5 text-sm text-mist-200 focus:outline-none"
                             required />
                     </div>
                 </div>
 
                 <!-- Channel, Status & Payout -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div>
+                    <div class="relative">
                         <label class="mb-1 block text-xs font-medium text-mist-400">Channel</label>
+
                         <select
                             v-model="form.listing"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
-                            <option value="Whatsapp">WhatsApp</option>
+                            class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                            <option
+                                value=""
+                                disabled
+                                selected>
+                                --
+                            </option>
                             <option value="Airbnb">Airbnb</option>
                             <option value="Booking.com">Booking.com</option>
                             <option value="Tiket.com">Tiket.com</option>
                             <option value="Trip.com">Trip.com</option>
                             <option value="Unavailable">Unavailable</option>
+                            <option value="Whatsapp">WhatsApp</option>
                         </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
 
-                    <div>
+                    <div class="relative">
                         <label class="mb-1 block text-xs font-medium text-mist-400">Status</label>
                         <select
                             v-model="form.status"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                            class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                             <option value="Booked">Booked</option>
                             <option value="Checked-in">Checked-in</option>
                             <option value="Waiting for payment">Waiting for payment</option>
@@ -271,6 +309,12 @@ const calculateNights = (): void => {
                             <option value="No show">No show</option>
                             <option value="Unavailable">Unavailable</option>
                         </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
 
                     <div>
@@ -280,7 +324,7 @@ const calculateNights = (): void => {
                         <input
                             v-model.number="form.payout"
                             type="number"
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
+                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                             required />
                     </div>
                 </div>
@@ -294,21 +338,21 @@ const calculateNights = (): void => {
                         v-model="form.notes"
                         rows="2"
                         placeholder="Special requests, extra beds..."
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"></textarea>
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"></textarea>
                 </div>
 
                 <!-- Action Controls -->
                 <div class="flex justify-end gap-3 pt-3">
                     <button
                         type="button"
-                        class="px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
+                        class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                         @click="emit('close')">
                         Cancel
                     </button>
                     <button
                         type="submit"
                         :disabled="Boolean(validationError)"
-                        class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                        class="cursor-pointer rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                         {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
                     </button>
                 </div>
