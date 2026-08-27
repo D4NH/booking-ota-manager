@@ -242,8 +242,8 @@ watch(
     <div class="mx-auto max-w-7xl space-y-6">
         <!-- Property Header -->
         <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
-            <div class="flex items-center gap-3">
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
+            <div class="flex items-center">
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-mist-100">
                         {{ activeConfig.name }}
@@ -270,7 +270,7 @@ watch(
         </div>
 
         <!-- Performance Summary Cards -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-xl font-bold text-lime-400">
@@ -306,11 +306,11 @@ watch(
 
         <!-- Main Operational View -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-5">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-3">
+            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Arriving Today</h2>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ todaysArrivals.length }}
                     </span>
                 </div>
@@ -327,31 +327,8 @@ watch(
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-sm text-mist-100">{{ b.guestName }}</span>
-                            <span class="font-mono text-xs text-mist-400">
-                                {{ b.listing }}
-                            </span>
-                        </div>
-                        <div class="text-xs text-mist-400 space-y-1">
-                            <p>
-                                No:
-                                <span class="text-mist-200">
-                                    {{ b.bookingId }}
-                                </span>
-                            </p>
-
-                            <p class="pb-2">
-                                Stay:
-                                <span class="text-mist-200">
-                                    {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                            </p>
-                        </div>
-                        <div
-                            class="flex items-center justify-between border-t border-mist-800/80 pt-2 text-xs">
-                            <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                            <span class="font-semibold text-sm text-mist-200">
+                                {{ b.guestName }}
                             </span>
                             <button
                                 type="button"
@@ -360,19 +337,27 @@ watch(
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
                         </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono text-lime-400">
+                                Rp {{ b.payout.toLocaleString() }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-5">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <div>
-                        <h2 class="text-xs font-bold uppercase text-slate-300">
-                            Currently Staying
-                        </h2>
+                        <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
                     </div>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ currentInHouse.length }}
                     </span>
                 </div>
@@ -389,30 +374,8 @@ watch(
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-sm text-mist-100">{{ b.guestName }}</span>
-                            <span class="font-mono text-xs text-mist-400">
-                                {{ b.listing }}
-                            </span>
-                        </div>
-                        <div class="text-xs text-mist-400 space-y-1">
-                            <p>
-                                No:
-                                <span class="text-mist-200">
-                                    {{ b.bookingId }}
-                                </span>
-                            </p>
-                            <p class="pb-2">
-                                Stay:
-                                <span class="text-mist-200">
-                                    {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                            </p>
-                        </div>
-                        <div
-                            class="flex items-center justify-between border-t border-mist-800/80 pt-2 text-xs">
-                            <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                            <span class="font-semibold text-sm text-mist-200">
+                                {{ b.guestName }}
                             </span>
                             <button
                                 type="button"
@@ -421,15 +384,24 @@ watch(
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
                         </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono text-lime-400">
+                                Rp {{ b.payout.toLocaleString() }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-5">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-3">
+            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Today's Departures</h2>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ todaysDepartures.length }}
                     </span>
                 </div>
@@ -440,39 +412,14 @@ watch(
                 </div>
                 <div
                     v-else
-                    class="space-y-3">
+                    class="space-y-2">
                     <div
                         v-for="b in todaysDepartures"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-sm text-mist-100">{{ b.guestName }}</span>
-                            <span class="font-mono text-xs text-mist-400">
-                                {{ b.listing }}
-                            </span>
-                        </div>
-
-                        <div class="text-xs text-mist-400 space-y-1">
-                            <p>
-                                No:
-                                <span class="text-mist-200">
-                                    {{ b.bookingId }}
-                                </span>
-                            </p>
-
-                            <p class="pb-2">
-                                Stay:
-                                <span class="text-mist-200">
-                                    {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                            </p>
-                        </div>
-
-                        <div
-                            class="flex items-center justify-between border-t border-mist-800/80 pt-2 text-xs">
-                            <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                            <span class="font-semibold text-sm text-mist-200">
+                                {{ b.guestName }}
                             </span>
                             <button
                                 type="button"
@@ -480,6 +427,16 @@ watch(
                                 @click="openEditModal(b)">
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono text-lime-400">
+                                Rp {{ b.payout.toLocaleString() }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -494,14 +451,12 @@ watch(
 
         <!-- Upcoming Reservations -->
         <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
-            <div class="flex items-center gap-3">
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight text-mist-100">
-                        Upcoming reservations
-                    </h1>
-                    <p class="text-xs text-mist-400">Check all bookings [here]</p>
-                </div>
+            class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-mist-100">
+                    Upcoming reservations
+                </h1>
+                <p class="text-xs text-mist-400">Check all bookings [here]</p>
             </div>
 
             <button
@@ -523,13 +478,13 @@ watch(
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
                     <tr>
-                        <th class="w-42 px-4 py-2.5">ID</th>
-                        <th class="w-28 px-4 py-2.5 text-center">Channel</th>
+                        <th class="w-40 px-4 py-2.5">ID</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Channel</th>
                         <th class="px-4 py-2.5">Guest</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check In</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
-                        <th class="w-38 px-4 py-2.5 text-center">Payout</th>
+                        <th class="w-38 px-4 py-2.5 text-right">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
                         <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
@@ -572,12 +527,12 @@ watch(
                                     ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
                                     : 'hover:bg-mist-800/30',
                             ]">
-                            <td class="px-4 py-3 font-mono text-lime-400 truncate">
+                            <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
                                 {{ b.bookingId }}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3 text-center text-nowrap">
                                 <span
-                                    class="rounded bg-mist-800 px-2 py-0.5 text-[10px] text-mist-300">
+                                    class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </td>
@@ -592,13 +547,13 @@ watch(
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
-                            <td class="px-4 py-3 font-mono text-center">
+                            <td class="px-4 py-3 font-mono text-right text-nowrap">
                                 Rp {{ b.payout.toLocaleString('id-ID') }}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3 text-center text-nowrap">
                                 <span
                                     :class="[
-                                        'rounded px-2 py-0.5 text-[10px] font-semibold',
+                                        'rounded px-2 py-0.5 text-xs',
                                         b.status === 'Booked'
                                             ? 'bg-lime-500/20 text-lime-400'
                                             : b.status === 'Checked-in'

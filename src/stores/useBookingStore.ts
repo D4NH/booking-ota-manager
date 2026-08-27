@@ -200,7 +200,7 @@ export const useBookingStore = defineStore('booking', () => {
                 checkIn,
                 checkOut,
                 nights: Number(row[5]) || 1,
-                payout: Number(row[6]?.replace(/[^0-9]/g, '')) || 0,
+                payout: Number(String(row[6] ?? '').replace(/[^0-9]/g, '')) || 0,
                 status: (row[8] as Booking['status']) || 'Booked',
                 notes: String(row[9] || '').trim(),
                 createdAt: existing?.createdAt || new Date().toISOString(),

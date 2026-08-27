@@ -141,11 +141,6 @@ const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
 
 const handleCellClick = (day: CalendarDay): void => {
-    // 1. If clicking a date with existing bookings, ignore or let user click booking pill
-    const activeBookings = getBookingsForDate(day.dateStr);
-    if (activeBookings.length > 0) return;
-
-    // 2. Set autofill check-in date and reset edit state
     selectedCheckInDate.value = day.dateStr;
     bookingToEdit.value = null;
     isBookingModalOpen.value = true;
@@ -181,7 +176,7 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
 </script>
 
 <template>
-    <div class="space-y-6 p-6">
+    <div class="space-y-6">
         <!-- Header Bar -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -301,13 +296,13 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
                             :class="[
                                 'rounded px-1.5 py-1 text-[10px] font-medium truncate border transition shadow-sm',
                                 b.status === 'Booked'
-                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/30'
+                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/80'
                                     : b.status === 'Completed' || b.status === 'Waiting for payout'
-                                      ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/30 opacity-40'
+                                      ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/80 opacity-40'
                                       : b.status === 'Checked-in'
-                                        ? 'border-lime-500/40 bg-lime-500/20 text-lime-300 hover:bg-lime-500/30'
+                                        ? 'border-lime-500/40 bg-lime-500/20 text-lime-300 hover:bg-lime-500/80'
                                         : b.status === 'Waiting for payment'
-                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/80'
                                           : 'border-mist-700 bg-mist-800 text-mist-300',
                             ]"
                             :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"

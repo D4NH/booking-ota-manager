@@ -24,7 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-screen px-4 mx-auto">
+    <div class="flex flex-col min-h-screen px-6">
         <AppHeader />
 
         <main class="grow">

@@ -18,7 +18,6 @@ const bookingToEdit = ref<Booking | null>(null);
 
 const todayStr = computed(() => getTodayString());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
-// Filtered base list by selected property
 const propertyBookings = computed(() => {
     if (selectedPropertyFilter.value === 'all') return bookings.value;
     return bookings.value.filter((b) => b.propertyId === selectedPropertyFilter.value);
@@ -39,7 +38,6 @@ const todaysDepartures = computed(() => {
         (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
     );
 });
-// 3. Current In-House Guests (Check-in <= today AND Check-out > today)
 const currentInHouse = computed(() => {
     const currentHour = new Date().getHours(); // 24-hour format (e.g., 10 for 10:00, 13 for 13:00)
 
@@ -59,7 +57,6 @@ const currentInHouse = computed(() => {
         return b.checkIn === todayStr.value;
     });
 });
-// 4. Alert Banner: Direct WhatsApp bookings with 'Waiting for payment' status
 const pendingPaymentAlerts = computed(() => {
     return propertyBookings.value.filter((b) => {
         // 1. Must be WhatsApp channel with 'Waiting for payment' status
@@ -82,7 +79,6 @@ const pendingPaymentAlerts = computed(() => {
         return alertDateStr === todayStr.value;
     });
 });
-// 5. Monthly Summary Calculations (Current Month)
 const monthlySummary = computed(() => {
     const monthBookings = propertyBookings.value.filter(
         (b) => b.checkIn.startsWith(currentMonthStr.value) && b.status !== 'Unavailable'
@@ -139,7 +135,7 @@ const propertyImage = (id: string) => {
 <template>
     <div class="mx-auto max-w-7xl space-y-6">
         <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
+            class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Daily Operations</h1>
                 <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
@@ -180,7 +176,7 @@ const propertyImage = (id: string) => {
         </div>
 
         <!-- Monthly Summary Cards -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-xl font-bold text-lime-400">
@@ -217,17 +213,16 @@ const propertyImage = (id: string) => {
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <!-- Arriving Today -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-2">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ todaysArrivals.length }}
                     </span>
                 </div>
-
                 <div
                     v-if="todaysArrivals.length === 0"
-                    class="py-8 text-center text-xs text-mist-500">
+                    class="py-12 text-center text-xs text-mist-500">
                     No arrivals scheduled for today.
                 </div>
                 <div
@@ -236,9 +231,9 @@ const propertyImage = (id: string) => {
                     <div
                         v-for="b in todaysArrivals"
                         :key="b.id"
-                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
+                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-1">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-sm text-mist-200">
+                            <span class="font-semibold text-sm text-mist-200 pb-2">
                                 {{ b.guestName }}
                             </span>
                             <span
@@ -250,11 +245,14 @@ const propertyImage = (id: string) => {
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>
-                                {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                {{ b.nights }} night(s)
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono text-lime-400">
+                                Rp {{ b.payout.toLocaleString() }}
                             </span>
-                            <span class="font-mono text-mist-300">{{ b.listing }}</span>
                         </div>
                     </div>
                 </div>
@@ -262,19 +260,18 @@ const propertyImage = (id: string) => {
 
             <!-- Current In-House Guests -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-2">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
                     </div>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ currentInHouse.length }}
                     </span>
                 </div>
-
                 <div
                     v-if="currentInHouse.length === 0"
-                    class="py-8 text-center text-xs text-mist-500">
+                    class="py-12 text-center text-xs text-mist-500">
                     No guests currently in-house.
                 </div>
                 <div
@@ -297,11 +294,11 @@ const propertyImage = (id: string) => {
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>
-                                {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                {{ b.nights }} night(s)
-                            </span>
-
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
                             </span>
@@ -312,17 +309,16 @@ const propertyImage = (id: string) => {
 
             <!-- Today's Departures -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-2">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-300">Today's Departures</h2>
                     <span
-                        class="rounded bg-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                         {{ todaysDepartures.length }}
                     </span>
                 </div>
-
                 <div
                     v-if="todaysDepartures.length === 0"
-                    class="py-8 text-center text-xs text-mist-500">
+                    class="py-12 text-center text-xs text-mist-500">
                     No departures scheduled for today.
                 </div>
                 <div
@@ -345,21 +341,25 @@ const propertyImage = (id: string) => {
                             </span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>
-                                {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull;
-                                {{ b.nights }} night(s)
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono text-lime-400">
+                                Rp {{ b.payout.toLocaleString() }}
                             </span>
-                            <span class="font-mono text-mist-300">{{ b.listing }}</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Properties -->
         <div class="flex items-center justify-between border-b border-mist-800 pb-5 mt-12">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Properties</h1>
-                <p class="text-xs text-mist-400">All properties</p>
+                <p class="text-xs text-mist-400">Managed Homestays & Villas</p>
             </div>
             <button
                 class="rounded-lg bg-lime-500 px-4 py-2 text-sm font-semibold text-mist-950 hover:bg-lime-400 transition"
@@ -367,8 +367,7 @@ const propertyImage = (id: string) => {
                 <fa-icon icon="plus" /> Add Property
             </button>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <RouterLink
                 v-for="property in sortedProperties"
                 :key="property.id"
@@ -378,22 +377,18 @@ const propertyImage = (id: string) => {
                     loading="lazy"
                     :src="propertyImage(property.id)"
                     :alt="`Picture of ${property.name}`"
-                    class="h-62.5 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
+                    class="h-[225px] w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
 
-                <div class="absolute top-0 text-right inset-x-0 p-2">
-                    <p
-                        class="capitalize inline-block rounded px-1.5 py-0.5 text-[11px] font-bold bg-mist-900 text-white">
-                        {{ property.id }}
-                    </p>
+                <div class="absolute bottom-12 inset-x-0 px-3 py-2">
+                    <div>
+                        <h2 class="font-bold">{{ property.name }}</h2>
+                        <p class="text-xs capitalize">{{ property.id }}</p>
+                    </div>
                 </div>
-                <div class="absolute bottom-0 inset-x-0 p-3 bg-white/30 backdrop-blur-sm">
-                    <h3 class="font-medium">
-                        {{ property.name }}
-                    </h3>
-                    <p class="text-xs text-neutral-400 mt-1 truncate">
-                        <fa-icon
-                            class="mr-1"
-                            icon="map-marker-alt" />
+
+                <div class="absolute bottom-0 inset-x-0 px-3 py-2 bg-white/30 backdrop-blur-sm">
+                    <p class="text-xs line-clamp-2">
+                        <fa-icon icon="map-marker-alt" />
                         {{ property.address }}
                     </p>
                 </div>

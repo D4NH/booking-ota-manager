@@ -34,13 +34,6 @@ const validStatuses: Booking['status'][] = [
     'Unavailable',
 ];
 
-const getTodayString = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 const todayStr = computed(() => getTodayString());
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
@@ -86,6 +79,13 @@ const groupedBookings = computed(() => {
         }));
 });
 
+const getTodayString = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 const toggleStatusVisibility = (status: Booking['status']): void => {
     const index = hiddenStatuses.value.indexOf(status);
     if (index > -1) {
@@ -216,7 +216,7 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                     <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
                     <select
                         v-model="selectedProperty"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                         <option value="all">All Properties</option>
                         <option
                             v-for="prop in PROPERTY_LIST"
@@ -235,7 +235,7 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                     <label class="mb-1 block text-xs font-medium text-mist-400">Filter Month</label>
                     <select
                         v-model="selectedMonth"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                         <option value="all">All Months</option>
                         <option
                             v-for="mKey in availableMonths"
@@ -246,7 +246,9 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                     </select>
                     <div
                         class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
-                        <fa-icon icon="angle-down" />
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
                     </div>
                 </div>
 
@@ -256,7 +258,7 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                         v-model="searchQuery"
                         type="text"
                         placeholder="Search guest, ID or notes..."
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
                 </div>
             </div>
 
@@ -283,7 +285,10 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
             type="button"
             class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
             @click="openAddModal">
-            <fa-icon icon="plus" /> Add Booking
+            <fa-icon
+                class="text-xs"
+                icon="plus" />
+            Add Booking
         </button>
 
         <!-- Reservations Table -->
@@ -300,14 +305,14 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
                     <tr>
-                        <th class="w-42 px-4 py-2.5">ID</th>
-                        <th class="w-28 px-4 py-2.5 text-center">Channel</th>
-                        <th class="w-28 px-4 py-2.5 text-center">Property</th>
+                        <th class="w-40 px-4 py-2.5">ID</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Channel</th>
+                        <th class="w-32 px-4 py-2.5 text-center">Property</th>
                         <th class="px-4 py-2.5">Guest</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check In</th>
                         <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
-                        <th class="w-38 px-4 py-2.5 text-center">Payout</th>
+                        <th class="w-38 px-4 py-2.5 text-right">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
                         <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
@@ -352,19 +357,19 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                                     ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
                                     : 'hover:bg-mist-800/30',
                             ]">
-                            <td class="px-4 py-3 font-mono text-lime-400 truncate">
+                            <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
                                 {{ b.bookingId }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
-                                    class="rounded bg-mist-800 px-2 py-0.5 text-[10px] text-mist-300">
+                                    class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
                                     :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                    class="rounded bg-mist-800/80 border border-mist-700/60 px-2 py-0.5 text-[10px] font-semibold text-mist-300 capitalize">
+                                    class="capitalize rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.propertyId }}
                                 </RouterLink>
                             </td>
@@ -379,13 +384,13 @@ const isCurrentBooking = (checkIn: string, checkOut: string, status: string): bo
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
-                            <td class="px-4 py-3 font-mono text-center">
+                            <td class="px-4 py-3 font-mono text-right text-nowrap">
                                 Rp {{ b.payout.toLocaleString('id-ID') }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
                                     :class="[
-                                        'rounded px-2 py-0.5 text-[10px] font-semibold',
+                                        'rounded px-2 py-0.5 text-xs text-nowrap',
                                         b.status === 'Booked'
                                             ? 'bg-lime-500/20 text-lime-400'
                                             : b.status === 'Checked-in'
