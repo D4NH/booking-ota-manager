@@ -11,7 +11,7 @@ export interface Property {
 export interface Booking {
     id: string; // UUID
     propertyId: string;
-    bookingId: string; // OTA ID or 'MHJ-00032'
+    bookingId: string; // OTA ID
     listing: 'Airbnb' | 'Booking.com' | 'Tiket.com' | 'Trip.com' | 'Whatsapp' | 'Unavailable';
     guestName: string;
     checkIn: string; // YYYY-MM-DD

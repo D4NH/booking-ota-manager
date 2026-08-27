@@ -42,4 +42,12 @@ header {
     color: var(--color-text-muted);
     font-size: 0.813rem;
 }
+
+.router-link-active {
+    color: var(--color-primary);
+
+    &:hover {
+        color: var(--color-primary-hover);
+    }
+}
 </style>
