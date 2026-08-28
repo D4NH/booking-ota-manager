@@ -26,11 +26,6 @@
                     to="/finance">
                     Finance
                 </RouterLink>
-                <RouterLink
-                    class="text-white hover:text-lime-500 text-sm"
-                    to="/settings">
-                    Settings
-                </RouterLink>
             </div>
         </div>
     </header>
