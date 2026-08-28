@@ -13,7 +13,7 @@ const handleDeleteProperty = async (id: string, name: string): Promise<void> => 
 </script>
 
 <template>
-    <div class="space-y-6 p-6">
+    <div class="space-y-6">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>

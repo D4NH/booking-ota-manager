@@ -2,9 +2,9 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import type { Booking } from '@/db';
 import type { PropertyId } from '@/config/properties';
 

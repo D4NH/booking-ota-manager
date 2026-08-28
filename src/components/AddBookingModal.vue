@@ -2,11 +2,13 @@
 import { ref, watch, computed } from 'vue';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/db';
+import { getTodayStr } from '@/utils/date';
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
-    initialCheckInDate?: string; // 'YYYY-MM-DD'
+    initialCheckInDate?: string;
     currentProperty?: PropertyId | 'all';
 }>();
 const emit = defineEmits<{
@@ -68,13 +70,8 @@ const validationError = computed<string | null>(() => {
 
     return null;
 });
-const todayStr = computed<string>(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-});
+const todayStr = computed<string>(() => getTodayStr());
+const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
 
 watch(
     () => [form.value.checkIn, form.value.checkOut],
@@ -133,7 +130,7 @@ const calculateNights = (): void => {
         <div
             class="w-full max-w-2xl space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-6 shadow-2xl">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between border-b border-mist-800 pb-3">
+            <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                 <h2 class="text-base font-bold text-mist-100">
                     {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                 </h2>
@@ -143,6 +140,14 @@ const calculateNights = (): void => {
                     @click="emit('close')">
                     <fa-icon icon="xmark" />
                 </button>
+            </div>
+
+            <div
+                v-if="channelWarning"
+                class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+                <ul class="ml-4 list-disc">
+                    <li>{{ channelWarning }}</li>
+                </ul>
             </div>
 
             <div

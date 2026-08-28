@@ -2,10 +2,11 @@
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
 import type { Booking } from '@/db';
+import { getTodayStr } from '@/utils/date';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 
@@ -32,13 +33,7 @@ const currentPropertyId = computed<PropertyId>(() => {
     return 'piyungan';
 });
 const activeConfig = computed(() => PROPERTY_CONFIGS[currentPropertyId.value]);
-const todayStr = computed<string>(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-});
+const todayStr = computed<string>(() => getTodayStr());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
 const propertyBookings = computed(() => {
     return bookings.value.filter((b) => b.propertyId === currentPropertyId.value);
@@ -237,8 +232,7 @@ watch(
 <template>
     <div class="mx-auto max-w-7xl space-y-6">
         <!-- Property Header -->
-        <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center">
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-mist-100">
@@ -253,7 +247,7 @@ watch(
                 <RouterLink
                     v-for="prop in PROPERTY_LIST"
                     :key="prop.id"
-                    :to="`/${prop.id}`"
+                    :to="{ name: 'property', params: { id: prop.id } }"
                     :class="[
                         'rounded-md px-3 py-1.5 text-xs font-semibold transition',
                         currentPropertyId === prop.id

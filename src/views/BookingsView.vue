@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useBookingStore } from '@/stores/useBookingStore';
 import type { Booking } from '@/db';
-import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_THEMES, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { getTodayStr } from '@/utils/date';
+
+import AddBookingModal from '@/components/AddBookingModal.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
 const validStatuses: Booking['status'][] = [
     'Booked',
@@ -15,14 +19,10 @@ const validStatuses: Booking['status'][] = [
     'Unavailable',
 ];
 
-import AddBookingModal from '@/components/AddBookingModal.vue';
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } = useGoogleSheets();
 
-// Filters & Local State
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
@@ -32,16 +32,11 @@ const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
 
-const todayStr = computed<string>(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-});
+const todayStr = computed<string>(() => getTodayStr());
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
     const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
+
     return uniqueMonths.sort((a, b) => a.localeCompare(b));
 });
 const filteredBookings = computed(() => {
@@ -58,6 +53,7 @@ const filteredBookings = computed(() => {
                 const matchName = b.guestName.toLowerCase().includes(query);
                 const matchId = b.bookingId.toLowerCase().includes(query);
                 const matchNotes = b.notes?.toLowerCase().includes(query) || false;
+
                 if (!matchName && !matchId && !matchNotes) return false;
             }
             return true;
@@ -69,6 +65,7 @@ const groupedBookings = computed(() => {
 
     filteredBookings.value.forEach((b) => {
         const monthKey = b.checkIn.substring(0, 7);
+
         if (!groups[monthKey]) groups[monthKey] = [];
         groups[monthKey].push(b);
     });
@@ -85,6 +82,7 @@ const groupedBookings = computed(() => {
 
 const toggleStatusVisibility = (status: Booking['status']): void => {
     const index = hiddenStatuses.value.indexOf(status);
+
     if (index > -1) {
         hiddenStatuses.value.splice(index, 1);
     } else {
@@ -93,6 +91,7 @@ const toggleStatusVisibility = (status: Booking['status']): void => {
 };
 const toggleMonth = (monthKey: string): void => {
     const index = collapsedMonths.value.indexOf(monthKey);
+
     if (index > -1) {
         collapsedMonths.value.splice(index, 1);
     } else {
@@ -102,6 +101,7 @@ const toggleMonth = (monthKey: string): void => {
 const formatMonthHeader = (monthKey: string): string => {
     const [year, month] = monthKey.split('-');
     const date = new Date(Number(year), Number(month) - 1, 1);
+
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 const openAddModal = (): void => {
@@ -130,10 +130,12 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         isBookingModalOpen.value = false;
     } catch (err: unknown) {
         console.error('Save aborted due to sync failure:', err);
+
         const errorMessage =
             err instanceof Error
                 ? err.message
                 : 'Google Sheets sync failed. Local database was not modified.';
+
         syncStatus.value = `Save failed: ${errorMessage}`;
     } finally {
         setTimeout(() => {
@@ -154,10 +156,12 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
         syncStatus.value = `Booking ${booking.bookingId} deleted from Google Sheets & local database.`;
     } catch (err: unknown) {
         console.error('Delete aborted due to sync failure:', err);
+
         const errorMessage =
             err instanceof Error
                 ? err.message
                 : 'Google Sheets sync failed. Local record was not deleted.';
+
         syncStatus.value = `Delete failed: ${errorMessage}`;
     } finally {
         setTimeout(() => {
@@ -179,20 +183,16 @@ const handleClearAllLocal = async (): Promise<void> => {
         setTimeout(() => (syncStatus.value = ''), 3000);
     }
 };
-const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
-    return (
-        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
-    );
-};
-const getPropertyConfig = (id: string) => {
-    return PROPERTY_CONFIGS[id as PropertyId] || { name: id, color: '#64748b' };
+const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkIn;
+const getPropertyTheme = (id: PropertyId | string) => {
+    return PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 };
 </script>
 
 <template>
     <div class="flex flex-col space-y-6">
         <!-- Header -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Bookings</h1>
                 <p class="text-xs text-mist-400">
@@ -206,11 +206,11 @@ const getPropertyConfig = (id: string) => {
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            ℹ️ {{ syncStatus }}
+            {{ syncStatus }}
         </div>
 
         <!-- Filter Bar -->
-        <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
+        <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
@@ -261,7 +261,7 @@ const getPropertyConfig = (id: string) => {
             </div>
 
             <!-- Inverse Status Filter -->
-            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-mist-800">
+            <div class="flex flex-wrap items-center gap-2 pt-4 mb-2 border-t border-mist-800">
                 <span class="text-xs font-medium text-mist-400">Filter:</span>
                 <button
                     v-for="status in validStatuses"
@@ -301,7 +301,7 @@ const getPropertyConfig = (id: string) => {
             class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
+                    class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
                     <tr>
                         <th class="w-40 px-4 py-2.5">ID</th>
                         <th class="w-32 px-4 py-2.5 text-center">Channel</th>
@@ -351,7 +351,7 @@ const getPropertyConfig = (id: string) => {
                             :key="b.id || b.bookingId"
                             :class="[
                                 'transition',
-                                isCurrentBooking(b.checkIn, b.checkOut, b.status)
+                                isCurrentBooking(b.checkIn)
                                     ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
                                     : 'hover:bg-mist-800/30',
                             ]">
@@ -366,11 +366,12 @@ const getPropertyConfig = (id: string) => {
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
-                                    :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                    :style="{
-                                        backgroundColor: getPropertyConfig(b.propertyId).color,
-                                    }"
-                                    class="capitalize rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 hover:text-mist-100 text-nowrap">
+                                    :to="{ name: 'property', params: { id: b.propertyId } }"
+                                    :class="[
+                                        getPropertyTheme(b.propertyId).bg,
+                                        getPropertyTheme(b.propertyId).text,
+                                    ]"
+                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium text-nowrap">
                                     {{ b.propertyId }}
                                 </RouterLink>
                             </td>
