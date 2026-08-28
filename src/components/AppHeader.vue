@@ -5,12 +5,17 @@
                 <RouterLink
                     to="/"
                     class="flex h-8 w-8 items-center justify-center rounded-lg bg-lime-500 font-bold text-mist-950 logo">
-                    M
+                    B
                 </RouterLink>
-                <h1 class="text-xl font-bold tracking-tight">Dashboard</h1>
+                <h1 class="text-xl font-bold tracking-tight">Booking OTA Manager</h1>
             </div>
 
             <div class="flex items-center space-x-8">
+                <RouterLink
+                    class="text-white hover:text-lime-500 text-sm"
+                    to="/bookings">
+                    Bookings
+                </RouterLink>
                 <RouterLink
                     class="text-white hover:text-lime-500 text-sm"
                     to="/calendar">
@@ -18,8 +23,8 @@
                 </RouterLink>
                 <RouterLink
                     class="text-white hover:text-lime-500 text-sm"
-                    to="/bookings">
-                    Bookings
+                    to="/properties">
+                    Properties
                 </RouterLink>
                 <RouterLink
                     class="text-white hover:text-lime-500 text-sm"

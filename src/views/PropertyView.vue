@@ -39,39 +39,46 @@ const propertyBookings = computed(() => {
     return bookings.value.filter((b) => b.propertyId === currentPropertyId.value);
 });
 const todaysArrivals = computed(() => {
-    const currentHour = new Date().getHours();
-
-    if (currentHour > 16) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
-    );
-});
-const currentInHouse = computed(() => {
-    const currentHour = new Date().getHours(); // 24-hour format (e.g., 10 for 10:00, 13 for 13:00)
+    const now = new Date();
+    const currentHour = now.getHours();
 
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
+        if (currentHour >= 15) return false;
+        return b.checkIn === todayStr.value && b.status !== 'Unavailable';
+    });
+});
+const currentInHouse = computed(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const today = todayStr.value;
 
-        // 1. Guests staying multi-day strictly in between check-in and check-out dates
-        const isMidStay = b.checkIn < todayStr.value && b.checkOut > todayStr.value;
-        if (isMidStay) return true;
-
-        // 2. Morning (< 12:00): Show guest who is checking out today
-        if (currentHour < 12) {
-            return b.checkOut === todayStr.value;
+    return propertyBookings.value.filter((b) => {
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') {
+            return false;
         }
 
-        // 3. Afternoon / Evening (>= 12:00): Show guest who is checking in today
-        return b.checkIn === todayStr.value;
+        // Check-in Today: Only visible after 15:00
+        if (b.checkIn === today) {
+            return currentHour >= 15;
+        }
+
+        // Check-out Today: Only visible before 12:00
+        if (b.checkOut === today) {
+            return currentHour < 12;
+        }
+
+        // Mid-stay: Guest stays past check-in date and before check-out date
+        return b.checkIn < today && b.checkOut > today;
     });
 });
 const todaysDepartures = computed(() => {
-    const currentHour = new Date().getHours();
+    const now = new Date();
+    const currentHour = now.getHours();
 
-    if (currentHour > 13) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
-    );
+    return propertyBookings.value.filter((b) => {
+        if (currentHour > 13) return false;
+        return b.checkOut === todayStr.value && b.status !== 'Unavailable';
+    });
 });
 const monthlyStats = computed(() => {
     const currentMonthBookings = propertyBookings.value.filter(
