@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_LIST, PROPERTY_THEMES, type PropertyId } from '@/config/properties';
 import type { Booking } from '@/db';
+import { getTodayStr } from '@/utils/date';
+
+import AddBookingModal from '@/components/AddBookingModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
@@ -15,56 +20,58 @@ const selectedPropertyFilter = ref<string>('all');
 const isModalOpen = ref<boolean>(false);
 // const isPropertyModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
+const syncStatus = ref<string>('');
 
-const todayStr = computed<string>(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-});
+const todayStr = computed<string>(() => getTodayStr());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
 const propertyBookings = computed(() => {
     if (selectedPropertyFilter.value === 'all') return bookings.value;
     return bookings.value.filter((b) => b.propertyId === selectedPropertyFilter.value);
 });
 const todaysArrivals = computed(() => {
-    const currentHour = new Date().getHours();
-
-    if (currentHour > 16) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkIn === todayStr.value && b.status !== 'Unavailable'
-    );
-});
-const currentInHouse = computed(() => {
-    const currentHour = new Date().getHours();
+    const now = new Date();
+    const currentHour = now.getHours();
 
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
+        if (currentHour >= 15) return false;
+        return b.checkIn === todayStr.value && b.status !== 'Unavailable';
+    });
+});
+const currentInHouse = computed(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const today = todayStr.value;
 
-        // 1. Guests staying multi-day strictly in between check-in and check-out dates
-        const isMidStay = b.checkIn < todayStr.value && b.checkOut > todayStr.value;
-        if (isMidStay) return true;
-
-        // 2. Morning (< 12:00): Show guest who is checking out today
-        if (currentHour < 12) {
-            return b.checkOut === todayStr.value;
+    return propertyBookings.value.filter((b) => {
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') {
+            return false;
         }
 
-        // 3. Afternoon / Evening (>= 12:00): Show guest who is checking in today
-        return b.checkIn === todayStr.value;
+        // Check-in Today: Only visible after 15:00
+        if (b.checkIn === today) {
+            return currentHour >= 15;
+        }
+
+        // Check-out Today: Only visible before 12:00
+        if (b.checkOut === today) {
+            return currentHour < 12;
+        }
+
+        // Mid-stay: Guest stays past check-in date and before check-out date
+        return b.checkIn < today && b.checkOut > today;
     });
 });
 const todaysDepartures = computed(() => {
-    const currentHour = new Date().getHours();
+    const now = new Date();
+    const currentHour = now.getHours();
 
-    if (currentHour > 13) return [];
-    return propertyBookings.value.filter(
-        (b) => b.checkOut === todayStr.value && b.status !== 'Unavailable'
-    );
-});
-const pendingPaymentAlerts = computed(() => {
     return propertyBookings.value.filter((b) => {
+        if (currentHour > 13) return false;
+        return b.checkOut === todayStr.value && b.status !== 'Unavailable';
+    });
+});
+const pendingPaymentAlerts = computed(() =>
+    propertyBookings.value.filter((b) => {
         // 1. Must be WhatsApp channel with 'Waiting for payment' status
         if (b.listing !== 'Whatsapp' || b.status !== 'Waiting for payment') {
             return false;
@@ -83,8 +90,8 @@ const pendingPaymentAlerts = computed(() => {
 
         // 3. Match only if the alert date is today
         return alertDateStr === todayStr.value;
-    });
-});
+    })
+);
 const monthlySummary = computed(() => {
     const monthBookings = propertyBookings.value.filter(
         (b) => b.checkIn.startsWith(currentMonthStr.value) && b.status !== 'Unavailable'
@@ -116,59 +123,178 @@ const monthlySummary = computed(() => {
         bookingCount: monthBookings.length,
     };
 });
+const currentMonthKey = computed<string>(() => todayStr.value.substring(0, 7));
+const currentMonthRevenue = computed<number>(() =>
+    bookingStore.bookings
+        .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
+        .reduce((acc, b) => acc + (b.payout || 0), 0)
+);
+const lastMonthKey = computed<string>(() => {
+    const [yearStr, monthStr] = currentMonthKey.value.split('-');
+
+    // Fallback to 0 or current date numbers if undefined
+    const y = Number(yearStr) || new Date().getFullYear();
+    const m = Number(monthStr) || new Date().getMonth() + 1;
+
+    // TypeScript now guarantees y and m are strictly 'number'
+    const d = new Date(y, m - 2, 1);
+    const lastY = d.getFullYear();
+    const lastM = String(d.getMonth() + 1).padStart(2, '0');
+    return `${lastY}-${lastM}`;
+});
+const lastMonthRevenue = computed<number>(() =>
+    bookingStore.bookings
+        .filter((b) => b.checkIn.startsWith(lastMonthKey.value))
+        .reduce((acc, b) => acc + (b.payout || 0), 0)
+);
+const revenueGrowthPercent = computed<number>(() => {
+    if (lastMonthRevenue.value === 0) return 0;
+    return Math.round(
+        ((currentMonthRevenue.value - lastMonthRevenue.value) / lastMonthRevenue.value) * 100
+    );
+});
+const monthlyOccupancy = computed(() => {
+    const [yearStr, monthStr] = currentMonthKey.value.split('-');
+    const daysInMonth = new Date(Number(yearStr), Number(monthStr), 0).getDate();
+    const totalCapacityNights = daysInMonth * PROPERTY_LIST.length;
+
+    const bookedNightsThisMonth = bookingStore.bookings
+        .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
+        .reduce((acc, b) => acc + (b.nights || 0), 0);
+
+    const percentage = Math.min(
+        100,
+        Math.round((bookedNightsThisMonth / (totalCapacityNights || 1)) * 100)
+    );
+
+    return {
+        bookedNights: bookedNightsThisMonth,
+        capacityNights: totalCapacityNights,
+        percentage,
+    };
+});
+const upcomingCheckIns = computed(() =>
+    bookingStore.bookings.filter((b) => {
+        return b.checkIn === todayStr.value;
+    })
+);
+const upcomingCheckOuts = computed(() =>
+    bookingStore.bookings.filter((b) => {
+        return b.checkOut === todayStr.value;
+    })
+);
 
 const openEditModal = (booking: Booking): void => {
     bookingToEdit.value = booking;
     isModalOpen.value = true;
 };
-const getPropertyConfig = (id: string) => {
-    return PROPERTY_CONFIGS[id as PropertyId] || { name: id, color: '#64748b' };
+const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
+    try {
+        if (bookingToEdit.value) {
+            syncStatus.value = 'Syncing edit to Google Sheets...';
+            await bookingStore.updateBookingWithRemoteSync(
+                { ...bookingToEdit.value, ...payload },
+                { updateSheetRowByBookingId }
+            );
+            syncStatus.value = 'Booking updated in Google Sheets & local database.';
+        } else {
+            syncStatus.value = 'Syncing new booking to Google Sheets...';
+            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
+            syncStatus.value = 'Booking saved to Google Sheets & local database.';
+        }
+
+        isModalOpen.value = false;
+    } catch (err: unknown) {
+        console.error('Save aborted due to sync failure:', err);
+        const errorMessage =
+            err instanceof Error
+                ? err.message
+                : 'Google Sheets sync failed. Local database was not modified.';
+        syncStatus.value = `Save failed: ${errorMessage}`;
+    } finally {
+        setTimeout(() => {
+            syncStatus.value = '';
+        }, 5000);
+    }
 };
 const propertyImage = (id: string) => {
     if (id === 'bantul') return 'https://placehold.co/300x400?text=Bantul';
     return `/images/${id}.jpg`;
 };
+const getPropertyTheme = (id: PropertyId | string) => {
+    return PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
+};
 </script>
 
 <template>
     <div class="mx-auto max-w-7xl space-y-6">
-        <div
-            class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-mist-100">Daily Operations</h1>
+                <h1 class="text-xl font-bold tracking-tight text-mist-100">Dashboard</h1>
                 <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
             </div>
         </div>
 
+        <!-- Status -->
+        <div
+            v-if="syncStatus"
+            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
+            ℹ️ {{ syncStatus }}
+        </div>
+
+        <!-- Pending Payments -->
         <div
             v-if="pendingPaymentAlerts.length > 0"
-            class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200 shadow-lg space-y-2">
-            <div
-                class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-400">
-                <span>
-                    Action Required: Pending WhatsApp Payments ({{ pendingPaymentAlerts.length }})
-                </span>
-            </div>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                <div
-                    v-for="b in pendingPaymentAlerts"
-                    :key="b.id"
-                    class="flex items-center justify-between rounded-lg border border-amber-500/20 bg-mist-950/60 px-3 py-2 text-xs">
-                    <div>
-                        <p class="font-semibold text-mist-200">
-                            {{ b.guestName }} ({{ b.bookingId }})
-                        </p>
-                        <p class="capitalize text-[10px] text-amber-300/80">
-                            {{ b.propertyId }} &bull; Rp
-                            {{ b.payout.toLocaleString() }}
-                        </p>
+            class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                    <h2 class="text-xs font-bold uppercase text-mist-300">
+                        Pending WhatsApp Payments
+                    </h2>
+                    <span
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                        {{ pendingPaymentAlerts.length }}
+                    </span>
+                </div>
+                <div class="space-y-2">
+                    <div
+                        v-for="b in pendingPaymentAlerts"
+                        :key="b.id"
+                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-sm text-mist-200 pb-2">
+                                {{ b.guestName }}
+                            </span>
+                            <RouterLink
+                                :to="b.propertyId"
+                                class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
+                                {{ b.propertyId }}
+                            </RouterLink>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono">{{ b.bookingId }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-mist-700 mt-4 pt-4">
+                            <button
+                                type="button"
+                                class="cursor-pointer rounded bg-amber-500/20 px-2 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
+                                @click="openEditModal(b)">
+                                Review
+                            </button>
+                            <span class="font-mono text-lime-400 text-sm">
+                                Rp {{ b.payout.toLocaleString() }}
+                            </span>
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        class="rounded bg-amber-500/20 px-2 py-1 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/30"
-                        @click="openEditModal(b)">
-                        Review
-                    </button>
                 </div>
             </div>
         </div>
@@ -176,38 +302,58 @@ const propertyImage = (id: string) => {
         <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
-                <p class="mt-1 font-mono text-xl font-bold text-lime-400">
+                <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
+                <p class="mt-1 font-mono text-lg font-bold text-white">
                     Rp {{ monthlySummary.totalPayout.toLocaleString() }}
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Current Month Total</p>
+                <div class="flex items-center gap-1 text-xs mt-1">
+                    <span
+                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'"
+                        class="font-medium">
+                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                    </span>
+                    <span class="text-mist-500">vs last month</span>
+                </div>
             </div>
-
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Est. Occupancy Rate</p>
-                <p class="mt-1 text-xl font-bold text-mist-100">
+                <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
+                <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ monthlySummary.occupancyRate }}%
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Based on total capacity</p>
-            </div>
-
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Room Nights Booked</p>
-                <p class="mt-1 text-xl font-bold text-mist-100">
-                    {{ monthlySummary.totalNightsBooked }} Nights
+                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
+                    <div
+                        class="bg-lime-500 h-full transition-all duration-300"
+                        :style="{ width: `${monthlyOccupancy.percentage}%` }"></div>
+                </div>
+                <p class="text-xs text-mist-500 mt-1">
+                    {{ monthlyOccupancy.bookedNights }} /
+                    {{ monthlyOccupancy.capacityNights }} nights booked
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Completed + Upcoming</p>
             </div>
-
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Total Month Bookings</p>
-                <p class="mt-1 text-xl font-bold text-mist-100">
+            <div class="frounded-xl border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
+                <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ monthlySummary.bookingCount }} Reservations
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Active reservations</p>
+                <p class="text-xs text-mist-500 mt-1">Active reservations</p>
+            </div>
+            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
+                <div class="text-lg font-bold text-mist-200 mt-1">
+                    <span class="text-lime-400 mr-3">↓ {{ upcomingCheckIns.length }} In</span>
+                    <span class="text-amber-400">↑ {{ upcomingCheckOuts.length }} Out</span>
+                </div>
+                <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>
         </div>
 
+        <!-- Daily Operations -->
+        <div class="flex items-center justify-between mt-12">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-mist-100">Daily Operations</h1>
+                <p class="text-xs text-mist-400">Active Stays</p>
+            </div>
+        </div>
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <!-- Arriving Today -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
@@ -225,28 +371,30 @@ const propertyImage = (id: string) => {
                 </div>
                 <div
                     v-else
-                    class="space-y-2">
+                    class="space-y-4">
                     <div
                         v-for="b in todaysArrivals"
                         :key="b.id"
-                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-1">
+                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-sm text-mist-200 pb-2">
+                            <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <span
-                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
-                                :style="{
-                                    backgroundColor: getPropertyConfig(b.propertyId).color,
-                                }">
+                            <RouterLink
+                                :to="{ name: 'property', params: { id: b.propertyId } }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
                                 {{ b.propertyId }}
-                            </span>
+                            </RouterLink>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
@@ -274,7 +422,7 @@ const propertyImage = (id: string) => {
                 </div>
                 <div
                     v-else
-                    class="space-y-2">
+                    class="space-y-4">
                     <div
                         v-for="b in currentInHouse"
                         :key="b.id"
@@ -283,19 +431,21 @@ const propertyImage = (id: string) => {
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <span
-                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
-                                :style="{
-                                    backgroundColor: getPropertyConfig(b.propertyId).color,
-                                }">
+                            <RouterLink
+                                :to="{ name: 'property', params: { id: b.propertyId } }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
                                 {{ b.propertyId }}
-                            </span>
+                            </RouterLink>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
@@ -321,7 +471,7 @@ const propertyImage = (id: string) => {
                 </div>
                 <div
                     v-else
-                    class="space-y-2">
+                    class="space-y-4">
                     <div
                         v-for="b in todaysDepartures"
                         :key="b.id"
@@ -330,19 +480,21 @@ const propertyImage = (id: string) => {
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <span
-                                class="capitalize rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
-                                :style="{
-                                    backgroundColor: getPropertyConfig(b.propertyId).color,
-                                }">
+                            <RouterLink
+                                :to="{ name: 'property', params: { id: b.propertyId } }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
                                 {{ b.propertyId }}
-                            </span>
+                            </RouterLink>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex justify-between text-xs text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
@@ -354,7 +506,7 @@ const propertyImage = (id: string) => {
         </div>
 
         <!-- Properties -->
-        <div class="flex items-center justify-between border-b border-mist-800 pb-5 mt-12">
+        <div class="flex items-center justify-between mt-12">
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">Managed Homestays & Villas</p>
@@ -370,7 +522,7 @@ const propertyImage = (id: string) => {
                 v-for="property in sortedProperties"
                 :key="property.id"
                 class="relative block h-full overflow-hidden rounded-lg"
-                :to="{ name: 'property-detail', params: { id: property.id } }">
+                :to="{ name: 'property', params: { id: property.id } }">
                 <img
                     loading="lazy"
                     :src="propertyImage(property.id)"
@@ -392,5 +544,11 @@ const propertyImage = (id: string) => {
                 </div>
             </RouterLink>
         </div>
+
+        <AddBookingModal
+            v-if="isModalOpen"
+            :booking-to-edit="bookingToEdit"
+            @close="isModalOpen = false"
+            @save="handleSaveBooking" />
     </div>
 </template>

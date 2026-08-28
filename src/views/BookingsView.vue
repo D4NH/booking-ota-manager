@@ -14,6 +14,7 @@ const validStatuses: Booking['status'][] = [
     'Booked',
     'Checked-in',
     'Waiting for payment',
+    'Waiting for payout',
     'Completed',
     'No show',
     'Unavailable',
@@ -26,7 +27,7 @@ const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } =
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
-const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
+const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show', 'Unavailable']);
 const collapsedMonths = ref<string[]>([]);
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
@@ -301,7 +302,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
             class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
+                    class="border-b border-mist-800 bg-mist-950/60 text-xs font-semibold uppercase text-mist-400">
                     <tr>
                         <th class="w-40 px-4 py-2.5">ID</th>
                         <th class="w-32 px-4 py-2.5 text-center">Channel</th>
@@ -367,11 +368,11 @@ const getPropertyTheme = (id: PropertyId | string) => {
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
                                     :to="{ name: 'property', params: { id: b.propertyId } }"
+                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium text-nowrap"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
-                                    ]"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium text-nowrap">
+                                    ]">
                                     {{ b.propertyId }}
                                 </RouterLink>
                             </td>
@@ -399,7 +400,9 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                               ? 'bg-blue-500/20 text-blue-400'
                                               : b.status === 'Waiting for payment'
                                                 ? 'bg-amber-500/20 text-amber-400'
-                                                : 'bg-mist-800 text-mist-400',
+                                                : b.status === 'Unavailable'
+                                                  ? 'bg-rose-500/20 text-rose-400'
+                                                  : 'bg-mist-800 text-mist-400',
                                     ]">
                                     {{ b.status }}
                                 </span>

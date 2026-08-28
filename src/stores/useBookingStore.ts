@@ -170,41 +170,57 @@ export const useBookingStore = defineStore('booking', () => {
     ): Promise<number> => {
         let importedCount = 0;
 
+        const VALID_LISTINGS = [
+            'Airbnb',
+            'Booking.com',
+            'Tiket.com',
+            'Trip.com',
+            'Whatsapp',
+            'Unavailable',
+        ] as const;
+
+        type ListingType = (typeof VALID_LISTINGS)[number];
+
         for (const row of rows) {
-            const bookingId = String(row[0] || '').trim();
-            const guestName = String(row[2] || '').trim();
+            const rawBookingId = String(row[0] || '').trim();
+            const rawListing = String(row[1] || '').trim();
+            const rawGuestName = String(row[2] || '').trim();
             const checkIn = String(row[3] || '').trim();
             const checkOut = String(row[4] || '').trim();
-            const rawListing = String(row[1] || '').trim();
 
-            // 2. Map normalized channel to valid union type or fallback to 'Whatsapp'
-            const VALID_LISTINGS = [
-                'Airbnb',
-                'Booking.com',
-                'Tiket.com',
-                'Trip.com',
-                'Whatsapp',
-                'Unavailable',
-            ] as const;
-
-            type ListingType = (typeof VALID_LISTINGS)[number];
-
-            const listing: ListingType = VALID_LISTINGS.includes(rawListing as ListingType)
-                ? (rawListing as ListingType)
-                : 'Whatsapp';
-
-            // Skip header or empty rows
-            if (
-                !bookingId ||
-                bookingId.toLowerCase() === 'id' ||
-                !guestName ||
-                !checkIn ||
-                !checkOut
-            ) {
+            // Skip header/summary rows or empty rows missing valid check-in / check-out dates
+            if (!checkIn || !checkOut || checkIn.length < 10 || checkOut.length < 10) {
                 continue;
             }
 
-            // Find if booking already exists locally
+            const isUnavailable =
+                rawListing === 'Unavailable' || String(row[8] || '').trim() === 'Unavailable';
+
+            const listing: ListingType = VALID_LISTINGS.includes(rawListing as ListingType)
+                ? (rawListing as ListingType)
+                : isUnavailable
+                  ? 'Unavailable'
+                  : 'Whatsapp';
+
+            // Provide synthetic booking ID for unavailable rows if missing
+            const bookingId =
+                rawBookingId || (isUnavailable ? `UNAVAILABLE-${checkIn}` : `DIRECT-${checkIn}`);
+
+            // Provide fallback guest name for blocked periods
+            const guestName = rawGuestName || (isUnavailable ? 'Unavailable' : 'Guest');
+
+            const nights = Number(row[5]) || 1;
+            const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
+            const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
+
+            const rawStatus = String(row[8] || '').trim();
+            const status: Booking['status'] = isUnavailable
+                ? 'Unavailable'
+                : (rawStatus as Booking['status']) || 'Booked';
+
+            const notes = String(row[9] || '').trim();
+
+            // Find if booking already exists locally for this property
             const existing = bookings.value.find(
                 (b) => b.bookingId === bookingId && b.propertyId === propertyId
             );
@@ -216,21 +232,21 @@ export const useBookingStore = defineStore('booking', () => {
                 guestName,
                 checkIn,
                 checkOut,
-                nights: Number(row[5]) || 1,
-                payout: Number(String(row[6] ?? '').replace(/[^0-9]/g, '')) || 0,
-                status: (row[8] as Booking['status']) || 'Booked',
-                notes: String(row[9] || '').trim(),
+                nights,
+                payout,
+                status,
+                notes,
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 
             if (existing) {
-                // Update existing record preserving its Dexie primary key
+                // Update existing record in Dexie preserving its primary key
                 await db.bookings.put({
                     ...payload,
                     id: existing.id,
                 } as Booking);
             } else {
-                // Create new record with a fallback UUID/timestamp primary key
+                // Create new record with primary key
                 const newId =
                     typeof crypto !== 'undefined' && crypto.randomUUID
                         ? crypto.randomUUID()

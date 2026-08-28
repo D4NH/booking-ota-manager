@@ -3,10 +3,10 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
-import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/db';
-import type { PropertyId } from '@/config/properties';
+import { PROPERTY_THEMES, type PropertyId } from '@/config/properties';
 
 interface CalendarDay {
     dateStr: string; // 'YYYY-MM-DD'
@@ -17,12 +17,12 @@ interface CalendarDay {
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 
+const route = useRoute();
+const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
-const route = useRoute();
 
 const routePropertyId = route.params.id as PropertyId | undefined;
 
@@ -35,9 +35,9 @@ const syncStatus = ref<string>('');
 
 const currentYear = computed(() => currentDate.value.getFullYear());
 const currentMonth = computed(() => currentDate.value.getMonth());
-const formattedMonthYear = computed(() => {
-    return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-});
+const formattedMonthYear = computed(() =>
+    currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+);
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -104,14 +104,14 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     return days;
 });
-const filteredBookings = computed(() => {
-    return bookings.value.filter((b) => {
+const filteredBookings = computed(() =>
+    bookings.value.filter((b) => {
         if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value) {
             return false;
         }
-        return b.status !== 'Unavailable';
-    });
-});
+        return b.status;
+    })
+);
 
 watch(
     () => route.params.id,
@@ -129,9 +129,8 @@ const nextMonth = (): void => {
 const goToToday = (): void => {
     currentDate.value = new Date();
 };
-const getBookingsForDate = (dateStr: string): Booking[] => {
-    return filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
-};
+const getBookingsForDate = (dateStr: string): Booking[] =>
+    filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
 const handleCellClick = (day: CalendarDay): void => {
     selectedCheckInDate.value = day.dateStr;
     bookingToEdit.value = null;
@@ -165,6 +164,11 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         setTimeout(() => (syncStatus.value = ''), 5000);
     }
 };
+const selectProperty = (id: string): void => {
+    selectedProperty.value = id as PropertyId;
+};
+const getPropertyTheme = (id: PropertyId | string) =>
+    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>
@@ -176,36 +180,32 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
                 <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
             </div>
 
-            <div class="flex items-center gap-3">
-                <!-- Property Selector -->
-                <div
-                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
-                    <button
-                        type="button"
-                        :class="[
-                            'rounded-md px-3 py-1.5 text-xs font-semibold transition',
-                            selectedProperty === 'all'
-                                ? 'bg-mist-800 text-mist-100'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="selectedProperty = 'all'">
-                        All
-                    </button>
-
-                    <button
-                        v-for="prop in sortedProperties"
-                        :key="prop.id"
-                        type="button"
-                        :class="[
-                            'rounded-md px-3 py-1.5 text-xs font-semibold transition',
-                            selectedProperty === prop.id
-                                ? 'bg-mist-800 text-mist-100'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="selectedProperty = prop.id as PropertyId">
-                        <span class="capitalize">{{ prop.id }}</span>
-                    </button>
-                </div>
+            <!-- Property Selector -->
+            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                    :class="[
+                        selectedProperty === 'all'
+                            ? 'bg-mist-800 text-mist-100'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="selectedProperty = 'all'">
+                    All
+                </button>
+                <button
+                    v-for="prop in sortedProperties"
+                    :key="prop.id"
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                    :class="[
+                        selectedProperty === prop.id
+                            ? 'bg-mist-800 text-mist-100'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="selectProperty(prop.id)">
+                    <span class="capitalize">{{ prop.id }}</span>
+                </button>
             </div>
         </div>
 
@@ -213,40 +213,42 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            ℹ️ {{ syncStatus }}
+            {{ syncStatus }}
         </div>
 
         <!-- Month Navigation Controls -->
         <div
-            class="flex items-center justify-between rounded-xl border border-mist-800 bg-mist-900 p-4">
+            class="grid grid-cols-3 items-center rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <!-- Left Column: Controls -->
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
-
-                <h2 class="text-base font-bold text-mist-100">{{ formattedMonthYear }}</h2>
             </div>
+
+            <!-- Middle Column: Centered Month Title -->
+            <h2 class="text-center font-bold text-mist-100">{{ formattedMonthYear }}</h2>
         </div>
 
         <!-- Calendar Grid Table -->
         <div class="overflow-hidden rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
             <div
-                class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-[11px] font-semibold uppercase text-mist-400">
+                class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
                 <div class="py-2.5">Tue</div>
                 <div class="py-2.5">Wed</div>
@@ -283,27 +285,33 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
                         <div
                             v-for="b in getBookingsForDate(day.dateStr)"
                             :key="b.id || b.bookingId"
-                            :class="[
-                                'rounded px-1.5 py-1 text-[10px] font-medium truncate border transition shadow-sm',
-                                b.status === 'Booked'
-                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/80'
-                                    : b.status === 'Completed' || b.status === 'Waiting for payout'
-                                      ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/80 opacity-40'
-                                      : b.status === 'Checked-in'
-                                        ? 'border-lime-500/40 bg-lime-500/20 text-lime-300 hover:bg-lime-500/80'
-                                        : b.status === 'Waiting for payment'
-                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/80'
-                                          : 'border-mist-700 bg-mist-800 text-mist-300',
-                            ]"
                             :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
+                            class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-sm"
+                            :class="[
+                                b.status === 'Booked'
+                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/50'
+                                    : b.status === 'Waiting for payment'
+                                      ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/70'
+                                      : b.status === 'Unavailable'
+                                        ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/70'
+                                        : 'border-mist-700 bg-mist-800 text-mist-300',
+                            ]"
                             @click="handleBookingClick(b, $event)">
-                            <span class="font-bold">{{ b.guestName }}</span>
-                            <span class="block font-light">{{ b.listing }}</span>
-                            <span
-                                v-if="selectedProperty === 'all'"
-                                class="text-[9px] opacity-75 block capitalize">
-                                {{ b.propertyId }}
-                            </span>
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm text-mist-200 truncate">
+                                    {{ b.guestName }}
+                                </span>
+                                <RouterLink
+                                    :to="{ name: 'property', params: { id: b.propertyId } }"
+                                    class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
+                                    :class="[
+                                        getPropertyTheme(b.propertyId).bg,
+                                        getPropertyTheme(b.propertyId).text,
+                                    ]">
+                                    {{ b.propertyId }}
+                                </RouterLink>
+                            </div>
+                            <div class="text-xs text-mist-400">{{ b.listing }}</div>
                         </div>
                     </div>
                 </div>
