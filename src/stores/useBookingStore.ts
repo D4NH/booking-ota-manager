@@ -167,8 +167,9 @@ export const useBookingStore = defineStore('booking', () => {
     const importBookingsFromGoogleSheets = async (
         propertyId: PropertyId,
         rows: (string | number)[][]
-    ): Promise<number> => {
+    ): Promise<{ importedCount: number; deletedCount: number }> => {
         let importedCount = 0;
+        const processedBookingIds = new Set<string>();
 
         const VALID_LISTINGS = [
             'Airbnb',
@@ -181,6 +182,11 @@ export const useBookingStore = defineStore('booking', () => {
 
         type ListingType = (typeof VALID_LISTINGS)[number];
 
+        // Track min and max checkIn dates to bound deletion scope (prevents wiping other years)
+        let minCheckIn = '9999-12-31';
+        let maxCheckIn = '0000-01-01';
+
+        // 1. Process incoming rows from Google Sheets
         for (const row of rows) {
             const rawBookingId = String(row[0] || '').trim();
             const rawListing = String(row[1] || '').trim();
@@ -188,10 +194,12 @@ export const useBookingStore = defineStore('booking', () => {
             const checkIn = String(row[3] || '').trim();
             const checkOut = String(row[4] || '').trim();
 
-            // Skip header/summary rows or empty rows missing valid check-in / check-out dates
             if (!checkIn || !checkOut || checkIn.length < 10 || checkOut.length < 10) {
                 continue;
             }
+
+            if (checkIn < minCheckIn) minCheckIn = checkIn;
+            if (checkIn > maxCheckIn) maxCheckIn = checkIn;
 
             const isUnavailable =
                 rawListing === 'Unavailable' || String(row[8] || '').trim() === 'Unavailable';
@@ -202,13 +210,16 @@ export const useBookingStore = defineStore('booking', () => {
                   ? 'Unavailable'
                   : 'Whatsapp';
 
-            // Provide synthetic booking ID for unavailable rows if missing
+            // Unique deterministic composite key including checkOut to avoid collisions
             const bookingId =
-                rawBookingId || (isUnavailable ? `UNAVAILABLE-${checkIn}` : `DIRECT-${checkIn}`);
+                rawBookingId ||
+                (isUnavailable
+                    ? `UNAVAILABLE-${checkIn}_${checkOut}`
+                    : `DIRECT-${checkIn}_${checkOut}`);
 
-            // Provide fallback guest name for blocked periods
+            processedBookingIds.add(bookingId);
+
             const guestName = rawGuestName || (isUnavailable ? 'Unavailable' : 'Guest');
-
             const nights = Number(row[5]) || 1;
             const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
             const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
@@ -220,7 +231,6 @@ export const useBookingStore = defineStore('booking', () => {
 
             const notes = String(row[9] || '').trim();
 
-            // Find if booking already exists locally for this property
             const existing = bookings.value.find(
                 (b) => b.bookingId === bookingId && b.propertyId === propertyId
             );
@@ -239,30 +249,45 @@ export const useBookingStore = defineStore('booking', () => {
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 
-            if (existing) {
-                // Update existing record in Dexie preserving its primary key
-                await db.bookings.put({
-                    ...payload,
-                    id: existing.id,
-                } as Booking);
-            } else {
-                // Create new record with primary key
-                const newId =
-                    typeof crypto !== 'undefined' && crypto.randomUUID
-                        ? crypto.randomUUID()
-                        : `${propertyId}-${bookingId}-${Date.now()}`;
+            const fallbackId = existing?.id || `${propertyId}-${bookingId}`;
 
-                await db.bookings.add({
-                    ...payload,
-                    id: newId,
-                } as Booking);
-            }
+            await db.bookings.put({
+                ...payload,
+                id: fallbackId,
+            } as Booking);
 
             importedCount++;
         }
 
+        // 2. Query Dexie for records strictly within the imported date range
+        let deletedCount = 0;
+
+        if (processedBookingIds.size > 0) {
+            const localDbBookings = await db.bookings
+                .where('propertyId')
+                .equals(propertyId)
+                .filter((b) => b.checkIn >= minCheckIn && b.checkIn <= maxCheckIn)
+                .toArray();
+
+            // 3. Find records within this year/range that are missing from the sheet payload
+            const staleBookings = localDbBookings.filter(
+                (b) => !processedBookingIds.has(b.bookingId)
+            );
+
+            if (staleBookings.length > 0) {
+                const staleIds = staleBookings.map((b) => b.id);
+                await db.bookings.bulkDelete(staleIds);
+                deletedCount = staleIds.length;
+                console.log(
+                    `[Sync] Successfully removed ${deletedCount} deleted entries from local database.`
+                );
+            }
+        }
+
+        // 4. Reload Pinia store from Dexie
         await loadBookings();
-        return importedCount;
+
+        return { importedCount, deletedCount };
     };
 
     return {

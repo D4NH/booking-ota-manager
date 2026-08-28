@@ -23,6 +23,7 @@ const handleSync = async (): Promise<void> => {
         }
 
         let totalImported = 0;
+        let totalDeleted = 0;
 
         if (props.propertyId && props.propertyId !== 'all') {
             // Sync Single File
@@ -31,10 +32,12 @@ const handleSync = async (): Promise<void> => {
 
             syncLabel.value = `Syncing ${props.propertyId}...`;
             const rows = await fetchSheetRows(spreadsheetId);
-            totalImported += await bookingStore.importBookingsFromGoogleSheets(
-                props.propertyId,
-                rows
-            );
+
+            const { importedCount, deletedCount } =
+                await bookingStore.importBookingsFromGoogleSheets(props.propertyId, rows);
+
+            totalImported += importedCount;
+            totalDeleted += deletedCount;
         } else {
             // Sync All Files
             for (const prop of PROPERTY_LIST) {
@@ -43,14 +46,16 @@ const handleSync = async (): Promise<void> => {
 
                 syncLabel.value = `Syncing ${prop.name}...`;
                 const rows = await fetchSheetRows(spreadsheetId);
-                totalImported += await bookingStore.importBookingsFromGoogleSheets(
-                    prop.id as PropertyId,
-                    rows
-                );
+
+                const { importedCount, deletedCount } =
+                    await bookingStore.importBookingsFromGoogleSheets(prop.id as PropertyId, rows);
+
+                totalImported += importedCount;
+                totalDeleted += deletedCount;
             }
         }
 
-        syncLabel.value = `Sync Complete! Imported ${totalImported} records.`;
+        syncLabel.value = `Sync Complete! Imported ${totalImported}, removed ${totalDeleted} records.`;
     } catch (err) {
         console.error('Google Sync Failed:', err);
         syncLabel.value = 'Sync failed.';

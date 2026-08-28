@@ -357,7 +357,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                     : 'hover:bg-mist-800/30',
                             ]">
                             <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
-                                {{ b.bookingId }}
+                                {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span

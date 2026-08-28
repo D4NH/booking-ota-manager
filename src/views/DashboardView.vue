@@ -239,7 +239,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            ℹ️ {{ syncStatus }}
+            {{ syncStatus }}
         </div>
 
         <!-- Pending Payments -->

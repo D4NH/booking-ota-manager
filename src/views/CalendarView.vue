@@ -280,7 +280,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
                         </span>
                     </div>
 
-                    <!-- Reservations on this date -->
+                    <!-- Reservations -->
                     <div class="space-y-1 mt-1">
                         <div
                             v-for="b in getBookingsForDate(day.dateStr)"
@@ -302,6 +302,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
                                     {{ b.guestName }}
                                 </span>
                                 <RouterLink
+                                    v-if="b.status !== 'Unavailable' && selectedProperty === 'all'"
                                     :to="{ name: 'property', params: { id: b.propertyId } }"
                                     class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
                                     :class="[
@@ -311,7 +312,11 @@ const getPropertyTheme = (id: PropertyId | string) =>
                                     {{ b.propertyId }}
                                 </RouterLink>
                             </div>
-                            <div class="text-xs text-mist-400">{{ b.listing }}</div>
+                            <div
+                                v-if="b.status !== 'Unavailable'"
+                                class="text-xs text-mist-400">
+                                {{ b.listing }}
+                            </div>
                         </div>
                     </div>
                 </div>
