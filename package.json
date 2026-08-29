@@ -23,6 +23,7 @@
     "@fortawesome/vue-fontawesome": "^3.3.3",
     "@heroicons/vue": "^2.2.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/google.accounts": "^0.0.18",
     "@unhead/vue": "^3.4.0",
     "@vueuse/core": "^14.4.0",
     "chart.js": "^4.5.1",

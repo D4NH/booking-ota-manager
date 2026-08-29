@@ -12,13 +12,12 @@ export const useGoogleSheets = () => {
 
     const initAuth = async (): Promise<string> => {
         return new Promise((resolve, reject) => {
-            // @ts-ignore
             if (typeof google === 'undefined' || !google.accounts?.oauth2) {
                 reject(new Error('Google Accounts Identity Services SDK not loaded.'));
                 return;
             }
 
-            // @ts-ignore
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             const client = google.accounts.oauth2.initTokenClient({
                 client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
                 scope: 'https://www.googleapis.com/auth/spreadsheets',
