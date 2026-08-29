@@ -58,7 +58,7 @@ const channelStats = computed<ChannelStat[]>(() => {
     });
 
     financeBookings.value.forEach((b) => {
-        const key = b.listing || 'Whatsapp';
+        const key = b.listing;
         if (!statsMap[key]) {
             statsMap[key] = { count: 0, revenue: 0 };
         }
@@ -178,23 +178,21 @@ const selectProperty = (id: string): void => {
 
         <!-- 1. KPI Cards Row -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Total Revenue</p>
                 <p class="text-lg font-bold font-mono text-lime-400 mt-1">
                     {{ formatIDR(totalRevenue) }}
                 </p>
-                <p class="text-xs text-mist-500 mt-1">
-                    {{ financeBookings.length }} valid reservations
-                </p>
+                <p class="text-xs text-mist-500 mt-1">Across all properties</p>
             </div>
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Average Daily Rate (ADR)</p>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(averageDailyRate) }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Across {{ totalNights }} total nights</p>
             </div>
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Booked Nights</p>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ totalNights }} Nights
@@ -207,7 +205,7 @@ const selectProperty = (id: string): void => {
 
         <!-- Monthly Revenue Comparison & Breakdown Grid -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="lg:col-span-2 rounded-xl border border-mist-800 bg-mist-900 p-5 space-y-4">
+            <div class="lg:col-span-2 rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-4">
                 <div class="border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-sm font-bold text-mist-100">Revenue by Property</h2>
                     <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>
@@ -218,7 +216,7 @@ const selectProperty = (id: string): void => {
             </div>
 
             <!-- 3. Channel Distribution Breakdown -->
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-5 space-y-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-4">
                 <div class="border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-base font-bold text-mist-100">Channel Distribution</h2>
                     <p class="text-xs text-mist-400">Revenue share by booking channel</p>

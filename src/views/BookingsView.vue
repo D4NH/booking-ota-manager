@@ -6,7 +6,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_THEMES, PROPERTY_LIST } from '@/config/properties';
 import { validStatuses } from '@/config/status';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 import { getTodayStr } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
@@ -204,7 +204,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
         </div>
 
         <!-- Filter Bar -->
-        <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+        <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div class="relative">
                     <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
@@ -286,13 +286,13 @@ const getPropertyTheme = (id: PropertyId | string) => {
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="rounded-xl border border-dashed border-mist-800 p-12 text-center">
+            class="rounded-lg border border-dashed border-mist-800 p-12 text-center">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
 
         <div
             v-else
-            class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
+            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-xs font-semibold uppercase text-mist-400">

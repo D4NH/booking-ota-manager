@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Booking } from '@/types/booking';
-import type { Property } from '@/types/properties';
+import type { Property } from '@/types/property';
 
 const db = new Dexie('YogyakartaRentalsDB') as Dexie & {
     properties: EntityTable<Property, 'id'>;

@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { db } from '@/db';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 
 export const useBookingStore = defineStore('booking', () => {
     const bookings = ref<Booking[]>([]);

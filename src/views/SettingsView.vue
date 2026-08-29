@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
@@ -26,7 +26,7 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
             <div
                 v-for="prop in sortedProperties"
                 :key="prop.id"
-                class="rounded-xl border border-mist-800 bg-mist-900 p-5 space-y-3">
+                class="rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-3">
                 <div class="flex items-center justify-between">
                     <span
                         class="h-3 w-3 rounded-full"

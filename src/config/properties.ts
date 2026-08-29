@@ -1,4 +1,4 @@
-import type { Property, PropertyId, PropertyConfig, PropertyTheme } from '@/types/properties';
+import type { Property, PropertyId, PropertyConfig, PropertyTheme } from '@/types/property';
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     piyungan: {

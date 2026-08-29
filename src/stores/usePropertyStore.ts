@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { db } from '@/db';
-import type { Property, PropertyId } from '@/types/properties';
+import type { Property, PropertyId } from '@/types/property';
 
 export const usePropertyStore = defineStore('property', () => {
     const properties = ref<Property[]>([]);

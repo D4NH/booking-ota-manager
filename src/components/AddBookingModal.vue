@@ -4,7 +4,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_LIST } from '@/config/properties';
 import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 import { getTodayStr } from '@/utils/date';
 
 const props = defineProps<{
@@ -129,7 +129,7 @@ const calculateNights = (): void => {
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/80 p-4 backdrop-blur-sm">
         <div
-            class="w-full max-w-2xl space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-6 shadow-2xl">
+            class="w-full max-w-2xl space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-6 shadow-2xl">
             <!-- Modal Header -->
             <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                 <h2 class="text-base font-bold text-mist-100">

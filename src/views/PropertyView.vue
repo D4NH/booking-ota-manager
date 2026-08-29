@@ -6,7 +6,7 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 import { getTodayStr } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
@@ -87,7 +87,7 @@ const monthlyStats = computed(() => {
 
     const parts = currentMonthStr.value.split('-');
     const year = parseInt(parts[0] || '2026', 10);
-    const month = parseInt(parts[1] || '8', 10);
+    const month = parseInt(parts[1] || '1', 10);
     const daysInMonth = new Date(year, month, 0).getDate();
     const occupancyRate =
         daysInMonth > 0 ? Math.min(100, Math.round((totalNightsBooked / daysInMonth) * 100)) : 0;
@@ -279,7 +279,7 @@ watch(
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center">
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-mist-100">
+                    <h1 class="text-xl font-bold text-mist-100">
                         {{ activeConfig.name }}
                     </h1>
                     <p class="text-xs text-mist-400">Property Overview & Management</p>
@@ -305,8 +305,8 @@ watch(
 
         <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(monthlyStats.monthlyPayout) }}
                 </p>
@@ -319,7 +319,7 @@ watch(
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ monthlyStats.occupancyRate }}%
@@ -334,14 +334,14 @@ watch(
                     booked
                 </p>
             </div>
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Total bookings</p>
                 <p class="mt-1 text-xl font-bold text-mist-100">
                     {{ monthlyStats.totalBookings }}
                 </p>
                 <p class="mt-1 text-[10px] text-mist-500">Active bookings</p>
             </div>
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
                     <span class="text-lime-400 mr-3">↓ {{ upcomingCheckIns.length }} In</span>
@@ -353,7 +353,7 @@ watch(
 
         <!-- Main Operational View -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Arriving Today</h2>
                     <span
@@ -398,7 +398,7 @@ watch(
                     </div>
                 </div>
             </div>
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
@@ -445,7 +445,7 @@ watch(
                     </div>
                 </div>
             </div>
-            <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Today's Departures</h2>
                     <span
@@ -502,7 +502,7 @@ watch(
         <div
             class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-mist-100">Upcoming bookings</h1>
+                <h1 class="text-xl font-bold text-mist-100">Upcoming bookings</h1>
                 <p class="text-xs text-mist-400">Check all bookings [here]</p>
             </div>
 
@@ -515,15 +515,15 @@ watch(
         </div>
         <div
             v-if="groupedBookings.length === 0"
-            class="rounded-xl border border-dashed border-mist-800 p-12 text-center">
+            class="rounded-lg border border-dashed border-mist-800 p-12 text-center">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
         <div
             v-else
-            class="overflow-x-auto rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
+            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase tracking-wider text-mist-500">
+                    class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">
                     <tr>
                         <th class="w-40 px-4 py-2.5">ID</th>
                         <th class="w-32 px-4 py-2.5 text-center">Channel</th>

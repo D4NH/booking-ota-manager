@@ -8,7 +8,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
 
 const MONTH_NAMES = [
     'January',
@@ -264,7 +264,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
 
         <!-- Month Navigation Controls -->
         <div
-            class="grid grid-cols-3 items-center rounded-xl border border-mist-800 bg-mist-900 p-4">
+            class="grid grid-cols-3 items-center rounded-lg border border-mist-800 bg-mist-900 p-4">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -315,7 +315,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
         </div>
 
         <!-- Calendar Grid Table -->
-        <div class="overflow-hidden rounded-xl border border-mist-800 bg-mist-900 shadow-lg">
+        <div class="overflow-hidden rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
             <div
                 class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
