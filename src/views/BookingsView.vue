@@ -4,21 +4,13 @@ import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { Booking } from '@/db';
-import { PROPERTY_THEMES, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_THEMES, PROPERTY_LIST } from '@/config/properties';
+import { validStatuses } from '@/config/status';
+import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-
-const validStatuses: Booking['status'][] = [
-    'Booked',
-    'Checked-in',
-    'Waiting for payment',
-    'Waiting for payout',
-    'Completed',
-    'No show',
-    'Unavailable',
-];
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);

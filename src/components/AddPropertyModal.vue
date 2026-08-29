@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Property } from '@/db';
-import type { PropertyId } from '@/config/properties';
+import type { Property, PropertyId } from '@/types/properties';
 
 const props = defineProps<{
     propertyToEdit?: Property | null;

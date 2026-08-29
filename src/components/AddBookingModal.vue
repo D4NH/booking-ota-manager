@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_LIST } from '@/config/properties';
 import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/db';
+import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
 
 const props = defineProps<{

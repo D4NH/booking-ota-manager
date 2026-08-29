@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { PROPERTY_CONFIGS, PROPERTY_LIST, type PropertyId } from '@/config/properties';
+import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
+import type { PropertyId } from '@/types/properties';
 
 const props = defineProps<{
     propertyId?: PropertyId | 'all';

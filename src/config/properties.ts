@@ -1,50 +1,47 @@
-export type PropertyId = 'piyungan' | 'wonosari' | 'bantul';
-
-export interface Property {
-    id: PropertyId;
-    name: string;
-    color: string;
-}
-
-export interface PropertyTheme {
-    text: string;
-    bg: string;
-}
-
-export interface PropertyConfig extends Property {
-    spreadsheetId: string;
-    defaultRange: string;
-}
-
-export const PROPERTY_LIST: Property[] = [
-    { id: 'piyungan', name: 'Mai House Jogja - Piyungan', color: '#016730' },
-    { id: 'wonosari', name: 'Mai House Jogja - Wonosari', color: '#3b82f6' },
-    { id: 'bantul', name: 'Mai House Jogja - Bantul', color: '#884B00' },
-];
+import type { Property, PropertyId, PropertyConfig, PropertyTheme } from '@/types/properties';
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     piyungan: {
         id: 'piyungan',
         name: 'Mai House Jogja - Piyungan',
+        address:
+            'Jl. Dusun Bintaran Wetan, Bantaran Wetan, Srimulyo, Kec. Piyungan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55792',
         color: '#016730',
+        codePrefix: 'MHJ',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN,
         defaultRange: 'A2:J500',
     },
     wonosari: {
         id: 'wonosari',
         name: 'Mai House Jogja - Wonosari',
+        address:
+            'Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah Istimewa Yogyakarta 55881',
         color: '#60a5fa',
+        codePrefix: 'MHW',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
         defaultRange: 'A2:J500',
     },
     bantul: {
         id: 'bantul',
         name: 'Mai House Jogja - Bantul',
+        address:
+            'Jl. Mahoni No.Rt.05, Botokenceng, Wirokerten, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55194',
         color: '#fbbf24',
+        codePrefix: 'MHB',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_BANTUL,
         defaultRange: 'A2:J500',
     },
-};
+} as const;
+
+export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
+    ({ id, name, address, color, codePrefix }) => ({
+        id,
+        name,
+        address,
+        color,
+        codePrefix,
+    })
+);
 
 export const PROPERTY_THEMES: Record<PropertyId, PropertyTheme> = {
     wonosari: {
