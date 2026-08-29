@@ -3,9 +3,9 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
-import type { Booking } from '@/db';
 import { PROPERTY_THEMES, PROPERTY_LIST } from '@/config/properties';
 import { validStatuses } from '@/config/status';
+import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
 

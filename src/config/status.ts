@@ -1,4 +1,4 @@
-import type { Booking } from '@/db';
+import type { Booking } from '@/types/booking';
 
 export const validStatuses: Booking['status'][] = [
     'Booked',

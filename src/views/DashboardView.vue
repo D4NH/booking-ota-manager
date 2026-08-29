@@ -4,8 +4,9 @@ import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import { PROPERTY_LIST, PROPERTY_THEMES, type PropertyId } from '@/config/properties';
-import type { Booking } from '@/db';
+import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
+import type { Booking } from '@/types/booking';
+import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';

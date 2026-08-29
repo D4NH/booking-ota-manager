@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import { db, type Property } from '@/db';
+import { db } from '@/db';
+import type { Property, PropertyId } from '@/types/properties';
 
 export const usePropertyStore = defineStore('property', () => {
     const properties = ref<Property[]>([]);
@@ -34,7 +35,7 @@ export const usePropertyStore = defineStore('property', () => {
     };
 
     // Delete single property
-    const deleteProperty = async (id: string): Promise<void> => {
+    const deleteProperty = async (id: PropertyId): Promise<void> => {
         await db.properties.delete(id);
         await loadProperties();
     };

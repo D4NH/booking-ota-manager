@@ -1,7 +1,8 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { db, type Booking } from '@/db';
+import { db } from '@/db';
 import { PROPERTY_CONFIGS } from '@/config/properties';
+import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 
 export const useBookingStore = defineStore('booking', () => {

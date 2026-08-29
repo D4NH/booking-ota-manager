@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
+import type { PropertyId } from '@/types/properties';
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const handleDeleteProperty = async (id: string, name: string): Promise<void> => {
+const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void> => {
     if (window.confirm(`Delete property ${name}?`)) {
         await propertyStore.deleteProperty(id);
     }

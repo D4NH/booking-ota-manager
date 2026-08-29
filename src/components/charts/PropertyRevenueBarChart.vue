@@ -1,4 +1,3 @@
-<!-- Inside src/components/finance/PropertyRevenueBarChart.vue -->
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
@@ -13,16 +12,10 @@ import {
     type ChartData,
     type ChartOptions,
 } from 'chart.js';
-import type { PropertyId } from '@/config/properties';
+import type { PropertyId, MonthlyPropertyRevenue } from '@/types/properties';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export interface MonthlyPropertyRevenue {
-    label: string;
-    piyungan: number;
-    wonosari: number;
-    bantul: number;
-}
 const ALL_DATASETS = [
     {
         id: 'piyungan' as PropertyId,

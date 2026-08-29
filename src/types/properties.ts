@@ -35,3 +35,10 @@ export interface PortfolioSummary {
     totalActiveListings: number;
     totalMonthlyPayout: number;
 }
+
+export interface MonthlyPropertyRevenue {
+    label: string;
+    piyungan: number;
+    wonosari: number;
+    bantul: number;
+}

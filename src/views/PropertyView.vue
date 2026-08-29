@@ -5,8 +5,8 @@ import { useRoute } from 'vue-router';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
+import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
-import type { Booking } from '@/db';
 import { getTodayStr } from '@/utils/date';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';

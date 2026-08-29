@@ -3,17 +3,11 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { Booking } from '@/db';
-import type { PropertyId } from '@/config/properties';
+import type { Booking } from '@/types/booking';
+import type { ChannelStat } from '@/types/finance';
+import type { PropertyId } from '@/types/properties';
 
 import PropertyRevenueBarChart from '@/components/charts/PropertyRevenueBarChart.vue';
-
-interface ChannelStat {
-    channel: string;
-    count: number;
-    revenue: number;
-    percentage: number;
-}
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);

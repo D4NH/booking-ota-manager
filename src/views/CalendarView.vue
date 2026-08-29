@@ -3,17 +3,13 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { PROPERTY_THEMES } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { Booking } from '@/db';
-import { PROPERTY_THEMES, type PropertyId } from '@/config/properties';
+import type { Booking } from '@/types/booking';
+import type { CalendarDay } from '@/types/calendar';
+import type { PropertyId } from '@/types/properties';
 
-interface CalendarDay {
-    dateStr: string; // 'YYYY-MM-DD'
-    dayNumber: number;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-}
 const MONTH_NAMES = [
     'January',
     'February',

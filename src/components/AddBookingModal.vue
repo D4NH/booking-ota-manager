@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_LIST } from '@/config/properties';
 import { CHANNEL_WARNINGS } from '@/config/constants';
-import type { Booking } from '@/db';
+import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
 
