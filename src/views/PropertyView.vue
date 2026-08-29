@@ -8,6 +8,7 @@ import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 
@@ -307,7 +308,7 @@ watch(
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
-                    Rp {{ monthlyStats.monthlyPayout.toLocaleString() }}
+                    {{ formatIDR(monthlyStats.monthlyPayout) }}
                 </p>
                 <div class="flex items-center gap-1 text-xs mt-1">
                     <span
@@ -382,7 +383,7 @@ watch(
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                                {{ formatIDR(b.payout) }}
                             </span>
                         </div>
                         <div
@@ -429,7 +430,7 @@ watch(
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                                {{ formatIDR(b.payout) }}
                             </span>
                         </div>
                         <div
@@ -474,7 +475,7 @@ watch(
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
-                                Rp {{ b.payout.toLocaleString() }}
+                                {{ formatIDR(b.payout) }}
                             </span>
                         </div>
                         <div
@@ -594,7 +595,7 @@ watch(
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
                             <td class="px-4 py-3 font-mono text-right text-nowrap">
-                                Rp {{ b.payout.toLocaleString('id-ID') }}
+                                {{ formatIDR(b.payout) }}
                             </td>
                             <td class="px-4 py-3 text-center text-nowrap">
                                 <span

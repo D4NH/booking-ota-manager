@@ -8,6 +8,7 @@ import { validStatuses } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
@@ -380,7 +381,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
                             <td class="px-4 py-3 font-mono text-right text-nowrap">
-                                Rp {{ b.payout.toLocaleString('id-ID') }}
+                                {{ formatIDR(b.payout) }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span

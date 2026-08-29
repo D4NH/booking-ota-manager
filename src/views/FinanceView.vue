@@ -5,7 +5,8 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { ChannelStat } from '@/types/finance';
-import type { PropertyId } from '@/types/properties';
+import type { PropertyId } from '@/types/property';
+import { formatIDR } from '@/utils/money';
 
 import PropertyRevenueBarChart from '@/components/charts/PropertyRevenueBarChart.vue';
 
@@ -114,9 +115,6 @@ const monthlyPropertyData = computed(() => {
     });
 });
 
-const formatIDR = (val: number): string => {
-    return `Rp ${val.toLocaleString('id-ID')}`;
-};
 const selectProperty = (id: string): void => {
     selectedProperty.value = id as PropertyId;
 };

@@ -8,6 +8,7 @@ import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/properties';
 import { getTodayStr } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 
@@ -279,7 +280,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                 Review
                             </button>
                             <span class="font-mono text-lime-400 text-sm">
-                                Rp {{ b.payout.toLocaleString() }}
+                                {{ formatIDR(b.payout) }}
                             </span>
                         </div>
                     </div>

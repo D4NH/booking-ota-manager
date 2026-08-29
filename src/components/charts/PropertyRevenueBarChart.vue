@@ -12,7 +12,8 @@ import {
     type ChartData,
     type ChartOptions,
 } from 'chart.js';
-import type { PropertyId, MonthlyPropertyRevenue } from '@/types/properties';
+import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
+import { formatIDR } from '@/utils/money';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -109,8 +110,6 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
         },
     },
 }));
-
-const formatIDR = (val: number): string => `Rp ${val.toLocaleString('id-ID')}`;
 </script>
 
 <template>
