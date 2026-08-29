@@ -27,6 +27,7 @@ const collapsedMonths = ref<string[]>([]);
 
 const currentPropertyId = computed<PropertyId>(() => {
     const paramId = route.params.id as string;
+
     if (paramId && paramId in PROPERTY_CONFIGS) {
         return paramId as PropertyId;
     }
@@ -35,9 +36,9 @@ const currentPropertyId = computed<PropertyId>(() => {
 const activeConfig = computed(() => PROPERTY_CONFIGS[currentPropertyId.value]);
 const todayStr = computed<string>(() => getTodayStr());
 const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
-const propertyBookings = computed(() => {
-    return bookings.value.filter((b) => b.propertyId === currentPropertyId.value);
-});
+const propertyBookings = computed(() =>
+    bookings.value.filter((b) => b.propertyId === currentPropertyId.value)
+);
 const todaysArrivals = computed(() => {
     const now = new Date();
     const currentHour = now.getHours();
@@ -47,25 +48,19 @@ const todaysArrivals = computed(() => {
         return b.checkIn === todayStr.value && b.status !== 'Unavailable';
     });
 });
-const currentInHouse = computed(() => {
+const currentStays = computed(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const today = todayStr.value;
 
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') {
-            return false;
-        }
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
 
         // Check-in Today: Only visible after 15:00
-        if (b.checkIn === today) {
-            return currentHour >= 15;
-        }
+        if (b.checkIn === today) return currentHour >= 15;
 
         // Check-out Today: Only visible before 12:00
-        if (b.checkOut === today) {
-            return currentHour < 12;
-        }
+        if (b.checkOut === today) return currentHour < 12;
 
         // Mid-stay: Guest stays past check-in date and before check-out date
         return b.checkIn < today && b.checkOut > today;
@@ -92,16 +87,48 @@ const monthlyStats = computed(() => {
     const year = parseInt(parts[0] || '2026', 10);
     const month = parseInt(parts[1] || '8', 10);
     const daysInMonth = new Date(year, month, 0).getDate();
-
     const occupancyRate =
         daysInMonth > 0 ? Math.min(100, Math.round((totalNightsBooked / daysInMonth) * 100)) : 0;
+    const percentage = Math.min(100, Math.round((totalNightsBooked / daysInMonth) * 100));
 
     return {
         monthlyPayout,
         totalNightsBooked,
         occupancyRate,
-        totalReservations: currentMonthBookings.length,
+        totalBookings: currentMonthBookings.length,
+        capacityNights: daysInMonth,
+        percentage,
     };
+});
+const currentMonthKey = computed<string>(() => todayStr.value.substring(0, 7));
+const currentMonthRevenue = computed<number>(() =>
+    bookingStore.bookings
+        .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
+        .reduce((acc, b) => acc + (b.payout || 0), 0)
+);
+const lastMonthKey = computed<string>(() => {
+    const [yearStr, monthStr] = currentMonthKey.value.split('-');
+
+    // Fallback to 0 or current date numbers if undefined
+    const y = Number(yearStr) || new Date().getFullYear();
+    const m = Number(monthStr) || new Date().getMonth() + 1;
+
+    // TypeScript now guarantees y and m are strictly 'number'
+    const d = new Date(y, m - 2, 1);
+    const lastY = d.getFullYear();
+    const lastM = String(d.getMonth() + 1).padStart(2, '0');
+    return `${lastY}-${lastM}`;
+});
+const lastMonthRevenue = computed<number>(() =>
+    bookingStore.bookings
+        .filter((b) => b.checkIn.startsWith(lastMonthKey.value))
+        .reduce((acc, b) => acc + (b.payout || 0), 0)
+);
+const revenueGrowthPercent = computed<number>(() => {
+    if (lastMonthRevenue.value === 0) return 0;
+    return Math.round(
+        ((currentMonthRevenue.value - lastMonthRevenue.value) / lastMonthRevenue.value) * 100
+    );
 });
 const filteredBookings = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
@@ -141,14 +168,22 @@ const groupedBookings = computed(() => {
             bookings: groups[key],
         }));
 });
+const upcomingCheckIns = computed(() =>
+    bookingStore.bookings.filter(
+        (b) => b.propertyId === selectedProperty.value && b.checkIn === todayStr.value
+    )
+);
+const upcomingCheckOuts = computed(() =>
+    bookingStore.bookings.filter(
+        (b) => b.propertyId === selectedProperty.value && b.checkOut === todayStr.value
+    )
+);
 
-const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean => {
-    return (
-        todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout'
-    );
-};
+const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
+    todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout';
 const toggleMonth = (monthKey: string): void => {
     const index = collapsedMonths.value.indexOf(monthKey);
+
     if (index > -1) {
         collapsedMonths.value.splice(index, 1);
     } else {
@@ -266,38 +301,51 @@ watch(
             </div>
         </div>
 
-        <!-- Performance Summary Cards -->
+        <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-[10px] uppercase font-bold text-mist-400">Monthly Revenue</p>
-                <p class="mt-1 font-mono text-xl font-bold text-lime-400">
+                <p class="mt-1 font-mono text-lg font-bold text-white">
                     Rp {{ monthlyStats.monthlyPayout.toLocaleString() }}
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Target Month Earnings</p>
+                <div class="flex items-center gap-1 text-xs mt-1">
+                    <span
+                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'"
+                        class="font-medium">
+                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                    </span>
+                    <span class="text-mist-500">vs last month</span>
+                </div>
             </div>
-
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Occupancy Rate</p>
-                <p class="mt-1 text-xl font-bold text-mist-100">
+                <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
+                <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ monthlyStats.occupancyRate }}%
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Days booked vs total days</p>
-            </div>
-
-            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Nights Booked</p>
-                <p class="mt-1 text-xl font-bold text-mist-100">
-                    {{ monthlyStats.totalNightsBooked }} Nights
+                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
+                    <div
+                        class="bg-lime-500 h-full transition-all duration-300"
+                        :style="{ width: `${monthlyStats.percentage}%` }"></div>
+                </div>
+                <p class="text-xs text-mist-500 mt-1">
+                    {{ monthlyStats.totalNightsBooked }} / {{ monthlyStats.capacityNights }} nights
+                    booked
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Total occupied room nights</p>
             </div>
-
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
-                <p class="text-[10px] uppercase font-bold text-mist-400">Total Reservations</p>
+                <p class="text-[10px] uppercase font-bold text-mist-400">Total bookings</p>
                 <p class="mt-1 text-xl font-bold text-mist-100">
-                    {{ monthlyStats.totalReservations }} Bookings
+                    {{ monthlyStats.totalBookings }}
                 </p>
-                <p class="mt-1 text-[10px] text-mist-500">Active monthly entries</p>
+                <p class="mt-1 text-[10px] text-mist-500">Active bookings</p>
+            </div>
+            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
+                <div class="text-lg font-bold text-mist-200 mt-1">
+                    <span class="text-lime-400 mr-3">↓ {{ upcomingCheckIns.length }} In</span>
+                    <span class="text-amber-400">↑ {{ upcomingCheckOuts.length }} Out</span>
+                </div>
+                <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>
         </div>
 
@@ -316,38 +364,38 @@ watch(
                     class="py-12 text-center text-xs text-mist-500">
                     No arrivals scheduled for today.
                 </div>
-                <div
-                    v-else
-                    class="space-y-3">
+                <div v-else>
                     <div
                         v-for="b in todaysArrivals"
                         :key="b.id"
-                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
-                        <div class="flex items-center justify-between">
+                        class="rounded-lg border border-mist-800 bg-mist-950 p-3 space-y-2">
+                        <div class="flex items-center">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="openEditModal(b)">
-                                <fa-icon icon="pen-to-square" /> Edit
-                            </button>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
                             </span>
                         </div>
+                        <div
+                            class="flex items-center justify-end border-t border-mist-800 mt-3 pt-2">
+                            <button
+                                type="button"
+                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
+                                @click="openEditModal(b)">
+                                <fa-icon icon="pen-to-square" /> Edit
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-
             <div class="space-y-4 rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <div>
@@ -355,41 +403,42 @@ watch(
                     </div>
                     <span
                         class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                        {{ currentInHouse.length }}
+                        {{ currentStays.length }}
                     </span>
                 </div>
                 <div
-                    v-if="currentInHouse.length === 0"
+                    v-if="currentStays.length === 0"
                     class="py-12 text-center text-xs text-mist-500">
                     No guests currently in-house.
                 </div>
-                <div
-                    v-else
-                    class="space-y-3">
+                <div v-else>
                     <div
-                        v-for="b in currentInHouse"
+                        v-for="b in currentStays"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="openEditModal(b)">
-                                <fa-icon icon="pen-to-square" /> Edit
-                            </button>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
                             </span>
+                        </div>
+                        <div
+                            class="flex items-center justify-end border-t border-mist-800 mt-3 pt-2">
+                            <button
+                                type="button"
+                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
+                                @click="openEditModal(b)">
+                                <fa-icon icon="pen-to-square" /> Edit
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -407,33 +456,34 @@ watch(
                     class="py-12 text-center text-xs text-mist-500">
                     No departures scheduled for today.
                 </div>
-                <div
-                    v-else
-                    class="space-y-2">
+                <div v-else>
                     <div
                         v-for="b in todaysDepartures"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="openEditModal(b)">
-                                <fa-icon icon="pen-to-square" /> Edit
-                            </button>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
+                        <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.listing }}</span>
                             <span class="font-mono text-lime-400">
                                 Rp {{ b.payout.toLocaleString() }}
                             </span>
+                        </div>
+                        <div
+                            class="flex items-center justify-end border-t border-mist-800 mt-3 pt-2">
+                            <button
+                                type="button"
+                                class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
+                                @click="openEditModal(b)">
+                                <fa-icon icon="pen-to-square" /> Edit
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -443,16 +493,14 @@ watch(
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            ℹ️ {{ syncStatus }}
+            {{ syncStatus }}
         </div>
 
-        <!-- Upcoming Reservations -->
+        <!-- Upcoming Bookings -->
         <div
             class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-mist-100">
-                    Upcoming reservations
-                </h1>
+                <h1 class="text-xl font-bold tracking-tight text-mist-100">Upcoming bookings</h1>
                 <p class="text-xs text-mist-400">Check all bookings [here]</p>
             </div>
 

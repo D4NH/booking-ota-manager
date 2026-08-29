@@ -290,7 +290,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
             Add Booking
         </button>
 
-        <!-- Reservations Table -->
+        <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
             class="rounded-xl border border-dashed border-mist-800 p-12 text-center">

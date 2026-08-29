@@ -37,25 +37,19 @@ const todaysArrivals = computed(() => {
         return b.checkIn === todayStr.value && b.status !== 'Unavailable';
     });
 });
-const currentInHouse = computed(() => {
+const currentStays = computed(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const today = todayStr.value;
 
     return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') {
-            return false;
-        }
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
 
         // Check-in Today: Only visible after 15:00
-        if (b.checkIn === today) {
-            return currentHour >= 15;
-        }
+        if (b.checkIn === today) return currentHour >= 15;
 
         // Check-out Today: Only visible before 12:00
-        if (b.checkOut === today) {
-            return currentHour < 12;
-        }
+        if (b.checkOut === today) return currentHour < 12;
 
         // Mid-stay: Guest stays past check-in date and before check-out date
         return b.checkIn < today && b.checkOut > today;
@@ -96,21 +90,14 @@ const monthlySummary = computed(() => {
     const monthBookings = propertyBookings.value.filter(
         (b) => b.checkIn.startsWith(currentMonthStr.value) && b.status !== 'Unavailable'
     );
-
     const totalPayout = monthBookings.reduce((sum, b) => sum + b.payout, 0);
     const totalNightsBooked = monthBookings.reduce((sum, b) => sum + b.nights, 0);
-
-    // Parse YYYY-MM safely to avoid undefined types
     const parts = currentMonthStr.value.split('-');
     const year = parseInt(parts[0] || '2026', 10);
-    const month = parseInt(parts[1] || '8', 10);
-
-    // Days in target month (setting day index 0 gets last day of previous month)
+    const month = parseInt(parts[1] || '1', 10);
     const daysInMonth = new Date(year, month, 0).getDate();
-
     const activePropertyCount = selectedPropertyFilter.value === 'all' ? PROPERTY_LIST.length : 1;
     const totalAvailableRoomNights = daysInMonth * activePropertyCount;
-
     const occupancyRate =
         totalAvailableRoomNights > 0
             ? Math.min(100, Math.round((totalNightsBooked / totalAvailableRoomNights) * 100))
@@ -330,12 +317,12 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     {{ monthlyOccupancy.capacityNights }} nights booked
                 </p>
             </div>
-            <div class="frounded-xl border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
-                    {{ monthlySummary.bookingCount }} Reservations
+                    {{ monthlySummary.bookingCount }}
                 </p>
-                <p class="text-xs text-mist-500 mt-1">Active reservations</p>
+                <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
             <div class="rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
@@ -403,7 +390,6 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     </div>
                 </div>
             </div>
-
             <!-- Current In-House Guests -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
@@ -412,11 +398,11 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     </div>
                     <span
                         class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                        {{ currentInHouse.length }}
+                        {{ currentStays.length }}
                     </span>
                 </div>
                 <div
-                    v-if="currentInHouse.length === 0"
+                    v-if="currentStays.length === 0"
                     class="py-12 text-center text-xs text-mist-500">
                     No guests currently in-house.
                 </div>
@@ -424,7 +410,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     v-else
                     class="space-y-4">
                     <div
-                        v-for="b in currentInHouse"
+                        v-for="b in currentStays"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
                         <div class="flex items-center justify-between">
@@ -454,7 +440,6 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     </div>
                 </div>
             </div>
-
             <!-- Today's Departures -->
             <div class="space-y-3 rounded-xl border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">

@@ -14,6 +14,20 @@ interface CalendarDay {
     isCurrentMonth: boolean;
     isToday: boolean;
 }
+const MONTH_NAMES = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+];
 
 import AddBookingModal from '@/components/AddBookingModal.vue';
 
@@ -32,12 +46,11 @@ const currentDate = ref<Date>(new Date());
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
+const selectedMonth = ref<number>(currentDate.value.getMonth());
+const selectedYear = ref<number>(currentDate.value.getFullYear());
 
 const currentYear = computed(() => currentDate.value.getFullYear());
 const currentMonth = computed(() => currentDate.value.getMonth());
-const formattedMonthYear = computed(() =>
-    currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-);
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -112,6 +125,15 @@ const filteredBookings = computed(() =>
         return b.status;
     })
 );
+const yearOptions = computed(() => {
+    const currentYear = new Date().getFullYear();
+    const years: number[] = [];
+
+    for (let y = currentYear - 2; y <= currentYear + 3; y++) {
+        years.push(y);
+    }
+    return years;
+});
 
 watch(
     () => route.params.id,
@@ -119,12 +141,40 @@ watch(
         selectedProperty.value = (newId as PropertyId) || 'all';
     }
 );
+watch(
+    currentDate,
+    (newDate) => {
+        selectedMonth.value = newDate.getMonth();
+        selectedYear.value = newDate.getFullYear();
+    },
+    { immediate: true }
+);
 
-const prevMonth = (): void => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
+const prevMonth = () => {
+    const newDate = new Date(currentDate.value);
+
+    newDate.setMonth(newDate.getMonth() - 1);
+    currentDate.value = newDate;
 };
-const nextMonth = (): void => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
+const nextMonth = () => {
+    const newDate = new Date(currentDate.value);
+
+    newDate.setMonth(newDate.getMonth() + 1);
+    currentDate.value = newDate;
+};
+const handleMonthChange = (e: Event) => {
+    const newMonth = Number((e.target as HTMLSelectElement).value);
+    const newDate = new Date(currentDate.value);
+
+    newDate.setMonth(newMonth);
+    currentDate.value = newDate;
+};
+const handleYearChange = (e: Event) => {
+    const newYear = Number((e.target as HTMLSelectElement).value);
+    const newDate = new Date(currentDate.value);
+
+    newDate.setFullYear(newYear);
+    currentDate.value = newDate;
 };
 const goToToday = (): void => {
     currentDate.value = new Date();
@@ -219,7 +269,6 @@ const getPropertyTheme = (id: PropertyId | string) =>
         <!-- Month Navigation Controls -->
         <div
             class="grid grid-cols-3 items-center rounded-xl border border-mist-800 bg-mist-900 p-4">
-            <!-- Left Column: Controls -->
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -241,8 +290,32 @@ const getPropertyTheme = (id: PropertyId | string) =>
                 </button>
             </div>
 
-            <!-- Middle Column: Centered Month Title -->
-            <h2 class="text-center font-bold text-mist-100">{{ formattedMonthYear }}</h2>
+            <div class="flex items-center justify-center gap-2">
+                <!-- Month Dropdown Selector -->
+                <select
+                    :value="selectedMonth"
+                    class="appearance-none rounded-lg border border-mist-800 px-3 py-1.5 text-center font-bold text-mist-100 outline-none transition-colors focus:border-lime-500 hover:border-mist-700 cursor-pointer"
+                    @change="handleMonthChange">
+                    <option
+                        v-for="(name, index) in MONTH_NAMES"
+                        :key="index"
+                        :value="index">
+                        {{ name }}
+                    </option>
+                </select>
+                <!-- Year Dropdown Selector -->
+                <select
+                    :value="selectedYear"
+                    class="appearance-none rounded-lg border border-mist-800 px-3 py-1.5 text-center font-bold text-mist-100 outline-none transition-colors focus:border-lime-500 hover:border-mist-700 cursor-pointer"
+                    @change="handleYearChange">
+                    <option
+                        v-for="year in yearOptions"
+                        :key="year"
+                        :value="year">
+                        {{ year }}
+                    </option>
+                </select>
+            </div>
         </div>
 
         <!-- Calendar Grid Table -->
@@ -280,42 +353,93 @@ const getPropertyTheme = (id: PropertyId | string) =>
                         </span>
                     </div>
 
-                    <!-- Reservations -->
+                    <!-- Bookings -->
                     <div class="space-y-1 mt-1">
                         <div
                             v-for="b in getBookingsForDate(day.dateStr)"
                             :key="b.id || b.bookingId"
-                            :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
-                            class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-sm"
-                            :class="[
-                                b.status === 'Booked'
-                                    ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/50'
-                                    : b.status === 'Waiting for payment'
-                                      ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/70'
-                                      : b.status === 'Unavailable'
-                                        ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/70'
-                                        : 'border-mist-700 bg-mist-800 text-mist-300',
-                            ]"
-                            @click="handleBookingClick(b, $event)">
-                            <div class="flex items-center justify-between">
-                                <span class="font-semibold text-sm text-mist-200 truncate">
-                                    {{ b.guestName }}
-                                </span>
-                                <RouterLink
-                                    v-if="b.status !== 'Unavailable' && selectedProperty === 'all'"
-                                    :to="{ name: 'property', params: { id: b.propertyId } }"
-                                    class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
-                            </div>
+                            class="group relative">
+                            <!-- Calendar Event Badge -->
                             <div
-                                v-if="b.status !== 'Unavailable'"
-                                class="text-xs text-mist-400">
-                                {{ b.listing }}
+                                :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
+                                class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-sm cursor-pointer"
+                                :class="[
+                                    b.status === 'Booked'
+                                        ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/50'
+                                        : b.status === 'Waiting for payment'
+                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/70'
+                                          : b.status === 'Unavailable'
+                                            ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/70'
+                                            : 'border-mist-700 bg-mist-800 text-mist-300',
+                                ]"
+                                @click="handleBookingClick(b, $event)">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-sm text-mist-200 truncate">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <RouterLink
+                                        v-if="
+                                            b.status !== 'Unavailable' && selectedProperty === 'all'
+                                        "
+                                        :to="{ name: 'property', params: { id: b.propertyId } }"
+                                        class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div
+                                    v-if="b.status !== 'Unavailable'"
+                                    class="text-xs text-mist-400">
+                                    {{ b.listing }}
+                                </div>
+                            </div>
+
+                            <!-- Pure Tailwind Hover Popover (Only rendered/shown if in current month) -->
+                            <div
+                                v-if="day.isCurrentMonth"
+                                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-60 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                <div
+                                    class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    <!-- Header -->
+                                    <div
+                                        class="flex items-center justify-between border-b border-mist-800 pb-1.5 mb-1.5">
+                                        <span class="font-bold text-mist-200">{{
+                                            b.guestName
+                                        }}</span>
+                                        <span class="text-[10px] text-mist-400">
+                                            {{ b.checkIn }} → {{ b.checkOut }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Payment Pending Alert -->
+                                    <div
+                                        v-if="b.status === 'Waiting for payment'"
+                                        class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium">
+                                        WhatsApp payment follow-up pending
+                                    </div>
+
+                                    <!-- Notes -->
+                                    <div
+                                        v-if="b.notes"
+                                        class="text-mist-300">
+                                        <span class="font-semibold text-mist-400">Notes:</span>
+                                        <p class="mt-0.5 whitespace-pre-wrap italic">
+                                            {{ b.notes }}
+                                        </p>
+                                    </div>
+                                    <div
+                                        v-else
+                                        class="text-mist-500 italic">
+                                        No notes added
+                                    </div>
+
+                                    <!-- Arrow -->
+                                    <div
+                                        class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-mist-900"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
