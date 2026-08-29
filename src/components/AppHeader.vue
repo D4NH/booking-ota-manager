@@ -1,5 +1,5 @@
 <template>
-    <header class="w-full mt-6 mb-12 pb-6">
+    <header class="w-full mt-6 mb-12 pb-6 border-b border-mist-800">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <RouterLink
@@ -37,12 +37,6 @@
 </template>
 
 <style lang="scss" scoped>
-header {
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-text-muted);
-    font-size: 0.813rem;
-}
-
 .router-link-active:not(.logo) {
     color: var(--color-primary);
 
