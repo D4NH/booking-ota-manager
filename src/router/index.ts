@@ -12,12 +12,17 @@ const router = createRouter({
         {
             path: '/properties',
             name: 'properties',
-            component: () => import('../views/PropertiesView.vue'),
-        },
-        {
-            path: '/properties/:id',
-            name: 'property',
-            component: () => import('../views/PropertyView.vue'),
+            meta: { isOverview: true },
+            component: () => import('@/views/PropertiesView.vue'),
+            children: [
+                {
+                    path: ':id',
+                    name: 'property-detail',
+                    meta: { isOverview: false },
+                    component: () => import('@/views/PropertyDetailView.vue'),
+                    props: true,
+                },
+            ],
         },
         {
             path: '/calendar',

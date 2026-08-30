@@ -233,7 +233,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                     :class="[
                         selectedProperty === 'all'
-                            ? 'bg-mist-800 text-mist-100'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="selectedProperty = 'all'">
@@ -246,7 +246,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                     :class="[
                         selectedProperty === prop.id
-                            ? 'bg-mist-800 text-mist-100'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="selectProperty(prop.id)">
@@ -377,7 +377,10 @@ const getPropertyTheme = (id: PropertyId | string) =>
                                         v-if="
                                             b.status !== 'Unavailable' && selectedProperty === 'all'
                                         "
-                                        :to="{ name: 'property', params: { id: b.propertyId } }"
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
                                         class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
                                         :class="[
                                             getPropertyTheme(b.propertyId).bg,

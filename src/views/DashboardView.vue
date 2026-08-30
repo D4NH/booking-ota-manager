@@ -345,7 +345,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                     v-for="property in sortedProperties"
                     :key="property.id"
                     class="relative block h-full overflow-hidden rounded-lg hover:text-lime-500"
-                    :to="{ name: 'property', params: { id: property.id } }">
+                    :to="{ name: 'property-detail', params: { id: property.id } }">
                     <img
                         loading="lazy"
                         :src="propertyImage(property.id)"
@@ -396,7 +396,10 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                         {{ b.guestName }}
                                     </span>
                                     <RouterLink
-                                        :to="{ name: 'property', params: { id: b.propertyId } }"
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
                                         class="capitalize rounded px-2 py-0.5 text-xs font-medium"
                                         :class="[
                                             getPropertyTheme(b.propertyId).bg,
@@ -450,7 +453,10 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                         {{ b.guestName }}
                                     </span>
                                     <RouterLink
-                                        :to="{ name: 'property', params: { id: b.propertyId } }"
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
                                         class="capitalize rounded px-2 py-0.5 text-xs font-medium"
                                         :class="[
                                             getPropertyTheme(b.propertyId).bg,
@@ -502,7 +508,10 @@ const getPropertyTheme = (id: PropertyId | string) => {
                                         {{ b.guestName }}
                                     </span>
                                     <RouterLink
-                                        :to="{ name: 'property', params: { id: b.propertyId } }"
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
                                         class="capitalize rounded px-2 py-0.5 text-xs font-medium"
                                         :class="[
                                             getPropertyTheme(b.propertyId).bg,

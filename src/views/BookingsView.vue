@@ -360,7 +360,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
-                                    :to="{ name: 'property', params: { id: b.propertyId } }"
+                                    :to="{ name: 'property-detail', params: { id: b.propertyId } }"
                                     class="capitalize rounded px-2 py-0.5 text-xs font-medium text-nowrap"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,

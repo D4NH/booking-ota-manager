@@ -176,7 +176,7 @@ const selectProperty = (id: string): void => {
             </div>
         </div>
 
-        <!-- 1. KPI Cards Row -->
+        <!-- KPI Cards Row -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Revenue</p>
@@ -203,8 +203,8 @@ const selectProperty = (id: string): void => {
             </div>
         </div>
 
-        <!-- Monthly Revenue Comparison & Breakdown Grid -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <!-- Monthly Revenue Comparison & Breakdown Grid -->
             <div class="lg:col-span-2 rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-4">
                 <div class="border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-sm font-bold text-mist-100">Revenue by Property</h2>
@@ -215,7 +215,7 @@ const selectProperty = (id: string): void => {
                     :selected-property="selectedProperty" />
             </div>
 
-            <!-- 3. Channel Distribution Breakdown -->
+            <!-- Channel Distribution -->
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-4">
                 <div class="border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-base font-bold text-mist-100">Channel Distribution</h2>
@@ -232,13 +232,11 @@ const selectProperty = (id: string): void => {
                                 {{ ch.percentage }}% ({{ formatIDR(ch.revenue) }})
                             </span>
                         </div>
-
                         <div class="h-2 w-full rounded-full bg-mist-950 overflow-hidden">
                             <div
                                 class="h-full bg-lime-500 transition-all duration-300"
                                 :style="{ width: `${ch.percentage}%` }"></div>
                         </div>
-
                         <span class="text-[10px] text-mist-500">
                             {{ ch.count }} {{ ch.count === 1 ? 'booking' : 'bookings' }}
                         </span>
