@@ -27,38 +27,21 @@ const collapsedMonths = ref<string[]>([]);
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 
-const propertyBookings = computed(() =>
-    selectedProperty.value === 'all'
-        ? bookings.value
-        : bookings.value.filter((b) => b.propertyId === selectedProperty.value)
-);
 const availableMonths = computed(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
     const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
 
     return uniqueMonths.sort((a, b) => a.localeCompare(b));
 });
-const filteredBookings = computed(() => {
-    const query = searchQuery.value.trim().toLowerCase();
-
-    return propertyBookings.value
-        .filter((b) => {
-            if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value)
-                return false;
-            if (selectedMonth.value !== 'all' && !b.checkIn.startsWith(selectedMonth.value))
-                return false;
-            if (hiddenStatuses.value.includes(b.status)) return false;
-            if (query) {
-                const matchName = b.guestName.toLowerCase().includes(query);
-                const matchId = b.bookingId.toLowerCase().includes(query);
-                const matchNotes = b.notes?.toLowerCase().includes(query) || false;
-
-                if (!matchName && !matchId && !matchNotes) return false;
-            }
-            return true;
-        })
-        .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
-});
+const filteredBookings = computed(() =>
+    selectedProperty.value === 'all'
+        ? bookings.value.filter((b) => !hiddenStatuses.value.includes(b.status))
+        : bookings.value.filter(
+              (b) =>
+                  !hiddenStatuses.value.includes(b.status) &&
+                  b.propertyId === selectedProperty.value
+          )
+);
 const groupedBookings = computed(() => {
     const groups: Record<string, Booking[]> = {};
 
@@ -79,11 +62,9 @@ const groupedBookings = computed(() => {
         }));
 });
 
-const toggleStatusVisibility = (status: Booking['status']) => {
-    const index = hiddenStatuses.value.indexOf(status);
-
-    if (index > -1) {
-        hiddenStatuses.value.splice(index, 1);
+const toggleStatusVisibility = (status: Booking['status']): void => {
+    if (hiddenStatuses.value.includes(status)) {
+        hiddenStatuses.value = hiddenStatuses.value.filter((s) => s !== status);
     } else {
         hiddenStatuses.value.push(status);
     }
