@@ -1,29 +1,28 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import BookingModal from '@/components/BookingModal.vue';
+import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
-import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useDailyOperations } from '@/composables/useDailyOperations';
+import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
-import BookingModal from '@/components/BookingModal.vue';
-
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
-const { todayStr, currentMonthKey, lastMonthKey } = useDateKeys();
-const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const isModalOpen = ref<boolean>(false);
+const { saveBooking } = useBookingSync();
+const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
+const { todayStr, currentMonthKey, lastMonthKey } = useDateKeys();
+
+const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
-const syncStatus = ref<string>('');
 
 const propertyBookings = computed(() => bookings.value);
 const pendingPaymentAlerts = computed(() =>
@@ -127,35 +126,13 @@ const monthlyOccupancy = computed(() => {
 
 const handleEditBooking = (booking: Booking) => {
     bookingToEdit.value = booking;
-    isModalOpen.value = true;
+    isBookingModalOpen.value = true;
 };
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    try {
-        if (bookingToEdit.value) {
-            syncStatus.value = 'Syncing edit to Google Sheets...';
-            await bookingStore.updateBookingWithRemoteSync(
-                { ...bookingToEdit.value, ...payload },
-                { updateSheetRowByBookingId }
-            );
-            syncStatus.value = 'Booking updated in Google Sheets & local database.';
-        } else {
-            syncStatus.value = 'Syncing new booking to Google Sheets...';
-            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-            syncStatus.value = 'Booking saved to Google Sheets & local database.';
-        }
-
-        isModalOpen.value = false;
-    } catch (err: unknown) {
-        console.error('Save aborted due to sync failure:', err);
-        const errorMessage =
-            err instanceof Error
-                ? err.message
-                : 'Google Sheets sync failed. Local database was not modified.';
-        syncStatus.value = `Save failed: ${errorMessage}`;
-    } finally {
-        setTimeout(() => {
-            syncStatus.value = '';
-        }, 5000);
+    const success = await saveBooking(payload, bookingToEdit.value);
+    if (success) {
+        isBookingModalOpen.value = false;
+        bookingToEdit.value = null;
     }
 };
 const propertyImage = (id: string) =>
@@ -169,13 +146,6 @@ const getPropertyTheme = (id: PropertyId | string) =>
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
             <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
-        </div>
-
-        <!-- Status -->
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            {{ syncStatus }}
         </div>
 
         <!-- Pending Payments -->
@@ -493,9 +463,9 @@ const getPropertyTheme = (id: PropertyId | string) =>
         </div>
 
         <BookingModal
-            v-if="isModalOpen"
+            v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
-            @close="isModalOpen = false"
+            @close="isBookingModalOpen = false"
             @save="handleSaveBooking" />
     </div>
 </template>

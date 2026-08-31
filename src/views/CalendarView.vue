@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useBookingSync } from '@/composables/useBookingSync';
 import { PROPERTY_THEMES } from '@/config/properties';
 import { MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -15,11 +15,13 @@ import { formatLocalDateStr } from '@/utils/date';
 import BookingModal from '@/components/BookingModal.vue';
 
 const route = useRoute();
-const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
+
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
+
+const { syncStatus, saveBooking } = useBookingSync();
 
 const routePropertyId = route.params.id as PropertyId | undefined;
 
@@ -28,7 +30,6 @@ const selectedCheckInDate = ref<string>('');
 const currentDate = ref<Date>(new Date());
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
-const syncStatus = ref<string>('');
 const selectedMonth = ref<number>(currentDate.value.getMonth());
 const selectedYear = ref<number>(currentDate.value.getFullYear());
 
@@ -167,26 +168,10 @@ const handleBookingClick = (booking: Booking, event: Event) => {
     isBookingModalOpen.value = true;
 };
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    try {
-        if (bookingToEdit.value) {
-            syncStatus.value = 'Syncing edit to Google Sheets...';
-            await bookingStore.updateBookingWithRemoteSync(
-                { ...bookingToEdit.value, ...payload },
-                { updateSheetRowByBookingId }
-            );
-            syncStatus.value = 'Booking updated in Google Sheets & local database.';
-        } else {
-            syncStatus.value = 'Syncing new booking to Google Sheets...';
-            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-            syncStatus.value = 'Booking saved to Google Sheets & local database.';
-        }
+    const success = await saveBooking(payload, bookingToEdit.value);
+    if (success) {
         isBookingModalOpen.value = false;
-    } catch (err: unknown) {
-        console.error('Save failed:', err);
-        const msg = err instanceof Error ? err.message : 'Google Sheets sync failed.';
-        syncStatus.value = `Save failed: ${msg}`;
-    } finally {
-        setTimeout(() => (syncStatus.value = ''), 5000);
+        bookingToEdit.value = null;
     }
 };
 const selectProperty = (id: string) => {
