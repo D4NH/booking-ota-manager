@@ -126,33 +126,29 @@ watch(
     { immediate: true }
 );
 
-const prevMonth = () => {
-    const newDate = new Date(currentDate.value);
-
-    newDate.setMonth(newDate.getMonth() - 1);
-    currentDate.value = newDate;
+const prevMonth = (): void => {
+    currentDate.value = new Date(
+        currentDate.value.getFullYear(),
+        currentDate.value.getMonth() - 1,
+        1
+    );
 };
-const nextMonth = () => {
-    const newDate = new Date(currentDate.value);
-
-    newDate.setMonth(newDate.getMonth() + 1);
-    currentDate.value = newDate;
+const nextMonth = (): void => {
+    currentDate.value = new Date(
+        currentDate.value.getFullYear(),
+        currentDate.value.getMonth() + 1,
+        1
+    );
 };
-const handleMonthChange = (e: Event) => {
+const handleMonthChange = (e: Event): void => {
     const newMonth = Number((e.target as HTMLSelectElement).value);
-    const newDate = new Date(currentDate.value);
-
-    newDate.setMonth(newMonth);
-    currentDate.value = newDate;
+    currentDate.value = new Date(currentDate.value.getFullYear(), newMonth, 1);
 };
-const handleYearChange = (e: Event) => {
+const handleYearChange = (e: Event): void => {
     const newYear = Number((e.target as HTMLSelectElement).value);
-    const newDate = new Date(currentDate.value);
-
-    newDate.setFullYear(newYear);
-    currentDate.value = newDate;
+    currentDate.value = new Date(newYear, currentDate.value.getMonth(), 1);
 };
-const goToToday = () => {
+const goToToday = (): void => {
     currentDate.value = new Date();
 };
 const getBookingsForDate = (dateStr: string): Booking[] =>
