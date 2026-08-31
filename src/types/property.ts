@@ -4,7 +4,7 @@ export interface Property {
     id: PropertyId; // e.g., 'piyungan'
     name: string; // e.g., 'Mai House Jogja'
     address: string; // e.g., 'Jl. Jalan'
-    price: string; // Monthly rental price
+    price: number; // Monthly rental price
     codePrefix: string; // e.g., 'MHJ'
     color: string; // UI color badge
 }
@@ -59,4 +59,13 @@ export interface PropertyPerformance {
     liveStatus: LiveStatus;
     currentGuestName?: string;
     listings: ListingBreakdown[]; // Expanded listing details
+}
+
+export interface PropertyForm {
+    id: PropertyId | '';
+    name: string;
+    address: string;
+    color: string;
+    price: number | '';
+    codePrefix: string;
 }
