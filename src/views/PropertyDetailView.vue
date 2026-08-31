@@ -9,7 +9,7 @@ import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-import { formatMonthHeader } from '@/utils/date';
+import { formatDate } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 
@@ -74,7 +74,7 @@ const groupedBookings = computed(() => {
         .sort((a, b) => a.localeCompare(b))
         .map((key) => ({
             key,
-            label: formatMonthHeader(key),
+            label: formatDate(key, { monthHeader: true }),
             count: groups[key]?.length,
             bookings: groups[key],
         }));
@@ -119,7 +119,7 @@ watch(
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-6">
+    <div class="mx-auto max-w-7xl space-y-4">
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
@@ -127,7 +127,7 @@ watch(
         </div>
 
         <!-- Upcoming Bookings -->
-        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mt-12">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-12">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Upcoming bookings</h1>
                 <p class="text-xs text-mist-400">Check all bookings [here]</p>

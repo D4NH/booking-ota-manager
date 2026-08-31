@@ -11,6 +11,7 @@ import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
+import { formatDate } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 import PropertyModal from '@/components/PropertyModal.vue';
@@ -146,7 +147,7 @@ const handleDeleteProperty = async (id: PropertyId) => {
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-6">
+    <div class="mx-auto max-w-7xl space-y-4">
         <div
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
@@ -222,7 +223,7 @@ const handleDeleteProperty = async (id: PropertyId) => {
         </div>
 
         <!-- Monthly Summary Cards -->
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
@@ -270,7 +271,7 @@ const handleDeleteProperty = async (id: PropertyId) => {
         </div>
 
         <!-- Main Operational View -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <!-- Arriving Today -->
             <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
@@ -311,7 +312,11 @@ const handleDeleteProperty = async (id: PropertyId) => {
                             </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
-                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                            </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
@@ -374,7 +379,11 @@ const handleDeleteProperty = async (id: PropertyId) => {
                             </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
-                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                            </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
@@ -435,7 +444,11 @@ const handleDeleteProperty = async (id: PropertyId) => {
                             </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
-                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                            </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">

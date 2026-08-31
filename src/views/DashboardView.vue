@@ -10,6 +10,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
+import { formatDate } from '@/utils/date';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -139,14 +140,14 @@ const propertyImage = (id: string) =>
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-6">
+    <div class="mx-auto max-w-7xl space-y-4">
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
             <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
         </div>
 
         <!-- Monthly Summary Cards -->
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
@@ -202,7 +203,7 @@ const propertyImage = (id: string) =>
         <!-- Pending Payments -->
         <div
             v-if="pendingPayments.length > 0"
-            class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div class="space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-300">
@@ -233,7 +234,11 @@ const propertyImage = (id: string) =>
                             </RouterLink>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                            </span>
                             <span>{{ b.nights }} night(s)</span>
                         </div>
                         <div class="flex justify-between text-[12px] text-mist-400">
@@ -329,7 +334,11 @@ const propertyImage = (id: string) =>
                                     </RouterLink>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">
-                                    <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    </span>
                                     <span>{{ b.nights }} night(s)</span>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">
@@ -386,7 +395,11 @@ const propertyImage = (id: string) =>
                                     </RouterLink>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">
-                                    <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    </span>
                                     <span>{{ b.nights }} night(s)</span>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">
@@ -441,7 +454,11 @@ const propertyImage = (id: string) =>
                                     </RouterLink>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">
-                                    <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    </span>
                                     <span>{{ b.nights }} night(s)</span>
                                 </div>
                                 <div class="flex justify-between text-xs text-mist-400">

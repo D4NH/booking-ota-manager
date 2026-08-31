@@ -20,13 +20,53 @@ export const toISOMonthString = (date: Date): string => {
 };
 
 /**
- * Format YYYY-MM key to localized header string (e.g. 'January 2026')
+ * Parse an ISO date string ("YYYY-MM-DD") into a local Date object.
+ * Prevents UTC timezone offset issues where dates shift back by 1 day.
  */
-export const formatMonthHeader = (monthKey: string): string => {
-    const [year = '0', month = '1'] = monthKey.split('-');
-    const date = new Date(Number(year), Number(month) - 1, 1);
+export const parseISODate = (isoDateStr: string): Date => {
+    const [year, month, day] = isoDateStr.split('-').map(Number);
+    return new Date(year || 2026, (month || 1) - 1, day || 1);
+};
 
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+/**
+ * Formats an ISO date string ("2026-09-02") into a readable string.
+ * Example outputs:
+ *  - formatDate("2026-09-02") -> "02 September"
+ *  - formatDate("2026-09-02", { includeYear: true }) -> "02 September, 2026"
+ *  - formatDate("2026-09-02", { shortMonth: true }) -> "02 Sep"
+ *  - formatDate("2026-09-02", { monthHeader: true }) -> "September 2026"
+ *  - formatDate("2026-09-02", { monthOnly: true }) -> "September"
+ */
+export const formatDate = (
+    isoDateStr: string,
+    options: {
+        includeYear?: boolean;
+        shortMonth?: boolean;
+        monthHeader?: boolean;
+        monthOnly?: boolean;
+    } = {}
+): string => {
+    if (!isoDateStr) return '';
+
+    const date = parseISODate(isoDateStr);
+
+    const monthFormat = options.shortMonth ? 'short' : 'long';
+    const monthName = date.toLocaleDateString('en-US', { month: monthFormat });
+    const day = String(date.getDate()).padStart(2, '0');
+
+    if (options.includeYear) {
+        return `${day} ${monthName}, ${date.getFullYear()}`;
+    }
+
+    if (options.monthHeader) {
+        return `${monthName} ${date.getFullYear()}`;
+    }
+
+    if (options.monthOnly) {
+        return `${monthName}`;
+    }
+
+    return `${day} ${monthName}`;
 };
 
 /**

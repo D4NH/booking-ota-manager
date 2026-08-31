@@ -9,7 +9,7 @@ import { validStatuses } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-import { formatMonthHeader } from '@/utils/date';
+import { formatDate } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
@@ -75,7 +75,7 @@ const groupedBookings = computed(() => {
         .sort((a, b) => a.localeCompare(b))
         .map((key) => ({
             key,
-            label: formatMonthHeader(key),
+            label: formatDate(key, { monthHeader: true }),
             count: groups[key]?.length,
             bookings: groups[key],
         }));
@@ -131,10 +131,13 @@ const handleClearAllLocal = async (): Promise<void> => {
     }
 };
 const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkIn;
+const selectProperty = (id: string) => {
+    selectedProperty.value = id as PropertyId;
+};
 </script>
 
 <template>
-    <div class="flex flex-col space-y-6">
+    <div class="flex flex-col space-y-4">
         <!-- Header -->
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -144,6 +147,34 @@ const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkI
                 </p>
             </div>
             <GoogleSyncButton :property-id="selectedProperty" />
+
+            <!-- Property Selector -->
+            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                    :class="[
+                        selectedProperty === 'all'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="selectedProperty = 'all'">
+                    All
+                </button>
+                <button
+                    v-for="prop in PROPERTY_LIST"
+                    :key="prop.id"
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                    :class="[
+                        selectedProperty === prop.id
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="selectProperty(prop.id)">
+                    <span class="capitalize">{{ prop.id }}</span>
+                </button>
+            </div>
         </div>
 
         <!-- Status Alert -->
@@ -184,7 +215,7 @@ const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkI
                             v-for="mKey in availableMonths"
                             :key="mKey"
                             :value="mKey">
-                            {{ formatMonthHeader(mKey) }}
+                            {{ formatDate(mKey, { monthOnly: true }) }}
                         </option>
                     </select>
                     <div
@@ -250,8 +281,7 @@ const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkI
                         <th class="w-32 px-4 py-2.5 text-center">Channel</th>
                         <th class="w-32 px-4 py-2.5 text-center">Property</th>
                         <th class="px-4 py-2.5">Guest</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Check In</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
+                        <th class="w-50 px-4 py-2.5 text-center">Stay Date</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
                         <th class="w-38 px-4 py-2.5 text-right">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
@@ -265,7 +295,7 @@ const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkI
                     <tbody class="border-t border-mist-800 bg-mist-950/40">
                         <tr>
                             <td
-                                colspan="10"
+                                colspan="9"
                                 class="p-0">
                                 <button
                                     type="button"
@@ -322,10 +352,9 @@ const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkI
                                 {{ b.guestName }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                {{ b.checkIn }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                {{ b.checkOut }}
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
