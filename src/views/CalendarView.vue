@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { PROPERTY_THEMES } from '@/config/properties';
+import { getPropertyTheme } from '@/config/properties';
 import { MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
@@ -177,8 +177,6 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
-const getPropertyTheme = (id: PropertyId | string) =>
-    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>

@@ -4,11 +4,12 @@ import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { PROPERTY_THEMES, PROPERTY_LIST } from '@/config/properties';
+import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { validStatuses } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
+import { formatMonthHeader } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
@@ -27,21 +28,39 @@ const collapsedMonths = ref<string[]>([]);
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 
-const availableMonths = computed(() => {
+const availableMonths = computed<string[]>(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
-    const uniqueMonths = months.filter((m, i) => months.indexOf(m) === i);
-
+    const uniqueMonths = months.filter((month, index) => months.indexOf(month) === index);
     return uniqueMonths.sort((a, b) => a.localeCompare(b));
 });
-const filteredBookings = computed(() =>
-    selectedProperty.value === 'all'
-        ? bookings.value.filter((b) => !hiddenStatuses.value.includes(b.status))
-        : bookings.value.filter(
-              (b) =>
-                  !hiddenStatuses.value.includes(b.status) &&
-                  b.propertyId === selectedProperty.value
-          )
-);
+const filteredBookings = computed<Booking[]>(() => {
+    const query = searchQuery.value.trim().toLowerCase();
+    const prop = selectedProperty.value;
+    const month = selectedMonth.value;
+    const hidden = hiddenStatuses.value;
+
+    return bookings.value
+        .filter((b) => {
+            if (prop !== 'all' && b.propertyId !== prop) return false;
+            if (month !== 'all' && !b.checkIn.startsWith(month)) return false;
+            if (hidden.includes(b.status)) return false;
+            if (query) {
+                const nameMatch = b.guestName.toLowerCase().includes(query);
+                if (nameMatch) return true;
+
+                const idMatch = b.bookingId.toLowerCase().includes(query);
+                if (idMatch) return true;
+
+                const notesMatch = b.notes ? b.notes.toLowerCase().includes(query) : false;
+                if (notesMatch) return true;
+
+                return false;
+            }
+
+            return true;
+        })
+        .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
+});
 const groupedBookings = computed(() => {
     const groups: Record<string, Booking[]> = {};
 
@@ -78,12 +97,6 @@ const toggleMonth = (monthKey: string) => {
         collapsedMonths.value.push(monthKey);
     }
 };
-const formatMonthHeader = (monthKey: string): string => {
-    const [year, month] = monthKey.split('-');
-    const date = new Date(Number(year), Number(month) - 1, 1);
-
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-};
 const handleAddBooking = () => {
     bookingToEdit.value = null;
     isBookingModalOpen.value = true;
@@ -94,6 +107,7 @@ const handleEditBooking = (booking: Booking) => {
 };
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     const success = await saveBooking(payload, bookingToEdit.value);
+
     if (success) {
         isBookingModalOpen.value = false;
         bookingToEdit.value = null;
@@ -117,9 +131,6 @@ const handleClearAllLocal = async (): Promise<void> => {
     }
 };
 const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkIn;
-const getPropertyTheme = (id: PropertyId | string) => {
-    return PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
-};
 </script>
 
 <template>
@@ -228,7 +239,6 @@ const getPropertyTheme = (id: PropertyId | string) => {
             class="rounded-lg border border-dashed border-mist-800 p-12 text-center">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
-
         <div
             v-else
             class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">

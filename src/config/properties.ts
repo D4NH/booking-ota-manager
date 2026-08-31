@@ -61,3 +61,6 @@ export const PROPERTY_THEMES: Record<PropertyId, PropertyTheme> = {
         bg: 'bg-amber-500/10',
     },
 };
+
+export const getPropertyTheme = (id: PropertyId | string): PropertyTheme =>
+    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;

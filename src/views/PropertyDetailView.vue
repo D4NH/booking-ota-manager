@@ -9,6 +9,7 @@ import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
+import { formatMonthHeader } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 
@@ -38,19 +39,23 @@ const currentPropertyId = computed<PropertyId>(() => {
 });
 const filteredBookings = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
+    const prop = selectedProperty.value;
+    const month = selectedMonth.value;
+    const hidden = hiddenStatuses.value;
 
     return bookings.value
         .filter((b) => {
-            if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value)
-                return false;
-            if (selectedMonth.value !== 'all' && !b.checkIn.startsWith(selectedMonth.value))
-                return false;
-            if (hiddenStatuses.value.includes(b.status)) return false;
+            if (prop !== 'all' && b.propertyId !== prop) return false;
+            if (month !== 'all' && !b.checkIn.startsWith(month)) return false;
+            if (hidden.includes(b.status)) return false;
             if (query) {
                 const matchName = b.guestName.toLowerCase().includes(query);
+                if (matchName) return true;
                 const matchId = b.bookingId.toLowerCase().includes(query);
-                const matchNotes = b.notes?.toLowerCase().includes(query) || false;
-                if (!matchName && !matchId && !matchNotes) return false;
+                if (matchId) return true;
+                const matchNotes = b.notes ? b.notes.toLowerCase().includes(query) : false;
+                if (matchNotes) return true;
+                return false;
             }
             return true;
         })
@@ -85,11 +90,6 @@ const toggleMonth = (monthKey: string) => {
     } else {
         collapsedMonths.value.push(monthKey);
     }
-};
-const formatMonthHeader = (monthKey: string): string => {
-    const [year, month] = monthKey.split('-');
-    const date = new Date(Number(year), Number(month) - 1, 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 const handleAddBooking = () => {
     bookingToEdit.value = null;

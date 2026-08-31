@@ -7,7 +7,7 @@ import { useBookingSync } from '@/composables/useBookingSync';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useDateKeys } from '@/composables/useDateKeys';
-import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
+import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
@@ -143,8 +143,6 @@ const handleDeleteProperty = async (id: PropertyId) => {
         await propertyStore.deleteProperty(id);
     }
 };
-const getPropertyTheme = (id: PropertyId | string) =>
-    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>
