@@ -82,26 +82,32 @@ const channelStats = computed<ChannelStat[]>(() => {
         .sort((a, b) => b.revenue - a.revenue);
 });
 const monthlyPropertyData = computed(() => {
-    return SHORT_MONTH_NAMES.map((label, idx) => {
-        const monthStr = String(idx + 1).padStart(2, '0');
-        const key = `${selectedYear.value}-${monthStr}`;
+    const yearPrefix = `${selectedYear.value}-`;
 
-        const monthBookings = bookings.value.filter((b) => b.checkIn.startsWith(key));
+    const monthlyPropertyBookings = SHORT_MONTH_NAMES.map((label) => ({
+        label,
+        piyungan: 0,
+        wonosari: 0,
+        bantul: 0,
+    }));
 
-        const piyungan = monthBookings
-            .filter((b) => b.propertyId === 'piyungan')
-            .reduce((sum, b) => sum + (b.payout || 0), 0);
+    for (const b of bookings.value) {
+        if (!b.checkIn.startsWith(yearPrefix) || b.status === 'Unavailable') continue;
 
-        const wonosari = monthBookings
-            .filter((b) => b.propertyId === 'wonosari')
-            .reduce((sum, b) => sum + (b.payout || 0), 0);
+        const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
+        const targetMonth = monthlyPropertyBookings[monthIndex];
 
-        const bantul = monthBookings
-            .filter((b) => b.propertyId === 'bantul')
-            .reduce((sum, b) => sum + (b.payout || 0), 0);
+        if (
+            targetMonth &&
+            (b.propertyId === 'piyungan' ||
+                b.propertyId === 'wonosari' ||
+                b.propertyId === 'bantul')
+        ) {
+            targetMonth[b.propertyId] += b.payout || 0;
+        }
+    }
 
-        return { label, piyungan, wonosari, bantul };
-    });
+    return monthlyPropertyBookings;
 });
 
 const handleTabChange = (id: string) => {
