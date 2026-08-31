@@ -5,11 +5,10 @@ import BookingModal from '@/components/BookingModal.vue';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useDailyOperations } from '@/composables/useDailyOperations';
-import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
+import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
 const bookingStore = useBookingStore();
@@ -25,16 +24,15 @@ const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 
 const propertyBookings = computed(() => bookings.value);
-const pendingPaymentAlerts = computed(() =>
+const pendingPayments = computed(() =>
     propertyBookings.value.filter((b) => {
-        // 1. Must be WhatsApp channel with 'Waiting for payment' status
         if (b.listing !== 'Whatsapp' || b.status !== 'Waiting for payment') {
             return false;
         }
 
         if (!b.checkIn) return false;
 
-        // 2. Calculate target alert date (Check-in minus 1 day)
+        // Calculate target alert date (Check-in minus 1 day)
         const checkInDate = new Date(b.checkIn);
         checkInDate.setDate(checkInDate.getDate() - 1);
 
@@ -43,7 +41,7 @@ const pendingPaymentAlerts = computed(() =>
         const alertDay = String(checkInDate.getDate()).padStart(2, '0');
         const alertDateStr = `${alertYear}-${alertMonth}-${alertDay}`;
 
-        // 3. Match only if the alert date is today
+        // Match only if the alert date is today
         return alertDateStr === todayStr.value;
     })
 );
@@ -130,6 +128,7 @@ const handleEditBooking = (booking: Booking) => {
 };
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     const success = await saveBooking(payload, bookingToEdit.value);
+
     if (success) {
         isBookingModalOpen.value = false;
         bookingToEdit.value = null;
@@ -137,8 +136,6 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
 };
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
-const getPropertyTheme = (id: PropertyId | string) =>
-    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>
@@ -146,63 +143,6 @@ const getPropertyTheme = (id: PropertyId | string) =>
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
             <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
-        </div>
-
-        <!-- Pending Payments -->
-        <div
-            v-if="pendingPaymentAlerts.length > 0"
-            class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div class="space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                    <h2 class="text-xs font-bold uppercase text-mist-300">
-                        Pending WhatsApp Payments
-                    </h2>
-                    <span
-                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                        {{ pendingPaymentAlerts.length }}
-                    </span>
-                </div>
-                <div class="space-y-2">
-                    <div
-                        v-for="b in pendingPaymentAlerts"
-                        :key="b.id"
-                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-1">
-                        <div class="flex items-center justify-between">
-                            <span class="font-semibold text-sm text-mist-200 pb-2">
-                                {{ b.guestName }}
-                            </span>
-                            <RouterLink
-                                :to="b.propertyId"
-                                class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
-                                :class="[
-                                    getPropertyTheme(b.propertyId).bg,
-                                    getPropertyTheme(b.propertyId).text,
-                                ]">
-                                {{ b.propertyId }}
-                            </RouterLink>
-                        </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
-                            <span>{{ b.nights }} night(s)</span>
-                        </div>
-                        <div class="flex justify-between text-[12px] text-mist-400">
-                            <span>{{ b.listing }}</span>
-                            <span class="font-mono">{{ b.bookingId }}</span>
-                        </div>
-                        <div class="flex justify-between border-t border-mist-700 mt-4 pt-4">
-                            <button
-                                type="button"
-                                class="cursor-pointer rounded bg-amber-500/20 px-2 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
-                                @click="handleEditBooking(b)">
-                                Review
-                            </button>
-                            <span class="font-mono text-lime-400 text-sm">
-                                {{ formatIDR(b.payout) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Monthly Summary Cards -->
@@ -258,6 +198,64 @@ const getPropertyTheme = (id: PropertyId | string) =>
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
             <p class="text-xs text-mist-400">Active Stays</p>
         </div>
+
+        <!-- Pending Payments -->
+        <div
+            v-if="pendingPayments.length > 0"
+            class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div class="space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                    <h2 class="text-xs font-bold uppercase text-mist-300">
+                        Pending WhatsApp Payments
+                    </h2>
+                    <span
+                        class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                        {{ pendingPayments.length }}
+                    </span>
+                </div>
+                <div class="space-y-2">
+                    <div
+                        v-for="b in pendingPayments"
+                        :key="b.id"
+                        class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-sm text-mist-200 pb-2">
+                                {{ b.guestName }}
+                            </span>
+                            <RouterLink
+                                :to="{ name: 'property-detail', params: { id: b.propertyId } }"
+                                class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
+                                {{ b.propertyId }}
+                            </RouterLink>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
+                            <span>{{ b.nights }} night(s)</span>
+                        </div>
+                        <div class="flex justify-between text-[12px] text-mist-400">
+                            <span>{{ b.listing }}</span>
+                            <span class="font-mono">{{ b.bookingId }}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-mist-700 mt-4 pt-4">
+                            <button
+                                type="button"
+                                class="cursor-pointer rounded bg-amber-500/20 px-2 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
+                                @click="handleEditBooking(b)">
+                                Review
+                            </button>
+                            <span class="font-mono text-lime-400 text-sm">
+                                {{ formatIDR(b.payout) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div class="col-span-1 flex flex-col gap-4">
                 <RouterLink

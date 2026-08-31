@@ -254,9 +254,9 @@ const triggerDatePicker = (event: MouseEvent): void => {
                                 @change="calculateNights" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-mist-400"
-                                >Nights</label
-                            >
+                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                                Nights
+                            </label>
                             <input
                                 v-model.number="form.nights"
                                 type="number"
@@ -270,9 +270,9 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     <!-- Channel, Status & Payout -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400"
-                                >Channel</label
-                            >
+                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                                Channel
+                            </label>
 
                             <select
                                 v-model="form.listing"
@@ -299,9 +299,9 @@ const triggerDatePicker = (event: MouseEvent): void => {
                         </div>
 
                         <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400"
-                                >Status</label
-                            >
+                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                                Status
+                            </label>
                             <select
                                 v-model="form.status"
                                 class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">

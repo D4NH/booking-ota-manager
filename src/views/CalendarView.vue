@@ -10,7 +10,7 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
-import { formatLocalDateStr } from '@/utils/date';
+import { toISODateString } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 
@@ -33,8 +33,8 @@ const bookingToEdit = ref<Booking | null>(null);
 const selectedMonth = ref<number>(currentDate.value.getMonth());
 const selectedYear = ref<number>(currentDate.value.getFullYear());
 
-const currentYear = computed(() => currentDate.value.getFullYear());
 const currentMonth = computed(() => currentDate.value.getMonth());
+const currentYear = computed(() => currentDate.value.getFullYear());
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -42,65 +42,59 @@ const calendarDays = computed<CalendarDay[]>(() => {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    // Shift Day index: Sun(0)->6, Mon(1)->0, Tue(2)->1, etc.
+    // Shift Day index
     const rawDayIndex = firstDayOfMonth.getDay();
     const startingDayOfWeek = (rawDayIndex + 6) % 7;
-
     const totalDaysInMonth = lastDayOfMonth.getDate();
 
     // Format today's date string in local time
     const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
     const days: CalendarDay[] = [];
+    const today = toISODateString(now);
 
-    // 1. Previous month padding days
+    // Previous month padding days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
+
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
-        const dateStr = formatLocalDateStr(prevDate);
+        const dateStr = toISODateString(prevDate);
+
         days.push({
             dateStr,
             dayNumber: prevMonthLastDay - i,
             isCurrentMonth: false,
-            isToday: dateStr === todayStr,
+            isToday: dateStr === today,
         });
     }
 
-    // 2. Current month days
+    // Current month days
     for (let day = 1; day <= totalDaysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
         days.push({
             dateStr,
             dayNumber: day,
             isCurrentMonth: true,
-            isToday: dateStr === todayStr,
+            isToday: dateStr === today,
         });
     }
 
-    // 3. Next month padding days to complete 42 cells (6 rows)
     const remainingCells = 42 - days.length;
+
     for (let day = 1; day <= remainingCells; day++) {
         const nextDate = new Date(year, month + 1, day);
-        const dateStr = formatLocalDateStr(nextDate);
+        const dateStr = toISODateString(nextDate);
+
         days.push({
             dateStr,
             dayNumber: day,
             isCurrentMonth: false,
-            isToday: dateStr === todayStr,
+            isToday: dateStr === today,
         });
     }
 
     return days;
 });
-const filteredBookings = computed(() =>
-    bookings.value.filter((b) => {
-        if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value) {
-            return false;
-        }
-        return b.status;
-    })
-);
 const yearOptions = computed(() => {
     const currentYear = new Date().getFullYear();
     const years: number[] = [];
@@ -110,6 +104,13 @@ const yearOptions = computed(() => {
     }
     return years;
 });
+const filteredBookings = computed(() =>
+    bookings.value.filter((b) =>
+        selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value
+            ? false
+            : b.status
+    )
+);
 
 watch(
     () => route.params.id,
@@ -153,6 +154,10 @@ const goToToday = (): void => {
 };
 const getBookingsForDate = (dateStr: string): Booking[] =>
     filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
+const handleAddBooking = () => {
+    bookingToEdit.value = null;
+    isBookingModalOpen.value = true;
+};
 const handleCellClick = (day: CalendarDay) => {
     selectedCheckInDate.value = day.dateStr;
     bookingToEdit.value = null;
@@ -165,6 +170,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
 };
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     const success = await saveBooking(payload, bookingToEdit.value);
+
     if (success) {
         isBookingModalOpen.value = false;
         bookingToEdit.value = null;
@@ -183,7 +189,6 @@ const selectProperty = (id: string) => {
                 <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
                 <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
             </div>
-
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -222,7 +227,7 @@ const selectProperty = (id: string) => {
 
         <!-- Month Navigation Controls -->
         <div
-            class="grid grid-cols-3 items-center rounded-lg border border-mist-800 bg-mist-900 p-4">
+            class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -243,12 +248,11 @@ const selectProperty = (id: string) => {
                     <fa-icon icon="chevron-right" />
                 </button>
             </div>
-
-            <div class="flex items-center justify-center gap-2">
-                <!-- Month Dropdown Selector -->
+            <div class="flex items-center justify-center gap-2 text-mist-300 font-bold">
                 <select
+                    name="month-selector"
                     :value="selectedMonth"
-                    class="appearance-none rounded-lg border border-mist-800 px-3 py-1.5 text-center font-bold text-mist-100 outline-none transition-colors focus:border-lime-500 hover:border-mist-700 cursor-pointer"
+                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 text-right"
                     @change="handleMonthChange">
                     <option
                         v-for="(name, index) in MONTH_NAMES"
@@ -257,10 +261,10 @@ const selectProperty = (id: string) => {
                         {{ name }}
                     </option>
                 </select>
-                <!-- Year Dropdown Selector -->
                 <select
+                    name="year-selector"
                     :value="selectedYear"
-                    class="appearance-none rounded-lg border border-mist-800 px-3 py-1.5 text-center font-bold text-mist-100 outline-none transition-colors focus:border-lime-500 hover:border-mist-700 cursor-pointer"
+                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 ml-2"
                     @change="handleYearChange">
                     <option
                         v-for="year in yearOptions"
@@ -270,10 +274,19 @@ const selectProperty = (id: string) => {
                     </option>
                 </select>
             </div>
+            <button
+                type="button"
+                class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                @click="handleAddBooking">
+                <fa-icon
+                    class="text-xs"
+                    icon="plus" />
+                Add Booking
+            </button>
         </div>
 
         <!-- Calendar Grid Table -->
-        <div class="overflow-hidden rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+        <div class="rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
             <div
                 class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
@@ -284,8 +297,6 @@ const selectProperty = (id: string) => {
                 <div class="py-2.5">Sat</div>
                 <div class="py-2.5">Sun</div>
             </div>
-
-            <!-- 42 Day Grid -->
             <div class="grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
                 <div
                     v-for="day in calendarDays"
@@ -306,7 +317,6 @@ const selectProperty = (id: string) => {
                             {{ day.dayNumber }}
                         </span>
                     </div>
-
                     <!-- Bookings -->
                     <div class="space-y-1 mt-1">
                         <div
@@ -354,30 +364,27 @@ const selectProperty = (id: string) => {
                                 </div>
                             </div>
 
-                            <!-- Pure Tailwind Hover Popover (Only rendered/shown if in current month) -->
+                            <!-- Popover -->
                             <div
                                 v-if="day.isCurrentMonth"
                                 class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-60 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
                                     class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                    <!-- Header -->
                                     <div
                                         class="flex items-center justify-between border-b border-mist-800 pb-1.5 mb-1.5">
-                                        <span class="font-bold text-mist-200">{{
-                                            b.guestName
-                                        }}</span>
+                                        <span class="font-bold text-mist-200">
+                                            {{ b.guestName }}
+                                        </span>
                                         <span class="text-[10px] text-mist-400">
                                             {{ b.checkIn }} → {{ b.checkOut }}
                                         </span>
                                     </div>
-
                                     <!-- Payment Pending Alert -->
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
                                         class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium">
                                         WhatsApp payment follow-up pending
                                     </div>
-
                                     <!-- Notes -->
                                     <div
                                         v-if="b.notes"
