@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
@@ -14,7 +15,8 @@ import BookingModal from '@/components/BookingModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { todayStr, currentMonthKey, lastMonthKey, currentHour } = useDateKeys();
+const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
+const { todayStr, currentMonthKey, lastMonthKey } = useDateKeys();
 const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
@@ -121,37 +123,6 @@ const monthlyOccupancy = computed(() => {
         capacityNights: totalCapacityNights,
         percentage,
     };
-});
-const todaysArrivals = computed(() => {
-    if (currentHour.value >= 15) return [];
-
-    const today = todayStr.value;
-    return propertyBookings.value.filter((b) => b.checkIn === today && b.status !== 'Unavailable');
-});
-const currentStays = computed(() => {
-    const today = todayStr.value;
-    const hour = currentHour.value;
-
-    return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
-
-        // Mid-stay guests
-        if (b.checkIn < today && b.checkOut > today) return true;
-
-        // Arrivals show here after 15:00
-        if (b.checkIn === today) return hour >= 15;
-
-        // Currently Staying until 12:00
-        if (b.checkOut === today) return hour < 12;
-
-        return false;
-    });
-});
-const todaysDepartures = computed(() => {
-    if (currentHour.value >= 13) return [];
-
-    const today = todayStr.value;
-    return propertyBookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
 });
 
 const handleEditBooking = (booking: Booking) => {
