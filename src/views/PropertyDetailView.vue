@@ -2,19 +2,20 @@
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { useDateKeys } from '@/composables/useDateKeys';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { getTodayStr } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import AddBookingModal from '@/components/AddBookingModal.vue';
+import BookingModal from '@/components/BookingModal.vue';
 
 const route = useRoute();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const { todayStr } = useDateKeys();
 const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } = useGoogleSheets();
 
 const isBookingModalOpen = ref<boolean>(false);
@@ -35,7 +36,6 @@ const currentPropertyId = computed<PropertyId>(() => {
     }
     return 'piyungan';
 });
-const todayStr = computed<string>(() => getTodayStr());
 
 const filteredBookings = computed(() => {
     const query = searchQuery.value.trim().toLowerCase();
@@ -78,7 +78,7 @@ const groupedBookings = computed(() => {
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout';
-const toggleMonth = (monthKey: string): void => {
+const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
 
     if (index > -1) {
@@ -92,11 +92,11 @@ const formatMonthHeader = (monthKey: string): string => {
     const date = new Date(Number(year), Number(month) - 1, 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
-const openAddModal = (): void => {
+const handleAddBooking = () => {
     bookingToEdit.value = null;
     isBookingModalOpen.value = true;
 };
-const openEditModal = (booking: Booking): void => {
+const handleEditBooking = (booking: Booking) => {
     bookingToEdit.value = booking;
     isBookingModalOpen.value = true;
 };
@@ -160,12 +160,6 @@ watch(
         selectedProperty.value = (newId as PropertyId) || 'all';
     }
 );
-
-// const handleDeleteProperty = async (id: string, name: string): Promise<void> => {
-//     if (window.confirm(`Delete property ${name}?`)) {
-//         await propertyStore.deleteProperty(id);
-//     }
-// };
 </script>
 
 <template>
@@ -177,8 +171,7 @@ watch(
         </div>
 
         <!-- Upcoming Bookings -->
-        <div
-            class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-mist-800 pb-5 mt-12">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mt-12">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Upcoming bookings</h1>
                 <p class="text-xs text-mist-400">Check all bookings [here]</p>
@@ -187,7 +180,7 @@ watch(
             <button
                 type="button"
                 class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
-                @click="openAddModal">
+                @click="handleAddBooking">
                 <fa-icon icon="plus" /> Add Booking
             </button>
         </div>
@@ -295,7 +288,7 @@ watch(
                                     <button
                                         type="button"
                                         class="cursor-pointer text-mist-400 hover:text-mist-100"
-                                        @click="openEditModal(b)">
+                                        @click="handleEditBooking(b)">
                                         <fa-icon icon="pen-to-square" />
                                     </button>
                                     <span class="text-mist-700">|</span>
@@ -313,7 +306,7 @@ watch(
             </table>
         </div>
 
-        <AddBookingModal
+        <BookingModal
             v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
             :current-property="currentPropertyId"

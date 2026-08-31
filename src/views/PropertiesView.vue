@@ -3,32 +3,47 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useDateKeys } from '@/composables/useDateKeys';
-import { PROPERTY_LIST } from '@/config/properties';
+import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
 import type { Booking } from '@/types/booking';
+import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
+
+import BookingModal from '@/components/BookingModal.vue';
+import PropertyModal from '@/components/PropertyModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const { todayStr, currentMonthKey, lastMonthKey, currentHour } = useDateKeys();
+const propertyStore = usePropertyStore();
+const { properties, sortedProperties } = storeToRefs(propertyStore);
+const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 
 const bookingToEdit = ref<Booking | null>(null);
 const isBookingModalOpen = ref<boolean>(false);
+const isModalOpen = ref(false);
+const selectedProperty = ref<Property | null>(null);
+const syncStatus = ref<string>('');
 
 const activeTab = computed(() =>
     (route.params.id as string) ? route.name === 'property-detail' && route.params.id : 'all'
+);
+const getProperty = computed(() => {
+    return properties.value.find((prop) => prop.id === activeTab.value);
+});
+const propertyName = computed(() =>
+    activeTab.value === 'all'
+        ? 'All Properties'
+        : properties.value.find((prop) => prop.id === activeTab.value)?.name
 );
 const propertyBookings = computed(() =>
     activeTab.value === 'all'
         ? bookings.value
         : bookings.value.filter((b) => b.propertyId === activeTab.value)
-);
-const propertyName = computed(() =>
-    activeTab.value === 'all'
-        ? 'All Properties'
-        : PROPERTY_LIST.find((prop) => prop.id === activeTab.value)?.name
 );
 const currentMonthRevenue = computed<number>(() =>
     propertyBookings.value
@@ -72,7 +87,7 @@ const monthlyStats = computed(() => {
     const [yearStr = '2026', monthStr = '1'] = targetMonth.split('-');
     const daysInMonth = new Date(Number(yearStr), Number(monthStr), 0).getDate();
 
-    const activePropertyCount = activeTab.value === 'all' ? PROPERTY_LIST.length : 1;
+    const activePropertyCount = activeTab.value === 'all' ? properties.value.length : 1;
 
     const totalCapacityNights = daysInMonth * activePropertyCount;
 
@@ -122,55 +137,137 @@ const todaysDepartures = computed(() => {
     return propertyBookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
 });
 
-const handleTabChange = (tabId: string) => {
-    if (tabId === 'all') {
-        router.push({ name: 'properties' });
-    } else {
-        router.push({ name: 'property-detail', params: { id: tabId } });
-    }
-};
-const openEditModal = (booking: Booking): void => {
+const handleTabChange = (tabId: string) =>
+    tabId === 'all'
+        ? router.push({ name: 'properties' })
+        : router.push({ name: 'property-detail', params: { id: tabId } });
+const handleEditBooking = (booking: Booking) => {
     bookingToEdit.value = booking;
     isBookingModalOpen.value = true;
 };
+const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
+    try {
+        if (bookingToEdit.value) {
+            syncStatus.value = 'Syncing edit to Google Sheets...';
+            await bookingStore.updateBookingWithRemoteSync(
+                { ...bookingToEdit.value, ...payload },
+                { updateSheetRowByBookingId }
+            );
+            syncStatus.value = 'Booking updated in Google Sheets & local database.';
+        } else {
+            syncStatus.value = 'Syncing new booking to Google Sheets...';
+            await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
+            syncStatus.value = 'Booking saved to Google Sheets & local database.';
+        }
+
+        isBookingModalOpen.value = false;
+    } catch (err: unknown) {
+        console.error('Save aborted due to sync failure:', err);
+        const errorMessage =
+            err instanceof Error
+                ? err.message
+                : 'Google Sheets sync failed. Local database was not modified.';
+        syncStatus.value = `Save failed: ${errorMessage}`;
+    } finally {
+        setTimeout(() => {
+            syncStatus.value = '';
+        }, 5000);
+    }
+};
+const handleAddProperty = () => {
+    selectedProperty.value = null;
+    isModalOpen.value = true;
+};
+const handleSaveProperty = async (propertyData: Property) => {
+    await propertyStore.saveProperty(propertyData);
+    isModalOpen.value = false;
+};
+const handleEditProperty = (id: PropertyId) => {
+    const found = sortedProperties.value.find((p) => p.id === id);
+    selectedProperty.value = found ? { ...found } : null;
+    isModalOpen.value = true;
+};
+const handleDeleteProperty = async (id: PropertyId) => {
+    if (confirm(`Are you sure you want to delete property "${id}"?`)) {
+        await propertyStore.deleteProperty(id);
+    }
+};
+const getPropertyTheme = (id: PropertyId | string) =>
+    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>
     <div class="mx-auto max-w-7xl space-y-6">
+        <div
+            v-if="syncStatus"
+            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
+            {{ syncStatus }}
+        </div>
+
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">
-                    {{ propertyName }}
+                    <div class="flex items-center">
+                        {{ propertyName }}
+                        <div
+                            v-if="activeTab !== 'all'"
+                            class="flex items-center justify-end ml-3 gap-2 text-xs">
+                            <button
+                                v-if="getProperty?.id"
+                                type="button"
+                                class="cursor-pointer text-mist-400 hover:text-mist-100"
+                                @click="handleEditProperty(getProperty?.id)">
+                                <fa-icon icon="pen-to-square" />
+                            </button>
+                            <span class="text-mist-700">|</span>
+                            <button
+                                v-if="getProperty?.id"
+                                type="button"
+                                class="cursor-pointer text-rose-400 hover:text-rose-300"
+                                @click="handleDeleteProperty(getProperty?.id)">
+                                <fa-icon icon="trash-can" />
+                            </button>
+                        </div>
+                    </div>
                 </h1>
                 <p class="text-xs text-mist-400">
                     Manage all properties or inspect single performance metrics.
                 </p>
             </div>
             <!-- Switcher Tabs -->
-            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+            <div class="flex flex-row">
+                <div
+                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                        :class="[
+                            activeTab === 'all'
+                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="handleTabChange('all')">
+                        All
+                    </button>
+                    <button
+                        v-for="prop in PROPERTY_LIST"
+                        :key="prop.id"
+                        type="button"
+                        class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                        :class="[
+                            activeTab === prop.id
+                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="handleTabChange(prop.id)">
+                        {{ prop.id }}
+                    </button>
+                </div>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        activeTab === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="handleTabChange('all')">
-                    All
-                </button>
-                <button
-                    v-for="prop in PROPERTY_LIST"
-                    :key="prop.id"
-                    type="button"
-                    class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        activeTab === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="handleTabChange(prop.id)">
-                    {{ prop.id }}
+                    class="ml-5 cursor-pointer rounded-lg bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
+                    @click="handleAddProperty">
+                    + Add Property
                 </button>
             </div>
         </div>
@@ -225,6 +322,7 @@ const openEditModal = (booking: Booking): void => {
 
         <!-- Main Operational View -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <!-- Arriving Today -->
             <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Arriving Today</h2>
@@ -238,15 +336,30 @@ const openEditModal = (booking: Booking): void => {
                     class="py-12 text-center text-xs text-mist-500">
                     No arrivals scheduled for today.
                 </div>
-                <div v-else>
+                <div
+                    v-else
+                    class="space-y-4">
                     <div
                         v-for="b in todaysArrivals"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-3 space-y-2">
-                        <div class="flex items-center">
+                        <div class="flex items-center justify-between">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
+                            <RouterLink
+                                v-if="activeTab === 'all'"
+                                :to="{
+                                    name: 'property-detail',
+                                    params: { id: b.propertyId },
+                                }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
+                                {{ b.propertyId }}
+                            </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
@@ -263,14 +376,15 @@ const openEditModal = (booking: Booking): void => {
                             <button
                                 type="button"
                                 class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
-                                @click="openEditModal(b)">
+                                @click="handleEditBooking(b)">
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <!-- Current In-House Guests -->
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <div>
                         <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
@@ -285,15 +399,30 @@ const openEditModal = (booking: Booking): void => {
                     class="py-12 text-center text-xs text-mist-500">
                     No guests currently in-house.
                 </div>
-                <div v-else>
+                <div
+                    v-else
+                    class="space-y-4">
                     <div
                         v-for="b in currentStays"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
-                        <div class="flex items-center">
+                        <div class="flex items-center justify-between">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
+                            <RouterLink
+                                v-if="activeTab === 'all'"
+                                :to="{
+                                    name: 'property-detail',
+                                    params: { id: b.propertyId },
+                                }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
+                                {{ b.propertyId }}
+                            </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
@@ -310,14 +439,15 @@ const openEditModal = (booking: Booking): void => {
                             <button
                                 type="button"
                                 class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
-                                @click="openEditModal(b)">
+                                @click="handleEditBooking(b)">
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <!-- Today's Departures -->
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-xs font-bold uppercase text-mist-200">Today's Departures</h2>
                     <span
@@ -330,15 +460,30 @@ const openEditModal = (booking: Booking): void => {
                     class="py-12 text-center text-xs text-mist-500">
                     No departures scheduled for today.
                 </div>
-                <div v-else>
+                <div
+                    v-else
+                    class="space-y-4">
                     <div
                         v-for="b in todaysDepartures"
                         :key="b.id"
                         class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
-                        <div class="flex items-center">
+                        <div class="flex items-center justify-between">
                             <span class="font-semibold text-sm text-mist-200">
                                 {{ b.guestName }}
                             </span>
+                            <RouterLink
+                                v-if="activeTab === 'all'"
+                                :to="{
+                                    name: 'property-detail',
+                                    params: { id: b.propertyId },
+                                }"
+                                class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                :class="[
+                                    getPropertyTheme(b.propertyId).bg,
+                                    getPropertyTheme(b.propertyId).text,
+                                ]">
+                                {{ b.propertyId }}
+                            </RouterLink>
                         </div>
                         <div class="flex items-center justify-between text-[12px] text-mist-400">
                             <span>{{ b.checkIn }} &rarr; {{ b.checkOut }} </span>
@@ -355,7 +500,7 @@ const openEditModal = (booking: Booking): void => {
                             <button
                                 type="button"
                                 class="cursor-pointer text-xs font-semibold text-mist-400 hover:text-lime-500"
-                                @click="openEditModal(b)">
+                                @click="handleEditBooking(b)">
                                 <fa-icon icon="pen-to-square" /> Edit
                             </button>
                         </div>
@@ -369,5 +514,17 @@ const openEditModal = (booking: Booking): void => {
         </div>
 
         <RouterView />
+
+        <BookingModal
+            v-if="isBookingModalOpen"
+            :booking-to-edit="bookingToEdit"
+            @close="isBookingModalOpen = false"
+            @save="handleSaveBooking" />
+
+        <PropertyModal
+            :is-open="isModalOpen"
+            :property-to-edit="selectedProperty"
+            @close="isModalOpen = false"
+            @save="handleSaveProperty" />
     </div>
 </template>

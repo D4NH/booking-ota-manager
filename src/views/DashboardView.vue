@@ -1,71 +1,29 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useDateKeys } from '@/composables/useDateKeys';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_LIST, PROPERTY_THEMES } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { getTodayStr } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import AddBookingModal from '@/components/AddBookingModal.vue';
+import BookingModal from '@/components/BookingModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const { todayStr, currentMonthKey, lastMonthKey, currentHour } = useDateKeys();
 const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const selectedPropertyFilter = ref<string>('all');
 const isModalOpen = ref<boolean>(false);
-// const isPropertyModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 const syncStatus = ref<string>('');
 
-const todayStr = computed<string>(() => getTodayStr());
-const currentMonthStr = computed(() => todayStr.value.slice(0, 7));
-const propertyBookings = computed(() => {
-    if (selectedPropertyFilter.value === 'all') return bookings.value;
-    return bookings.value.filter((b) => b.propertyId === selectedPropertyFilter.value);
-});
-const todaysArrivals = computed(() => {
-    const now = new Date();
-    const currentHour = now.getHours();
-
-    return propertyBookings.value.filter((b) => {
-        if (currentHour >= 15) return false;
-        return b.checkIn === todayStr.value && b.status !== 'Unavailable';
-    });
-});
-const currentStays = computed(() => {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const today = todayStr.value;
-
-    return propertyBookings.value.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
-
-        // Check-in Today: Only visible after 15:00
-        if (b.checkIn === today) return currentHour >= 15;
-
-        // Check-out Today: Only visible before 12:00
-        if (b.checkOut === today) return currentHour < 12;
-
-        // Mid-stay: Guest stays past check-in date and before check-out date
-        return b.checkIn < today && b.checkOut > today;
-    });
-});
-const todaysDepartures = computed(() => {
-    const now = new Date();
-    const currentHour = now.getHours();
-
-    return propertyBookings.value.filter((b) => {
-        if (currentHour > 13) return false;
-        return b.checkOut === todayStr.value && b.status !== 'Unavailable';
-    });
-});
+const propertyBookings = computed(() => bookings.value);
 const pendingPaymentAlerts = computed(() =>
     propertyBookings.value.filter((b) => {
         // 1. Must be WhatsApp channel with 'Waiting for payment' status
@@ -88,59 +46,61 @@ const pendingPaymentAlerts = computed(() =>
         return alertDateStr === todayStr.value;
     })
 );
+
 const monthlySummary = computed(() => {
-    const monthBookings = propertyBookings.value.filter(
-        (b) => b.checkIn.startsWith(currentMonthStr.value) && b.status !== 'Unavailable'
-    );
-    const totalPayout = monthBookings.reduce((sum, b) => sum + b.payout, 0);
-    const totalNightsBooked = monthBookings.reduce((sum, b) => sum + b.nights, 0);
-    const parts = currentMonthStr.value.split('-');
-    const year = parseInt(parts[0] || '2026', 10);
-    const month = parseInt(parts[1] || '1', 10);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const activePropertyCount = selectedPropertyFilter.value === 'all' ? PROPERTY_LIST.length : 1;
-    const totalAvailableRoomNights = daysInMonth * activePropertyCount;
+    const targetMonth = currentMonthKey.value;
+    const bookings = propertyBookings.value;
+
+    let monthlyPayout = 0;
+    let totalNightsBooked = 0;
+    let totalBookings = 0;
+
+    for (const b of bookings) {
+        if (b && b.status !== 'Unavailable' && b.checkIn.startsWith(targetMonth)) {
+            monthlyPayout += b.payout || 0;
+            totalNightsBooked += b.nights || 0;
+            totalBookings++;
+        }
+    }
+
+    const [yearStr = '2026', monthStr = '1'] = targetMonth.split('-');
+    const daysInMonth = new Date(Number(yearStr), Number(monthStr), 0).getDate();
+    const totalCapacityNights = daysInMonth * PROPERTY_LIST.length;
+
     const occupancyRate =
-        totalAvailableRoomNights > 0
-            ? Math.min(100, Math.round((totalNightsBooked / totalAvailableRoomNights) * 100))
+        totalCapacityNights > 0
+            ? Math.min(100, Math.round((totalNightsBooked / totalCapacityNights) * 100))
             : 0;
 
     return {
-        totalPayout,
+        totalPayout: monthlyPayout,
         totalNightsBooked,
         occupancyRate,
-        bookingCount: monthBookings.length,
+        bookingCount: totalBookings,
     };
 });
-const currentMonthKey = computed<string>(() => todayStr.value.substring(0, 7));
+const upcomingCheckIns = computed(() =>
+    propertyBookings.value.filter((b) => b.checkIn === todayStr.value)
+);
+const upcomingCheckOuts = computed(() =>
+    propertyBookings.value.filter((b) => b.checkOut === todayStr.value)
+);
 const currentMonthRevenue = computed<number>(() =>
-    bookingStore.bookings
+    propertyBookings.value
         .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
         .reduce((acc, b) => acc + (b.payout || 0), 0)
 );
-const lastMonthKey = computed<string>(() => {
-    const [yearStr, monthStr] = currentMonthKey.value.split('-');
-
-    // Fallback to 0 or current date numbers if undefined
-    const y = Number(yearStr) || new Date().getFullYear();
-    const m = Number(monthStr) || new Date().getMonth() + 1;
-
-    // TypeScript now guarantees y and m are strictly 'number'
-    const d = new Date(y, m - 2, 1);
-    const lastY = d.getFullYear();
-    const lastM = String(d.getMonth() + 1).padStart(2, '0');
-    return `${lastY}-${lastM}`;
-});
 const lastMonthRevenue = computed<number>(() =>
-    bookingStore.bookings
+    propertyBookings.value
         .filter((b) => b.checkIn.startsWith(lastMonthKey.value))
         .reduce((acc, b) => acc + (b.payout || 0), 0)
 );
 const revenueGrowthPercent = computed<number>(() => {
-    if (lastMonthRevenue.value === 0) return 0;
-    return Math.round(
-        ((currentMonthRevenue.value - lastMonthRevenue.value) / lastMonthRevenue.value) * 100
-    );
+    return lastMonthRevenue.value === 0
+        ? 0
+        : Math.round(
+              ((currentMonthRevenue.value - lastMonthRevenue.value) / lastMonthRevenue.value) * 100
+          );
 });
 const monthlyOccupancy = computed(() => {
     const [yearStr, monthStr] = currentMonthKey.value.split('-');
@@ -162,18 +122,39 @@ const monthlyOccupancy = computed(() => {
         percentage,
     };
 });
-const upcomingCheckIns = computed(() =>
-    bookingStore.bookings.filter((b) => {
-        return b.checkIn === todayStr.value;
-    })
-);
-const upcomingCheckOuts = computed(() =>
-    bookingStore.bookings.filter((b) => {
-        return b.checkOut === todayStr.value;
-    })
-);
+const todaysArrivals = computed(() => {
+    if (currentHour.value >= 15) return [];
 
-const openEditModal = (booking: Booking): void => {
+    const today = todayStr.value;
+    return propertyBookings.value.filter((b) => b.checkIn === today && b.status !== 'Unavailable');
+});
+const currentStays = computed(() => {
+    const today = todayStr.value;
+    const hour = currentHour.value;
+
+    return propertyBookings.value.filter((b) => {
+        if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
+
+        // Mid-stay guests
+        if (b.checkIn < today && b.checkOut > today) return true;
+
+        // Arrivals show here after 15:00
+        if (b.checkIn === today) return hour >= 15;
+
+        // Currently Staying until 12:00
+        if (b.checkOut === today) return hour < 12;
+
+        return false;
+    });
+});
+const todaysDepartures = computed(() => {
+    if (currentHour.value >= 13) return [];
+
+    const today = todayStr.value;
+    return propertyBookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
+});
+
+const handleEditBooking = (booking: Booking) => {
     bookingToEdit.value = booking;
     isModalOpen.value = true;
 };
@@ -206,13 +187,10 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         }, 5000);
     }
 };
-const propertyImage = (id: string) => {
-    if (id === 'bantul') return 'https://placehold.co/300x400?text=Bantul';
-    return `/images/${id}.jpg`;
-};
-const getPropertyTheme = (id: PropertyId | string) => {
-    return PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
-};
+const propertyImage = (id: string) =>
+    id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
+const getPropertyTheme = (id: PropertyId | string) =>
+    PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
 </script>
 
 <template>
@@ -274,7 +252,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
                             <button
                                 type="button"
                                 class="cursor-pointer rounded bg-amber-500/20 px-2 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
-                                @click="openEditModal(b)">
+                                @click="handleEditBooking(b)">
                                 Review
                             </button>
                             <span class="font-mono text-lime-400 text-sm">
@@ -353,7 +331,10 @@ const getPropertyTheme = (id: PropertyId | string) => {
                         class="h-47 w-full object-cover mask-[linear-gradient(to_bottom,black_25%,transparent_100%)]" />
                     <div class="absolute bottom-12 inset-x-0 px-3 py-2">
                         <h2 class="font-bold">{{ property.name }}</h2>
-                        <p class="text-xs capitalize">{{ property.id }}</p>
+                        <p>
+                            <span>{{ formatIDR(property.price) }}</span>
+                            <span class="text-xs"> / night</span>
+                        </p>
                     </div>
                     <div
                         class="property-address absolute bottom-0 inset-x-0 px-3 py-2 bg-white/30 backdrop-blur-sm">
@@ -540,7 +521,7 @@ const getPropertyTheme = (id: PropertyId | string) => {
             </div>
         </div>
 
-        <AddBookingModal
+        <BookingModal
             v-if="isModalOpen"
             :booking-to-edit="bookingToEdit"
             @close="isModalOpen = false"

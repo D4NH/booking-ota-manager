@@ -1,23 +1,5 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-
-/**
- * Format a Date object to YYYY-MM-DD
- */
-export const toISODateString = (date: Date): string => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-};
-
-/**
- * Format a Date object to YYYY-MM
- */
-export const toISOMonthString = (date: Date): string => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    return `${y}-${m}`;
-};
+import { toISODateString, toISOMonthString } from '@/utils/date';
 
 /**
  * Reactive date keys composable for filtering bookings

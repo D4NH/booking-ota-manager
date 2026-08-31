@@ -4,28 +4,15 @@ import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_THEMES } from '@/config/properties';
+import { MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
+import { formatLocalDateStr } from '@/utils/date';
 
-const MONTH_NAMES = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-];
-
-import AddBookingModal from '@/components/AddBookingModal.vue';
+import BookingModal from '@/components/BookingModal.vue';
 
 const route = useRoute();
 const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
@@ -65,14 +52,6 @@ const calendarDays = computed<CalendarDay[]>(() => {
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const days: CalendarDay[] = [];
-
-    // Helper to build local YYYY-MM-DD string without UTC offset issues
-    const formatLocalDateStr = (d: Date): string => {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const dayNum = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${dayNum}`;
-    };
 
     // 1. Previous month padding days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
@@ -172,17 +151,17 @@ const handleYearChange = (e: Event) => {
     newDate.setFullYear(newYear);
     currentDate.value = newDate;
 };
-const goToToday = (): void => {
+const goToToday = () => {
     currentDate.value = new Date();
 };
 const getBookingsForDate = (dateStr: string): Booking[] =>
     filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
-const handleCellClick = (day: CalendarDay): void => {
+const handleCellClick = (day: CalendarDay) => {
     selectedCheckInDate.value = day.dateStr;
     bookingToEdit.value = null;
     isBookingModalOpen.value = true;
 };
-const handleBookingClick = (booking: Booking, event: Event): void => {
+const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
     bookingToEdit.value = booking;
     isBookingModalOpen.value = true;
@@ -210,7 +189,7 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         setTimeout(() => (syncStatus.value = ''), 5000);
     }
 };
-const selectProperty = (id: string): void => {
+const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
 const getPropertyTheme = (id: PropertyId | string) =>
@@ -446,7 +425,7 @@ const getPropertyTheme = (id: PropertyId | string) =>
             </div>
         </div>
 
-        <AddBookingModal
+        <BookingModal
             v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
             :initial-check-in-date="selectedCheckInDate"

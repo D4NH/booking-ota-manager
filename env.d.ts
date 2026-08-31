@@ -1,6 +1,12 @@
 /// <reference types="vite/client" />
 /// <reference types="google.accounts" />
 
+declare module '*.vue' {
+    import type { DefineComponent } from 'vue';
+    const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
+    export default component;
+}
+
 interface ImportMetaEnv {
     readonly VITE_GOOGLE_CLIENT_ID: string;
     readonly VITE_SPREADSHEET_ID_PIYUNGAN: string;

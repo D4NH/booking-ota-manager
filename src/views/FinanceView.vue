@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { SHORT_MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -18,6 +19,11 @@ const { sortedProperties } = storeToRefs(propertyStore);
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedYear = ref<string>(new Date().getFullYear().toString());
 
+const propertyBookings = computed(() =>
+    selectedProperty.value === 'all'
+        ? bookings.value
+        : bookings.value.filter((b) => b.propertyId === selectedProperty.value)
+);
 const availableYears = computed<string[]>(() => {
     const years = bookings.value.map((b) => b.checkIn.substring(0, 4));
     const unique = Array.from(new Set(years));
@@ -25,7 +31,7 @@ const availableYears = computed<string[]>(() => {
     return unique.sort((a, b) => b.localeCompare(a));
 });
 const financeBookings = computed<Booking[]>(() =>
-    bookings.value.filter((b) => {
+    propertyBookings.value.filter((b) => {
         if (b.status === 'Unavailable') return false;
         if (selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value)
             return false;
@@ -39,10 +45,9 @@ const totalRevenue = computed(() =>
 const totalNights = computed(() =>
     financeBookings.value.reduce((acc, b) => acc + (b.nights || 1), 0)
 );
-const averageDailyRate = computed(() => {
-    if (totalNights.value === 0) return 0;
-    return Math.round(totalRevenue.value / totalNights.value);
-});
+const averageDailyRate = computed(() =>
+    totalNights.value === 0 ? 0 : Math.round(totalRevenue.value / totalNights.value)
+);
 const channelStats = computed<ChannelStat[]>(() => {
     const channels: Booking['listing'][] = [
         'Airbnb',
@@ -51,12 +56,11 @@ const channelStats = computed<ChannelStat[]>(() => {
         'Trip.com',
         'Whatsapp',
     ];
-
     const statsMap: Record<string, { count: number; revenue: number }> = {};
+
     channels.forEach((ch) => {
         statsMap[ch] = { count: 0, revenue: 0 };
     });
-
     financeBookings.value.forEach((b) => {
         const key = b.listing;
         if (!statsMap[key]) {
@@ -78,26 +82,11 @@ const channelStats = computed<ChannelStat[]>(() => {
         .sort((a, b) => b.revenue - a.revenue);
 });
 const monthlyPropertyData = computed(() => {
-    const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-    ];
-
-    return months.map((label, idx) => {
+    return SHORT_MONTH_NAMES.map((label, idx) => {
         const monthStr = String(idx + 1).padStart(2, '0');
         const key = `${selectedYear.value}-${monthStr}`;
 
-        const monthBookings = bookingStore.bookings.filter((b) => b.checkIn.startsWith(key));
+        const monthBookings = bookings.value.filter((b) => b.checkIn.startsWith(key));
 
         const piyungan = monthBookings
             .filter((b) => b.propertyId === 'piyungan')
@@ -115,7 +104,7 @@ const monthlyPropertyData = computed(() => {
     });
 });
 
-const selectProperty = (id: string): void => {
+const handleTabChange = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
 </script>
@@ -169,7 +158,7 @@ const selectProperty = (id: string): void => {
                                 : 'text-mist-400 hover:text-mist-200',
                         ]"
                         class="capitalize"
-                        @click="selectProperty(prop.id)">
+                        @click="handleTabChange(prop.id)">
                         {{ prop.id }}
                     </button>
                 </div>
