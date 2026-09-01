@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { PROPERTY_LIST } from '@/config/properties';
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 }>();
 
 const bookingStore = useBookingStore();
+const { deleteBooking } = useBookingSync();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (props.bookingToEdit?.propertyId) return props.bookingToEdit.propertyId as PropertyId;
@@ -64,6 +66,7 @@ const validationError = computed<string | null>(() => {
     return null;
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
+const checkInMinDate = computed(() => (props.bookingToEdit ? '' : todayStr.value));
 
 watch(
     () => [form.value.checkIn, form.value.checkOut],
@@ -78,6 +81,11 @@ watch(
     }
 );
 
+const handleDeleteBooking = async (): Promise<void> => {
+    if (!props.bookingToEdit) return;
+    await deleteBooking(props.bookingToEdit);
+    emit('close');
+};
 const handleSubmit = () => {
     if (validationError.value) return;
 
@@ -232,7 +240,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                                 type="date"
                                 class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
                                 required
-                                :min="todayStr"
+                                :min="checkInMinDate"
                                 max="2028-12-31"
                                 @click="triggerDatePicker"
                                 @blur="sanitizeDate('checkIn')"
@@ -346,19 +354,30 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     </div>
 
                     <!-- Action Controls -->
-                    <div class="flex justify-end gap-3 pt-3">
+                    <div
+                        class="flex gap-3 pt-3"
+                        :class="[Boolean(bookingToEdit) ? 'justify-between' : 'justify-end']">
                         <button
+                            v-if="Boolean(bookingToEdit)"
                             type="button"
-                            class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                            @click="emit('close')">
-                            Cancel
+                            class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                            @click="handleDeleteBooking">
+                            <fa-icon icon="trash-can" /> Delete booking
                         </button>
-                        <button
-                            type="submit"
-                            :disabled="Boolean(validationError)"
-                            class="cursor-pointer rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
-                            {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
-                        </button>
+                        <div>
+                            <button
+                                type="button"
+                                class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
+                                @click="emit('close')">
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="Boolean(validationError)"
+                                class="ml-5 cursor-pointer rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                                {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
