@@ -1,5 +1,5 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { toISODateString, toISOMonthString } from '@/utils/date';
+import { getCurrentDate, getCurrentMonth } from '@/utils/date';
 
 /**
  * Reactive date keys composable for filtering bookings
@@ -36,20 +36,20 @@ export function useDateKeys() {
     });
 
     // 1. "YYYY-MM-DD"
-    const todayStr = computed(() => toISODateString(now.value));
+    const currentDayStr = computed(() => getCurrentDate(now.value));
 
     // 2. "YYYY-MM"
-    const currentMonthKey = computed(() => toISOMonthString(now.value));
+    const currentMonthKey = computed(() => getCurrentMonth(now.value));
 
     // 3. "YYYY-MM" for Previous Month
     const lastMonthKey = computed(() => {
         const d = new Date(now.value.getFullYear(), now.value.getMonth() - 1, 1);
-        return toISOMonthString(d);
+        return getCurrentMonth(d);
     });
 
     return {
         now,
-        todayStr,
+        currentDayStr,
         currentMonthKey,
         lastMonthKey,
         currentHour,

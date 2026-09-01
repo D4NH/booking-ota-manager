@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import BookingModal from '@/components/BookingModal.vue';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
+import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useDailyOperations } from '@/composables/useDailyOperations';
-import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
+import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
+import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-import { formatDate, toISODateString } from '@/utils/date';
+import { formatDate, getCurrentDate } from '@/utils/date';
+
+import BookingModal from '@/components/BookingModal.vue';
+import PropertyModal from '@/components/PropertyModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -19,10 +23,20 @@ const { sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus, saveBooking } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
-const { todayStr, currentMonthKey, lastMonthKey } = useDateKeys();
+const { currentDayStr } = useDateKeys();
+const {
+    checkoutPayout,
+    occupiedNights,
+    totalCapacityNights,
+    occupancyPercentage,
+    totalBookingsCount,
+    revenueGrowthPercent,
+} = useMonthlyMetrics(bookings, sortedProperties);
 
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
+const isPropertyModalOpen = ref(false);
+const selectedProperty = ref<Property | null>(null);
 
 const propertyBookings = computed(() => bookings.value);
 const pendingPayments = computed(() => {
@@ -30,14 +44,14 @@ const pendingPayments = computed(() => {
         const checkInDate = new Date(checkIn);
         checkInDate.setDate(checkInDate.getDate() - 1);
 
-        const alertDateStr = toISODateString(checkInDate);
+        const alertDateStr = getCurrentDate(checkInDate);
         return alertDateStr === today;
     };
 
     const whatsappPayments = propertyBookings.value.filter((b) =>
         b.listing !== 'Whatsapp' || b.status !== 'Waiting for payment'
             ? false
-            : isPaymentDueOneDayBeforeCheckIn(b.checkIn, todayStr.value)
+            : isPaymentDueOneDayBeforeCheckIn(b.checkIn, currentDayStr.value)
     );
 
     const bookingPayouts = propertyBookings.value.filter((b) => b.status === 'Waiting for payout');
@@ -45,82 +59,6 @@ const pendingPayments = computed(() => {
     return {
         whatsappPayments,
         bookingPayouts,
-    };
-});
-
-const monthlySummary = computed(() => {
-    const targetMonth = currentMonthKey.value;
-    const bookings = propertyBookings.value;
-
-    let monthlyPayout = 0;
-    let totalNightsBooked = 0;
-    let totalBookings = 0;
-
-    for (const b of bookings) {
-        if (b && b.status !== 'Unavailable' && b.checkIn.startsWith(targetMonth)) {
-            monthlyPayout += b.payout || 0;
-            totalNightsBooked += b.nights || 0;
-            totalBookings++;
-        }
-    }
-
-    const [yearStr = '2026', monthStr = '1'] = targetMonth.split('-');
-    const daysInMonth = new Date(Number(yearStr), Number(monthStr), 0).getDate();
-    const totalCapacityNights = daysInMonth * PROPERTY_LIST.length;
-
-    const occupancyRate =
-        totalCapacityNights > 0
-            ? Math.min(100, Math.round((totalNightsBooked / totalCapacityNights) * 100))
-            : 0;
-
-    return {
-        totalPayout: monthlyPayout,
-        totalNightsBooked,
-        occupancyRate,
-        bookingCount: totalBookings,
-    };
-});
-const upcomingCheckIns = computed(() =>
-    propertyBookings.value.filter((b) => b.checkIn === todayStr.value)
-);
-const upcomingCheckOuts = computed(() =>
-    propertyBookings.value.filter((b) => b.checkOut === todayStr.value)
-);
-const currentMonthRevenue = computed<number>(() =>
-    propertyBookings.value
-        .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
-        .reduce((acc, b) => acc + (b.payout || 0), 0)
-);
-const lastMonthRevenue = computed<number>(() =>
-    propertyBookings.value
-        .filter((b) => b.checkIn.startsWith(lastMonthKey.value))
-        .reduce((acc, b) => acc + (b.payout || 0), 0)
-);
-const revenueGrowthPercent = computed<number>(() => {
-    return lastMonthRevenue.value === 0
-        ? 0
-        : Math.round(
-              ((currentMonthRevenue.value - lastMonthRevenue.value) / lastMonthRevenue.value) * 100
-          );
-});
-const monthlyOccupancy = computed(() => {
-    const [yearStr, monthStr] = currentMonthKey.value.split('-');
-    const daysInMonth = new Date(Number(yearStr), Number(monthStr), 0).getDate();
-    const totalCapacityNights = daysInMonth * PROPERTY_LIST.length;
-
-    const bookedNightsThisMonth = bookingStore.bookings
-        .filter((b) => b.checkIn.startsWith(currentMonthKey.value))
-        .reduce((acc, b) => acc + (b.nights || 0), 0);
-
-    const percentage = Math.min(
-        100,
-        Math.round((bookedNightsThisMonth / (totalCapacityNights || 1)) * 100)
-    );
-
-    return {
-        bookedNights: bookedNightsThisMonth,
-        capacityNights: totalCapacityNights,
-        percentage,
     };
 });
 
@@ -136,6 +74,15 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         bookingToEdit.value = null;
     }
 };
+const handleEditProperty = (id: PropertyId) => {
+    const found = sortedProperties.value.find((p) => p.id === id);
+    selectedProperty.value = found ? { ...found } : null;
+    isPropertyModalOpen.value = true;
+};
+const handleSaveProperty = async (propertyData: Property) => {
+    await propertyStore.saveProperty(propertyData);
+    isPropertyModalOpen.value = false;
+};
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
 </script>
@@ -144,7 +91,7 @@ const propertyImage = (id: string) =>
     <div class="mx-auto max-w-7xl space-y-4">
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <p class="text-xs text-mist-400">Live operational activity for {{ todayStr }}</p>
+            <p class="text-xs text-mist-400">Live operational activity for {{ currentDayStr }}</p>
         </div>
 
         <!-- Monthly Summary Cards -->
@@ -152,7 +99,7 @@ const propertyImage = (id: string) =>
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
-                    {{ formatIDR(monthlySummary.totalPayout) }}
+                    {{ formatIDR(checkoutPayout) }}
                 </p>
                 <div class="flex items-center gap-1 text-xs mt-1">
                     <span
@@ -165,31 +112,28 @@ const propertyImage = (id: string) =>
             </div>
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
-                <p class="text-lg font-bold text-mist-100 mt-1">
-                    {{ monthlySummary.occupancyRate }}%
-                </p>
+                <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
                 <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
-                        :style="{ width: `${monthlyOccupancy.percentage}%` }"></div>
+                        :style="{ width: `${occupancyPercentage}%` }"></div>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">
-                    {{ monthlyOccupancy.bookedNights }} /
-                    {{ monthlyOccupancy.capacityNights }} nights booked
+                    {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
-                    {{ monthlySummary.bookingCount }}
+                    {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
-                    <span class="text-lime-400 mr-3">↓ {{ upcomingCheckIns.length }} In</span>
-                    <span class="text-amber-400">↑ {{ upcomingCheckOuts.length }} Out</span>
+                    <span class="text-lime-400 mr-3">↓ {{ todaysArrivals.length }} In</span>
+                    <span class="text-amber-400">↑ {{ todaysDepartures.length }} Out</span>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>
@@ -222,16 +166,16 @@ const propertyImage = (id: string) =>
                     </div>
                     <div
                         v-if="todaysArrivals.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                        <span>No arrivals scheduled for today.</span>
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-20">
+                        No arrivals scheduled for today.
                     </div>
                     <div
                         v-else
-                        class="space-y-4">
+                        class="divide-y divide-mist-800">
                         <div
                             v-for="b in todaysArrivals"
                             :key="b.id"
-                            class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="font-semibold text-sm text-mist-200">
@@ -261,12 +205,12 @@ const propertyImage = (id: string) =>
                                 <span>
                                     {{ formatDate(b.checkIn, { shortMonth: true }) }}
                                     &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.nights }} night(s)</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
                                 <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -281,11 +225,7 @@ const propertyImage = (id: string) =>
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <div>
-                            <h2 class="text-xs font-bold uppercase text-mist-300">
-                                Currently Staying
-                            </h2>
-                        </div>
+                        <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
                         <span
                             class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ currentStays.length }}
@@ -294,15 +234,15 @@ const propertyImage = (id: string) =>
                     <div
                         v-if="currentStays.length === 0"
                         class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                        <span>No guests currently in-house.</span>
+                        No guests currently in-house.
                     </div>
                     <div
                         v-else
-                        class="space-y-4">
+                        class="divide-y divide-mist-800">
                         <div
                             v-for="b in currentStays"
                             :key="b.id"
-                            class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="font-semibold text-sm text-mist-200">
@@ -332,12 +272,12 @@ const propertyImage = (id: string) =>
                                 <span>
                                     {{ formatDate(b.checkIn, { shortMonth: true }) }}
                                     &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.nights }} night(s)</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
                                 <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -363,15 +303,15 @@ const propertyImage = (id: string) =>
                     <div
                         v-if="todaysDepartures.length === 0"
                         class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                        <span>No departures scheduled for today.</span>
+                        No departures scheduled for today.
                     </div>
                     <div
                         v-else
-                        class="space-y-4">
+                        class="divide-y divide-mist-800">
                         <div
                             v-for="b in todaysDepartures"
                             :key="b.id"
-                            class="rounded-lg border border-mist-800 bg-mist-950 p-4 space-y-2">
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="font-semibold text-sm text-mist-200">
@@ -401,12 +341,12 @@ const propertyImage = (id: string) =>
                                 <span>
                                     {{ formatDate(b.checkIn, { shortMonth: true }) }}
                                     &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.nights }} night(s)</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
                                 <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -457,46 +397,45 @@ const propertyImage = (id: string) =>
                             <div
                                 v-for="b in pendingPayments.whatsappPayments"
                                 :key="b.id"
-                                class="py-4 first:pt-0">
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-semibold text-sm text-mist-200">
-                                                {{ b.guestName }}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                                @click="handleEditBooking(b)">
-                                                <fa-icon icon="pen-to-square" />
-                                            </button>
-                                        </div>
-                                        <RouterLink
-                                            :to="{
-                                                name: 'property-detail',
-                                                params: { id: b.propertyId },
-                                            }"
-                                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                            :class="[
-                                                getPropertyTheme(b.propertyId).bg,
-                                                getPropertyTheme(b.propertyId).text,
-                                            ]">
-                                            {{ b.propertyId }}
-                                        </RouterLink>
-                                    </div>
-                                    <div class="flex justify-between text-xs text-mist-400">
-                                        <span>
-                                            {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                            &rarr;
-                                            {{ formatDate(b.checkOut, { shortMonth: true }) }}
-                                            &bull;
-                                            {{ b.nights }}
-                                            night(s)
+                                class="space-y-2 py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-mist-200">
+                                            {{ b.guestName }}
                                         </span>
-                                        <span class="font-mono text-lime-400">
-                                            {{ formatIDR(b.payout) }}
-                                        </span>
+                                        <button
+                                            type="button"
+                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                            @click="handleEditBooking(b)">
+                                            <fa-icon icon="pen-to-square" />
+                                        </button>
                                     </div>
+                                    <RouterLink
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div class="flex justify-between text-xs text-mist-400">
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                        {{ b.nights }} night(s)
+                                    </span>
+                                    <span>{{ b.listing }}</span>
+                                </div>
+                                <div class="flex justify-end text-xs text-mist-400">
+                                    <span class="font-mono text-lime-400">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -516,46 +455,45 @@ const propertyImage = (id: string) =>
                             <div
                                 v-for="b in pendingPayments.bookingPayouts"
                                 :key="b.id"
-                                class="py-4 first:pt-0">
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-semibold text-sm text-mist-200">
-                                                {{ b.guestName }}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                                @click="handleEditBooking(b)">
-                                                <fa-icon icon="pen-to-square" />
-                                            </button>
-                                        </div>
-                                        <RouterLink
-                                            :to="{
-                                                name: 'property-detail',
-                                                params: { id: b.propertyId },
-                                            }"
-                                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                            :class="[
-                                                getPropertyTheme(b.propertyId).bg,
-                                                getPropertyTheme(b.propertyId).text,
-                                            ]">
-                                            {{ b.propertyId }}
-                                        </RouterLink>
-                                    </div>
-                                    <div class="flex justify-between text-xs text-mist-400">
-                                        <span>
-                                            {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                            &rarr;
-                                            {{ formatDate(b.checkOut, { shortMonth: true }) }}
-                                            &bull;
-                                            {{ b.nights }}
-                                            night(s)
+                                class="space-y-2 py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-mist-200">
+                                            {{ b.guestName }}
                                         </span>
-                                        <span class="font-mono text-lime-400">
-                                            {{ formatIDR(b.payout) }}
-                                        </span>
+                                        <button
+                                            type="button"
+                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                            @click="handleEditBooking(b)">
+                                            <fa-icon icon="pen-to-square" />
+                                        </button>
                                     </div>
+                                    <RouterLink
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div class="flex justify-between text-xs text-mist-400">
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                        {{ b.nights }} night(s)
+                                    </span>
+                                    <span>{{ b.listing }}</span>
+                                </div>
+                                <div class="flex justify-end text-xs text-mist-400">
+                                    <span class="font-mono text-lime-400">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -603,13 +541,24 @@ const propertyImage = (id: string) =>
                                         </p>
                                     </td>
                                     <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                        {{
-                                            upcomingCheckIns.filter(
-                                                (b) => b.propertyId === property.id
-                                            ).length
-                                                ? 'Blocked'
-                                                : 'Available'
-                                        }}
+                                        <!-- Add maintenance state -->
+                                        <span
+                                            :class="[
+                                                'rounded px-2 py-0.5 text-xs text-nowrap',
+                                                todaysArrivals.filter(
+                                                    (b) => b.propertyId === property.id
+                                                ).length
+                                                    ? 'bg-amber-500/20 text-amber-400'
+                                                    : 'bg-lime-500/20 text-lime-400',
+                                            ]">
+                                            {{
+                                                todaysArrivals.filter(
+                                                    (b) => b.propertyId === property.id
+                                                ).length
+                                                    ? 'Occupied'
+                                                    : 'Available'
+                                            }}
+                                        </span>
                                     </td>
                                     <td class="px-4 py-3 font-medium text-mist-100 font-mono">
                                         {{ formatIDR(property.price) }}
@@ -635,5 +584,11 @@ const propertyImage = (id: string) =>
             :booking-to-edit="bookingToEdit"
             @close="isBookingModalOpen = false"
             @save="handleSaveBooking" />
+
+        <PropertyModal
+            :is-open="isPropertyModalOpen"
+            :property-to-edit="selectedProperty"
+            @close="isPropertyModalOpen = false"
+            @save="handleSaveProperty" />
     </div>
 </template>

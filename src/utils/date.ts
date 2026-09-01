@@ -1,22 +1,42 @@
 /**
- * Format to local YYYY-MM-DD string without UTC offset issues
+ * Current day formatted to YYYY-MM-DD
  */
-export const toISODateString = (date: Date): string => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+export const getCurrentDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
-    return `${y}-${m}-${d}`;
+    return `${year}-${month}-${day}`;
 };
 
 /**
- * Format a Date object to YYYY-MM
+ * Current month formatted to YYYY-MM
  */
-export const toISOMonthString = (date: Date): string => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
+export const getCurrentMonth = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
 
-    return `${y}-${m}`;
+    return `${year}-${month}`;
+};
+
+/**
+ * Previous month formatted to YYYY-MM
+ */
+export const getPreviousMonth = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    let prevMonth = month - 1;
+    let prevYear = year;
+
+    if (prevMonth < 0) {
+        prevMonth = 11;
+        prevYear -= 1;
+    }
+
+    const formattedMonth = String(prevMonth + 1).padStart(2, '0');
+
+    return `${prevYear}-${formattedMonth}`;
 };
 
 /**
@@ -32,7 +52,7 @@ export const parseISODate = (isoDateStr: string): Date => {
  * Formats an ISO date string ("2026-09-02") into a readable string.
  * Example outputs:
  *  - formatDate("2026-09-02") -> "02 September"
- *  - formatDate("2026-09-02", { includeYear: true }) -> "02 September, 2026"
+ *  - formatDate("2026-09-02", { includeYear: true }) -> "02 September 2026"
  *  - formatDate("2026-09-02", { shortMonth: true }) -> "02 Sep"
  *  - formatDate("2026-09-02", { monthHeader: true }) -> "September 2026"
  *  - formatDate("2026-09-02", { monthOnly: true }) -> "September"
@@ -55,7 +75,7 @@ export const formatDate = (
     const day = String(date.getDate()).padStart(2, '0');
 
     if (options.includeYear) {
-        return `${day} ${monthName}, ${date.getFullYear()}`;
+        return `${day} ${monthName} ${date.getFullYear()}`;
     }
 
     if (options.monthHeader) {

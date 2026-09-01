@@ -10,7 +10,7 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
-import { toISODateString } from '@/utils/date';
+import { getCurrentDate } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 
@@ -50,14 +50,14 @@ const calendarDays = computed<CalendarDay[]>(() => {
     // Format today's date string in local time
     const now = new Date();
     const days: CalendarDay[] = [];
-    const today = toISODateString(now);
+    const today = getCurrentDate(now);
 
     // Previous month padding days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
 
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
-        const dateStr = toISODateString(prevDate);
+        const dateStr = getCurrentDate(prevDate);
 
         days.push({
             dateStr,
@@ -83,7 +83,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     for (let day = 1; day <= remainingCells; day++) {
         const nextDate = new Date(year, month + 1, day);
-        const dateStr = toISODateString(nextDate);
+        const dateStr = getCurrentDate(nextDate);
 
         days.push({
             dateStr,
@@ -182,7 +182,7 @@ const selectProperty = (id: string) => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="space-y-4">
         <!-- Header Bar -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -237,13 +237,13 @@ const selectProperty = (id: string) => {
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-950 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>

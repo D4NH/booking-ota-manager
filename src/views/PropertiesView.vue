@@ -11,7 +11,7 @@ import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-import { toISODateString, formatDate } from '@/utils/date';
+import { getCurrentDate, formatDate } from '@/utils/date';
 
 import BookingModal from '@/components/BookingModal.vue';
 import PropertyModal from '@/components/PropertyModal.vue';
@@ -25,7 +25,7 @@ const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus, saveBooking } = useBookingSync();
-const { todayStr, currentMonthKey, lastMonthKey } = useDateKeys();
+const { currentDayStr, currentMonthKey, lastMonthKey } = useDateKeys();
 
 const bookingToEdit = ref<Booking | null>(null);
 const isBookingModalOpen = ref<boolean>(false);
@@ -64,10 +64,10 @@ const revenueGrowthPercent = computed<number>(() =>
           )
 );
 const upcomingCheckIns = computed(() =>
-    propertyBookings.value.filter((b) => b.checkIn === todayStr.value)
+    propertyBookings.value.filter((b) => b.checkIn === currentDayStr.value)
 );
 const upcomingCheckOuts = computed(() =>
-    propertyBookings.value.filter((b) => b.checkOut === todayStr.value)
+    propertyBookings.value.filter((b) => b.checkOut === currentDayStr.value)
 );
 const monthlyStats = computed(() => {
     const targetMonth = currentMonthKey.value;
@@ -111,14 +111,14 @@ const pendingPayments = computed(() => {
         const checkInDate = new Date(checkIn);
         checkInDate.setDate(checkInDate.getDate() - 1);
 
-        const alertDateStr = toISODateString(checkInDate);
+        const alertDateStr = getCurrentDate(checkInDate);
         return alertDateStr === today;
     };
 
     const whatsappPayments = propertyBookings.value.filter((b) =>
         b.listing !== 'Whatsapp' || b.status !== 'Waiting for payment'
             ? false
-            : isPaymentDueOneDayBeforeCheckIn(b.checkIn, todayStr.value)
+            : isPaymentDueOneDayBeforeCheckIn(b.checkIn, currentDayStr.value)
     );
 
     const bookingPayouts = propertyBookings.value.filter((b) => b.status === 'Waiting for payout');
@@ -207,41 +207,38 @@ const propertyImage = (id: string) =>
                 </p>
             </div>
             <!-- Switcher Tabs -->
-            <div class="flex flex-row">
-                <div
-                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
-                    <button
-                        type="button"
-                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                        :class="[
-                            activeTab === 'all'
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="handleTabChange('all')">
-                        All
-                    </button>
-                    <button
-                        v-for="prop in PROPERTY_LIST"
-                        :key="prop.id"
-                        type="button"
-                        class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                        :class="[
-                            activeTab === prop.id
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="handleTabChange(prop.id)">
-                        {{ prop.id }}
-                    </button>
-                </div>
+            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
                 <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                    :class="[
+                        activeTab === 'all'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="handleTabChange('all')">
+                    All
+                </button>
+                <button
+                    v-for="prop in PROPERTY_LIST"
+                    :key="prop.id"
+                    type="button"
+                    class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                    :class="[
+                        activeTab === prop.id
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="handleTabChange(prop.id)">
+                    {{ prop.id }}
+                </button>
+            </div>
+            <!-- <button
                     type="button"
                     class="ml-5 cursor-pointer rounded-lg bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
                     @click="handleAddProperty">
                     + Add Property
-                </button>
-            </div>
+                </button> -->
         </div>
 
         <!-- Monthly Summary Cards -->

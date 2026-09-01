@@ -18,7 +18,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 
 const { syncStatus, saveBooking, deleteBooking } = useBookingSync();
-const { todayStr } = useDateKeys();
+const { currentDayStr } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
@@ -26,6 +26,7 @@ const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show', 'Unavailable']);
 const collapsedMonths = ref<string[]>([]);
 const isBookingModalOpen = ref<boolean>(false);
+const toggleFilters = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
 
 const availableMonths = computed<string[]>(() => {
@@ -130,14 +131,14 @@ const handleClearAllLocal = async (): Promise<void> => {
         setTimeout(() => (syncStatus.value = ''), 3000);
     }
 };
-const isCurrentBooking = (checkIn: string): boolean => todayStr.value === checkIn;
+const isCurrentBooking = (checkIn: string): boolean => currentDayStr.value === checkIn;
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
 </script>
 
 <template>
-    <div class="flex flex-col space-y-4">
+    <div class="space-y-4">
         <!-- Header -->
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -146,34 +147,38 @@ const selectProperty = (id: string) => {
                     Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
                 </p>
             </div>
-            <GoogleSyncButton :property-id="selectedProperty" />
 
-            <!-- Property Selector -->
-            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
-                <button
-                    type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                    :class="[
-                        selectedProperty === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="selectedProperty = 'all'">
-                    All
-                </button>
-                <button
-                    v-for="prop in PROPERTY_LIST"
-                    :key="prop.id"
-                    type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                    :class="[
-                        selectedProperty === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="selectProperty(prop.id)">
-                    <span class="capitalize">{{ prop.id }}</span>
-                </button>
+            <div class="flex items-center gap-3">
+                <GoogleSyncButton :property-id="selectedProperty" />
+
+                <!-- Property Selector -->
+                <div
+                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                        :class="[
+                            selectedProperty === 'all'
+                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectedProperty = 'all'">
+                        All
+                    </button>
+                    <button
+                        v-for="prop in PROPERTY_LIST"
+                        :key="prop.id"
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                        :class="[
+                            selectedProperty === prop.id
+                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectProperty(prop.id)">
+                        <span class="capitalize">{{ prop.id }}</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -185,31 +190,20 @@ const selectProperty = (id: string) => {
         </div>
 
         <!-- Filter Bar -->
-        <div class="space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-4">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div class="relative">
-                    <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
-                    <select
-                        v-model="selectedProperty"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
-                        <option value="all">All Properties</option>
-                        <option
-                            v-for="prop in PROPERTY_LIST"
-                            :key="prop.id"
-                            :value="prop.id">
-                            {{ prop.name }}
-                        </option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
-                        <fa-icon icon="angle-down" />
-                    </div>
+        <div
+            class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="flex items-center gap-2">
+                <div class="w-50">
+                    <input
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Search guest, ID or notes..."
+                        class="w-full rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
                 </div>
-                <div class="relative">
-                    <label class="mb-1 block text-xs font-medium text-mist-400">Filter Month</label>
+                <div class="relative w-50">
                     <select
                         v-model="selectedMonth"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                         <option value="all">All Months</option>
                         <option
                             v-for="mKey in availableMonths"
@@ -219,50 +213,48 @@ const selectProperty = (id: string) => {
                         </option>
                     </select>
                     <div
-                        class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
                         <fa-icon
                             class="text-xs"
                             icon="angle-down" />
                     </div>
                 </div>
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-mist-400">Search</label>
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Search guest, ID or notes..."
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                    @click="toggleFilters = !toggleFilters">
+                    <fa-icon
+                        class="text-xs"
+                        icon="filter" />
+                </button>
+                <div
+                    v-if="toggleFilters"
+                    class="flex flex-wrap items-center gap-2">
+                    <button
+                        v-for="status in validStatuses"
+                        :key="status"
+                        type="button"
+                        :class="[
+                            'rounded-full px-2.5 py-1 text-xs border transition',
+                            hiddenStatuses.includes(status)
+                                ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
+                                : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
+                        ]"
+                        @click="toggleStatusVisibility(status)">
+                        {{ status }}
+                    </button>
                 </div>
             </div>
-
-            <!-- Inverse Status Filter -->
-            <div class="flex flex-wrap items-center gap-2 pt-4 mb-2 border-t border-mist-800">
-                <span class="text-xs font-medium text-mist-400">Filter:</span>
-                <button
-                    v-for="status in validStatuses"
-                    :key="status"
-                    type="button"
-                    :class="[
-                        'rounded-full px-2.5 py-1 text-xs border transition',
-                        hiddenStatuses.includes(status)
-                            ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
-                            : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
-                    ]"
-                    @click="toggleStatusVisibility(status)">
-                    {{ status }}
-                </button>
-            </div>
+            <button
+                type="button"
+                class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                @click="handleAddBooking">
+                <fa-icon
+                    class="text-xs"
+                    icon="plus" />
+                Add Booking
+            </button>
         </div>
-
-        <button
-            type="button"
-            class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
-            @click="handleAddBooking">
-            <fa-icon
-                class="text-xs"
-                icon="plus" />
-            Add Booking
-        </button>
 
         <!-- Bookings Table -->
         <div
@@ -401,12 +393,14 @@ const selectProperty = (id: string) => {
             </table>
         </div>
 
-        <button
-            type="button"
-            class="self-end rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
-            @click="handleClearAllLocal">
-            Clear Local DB
-        </button>
+        <div class="flex justify-end">
+            <button
+                type="button"
+                class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
+                @click="handleClearAllLocal">
+                Clear Local DB
+            </button>
+        </div>
 
         <BookingModal
             v-if="isBookingModalOpen"

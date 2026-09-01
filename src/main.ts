@@ -21,6 +21,7 @@ import {
     faTrashCan,
     faPlus,
     faXmark,
+    faFilter,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -33,7 +34,8 @@ library.add(
     faTrashCan,
     faAngleDown,
     faPlus,
-    faXmark
+    faXmark,
+    faFilter
 );
 
 const app = createApp(App);

@@ -8,7 +8,7 @@ import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 
-const { todayStr } = useDateKeys();
+const { currentDayStr } = useDateKeys();
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
@@ -66,7 +66,7 @@ const validationError = computed<string | null>(() => {
     return null;
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
-const checkInMinDate = computed(() => (props.bookingToEdit ? '' : todayStr.value));
+const checkInMinDate = computed(() => (props.bookingToEdit ? '' : currentDayStr.value));
 
 watch(
     () => [form.value.checkIn, form.value.checkOut],

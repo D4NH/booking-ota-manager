@@ -3,17 +3,17 @@ import { useDateKeys } from '@/composables/useDateKeys';
 import type { Booking } from '@/types/booking';
 
 export function useDailyOperations(bookings: Ref<Booking[]>) {
-    const { todayStr, currentHour } = useDateKeys();
+    const { currentDayStr, currentHour } = useDateKeys();
 
     const todaysArrivals = computed<Booking[]>(() => {
         if (currentHour.value >= 15) return [];
 
-        const today = todayStr.value;
+        const today = currentDayStr.value;
         return bookings.value.filter((b) => b.checkIn === today && b.status !== 'Unavailable');
     });
 
     const currentStays = computed<Booking[]>(() => {
-        const today = todayStr.value;
+        const today = currentDayStr.value;
         const hour = currentHour.value;
 
         return bookings.value.filter((b) => {
@@ -31,13 +31,8 @@ export function useDailyOperations(bookings: Ref<Booking[]>) {
     const todaysDepartures = computed<Booking[]>(() => {
         if (currentHour.value >= 13) return [];
 
-        const today = todayStr.value;
-        return bookings.value.filter(
-            (b) =>
-                b.checkOut === today &&
-                b.status !== 'Unavailable' &&
-                b.status !== 'Waiting for payout'
-        );
+        const today = currentDayStr.value;
+        return bookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
     });
 
     return {

@@ -18,7 +18,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 
 const { syncStatus, saveBooking, deleteBooking } = useBookingSync();
-const { todayStr } = useDateKeys();
+const { currentDayStr } = useDateKeys();
 
 const isBookingModalOpen = ref<boolean>(false);
 const bookingToEdit = ref<Booking | null>(null);
@@ -82,7 +82,9 @@ const groupedBookings = computed(() => {
 });
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
-    todayStr.value >= checkIn && todayStr.value <= checkOut && status !== 'Waiting for payout';
+    currentDayStr.value >= checkIn &&
+    currentDayStr.value <= checkOut &&
+    status !== 'Waiting for payout';
 const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
 
