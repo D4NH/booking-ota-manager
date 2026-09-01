@@ -32,7 +32,12 @@ export function useDailyOperations(bookings: Ref<Booking[]>) {
         if (currentHour.value >= 13) return [];
 
         const today = todayStr.value;
-        return bookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
+        return bookings.value.filter(
+            (b) =>
+                b.checkOut === today &&
+                b.status !== 'Unavailable' &&
+                b.status !== 'Waiting for payout'
+        );
     });
 
     return {

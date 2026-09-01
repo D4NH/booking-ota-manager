@@ -66,6 +66,7 @@ const groupedBookings = computed(() => {
 
     filteredBookings.value.forEach((b) => {
         const monthKey = b.checkIn.substring(0, 7);
+
         if (!groups[monthKey]) groups[monthKey] = [];
         groups[monthKey].push(b);
     });
@@ -155,8 +156,7 @@ watch(
                         <th class="w-40 px-4 py-2.5">ID</th>
                         <th class="w-32 px-4 py-2.5 text-center">Channel</th>
                         <th class="px-4 py-2.5">Guest</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Check In</th>
-                        <th class="w-32 px-4 py-2.5 text-center">Check Out</th>
+                        <th class="w-50 px-4 py-2.5 text-center">Stay Date</th>
                         <th class="w-28 px-4 py-2.5 text-center">Nights</th>
                         <th class="w-38 px-4 py-2.5 text-right">Payout</th>
                         <th class="w-40 px-4 py-2.5 text-center">Status</th>
@@ -169,7 +169,7 @@ watch(
                     <tbody class="border-t border-mist-800 bg-mist-950/40">
                         <tr>
                             <td
-                                colspan="9"
+                                colspan="8"
                                 class="p-0">
                                 <button
                                     type="button"
@@ -214,10 +214,9 @@ watch(
                                 {{ b.guestName }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                {{ b.checkIn }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                {{ b.checkOut }}
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                &rarr;
+                                {{ formatDate(b.checkOut, { shortMonth: true }) }}
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
