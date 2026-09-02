@@ -6,30 +6,28 @@ import { useBookingSync } from '@/composables/useBookingSync';
 import { getPropertyTheme } from '@/config/properties';
 import { MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
 import { getCurrentDate } from '@/utils/date';
 
-import BookingModal from '@/components/BookingModal.vue';
-
 const route = useRoute();
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const { syncStatus, saveBooking } = useBookingSync();
+const { syncStatus } = useBookingSync();
 
 const routePropertyId = route.params.id as PropertyId | undefined;
 
 const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
 const selectedCheckInDate = ref<string>('');
 const currentDate = ref<Date>(new Date());
-const isBookingModalOpen = ref<boolean>(false);
-const bookingToEdit = ref<Booking | null>(null);
 const selectedMonth = ref<number>(currentDate.value.getMonth());
 const selectedYear = ref<number>(currentDate.value.getFullYear());
 
@@ -155,26 +153,18 @@ const goToToday = (): void => {
 const getBookingsForDate = (dateStr: string): Booking[] =>
     filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
 const handleAddBooking = () => {
-    bookingToEdit.value = null;
-    isBookingModalOpen.value = true;
+    modalStore.openBookingModal();
 };
 const handleCellClick = (day: CalendarDay) => {
     selectedCheckInDate.value = day.dateStr;
-    bookingToEdit.value = null;
-    isBookingModalOpen.value = true;
+    modalStore.openBookingModal({
+        checkInDate: selectedCheckInDate.value,
+        propertyId: selectedProperty.value,
+    });
 };
 const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
-    bookingToEdit.value = booking;
-    isBookingModalOpen.value = true;
-};
-const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    const success = await saveBooking(payload, bookingToEdit.value);
-
-    if (success) {
-        isBookingModalOpen.value = false;
-        bookingToEdit.value = null;
-    }
+    modalStore.openBookingModal({ booking });
 };
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
@@ -410,13 +400,5 @@ const selectProperty = (id: string) => {
                 </div>
             </div>
         </div>
-
-        <BookingModal
-            v-if="isBookingModalOpen"
-            :booking-to-edit="bookingToEdit"
-            :initial-check-in-date="selectedCheckInDate"
-            :current-property="selectedProperty"
-            @close="isBookingModalOpen = false"
-            @save="handleSaveBooking" />
     </div>
 </template>

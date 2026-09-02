@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useModalStore } from '@/stores/useModalStore';
 import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { validStatuses } from '@/config/status';
 import type { Booking } from '@/types/booking';
@@ -11,13 +12,13 @@ import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { formatDate } from '@/utils/date';
 
-import BookingModal from '@/components/BookingModal.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const modalStore = useModalStore();
 
-const { syncStatus, saveBooking, deleteBooking } = useBookingSync();
+const { syncStatus, deleteBooking } = useBookingSync();
 const { currentDayStr } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
@@ -25,9 +26,7 @@ const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show', 'Unavailable']);
 const collapsedMonths = ref<string[]>([]);
-const isBookingModalOpen = ref<boolean>(false);
 const toggleFilters = ref<boolean>(false);
-const bookingToEdit = ref<Booking | null>(null);
 
 const availableMonths = computed<string[]>(() => {
     const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
@@ -99,20 +98,10 @@ const toggleMonth = (monthKey: string) => {
     }
 };
 const handleAddBooking = () => {
-    bookingToEdit.value = null;
-    isBookingModalOpen.value = true;
+    modalStore.openBookingModal();
 };
 const handleEditBooking = (booking: Booking) => {
-    bookingToEdit.value = booking;
-    isBookingModalOpen.value = true;
-};
-const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    const success = await saveBooking(payload, bookingToEdit.value);
-
-    if (success) {
-        isBookingModalOpen.value = false;
-        bookingToEdit.value = null;
-    }
+    modalStore.openBookingModal({ booking });
 };
 const handleDeleteBooking = async (booking: Booking): Promise<void> => {
     await deleteBooking(booking);
@@ -401,11 +390,5 @@ const selectProperty = (id: string) => {
                 Clear Local DB
             </button>
         </div>
-
-        <BookingModal
-            v-if="isBookingModalOpen"
-            :booking-to-edit="bookingToEdit"
-            @close="isBookingModalOpen = false"
-            @save="handleSaveBooking" />
     </div>
 </template>

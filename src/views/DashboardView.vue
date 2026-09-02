@@ -7,21 +7,22 @@ import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
-import { formatIDR } from '@/utils/money';
 import { formatDate, getCurrentDate } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
-import BookingModal from '@/components/BookingModal.vue';
 import PropertyModal from '@/components/PropertyModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const { syncStatus, saveBooking } = useBookingSync();
+const { syncStatus } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
 const { currentDayStr } = useDateKeys();
 const {
@@ -33,8 +34,6 @@ const {
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings, sortedProperties);
 
-const isBookingModalOpen = ref<boolean>(false);
-const bookingToEdit = ref<Booking | null>(null);
 const isPropertyModalOpen = ref(false);
 const selectedProperty = ref<Property | null>(null);
 
@@ -63,16 +62,7 @@ const pendingPayments = computed(() => {
 });
 
 const handleEditBooking = (booking: Booking) => {
-    bookingToEdit.value = booking;
-    isBookingModalOpen.value = true;
-};
-const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
-    const success = await saveBooking(payload, bookingToEdit.value);
-
-    if (success) {
-        isBookingModalOpen.value = false;
-        bookingToEdit.value = null;
-    }
+    modalStore.openBookingModal({ booking });
 };
 const handleEditProperty = (id: PropertyId) => {
     const found = sortedProperties.value.find((p) => p.id === id);
@@ -578,12 +568,6 @@ const propertyImage = (id: string) =>
                 </div>
             </div>
         </div>
-
-        <BookingModal
-            v-if="isBookingModalOpen"
-            :booking-to-edit="bookingToEdit"
-            @close="isBookingModalOpen = false"
-            @save="handleSaveBooking" />
 
         <PropertyModal
             :is-open="isPropertyModalOpen"
