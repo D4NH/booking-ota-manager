@@ -9,7 +9,7 @@ import type { ChannelStat } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
-import PropertyRevenueBarChart from '@/components/charts/PropertyRevenueBarChart.vue';
+import PropertyRevenue from '@/components/charts/PropertyRevenue.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -205,7 +205,7 @@ const handleTabChange = (id: string) => {
                     <h2 class="text-sm font-bold text-mist-100">Revenue by Property</h2>
                     <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>
                 </div>
-                <PropertyRevenueBarChart
+                <PropertyRevenue
                     :data="monthlyPropertyData"
                     :selected-property="selectedProperty" />
             </div>

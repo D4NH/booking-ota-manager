@@ -24,7 +24,7 @@ const { currentDayStr } = useDateKeys();
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
-const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show', 'Unavailable']);
+const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
 const toggleFilters = ref<boolean>(false);
 

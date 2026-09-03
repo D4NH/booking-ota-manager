@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useBookingSync } from '@/composables/useBookingSync';
+import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_LIST } from '@/config/properties';
@@ -24,6 +25,7 @@ const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
+const { todaysArrivals, currentStays } = useDailyOperations(bookings);
 
 const isPropertyModalOpen = ref(false);
 const selectedProperty = ref<Property | null>(null);
@@ -82,6 +84,21 @@ const propertyMetrics = computed(() => {
         };
     });
 });
+const occupiedPropertyIds = computed(() => {
+    const ids = new Set<string>();
+
+    for (let i = 0; i < currentStays.value.length; i++) {
+        const stay = currentStays.value[i];
+        if (stay?.propertyId) ids.add(stay.propertyId);
+    }
+
+    for (let i = 0; i < todaysArrivals.value.length; i++) {
+        const arrival = todaysArrivals.value[i];
+        if (arrival?.propertyId) ids.add(arrival.propertyId);
+    }
+
+    return ids;
+});
 
 const {
     checkoutPayout,
@@ -107,10 +124,7 @@ const handleSaveProperty = async (propertyData: Property) => {
 };
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
-const isPropertyOccupied = (id: string) =>
-    bookings.value.filter(
-        (booking) => booking.checkIn === getCurrentDate() && booking.propertyId === id
-    ).length;
+const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.has(id);
 </script>
 
 <template>

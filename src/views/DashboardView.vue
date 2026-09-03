@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
@@ -11,7 +11,7 @@ import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
-import { formatDate, getCurrentDate } from '@/utils/date';
+import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import PropertyModal from '@/components/PropertyModal.vue';
@@ -37,6 +37,23 @@ const {
 const isPropertyModalOpen = ref(false);
 const selectedProperty = ref<Property | null>(null);
 
+const occupiedPropertyIds = computed<Set<string>>(() => {
+    const ids = new Set<string>();
+
+    for (let i = 0; i < currentStays.value.length; i++) {
+        const stay = currentStays.value[i];
+        if (stay?.propertyId) ids.add(stay.propertyId);
+    }
+
+    for (let i = 0; i < todaysArrivals.value.length; i++) {
+        const arrival = todaysArrivals.value[i];
+        if (arrival?.propertyId) ids.add(arrival.propertyId);
+    }
+
+    return ids;
+});
+
+const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.has(id);
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
@@ -51,10 +68,6 @@ const handleSaveProperty = async (propertyData: Property) => {
 };
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
-const isPropertyOccupied = (id: string) =>
-    bookings.value.filter(
-        (booking) => booking.checkIn === getCurrentDate() && booking.propertyId === id
-    ).length;
 </script>
 
 <template>
