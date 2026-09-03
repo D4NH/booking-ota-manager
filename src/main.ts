@@ -23,6 +23,11 @@ import {
     faXmark,
     faFilter,
     faBell,
+    faBed,
+    faShower,
+    faHouse,
+    faRulerCombined,
+    faBook,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -37,7 +42,12 @@ library.add(
     faPlus,
     faXmark,
     faFilter,
-    faBell
+    faBell,
+    faBed,
+    faShower,
+    faHouse,
+    faRulerCombined,
+    faBook
 );
 
 const app = createApp(App);

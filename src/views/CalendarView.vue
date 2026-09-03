@@ -19,13 +19,11 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { sortedProperties } = storeToRefs(propertyStore);
+const { properties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
 
-const routePropertyId = route.params.id as PropertyId | undefined;
-
-const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
+const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const selectedCheckInDate = ref<string>('');
 const currentDate = ref<Date>(new Date());
 const selectedMonth = ref<number>(currentDate.value.getMonth());
@@ -193,7 +191,7 @@ const selectProperty = (id: string) => {
                     All
                 </button>
                 <button
-                    v-for="prop in sortedProperties"
+                    v-for="prop in properties"
                     :key="prop.id"
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"

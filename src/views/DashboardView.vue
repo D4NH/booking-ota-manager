@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
@@ -20,7 +20,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { sortedProperties } = storeToRefs(propertyStore);
+const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
@@ -32,40 +32,16 @@ const {
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(bookings, sortedProperties);
+} = useMonthlyMetrics(bookings, properties);
 
 const isPropertyModalOpen = ref(false);
 const selectedProperty = ref<Property | null>(null);
-
-const propertyBookings = computed(() => bookings.value);
-const pendingPayments = computed(() => {
-    const isPaymentDueOneDayBeforeCheckIn = (checkIn: string, today: string): boolean => {
-        const checkInDate = new Date(checkIn);
-        checkInDate.setDate(checkInDate.getDate() - 1);
-
-        const alertDateStr = getCurrentDate(checkInDate);
-        return alertDateStr === today;
-    };
-
-    const whatsappPayments = propertyBookings.value.filter((b) =>
-        b.listing !== 'Whatsapp' || b.status !== 'Waiting for payment'
-            ? false
-            : isPaymentDueOneDayBeforeCheckIn(b.checkIn, currentDayStr.value)
-    );
-
-    const bookingPayouts = propertyBookings.value.filter((b) => b.status === 'Waiting for payout');
-
-    return {
-        whatsappPayments,
-        bookingPayouts,
-    };
-});
 
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
 const handleEditProperty = (id: PropertyId) => {
-    const found = sortedProperties.value.find((p) => p.id === id);
+    const found = properties.value.find((p) => p.id === id);
     selectedProperty.value = found ? { ...found } : null;
     isPropertyModalOpen.value = true;
 };
@@ -75,6 +51,10 @@ const handleSaveProperty = async (propertyData: Property) => {
 };
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
+const isPropertyOccupied = (id: string) =>
+    bookings.value.filter(
+        (booking) => booking.checkIn === getCurrentDate() && booking.propertyId === id
+    ).length;
 </script>
 
 <template>
@@ -141,7 +121,7 @@ const propertyImage = (id: string) =>
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
             <p class="text-xs text-mist-400">Active Stays</p>
         </div>
-        <div class="grid grid-cols-3 grid-rows-1 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 grid-rows-1 gap-4">
             <!-- Arriving Today -->
             <div class="col-span-1 row-span-1 col-start-1 row-start-1">
                 <div
@@ -347,225 +327,76 @@ const propertyImage = (id: string) =>
             </div>
         </div>
 
-        <div class="grid grid-cols-3 grid-rows-1 gap-4">
-            <!-- Notifications -->
-            <div class="col-span-1 row-span-1 col-start-1 row-start-1">
-                <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
-                    <div
-                        v-if="
-                            pendingPayments.whatsappPayments.length === 0 &&
-                            pendingPayments.bookingPayouts.length === 0
-                        "
-                        class="h-full flex flex-col">
-                        <h2
-                            class="text-xs font-bold uppercase text-mist-300 border-b border-mist-800 pb-4 mb-4">
-                            Notifications
-                        </h2>
-                        <div
-                            class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                            <span>No Notifications</span>
-                        </div>
-                    </div>
-                    <div
-                        v-else
-                        class="space-y-4">
-                        <div
-                            v-if="pendingPayments.whatsappPayments.length !== 0"
-                            class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                            <h2 class="text-xs font-bold uppercase text-mist-300">
-                                Pending Whatsapp Payments
-                            </h2>
-                            <span
-                                class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                                {{ pendingPayments.whatsappPayments.length }}
-                            </span>
-                        </div>
-                        <div
-                            v-if="pendingPayments.whatsappPayments.length !== 0"
-                            class="divide-y divide-mist-800">
-                            <div
-                                v-for="b in pendingPayments.whatsappPayments"
-                                :key="b.id"
-                                class="space-y-2 py-4 first:pt-0 last:pb-0">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-semibold text-sm text-mist-200">
-                                            {{ b.guestName }}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                            @click="handleEditBooking(b)">
-                                            <fa-icon icon="pen-to-square" />
-                                        </button>
-                                    </div>
+        <!-- Properties -->
+        <div class="grid grid-cols-1 gap-4">
+            <div class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+                <table class="w-full text-left text-sm text-mist-300 table-fixed">
+                    <thead
+                        class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">
+                        <tr>
+                            <th class="w-25 px-4 py-2.5">Property</th>
+                            <th class="pr-4 py-2.5"></th>
+                            <th class="w-35 px-4 py-2.5 text-center">Status</th>
+                            <th class="w-35 px-4 py-2.5">Price</th>
+                            <th class="w-20 px-4 py-2.5 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-mist-800/60">
+                        <template
+                            v-for="property in sortedProperties"
+                            :key="property.id">
+                            <tr class="hover:bg-mist-800/30">
+                                <td class="px-4 py-3">
                                     <RouterLink
                                         :to="{
                                             name: 'property-detail',
-                                            params: { id: b.propertyId },
-                                        }"
-                                        class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                        :class="[
-                                            getPropertyTheme(b.propertyId).bg,
-                                            getPropertyTheme(b.propertyId).text,
-                                        ]">
-                                        {{ b.propertyId }}
+                                            params: { id: property.id },
+                                        }">
+                                        <img
+                                            loading="lazy"
+                                            :src="propertyImage(property.id)"
+                                            :alt="`Picture of ${property.name}`"
+                                            class="h-20 w-20 object-cover rounded-xl" />
                                     </RouterLink>
-                                </div>
-                                <div class="flex justify-between text-xs text-mist-400">
-                                    <span>
-                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                        &rarr;
-                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                        {{ b.nights }} night(s)
-                                    </span>
-                                    <span>{{ b.listing }}</span>
-                                </div>
-                                <div class="flex justify-end text-xs text-mist-400">
-                                    <span class="font-mono text-lime-400">
-                                        {{ formatIDR(b.payout) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Payouts -->
-                        <div
-                            v-if="pendingPayments.bookingPayouts.length !== 0"
-                            class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                            <h2 class="text-xs font-bold uppercase text-mist-300">
-                                Pending Booking Payouts
-                            </h2>
-                            <span
-                                class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                                {{ pendingPayments.bookingPayouts.length }}
-                            </span>
-                        </div>
-                        <div class="divide-y divide-mist-800">
-                            <div
-                                v-for="b in pendingPayments.bookingPayouts"
-                                :key="b.id"
-                                class="space-y-2 py-4 first:pt-0 last:pb-0">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-semibold text-sm text-mist-200">
-                                            {{ b.guestName }}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                            @click="handleEditBooking(b)">
-                                            <fa-icon icon="pen-to-square" />
-                                        </button>
-                                    </div>
-                                    <RouterLink
-                                        :to="{
-                                            name: 'property-detail',
-                                            params: { id: b.propertyId },
-                                        }"
-                                        class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                </td>
+                                <td class="pr-4 py-3 font-medium text-mist-100">
+                                    <h2 class="font-bold">{{ property.name }}</h2>
+                                    <p class="mt-1 text-xs text-mist-500 truncate">
+                                        <fa-icon icon="map-marker-alt" />
+                                        {{ property.address }}
+                                    </p>
+                                </td>
+                                <td class="px-4 py-3 font-medium text-mist-100 text-center">
+                                    <!-- Add maintenance state -->
+                                    <span
                                         :class="[
-                                            getPropertyTheme(b.propertyId).bg,
-                                            getPropertyTheme(b.propertyId).text,
+                                            'rounded px-2 py-0.5 text-xs text-nowrap',
+                                            isPropertyOccupied(property.id)
+                                                ? 'bg-amber-500/20 text-amber-400'
+                                                : 'bg-lime-500/20 text-lime-400',
                                         ]">
-                                        {{ b.propertyId }}
-                                    </RouterLink>
-                                </div>
-                                <div class="flex justify-between text-xs text-mist-400">
-                                    <span>
-                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                        &rarr;
-                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                        {{ b.nights }} night(s)
+                                        {{
+                                            isPropertyOccupied(property.id)
+                                                ? 'Occupied'
+                                                : 'Available'
+                                        }}
                                     </span>
-                                    <span>{{ b.listing }}</span>
-                                </div>
-                                <div class="flex justify-end text-xs text-mist-400">
-                                    <span class="font-mono text-lime-400">
-                                        {{ formatIDR(b.payout) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Properties -->
-            <div class="col-span-2 row-span-1 col-start-2 row-start-1">
-                <div
-                    class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
-                    <table class="w-full text-left text-sm text-mist-300 table-fixed">
-                        <thead
-                            class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">
-                            <tr>
-                                <th class="w-25 px-4 py-2.5">Property</th>
-                                <th class="pr-4 py-2.5"></th>
-                                <th class="w-35 px-4 py-2.5 text-center">Status</th>
-                                <th class="w-35 px-4 py-2.5">Price</th>
-                                <th class="w-20 px-4 py-2.5 text-center">Action</th>
+                                </td>
+                                <td class="px-4 py-3 font-medium text-mist-100 font-mono">
+                                    {{ formatIDR(property.price) }}
+                                </td>
+                                <td class="px-4 py-3 font-medium text-mist-100 text-center">
+                                    <button
+                                        type="button"
+                                        class="cursor-pointer text-mist-400 hover:text-mist-100"
+                                        @click="handleEditProperty(property.id)">
+                                        <fa-icon icon="pen-to-square" />
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-mist-800/60">
-                            <template
-                                v-for="property in sortedProperties"
-                                :key="property.id">
-                                <tr class="hover:bg-mist-800/30">
-                                    <td class="px-4 py-3">
-                                        <RouterLink
-                                            :to="{
-                                                name: 'property-detail',
-                                                params: { id: property.id },
-                                            }">
-                                            <img
-                                                loading="lazy"
-                                                :src="propertyImage(property.id)"
-                                                :alt="`Picture of ${property.name}`"
-                                                class="h-20 w-20 object-cover rounded-xl" />
-                                        </RouterLink>
-                                    </td>
-                                    <td class="pr-4 py-3 font-medium text-mist-100">
-                                        <h2 class="font-bold">{{ property.name }}</h2>
-                                        <p class="mt-1 text-xs text-mist-500 truncate">
-                                            <fa-icon icon="map-marker-alt" />
-                                            {{ property.address }}
-                                        </p>
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                        <!-- Add maintenance state -->
-                                        <span
-                                            :class="[
-                                                'rounded px-2 py-0.5 text-xs text-nowrap',
-                                                todaysArrivals.filter(
-                                                    (b) => b.propertyId === property.id
-                                                ).length
-                                                    ? 'bg-amber-500/20 text-amber-400'
-                                                    : 'bg-lime-500/20 text-lime-400',
-                                            ]">
-                                            {{
-                                                todaysArrivals.filter(
-                                                    (b) => b.propertyId === property.id
-                                                ).length
-                                                    ? 'Occupied'
-                                                    : 'Available'
-                                            }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-mist-100 font-mono">
-                                        {{ formatIDR(property.price) }}
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-mist-400 hover:text-mist-100"
-                                            @click="handleEditProperty(property.id)">
-                                            <fa-icon icon="pen-to-square" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
+                        </template>
+                    </tbody>
+                </table>
             </div>
         </div>
 

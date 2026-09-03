@@ -1,7 +1,7 @@
 /**
  * Current day formatted to YYYY-MM-DD
  */
-export const getCurrentDate = (date: Date): string => {
+export const getCurrentDate = (date: Date = new Date()): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -12,7 +12,7 @@ export const getCurrentDate = (date: Date): string => {
 /**
  * Current month formatted to YYYY-MM
  */
-export const getCurrentMonth = (date: Date): string => {
+export const getCurrentMonth = (date: Date = new Date()): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
 
@@ -22,7 +22,7 @@ export const getCurrentMonth = (date: Date): string => {
 /**
  * Previous month formatted to YYYY-MM
  */
-export const getPreviousMonth = (date: Date): string => {
+export const getPreviousMonth = (date: Date = new Date()): string => {
     const year = date.getFullYear();
     const month = date.getMonth();
 
@@ -37,6 +37,21 @@ export const getPreviousMonth = (date: Date): string => {
     const formattedMonth = String(prevMonth + 1).padStart(2, '0');
 
     return `${prevYear}-${formattedMonth}`;
+};
+
+/**
+ * Returns total days in a given target month ("YYYY-MM")
+ */
+export const getDaysInMonth = (targetMonthStr: string): number => {
+    if (!targetMonthStr) return 0;
+    const [yearStr, monthStr] = targetMonthStr.split('-');
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+
+    if (isNaN(year) || isNaN(month)) return 0;
+
+    // Day 0 of the following month returns the last day of the target month
+    return new Date(year, month, 0).getDate();
 };
 
 /**

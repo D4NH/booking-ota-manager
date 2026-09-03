@@ -13,7 +13,7 @@ import AppFooter from '@/components/AppFooter.vue';
 import BookingModal from '@/components/BookingModal.vue';
 
 useHead({
-    title: 'BOM - Booking OTA Manager',
+    title: 'Mai House Jogja',
     meta: [
         {
             name: 'viewport',

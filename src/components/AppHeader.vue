@@ -17,9 +17,9 @@ const toggleNotifications = (): void => {
                 <RouterLink
                     to="/"
                     class="flex h-8 w-8 items-center justify-center rounded-lg bg-lime-500 font-bold text-mist-950 logo">
-                    B
+                    M
                 </RouterLink>
-                <h1 class="text-xl font-bold">Booking OTA Manager</h1>
+                <h1 class="text-xl font-bold">Mai House Jogja</h1>
             </div>
 
             <div class="flex items-center space-x-8">
