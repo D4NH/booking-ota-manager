@@ -3,9 +3,12 @@ import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useBookingSync } from '@/composables/useBookingSync';
+import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useDateKeys } from '@/composables/useDateKeys';
+import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
+
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
@@ -19,8 +22,7 @@ const modalStore = useModalStore();
 const { syncStatus, deleteBooking } = useBookingSync();
 const { currentDayStr } = useDateKeys();
 
-const routePropertyId = route.params.id as PropertyId | undefined;
-const selectedProperty = ref<PropertyId | 'all'>(routePropertyId || 'all');
+const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'Unavailable', 'No show']);
 const collapsedMonths = ref<string[]>([]);
 
@@ -57,6 +59,11 @@ const groupedBookings = computed(() => {
         }));
 });
 const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
+const propertyBookings = computed(() =>
+    bookings.value.filter((b) => b.propertyId === selectedProperty.value)
+);
+
+const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(propertyBookings);
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDayStr.value >= checkIn &&
@@ -95,6 +102,217 @@ watch(
             v-if="syncStatus"
             class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
             {{ syncStatus }}
+        </div>
+
+        <!-- Daily Operations -->
+        <div class="mt-12">
+            <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
+            <p class="text-xs text-mist-400">Active Stays</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Arriving Today -->
+            <div>
+                <div
+                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    <div
+                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                        <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
+                        <span
+                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            {{ todaysArrivals.length }}
+                        </span>
+                    </div>
+                    <div
+                        v-if="todaysArrivals.length === 0"
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-10">
+                        No arrivals scheduled for today.
+                    </div>
+                    <div
+                        v-else
+                        class="divide-y divide-mist-800">
+                        <div
+                            v-for="b in todaysArrivals"
+                            :key="b.id"
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm text-mist-200">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                        @click="handleEditBooking(b)">
+                                        <fa-icon icon="pen-to-square" />
+                                    </button>
+                                </div>
+                                <RouterLink
+                                    :to="{
+                                        name: 'property-detail',
+                                        params: { id: b.propertyId },
+                                    }"
+                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    :class="[
+                                        getPropertyTheme(b.propertyId).bg,
+                                        getPropertyTheme(b.propertyId).text,
+                                    ]">
+                                    {{ b.propertyId }}
+                                </RouterLink>
+                            </div>
+                            <div class="flex justify-between text-xs text-mist-400">
+                                <span>
+                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                    &rarr;
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
+                                </span>
+                                <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
+                                <span class="font-mono text-lime-400">
+                                    {{ formatIDR(b.payout) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Current Stays -->
+            <div>
+                <div
+                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    <div
+                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                        <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
+                        <span
+                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            {{ currentStays.length }}
+                        </span>
+                    </div>
+                    <div
+                        v-if="currentStays.length === 0"
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
+                        No guests currently in-house.
+                    </div>
+                    <div
+                        v-else
+                        class="divide-y divide-mist-800">
+                        <div
+                            v-for="b in currentStays"
+                            :key="b.id"
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm text-mist-200">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                        @click="handleEditBooking(b)">
+                                        <fa-icon icon="pen-to-square" />
+                                    </button>
+                                </div>
+                                <RouterLink
+                                    :to="{
+                                        name: 'property-detail',
+                                        params: { id: b.propertyId },
+                                    }"
+                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    :class="[
+                                        getPropertyTheme(b.propertyId).bg,
+                                        getPropertyTheme(b.propertyId).text,
+                                    ]">
+                                    {{ b.propertyId }}
+                                </RouterLink>
+                            </div>
+                            <div class="flex justify-between text-xs text-mist-400">
+                                <span>
+                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                    &rarr;
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
+                                </span>
+                                <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
+                                <span class="font-mono text-lime-400">
+                                    {{ formatIDR(b.payout) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Today's Departures -->
+            <div>
+                <div
+                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    <div
+                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                        <h2 class="text-xs font-bold uppercase text-mist-300">
+                            Today's Departures
+                        </h2>
+                        <span
+                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            {{ todaysDepartures.length }}
+                        </span>
+                    </div>
+                    <div
+                        v-if="todaysDepartures.length === 0"
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
+                        No departures scheduled for today.
+                    </div>
+                    <div
+                        v-else
+                        class="divide-y divide-mist-800">
+                        <div
+                            v-for="b in todaysDepartures"
+                            :key="b.id"
+                            class="space-y-2 py-4 first:pt-0 last:pb-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm text-mist-200">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                        @click="handleEditBooking(b)">
+                                        <fa-icon icon="pen-to-square" />
+                                    </button>
+                                </div>
+                                <RouterLink
+                                    :to="{
+                                        name: 'property-detail',
+                                        params: { id: b.propertyId },
+                                    }"
+                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    :class="[
+                                        getPropertyTheme(b.propertyId).bg,
+                                        getPropertyTheme(b.propertyId).text,
+                                    ]">
+                                    {{ b.propertyId }}
+                                </RouterLink>
+                            </div>
+                            <div class="flex justify-between text-xs text-mist-400">
+                                <span>
+                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                    &rarr;
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
+                                </span>
+                                <span>{{ b.listing }}</span>
+                            </div>
+                            <div class="flex justify-end text-xs text-mist-400">
+                                <span class="font-mono text-lime-400">
+                                    {{ formatIDR(b.payout) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Upcoming Bookings -->

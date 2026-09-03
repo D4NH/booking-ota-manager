@@ -121,9 +121,9 @@ const isPropertyOccupied = (id: string) =>
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
             <p class="text-xs text-mist-400">Active Stays</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 grid-rows-1 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Arriving Today -->
-            <div class="col-span-1 row-span-1 col-start-1 row-start-1">
+            <div>
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -136,7 +136,7 @@ const isPropertyOccupied = (id: string) =>
                     </div>
                     <div
                         v-if="todaysArrivals.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-20">
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-10">
                         No arrivals scheduled for today.
                     </div>
                     <div
@@ -190,7 +190,7 @@ const isPropertyOccupied = (id: string) =>
                 </div>
             </div>
             <!-- Current Stays -->
-            <div class="col-span-1 row-span-1 col-start-2 row-start-1">
+            <div>
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -257,7 +257,7 @@ const isPropertyOccupied = (id: string) =>
                 </div>
             </div>
             <!-- Today's Departures -->
-            <div class="col-span-1 row-span-1 col-start-3 row-start-1">
+            <div>
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div

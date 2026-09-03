@@ -21,6 +21,9 @@ const defaultForm: Property = {
     color: '#016730',
     price: 0,
     codePrefix: '',
+    bedrooms: 0,
+    bathrooms: 0,
+    plotSize: 0,
 };
 
 const form = ref<Property>({ ...defaultForm });
@@ -49,7 +52,7 @@ const handleClose = () => {
 const handleSubmit = () => {
     if (!form.value.name || !form.value.codePrefix) return;
 
-    // Auto-generate clean slug ID for new properties if empty
+    // Auto-generate ID for new properties if empty
     const generatedId = (form.value.id ||
         form.value.name.toLowerCase().replace(/[^a-z0-9]/g, '')) as PropertyId;
 
@@ -100,9 +103,9 @@ const handleSubmit = () => {
                     @submit.prevent="handleSubmit">
                     <!-- Property Name -->
                     <div>
-                        <label class="block text-xs font-semibold text-mist-300"
-                            >Property Name</label
-                        >
+                        <label class="block text-xs font-semibold text-mist-300">
+                            Property Name
+                        </label>
                         <input
                             v-model="form.name"
                             type="text"
@@ -111,12 +114,22 @@ const handleSubmit = () => {
                             class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                     </div>
 
+                    <!-- Full Address -->
+                    <div>
+                        <label class="block text-xs font-semibold text-mist-300">Address</label>
+                        <textarea
+                            v-model="form.address"
+                            rows="3"
+                            placeholder="Enter property address..."
+                            class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400"></textarea>
+                    </div>
+
                     <!-- Code Prefix & Theme Color -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-mist-300"
-                                >Code Prefix</label
-                            >
+                            <label class="block text-xs font-semibold text-mist-300">
+                                Code Prefix
+                            </label>
                             <input
                                 v-model="form.codePrefix"
                                 type="text"
@@ -126,9 +139,9 @@ const handleSubmit = () => {
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-mist-300"
-                                >Theme Color</label
-                            >
+                            <label class="block text-xs font-semibold text-mist-300">
+                                Theme Color
+                            </label>
                             <div class="mt-1 flex items-center gap-2">
                                 <input
                                     v-model="form.color"
@@ -144,9 +157,9 @@ const handleSubmit = () => {
 
                     <!-- Base Price per Night -->
                     <div>
-                        <label class="block text-xs font-semibold text-mist-300"
-                            >Base Price per Night (IDR)</label
-                        >
+                        <label class="block text-xs font-semibold text-mist-300">
+                            Price per Night (IDR)
+                        </label>
                         <input
                             v-model.number="form.price"
                             type="number"
@@ -155,16 +168,42 @@ const handleSubmit = () => {
                             class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                     </div>
 
-                    <!-- Full Address -->
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-300"
-                            >Full Address</label
-                        >
-                        <textarea
-                            v-model="form.address"
-                            rows="3"
-                            placeholder="Enter property address..."
-                            class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400"></textarea>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-mist-300">
+                                Bedrooms
+                            </label>
+                            <input
+                                v-model="form.bedrooms"
+                                type="text"
+                                required
+                                placeholder="0"
+                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-mist-300">
+                                Bathrooms
+                            </label>
+                            <input
+                                v-model="form.bathrooms"
+                                type="text"
+                                required
+                                placeholder="0"
+                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-mist-300">
+                                Area m&sup3;</label
+                            >
+                            <input
+                                v-model="form.plotSize"
+                                type="text"
+                                required
+                                placeholder="0"
+                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                        </div>
                     </div>
 
                     <!-- Action Buttons -->
