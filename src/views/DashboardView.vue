@@ -345,7 +345,7 @@ const propertyImage = (id: string) =>
             <div class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
-                        class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">
+                        class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
                         <tr>
                             <th class="w-25 px-4 py-2.5">Property</th>
                             <th class="pr-4 py-2.5"></th>

@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { PROPERTY_LIST } from '@/config/properties';
+import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
+import { formatIDR } from '@/utils/money';
+
 import { Bar } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -12,31 +17,8 @@ import {
     type ChartData,
     type ChartOptions,
 } from 'chart.js';
-import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
-import { formatIDR } from '@/utils/money';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const ALL_DATASETS = [
-    {
-        id: 'piyungan' as PropertyId,
-        label: 'Piyungan',
-        key: 'piyungan' as const,
-        backgroundColor: '#016730',
-    },
-    {
-        id: 'wonosari' as PropertyId,
-        label: 'Wonosari',
-        key: 'wonosari' as const,
-        backgroundColor: '#60a5fa',
-    },
-    {
-        id: 'bantul' as PropertyId,
-        label: 'Bantul',
-        key: 'bantul' as const,
-        backgroundColor: '#fbbf24',
-    },
-];
 
 const props = defineProps<{
     data: MonthlyPropertyRevenue[];
@@ -44,17 +26,17 @@ const props = defineProps<{
 }>();
 
 const chartData = computed<ChartData<'bar'>>(() => {
-    // Filter datasets based on selectedProperty prop
-    const activeConfigs = ALL_DATASETS.filter((config) => {
+    const activeConfigs = PROPERTY_LIST.filter((config) => {
         if (!props.selectedProperty || props.selectedProperty === 'all') return true;
         return config.id === props.selectedProperty;
     });
 
     const datasets = activeConfigs.map((config) => ({
-        label: config.label,
-        data: props.data.map((d) => d[config.key]),
-        backgroundColor: config.backgroundColor,
+        label: `${config.id.charAt(0).toUpperCase()}${config.id.slice(1)}`,
+        data: props.data.map((d) => d[config.id]),
+        backgroundColor: config.color,
         borderRadius: 4,
+        maxBarThickness: 24,
     }));
 
     return {
@@ -67,14 +49,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
     maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: 'top',
-            align: 'end',
-            labels: {
-                color: '#8b9bb0',
-                boxWidth: 12,
-                usePointStyle: true,
-                font: { size: 11 },
-            },
+            display: false,
         },
         tooltip: {
             backgroundColor: '#121820',
@@ -93,17 +68,17 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
         x: {
             stacked: true,
             grid: { display: false },
-            ticks: { color: '#8b9bb0', font: { size: 11 } },
+            ticks: { color: '#8b9bb0', font: { size: 12, weight: 'bold' } },
         },
         y: {
             stacked: true,
             grid: { color: '#1e2632' },
             ticks: {
                 color: '#8b9bb0',
-                font: { size: 11 },
+                font: { size: 12 },
                 callback: (val) => {
                     const num = Number(val);
-                    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}M`;
+                    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}jt`;
                     return `${num}`;
                 },
             },
@@ -113,9 +88,33 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
-    <div class="h-86 w-full">
-        <Bar
-            :data="chartData"
-            :options="chartOptions" />
+    <div class="flex flex-col h-full rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
+        <!-- Header Section -->
+        <div>
+            <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
+            <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>
+        </div>
+
+        <!-- Custom Legend -->
+        <div class="my-4 flex gap-3">
+            <div
+                v-for="item in PROPERTY_LIST"
+                :key="item.id"
+                class="flex items-center justify-between text-xs font-medium">
+                <div class="flex items-center space-x-2.5">
+                    <span
+                        class="h-3 w-3 shrink-0 rounded-full"
+                        :style="{ backgroundColor: item.color }" />
+                    <span class="text-mist-200 capitalize">{{ item.id }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Container with Explicit Height -->
+        <div class="relative h-full w-full">
+            <Bar
+                :data="chartData"
+                :options="chartOptions" />
+        </div>
     </div>
 </template>

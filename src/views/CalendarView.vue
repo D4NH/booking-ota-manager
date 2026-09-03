@@ -19,7 +19,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { properties } = storeToRefs(propertyStore);
+const { sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
 
@@ -191,7 +191,7 @@ const selectProperty = (id: string) => {
                     All
                 </button>
                 <button
-                    v-for="prop in properties"
+                    v-for="prop in sortedProperties"
                     :key="prop.id"
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"

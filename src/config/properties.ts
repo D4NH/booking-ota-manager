@@ -2,7 +2,7 @@ import type { Property, PropertyId, PropertyConfig, PropertyTheme } from '@/type
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     piyungan: {
-        id: 'piyungan',
+        id: 'piyungan' as PropertyId,
         name: 'Mai House Jogja - Piyungan',
         address:
             'Jl. Dusun Bintaran Wetan, Bantaran Wetan, Srimulyo, Kec. Piyungan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55792',
@@ -11,9 +11,12 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         codePrefix: 'MHJ',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN,
         defaultRange: 'A2:J500',
+        bedrooms: 2,
+        bathrooms: 3,
+        plotSize: 123,
     },
     wonosari: {
-        id: 'wonosari',
+        id: 'wonosari' as PropertyId,
         name: 'Mai House Jogja - Wonosari',
         address:
             'Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah Istimewa Yogyakarta 55881',
@@ -22,9 +25,12 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         codePrefix: 'MHW',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
         defaultRange: 'A2:J500',
+        bedrooms: 2,
+        bathrooms: 1,
+        plotSize: 80,
     },
     bantul: {
-        id: 'bantul',
+        id: 'bantul' as PropertyId,
         name: 'Mai House Jogja - Bantul',
         address:
             'Jl. Mahoni No.Rt.05, Botokenceng, Wirokerten, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55194',
@@ -33,17 +39,23 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         codePrefix: 'MHB',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_BANTUL,
         defaultRange: 'A2:J500',
+        bedrooms: 0,
+        bathrooms: 0,
+        plotSize: 0,
     },
 } as const;
 
 export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
-    ({ id, name, address, color, price, codePrefix }) => ({
+    ({ id, name, address, color, price, codePrefix, bedrooms, bathrooms, plotSize }) => ({
         id,
         name,
         address,
         color,
         price,
         codePrefix,
+        bedrooms,
+        bathrooms,
+        plotSize,
     })
 );
 

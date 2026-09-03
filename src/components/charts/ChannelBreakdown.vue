@@ -12,11 +12,11 @@ const props = defineProps<{
 }>();
 
 const channelColors = [
-    { name: 'Airbnb', color: '#FF5A5F' }, // Lime-400
-    { name: 'Booking.com', color: '#003580' }, // Sky-400
-    { name: 'Tiket.com', color: '#0064D2' }, // Rose-500
-    { name: 'Trip.com', color: '#2577E3' }, // Purple-400
-    { name: 'Whatsapp', color: '#25D366' }, // Rose-500
+    { name: 'Airbnb', color: '#FF5A5F' },
+    { name: 'Booking.com', color: '#003580' },
+    { name: 'Tiket.com', color: '#0064D2' },
+    { name: 'Trip.com', color: '#2577E3' },
+    { name: 'Whatsapp', color: '#25D366' },
 ];
 
 const channelStats = computed(() => {
@@ -28,12 +28,6 @@ const channelStats = computed(() => {
         'Trip.com': 0,
         Whatsapp: 0,
     };
-
-    const channels = [
-        ...new Set(props.bookings.filter((b) => b.listing !== 'Unavailable').map((b) => b.listing)),
-    ];
-
-    console.log('channels', channels);
 
     const list = props.bookings || [];
     for (let i = 0; i < list.length; i++) {
@@ -90,12 +84,11 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
             <p class="text-xs text-mist-400">Total bookings split by acquisition source</p>
         </div>
 
-        <div class="flex flex-1 items-center justify-between gap-4">
-            <div class="relative h-44 w-44 shrink-0">
+        <div class="flex flex-1 items-center justify-around">
+            <div class="relative h-45 w-45 shrink-0">
                 <Doughnut
                     :data="chartData"
                     :options="chartOptions" />
-
                 <div
                     class="pointer-events-none absolute inset-0 flex items-center justify-center text-mist-500">
                     <fa-icon
@@ -105,18 +98,19 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
             </div>
 
             <!-- Legend -->
-            <div class="flex-1 space-y-3 pl-2">
+            <div class="space-y-3">
                 <div
                     v-for="item in channelStats"
                     :key="item.name"
-                    class="flex items-center justify-between text-xs font-medium">
+                    class="text-xs font-medium">
                     <div class="flex items-center space-x-2.5">
                         <span
                             class="h-3 w-3 rounded-full shrink-0"
                             :style="{ backgroundColor: item.color }" />
                         <span class="text-mist-200">{{ item.name }}</span>
+                        <span>&bull;</span>
+                        <span class="text-mist-500"> {{ item.count }} Bookings</span>
                     </div>
-                    <span class="font-mono font-bold text-mist-100">{{ item.count }}</span>
                 </div>
             </div>
         </div>

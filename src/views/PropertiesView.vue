@@ -179,11 +179,19 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                 </button> -->
         </div>
 
-        <!-- Properties -->
         <div v-if="route.meta.isOverview">
-            <div class="grid grid-cols-2 gap-4">
-                <TotalRevenue :data="bookings" />
-                <ChannelBreakdown :bookings="bookings" />
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                <TotalRevenue
+                    class="lg:col-span-2"
+                    :data="bookings" />
+                <ChannelBreakdown
+                    class="lg:col-span-2"
+                    :bookings="bookings" />
+                <div
+                    class="lg:col-span-1 rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
+                    1
+                </div>
             </div>
 
             <div class="mt-12">
@@ -192,6 +200,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                     Real-time availability and unit operational status
                 </p>
             </div>
+            <!-- Metrics -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div
                     v-for="metric in propertyMetrics"
@@ -222,6 +231,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                     </div>
                 </div>
             </div>
+            <!-- Properties -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <RouterLink
                     v-for="property in sortedProperties"

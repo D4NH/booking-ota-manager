@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PropertyId } from '@/types/property';
+
+import { PROPERTY_LIST } from '@/config/properties';
 import { SHORT_MONTH_NAMES } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
@@ -17,30 +18,8 @@ import {
     type ChartData,
     type ChartOptions,
 } from 'chart.js';
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const ALL_DATASETS = [
-    {
-        id: 'piyungan' as PropertyId,
-        label: 'Piyungan',
-        key: 'piyungan' as const,
-        backgroundColor: '#016730',
-    },
-    {
-        id: 'wonosari' as PropertyId,
-        label: 'Wonosari',
-        key: 'wonosari' as const,
-        backgroundColor: '#60a5fa',
-    },
-    {
-        id: 'bantul' as PropertyId,
-        label: 'Bantul',
-        key: 'bantul' as const,
-        backgroundColor: '#fbbf24',
-    },
-];
-
-const QUARTER_LABELS = ['Q1', 'Q2', 'Q3', 'Q4'];
 
 const props = defineProps<{
     data: Booking[];
@@ -76,7 +55,6 @@ const monthlyPropertyData = computed(() => {
 
     return monthlyPropertyBookings;
 });
-
 const quarterlyData = computed(() => {
     const quarters = [
         { piyungan: 0, wonosari: 0, bantul: 0 },
@@ -103,30 +81,26 @@ const quarterlyData = computed(() => {
 
     return quarters;
 });
-
 const totalRevenue = computed(() => props.data.reduce((acc, b) => acc + (b.payout || 0), 0));
-
 const chartData = computed<ChartData<'bar'>>(() => {
-    // Filter datasets based on selectedProperty prop
-    const activeConfigs = ALL_DATASETS.filter((config) => {
+    const activeConfigs = PROPERTY_LIST.filter((config) => {
         if (!props.selectedProperty || props.selectedProperty === 'all') return true;
         return config.id === props.selectedProperty;
     });
 
     const datasets = activeConfigs.map((config) => ({
-        label: config.label,
-        data: quarterlyData.value.map((q) => q[config.key]),
-        backgroundColor: config.backgroundColor,
+        label: `${config.id.charAt(0).toUpperCase()}${config.id.slice(1)}`,
+        data: quarterlyData.value.map((q) => q[config.id]),
+        backgroundColor: config.color,
         borderRadius: 4,
         maxBarThickness: 24,
     }));
 
     return {
-        labels: QUARTER_LABELS,
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
         datasets,
     };
 });
-
 const chartOptions = computed<ChartOptions<'bar'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -162,7 +136,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
                 font: { size: 12 },
                 callback: (val) => {
                     const num = Number(val);
-                    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}Jt`;
+                    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}jt`;
                     return `${num}`;
                 },
             },
@@ -180,7 +154,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
                 <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
                 <p class="text-xs text-mist-400">Quarterly payout comparison across properties</p>
             </div>
-            <div class="text-lg font-bold font-mono">
+            <div class="text-lg font-bold font-mono whitespace-nowrap">
                 {{ formatIDR(totalRevenue) }}
             </div>
         </div>
@@ -188,14 +162,14 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
         <!-- Custom Legend -->
         <div class="my-4 flex gap-3">
             <div
-                v-for="item in ALL_DATASETS"
-                :key="item.label"
+                v-for="item in PROPERTY_LIST"
+                :key="item.id"
                 class="flex items-center justify-between text-xs font-medium">
                 <div class="flex items-center space-x-2.5">
                     <span
                         class="h-3 w-3 shrink-0 rounded-full"
-                        :style="{ backgroundColor: item.backgroundColor }" />
-                    <span class="text-mist-200">{{ item.label }}</span>
+                        :style="{ backgroundColor: item.color }" />
+                    <span class="text-mist-200 capitalize">{{ item.id }}</span>
                 </div>
             </div>
         </div>
