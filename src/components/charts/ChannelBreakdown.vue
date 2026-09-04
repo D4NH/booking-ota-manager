@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Chart as ChartJS, ArcElement, Tooltip, type ChartData, type ChartOptions } from 'chart.js';
+import { ref, computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
+import { Chart as ChartJS, ArcElement, Tooltip, type ChartData, type ChartOptions } from 'chart.js';
 import type { Booking } from '@/types/booking';
 
 ChartJS.register(ArcElement, Tooltip);
@@ -10,6 +10,9 @@ const props = defineProps<{
     bookings: Booking[];
     targetMonth?: string;
 }>();
+
+const chartRef = ref<InstanceType<typeof Doughnut> | null>(null);
+const hoveredIndex = ref<number | null>(null);
 
 const channelColors = [
     { name: 'Airbnb', color: '#FF5A5F' },
@@ -49,15 +52,29 @@ const channelStats = computed(() => {
     }));
 });
 
+const totalBookings = computed(() => channelStats.value.reduce((sum, item) => sum + item.count, 0));
+
+const centerLabel = computed(() =>
+    hoveredIndex.value !== null && channelStats.value[hoveredIndex.value]
+        ? channelStats.value[hoveredIndex.value]?.name
+        : 'Total Bookings'
+);
+
+const centerValue = computed(() =>
+    hoveredIndex.value !== null && channelStats.value[hoveredIndex.value]
+        ? channelStats.value[hoveredIndex.value]?.count
+        : totalBookings.value
+);
+
 const chartData = computed<ChartData<'doughnut'>>(() => ({
     labels: channelStats.value.map((item) => item.name),
     datasets: [
         {
             data: channelStats.value.map((item) => item.count),
             backgroundColor: channelStats.value.map((item) => item.color),
-            borderColor: '#18181B', // mist-900 matching card background
+            borderColor: '#121820',
             borderWidth: 2,
-            hoverOffset: 4,
+            hoverOffset: 25,
         },
     ],
 }));
@@ -65,16 +82,44 @@ const chartData = computed<ChartData<'doughnut'>>(() => ({
 const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '72%',
+    layout: {
+        padding: 5,
+    },
+    cutout: '75%',
+    onHover: (_event, activeElements) => {
+        const activeItem = activeElements[0];
+        if (activeItem) {
+            hoveredIndex.value = activeItem.index;
+        } else {
+            hoveredIndex.value = null;
+        }
+    },
     plugins: {
-        legend: {
-            display: false,
-        },
-        tooltip: {
-            enabled: false,
-        },
+        legend: { display: false },
+        tooltip: { enabled: false },
     },
 }));
+
+const getChartInstance = (): ChartJS | null => {
+    return chartRef.value?.chartInstance || chartRef.value?.chart || null;
+};
+const highlightSlice = (index: number) => {
+    hoveredIndex.value = index;
+    const chart = getChartInstance();
+    if (!chart) return;
+
+    chart.setActiveElements([{ datasetIndex: 0, index }]);
+    chart.update();
+};
+
+const clearHighlight = () => {
+    hoveredIndex.value = null;
+    const chart = getChartInstance();
+    if (!chart) return;
+
+    chart.setActiveElements([]);
+    chart.update();
+};
 </script>
 
 <template>
@@ -84,32 +129,40 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
             <p class="text-xs text-mist-400">Total bookings split by acquisition source</p>
         </div>
 
-        <div class="flex flex-1 items-center justify-around">
-            <div class="relative h-45 w-45 shrink-0">
+        <div class="flex flex-1 justify-around items-center">
+            <div class="relative h-60 w-60">
                 <Doughnut
+                    ref="chartRef"
                     :data="chartData"
                     :options="chartOptions" />
+
                 <div
-                    class="pointer-events-none absolute inset-0 flex items-center justify-center text-mist-500">
-                    <fa-icon
-                        class="text-xl"
-                        icon="book" />
+                    class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-xs font-semibold text-mist-400 transition-all duration-150">
+                        {{ centerLabel }}
+                    </span>
+                    <span
+                        class="text-xl font-extrabold font-mono text-mist-100 transition-all duration-150">
+                        {{ centerValue }}
+                    </span>
                 </div>
             </div>
-
-            <!-- Legend -->
-            <div class="space-y-3">
+            <div class="flex flex-col">
                 <div
-                    v-for="item in channelStats"
+                    v-for="(item, index) in channelStats"
                     :key="item.name"
-                    class="text-xs font-medium">
-                    <div class="flex items-center space-x-2.5">
-                        <span
-                            class="h-3 w-3 rounded-full shrink-0"
-                            :style="{ backgroundColor: item.color }" />
-                        <span class="text-mist-200">{{ item.name }}</span>
-                        <span>&bull;</span>
-                        <span class="text-mist-500"> {{ item.count }} Bookings</span>
+                    class="rounded-md px-2.5 py-1 transition-colors hover:bg-mist-800/50"
+                    :class="{ 'bg-mist-800/60': hoveredIndex === index }"
+                    @mouseenter="highlightSlice(index)"
+                    @mouseleave="clearHighlight">
+                    <div class="flex flex-col space-y-1">
+                        <div class="flex items-center space-x-2.5">
+                            <span
+                                class="h-3 w-3 rounded-full shrink-0"
+                                :style="{ backgroundColor: item.color }" />
+                            <span class="text-sm text-mist-200">{{ item.name }}</span>
+                        </div>
+                        <span class="text-xs text-mist-500"> {{ item.count }} Bookings</span>
                     </div>
                 </div>
             </div>

@@ -89,13 +89,11 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 
 <template>
     <div class="flex flex-col h-full rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
-        <!-- Header Section -->
         <div>
             <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
             <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>
         </div>
 
-        <!-- Custom Legend -->
         <div class="my-4 flex gap-3">
             <div
                 v-for="item in PROPERTY_LIST"
@@ -110,7 +108,6 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
             </div>
         </div>
 
-        <!-- Canvas Container with Explicit Height -->
         <div class="relative h-full w-full">
             <Bar
                 :data="chartData"

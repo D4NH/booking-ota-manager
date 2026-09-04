@@ -182,16 +182,41 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
         <div v-if="route.meta.isOverview">
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                <div
+                    class="lg:col-span-1 rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg space-y-4">
+                    <div>
+                        <h3 class="text-base font-bold text-mist-100">Performance Summary</h3>
+                        <p class="text-xs text-mist-400">Current month occupancy & yield</p>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
+                        <span class="block text-[11px] text-mist-400">Occupancy</span>
+                        <span class="text-lg font-extrabold font-mono text-lime-400"> 20 % </span>
+                    </div>
+
+                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
+                        <span class="block text-[11px] text-mist-400">Avg Daily Rate</span>
+                        <span class="text-sm font-bold font-mono text-mist-100">450000</span>
+                    </div>
+
+                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
+                        <span class="block text-[11px] text-mist-400">Avg Stay</span>
+                        <span class="text-sm font-bold font-mono text-mist-100"> 2.5 days </span>
+                    </div>
+
+                    <div
+                        class="flex items-center justify-between border-t border-mist-800/60 pt-3 text-xs">
+                        <span class="text-mist-400">Check-ins Today</span>
+                        <span class="font-bold text-mist-200">2 Guests</span>
+                    </div>
+                </div>
                 <TotalRevenue
                     class="lg:col-span-2"
                     :data="bookings" />
                 <ChannelBreakdown
                     class="lg:col-span-2"
                     :bookings="bookings" />
-                <div
-                    class="lg:col-span-1 rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
-                    1
-                </div>
             </div>
 
             <div class="mt-12">
