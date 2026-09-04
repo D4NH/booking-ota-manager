@@ -387,10 +387,6 @@ const selectProperty = (id: string) => {
                                         class="text-mist-500 italic">
                                         No notes added
                                     </div>
-
-                                    <!-- Arrow -->
-                                    <div
-                                        class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-mist-900"></div>
                                 </div>
                             </div>
                         </div>

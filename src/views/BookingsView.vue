@@ -338,9 +338,25 @@ const selectProperty = (id: string) => {
                                 {{ formatDate(b.checkOut, { shortMonth: true }) }}
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
-
-                            <td class="px-4 py-3 font-mono text-right text-nowrap">
+                            <td
+                                class="px-4 py-3 font-mono text-right text-nowrap group relative"
+                                :class="{ 'cursor-zoom-in': b.payout !== 0 }">
                                 {{ formatIDR(b.payout) }}
+                                <div
+                                    v-if="b.payout !== 0"
+                                    class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    <div
+                                        class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-mist-200">
+                                                Payout 15%
+                                            </span>
+                                            <span class="font-semibold text-mist-400">
+                                                {{ formatIDR(b.payout * 0.15) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
@@ -350,11 +366,13 @@ const selectProperty = (id: string) => {
                                             ? 'bg-lime-500/20 text-lime-400'
                                             : b.status === 'Checked-in'
                                               ? 'bg-blue-500/20 text-blue-400'
-                                              : b.status === 'Waiting for payment'
-                                                ? 'bg-amber-500/20 text-amber-400'
-                                                : b.status === 'Unavailable'
-                                                  ? 'bg-rose-500/20 text-rose-400'
-                                                  : 'bg-mist-800 text-mist-400',
+                                              : b.status === 'Waiting for payout'
+                                                ? 'bg-sky-500/20 text-sky-400'
+                                                : b.status === 'Waiting for payment'
+                                                  ? 'bg-amber-500/20 text-amber-400'
+                                                  : b.status === 'Unavailable'
+                                                    ? 'bg-rose-500/20 text-rose-400'
+                                                    : 'bg-mist-800 text-mist-400',
                                     ]">
                                     {{ b.status }}
                                 </span>

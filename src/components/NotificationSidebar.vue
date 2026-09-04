@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -28,7 +28,8 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'close'): void;
+    close: [];
+    'has-notifications': [boolean];
 }>();
 
 const propertyBookings = computed(() => bookings.value);
@@ -55,6 +56,17 @@ const pendingPayments = computed(() => {
         notificationsCount,
     };
 });
+
+// onMounted(() => {
+//     emit('has-notifications', Boolean(pendingPayments.value.notificationsCount));
+// });
+watch(
+    () => pendingPayments.value,
+    () => {
+        emit('has-notifications', Boolean(pendingPayments.value.notificationsCount));
+    },
+    { immediate: true }
+);
 
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });

@@ -17,7 +17,7 @@ export function useDailyOperations(bookings: Ref<Booking[]>) {
         const hour = currentHour.value;
 
         return bookings.value.filter((b) => {
-            if (b.status === 'Unavailable' || b.status === 'Waiting for payout') return false;
+            if (b.status !== 'Checked-in') return false;
             // Mid-stay guests
             if (b.checkIn < today && b.checkOut > today) return true;
             // Arrivals show after 15:00
@@ -32,7 +32,7 @@ export function useDailyOperations(bookings: Ref<Booking[]>) {
         if (currentHour.value >= 13) return [];
 
         const today = currentDayStr.value;
-        return bookings.value.filter((b) => b.checkOut === today && b.status !== 'Unavailable');
+        return bookings.value.filter((b) => b.checkOut === today && b.status == 'Checked-in');
     });
 
     return {

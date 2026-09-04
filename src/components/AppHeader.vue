@@ -4,9 +4,13 @@ import { ref } from 'vue';
 import NotificationSidebar from '@/components/NotificationSidebar.vue';
 
 const isNotificationOpen = ref(false);
+const hasNotifications = ref(false);
 
 const toggleNotifications = (): void => {
     isNotificationOpen.value = !isNotificationOpen.value;
+};
+const readNotificationState = (payload: boolean): void => {
+    hasNotifications.value = payload;
 };
 </script>
 
@@ -49,8 +53,9 @@ const toggleNotifications = (): void => {
                     class="cursor-pointer relative flex items-center justify-center rounded-lg border border-mist-700 bg-mist-800 p-2 text-mist-300 hover:bg-mist-700 hover:text-mist-100 transition"
                     @click="toggleNotifications">
                     <fa-icon icon="bell" />
-                    <!-- Indicator Dot -->
-                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span
+                        v-if="hasNotifications"
+                        class="absolute -top-1 -right-1 flex h-3 w-3">
                         <span
                             class="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-400 opacity-75" />
                         <span class="relative inline-flex h-3 w-3 rounded-full bg-lime-500" />
@@ -62,6 +67,7 @@ const toggleNotifications = (): void => {
 
     <NotificationSidebar
         :is-open="isNotificationOpen"
+        @has-notifications="readNotificationState"
         @close="isNotificationOpen = false" />
 </template>
 
