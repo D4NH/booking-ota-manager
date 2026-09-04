@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useDateKeys } from '@/composables/useDateKeys';
-import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 
@@ -23,9 +22,10 @@ const { syncStatus, deleteBooking } = useBookingSync();
 const { currentDayStr } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
-const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'Unavailable', 'No show']);
+const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
 
+const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
 const filteredBookings = computed(() => {
     const prop = selectedProperty.value;
     const hidden = hiddenStatuses.value;
@@ -58,15 +58,14 @@ const groupedBookings = computed(() => {
             bookings: groups[key],
         }));
 });
-const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
-const propertyBookings = computed(() =>
-    bookings.value.filter((b) => b.propertyId === selectedProperty.value)
-);
+const selectedPropertyId = computed<string>(() => {
+    const id = route.params.id;
+    return typeof id === 'string' && id ? id : 'all';
+});
 
-const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(
-    propertyBookings,
-    selectedProperty
-);
+const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings, {
+    propertyId: selectedPropertyId,
+});
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDayStr.value >= checkIn &&
@@ -81,22 +80,11 @@ const toggleMonth = (monthKey: string) => {
         collapsedMonths.value.push(monthKey);
     }
 };
-const handleAddBooking = () => {
-    modalStore.openBookingModal();
-};
-const handleEditBooking = (booking: Booking) => {
-    modalStore.openBookingModal({ booking });
-};
+const handleAddBooking = () => modalStore.openBookingModal();
+const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> => {
     await deleteBooking(booking);
 };
-
-watch(
-    () => route.params.id,
-    (newId) => {
-        selectedProperty.value = (newId as PropertyId) || 'all';
-    }
-);
 </script>
 
 <template>
@@ -149,18 +137,9 @@ watch(
                                         <fa-icon icon="pen-to-square" />
                                     </button>
                                 </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
+                                <span class="text-xs font-medium text-mist-400">
+                                    {{ b.listing }}
+                                </span>
                             </div>
                             <div class="flex justify-between text-xs text-mist-400">
                                 <span>
@@ -169,9 +148,6 @@ watch(
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
                                     {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -216,18 +192,9 @@ watch(
                                         <fa-icon icon="pen-to-square" />
                                     </button>
                                 </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
+                                <span class="text-xs font-medium text-mist-400">
+                                    {{ b.listing }}
+                                </span>
                             </div>
                             <div class="flex justify-between text-xs text-mist-400">
                                 <span>
@@ -236,9 +203,6 @@ watch(
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
                                     {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -285,18 +249,9 @@ watch(
                                         <fa-icon icon="pen-to-square" />
                                     </button>
                                 </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
+                                <span class="text-xs font-medium text-mist-400">
+                                    {{ b.listing }}
+                                </span>
                             </div>
                             <div class="flex justify-between text-xs text-mist-400">
                                 <span>
@@ -305,9 +260,6 @@ watch(
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
                                     {{ b.nights }} night(s)
                                 </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
                                 <span class="font-mono text-lime-400">
                                     {{ formatIDR(b.payout) }}
                                 </span>
@@ -393,7 +345,7 @@ watch(
                                     : 'hover:bg-mist-800/30',
                             ]">
                             <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
-                                {{ b.bookingId }}
+                                {{ b.status === 'Unavailable' ? '-' : b.bookingId }}
                             </td>
                             <td class="px-4 py-3 text-center text-nowrap">
                                 <span
@@ -411,20 +363,41 @@ watch(
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
 
-                            <td class="px-4 py-3 font-mono text-right text-nowrap">
+                            <td
+                                class="px-4 py-3 font-mono text-right text-nowrap group relative"
+                                :class="{ 'cursor-zoom-in': b.payout !== 0 }">
                                 {{ formatIDR(b.payout) }}
+                                <div
+                                    v-if="b.payout !== 0"
+                                    class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    <div
+                                        class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-mist-200">
+                                                Payout 15%
+                                            </span>
+                                            <span class="font-semibold text-mist-400">
+                                                {{ formatIDR(b.payout * 0.15) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-center text-nowrap">
                                 <span
                                     :class="[
-                                        'rounded px-2 py-0.5 text-xs',
+                                        'rounded px-2 py-0.5 text-xs text-nowrap',
                                         b.status === 'Booked'
                                             ? 'bg-lime-500/20 text-lime-400'
                                             : b.status === 'Checked-in'
                                               ? 'bg-blue-500/20 text-blue-400'
-                                              : b.status === 'Waiting for payment'
-                                                ? 'bg-amber-500/20 text-amber-400'
-                                                : 'bg-mist-800 text-mist-400',
+                                              : b.status === 'Waiting for payout'
+                                                ? 'bg-sky-500/20 text-sky-400'
+                                                : b.status === 'Waiting for payment'
+                                                  ? 'bg-amber-500/20 text-amber-400'
+                                                  : b.status === 'Unavailable'
+                                                    ? 'bg-rose-500/20 text-rose-400'
+                                                    : 'bg-mist-800 text-mist-400',
                                     ]">
                                     {{ b.status }}
                                 </span>

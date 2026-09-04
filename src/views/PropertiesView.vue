@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -10,10 +10,10 @@ import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_LIST } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
-import { getCurrentMonth } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import PropertyStats from '@/components/PropertyStats.vue';
+import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
 import TotalRevenue from '@/components/charts/TotalRevenue.vue';
 
@@ -28,28 +28,14 @@ const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
 
-const selectedPropertyId = ref<string | 'all'>('all');
-
-const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(
-    bookings,
-    selectedPropertyId
-);
-const occupiedPropertyIds = computed(() => {
-    const ids = new Set<string>();
-
-    for (let i = 0; i < currentStays.value.length; i++) {
-        const stay = currentStays.value[i];
-        if (stay?.propertyId) ids.add(stay.propertyId);
-    }
-
-    for (let i = 0; i < todaysArrivals.value.length; i++) {
-        const arrival = todaysArrivals.value[i];
-        if (arrival?.propertyId) ids.add(arrival.propertyId);
-    }
-
-    return ids;
+const selectedPropertyId = computed<string>(() => {
+    const id = route.params.id;
+    return typeof id === 'string' && id ? id : 'all';
 });
 
+const { todaysTurnover } = useDailyOperations(bookings, {
+    propertyId: selectedPropertyId,
+});
 const {
     totalPayout,
     occupiedNights,
@@ -57,29 +43,16 @@ const {
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(bookings, properties, selectedPropertyId);
+} = useMonthlyMetrics(bookings, properties, { propertyId: selectedPropertyId });
 
 const handleTabChange = (tabId: string) =>
     tabId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: tabId } });
-
 const handleEditProperty = (propertyId: PropertyId) => {
     const property = properties.value.find((p) => p.id === propertyId);
     modalStore.openPropertyModal({ property });
 };
-
-const propertyImage = (id: string) =>
-    id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
-const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.has(id);
-
-watch(
-    () => route.params.id,
-    (newId) => {
-        selectedPropertyId.value = typeof newId === 'string' && newId ? newId : 'all';
-    },
-    { immediate: true }
-);
 </script>
 
 <template>
@@ -171,7 +144,6 @@ watch(
                     class="lg:col-span-2"
                     :bookings="bookings" />
             </div>
-
             <div class="mt-12">
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">
@@ -183,68 +155,18 @@ watch(
                 <PropertyStats
                     v-for="property in sortedProperties"
                     :key="property.id"
-                    :property="property"
                     :bookings="bookings"
-                    :properties="sortedProperties"
-                    :target-month="getCurrentMonth()" />
+                    :property-id="property.id"
+                    :properties="sortedProperties" />
             </div>
             <!-- Properties -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <RouterLink
+                <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
-                    :to="{
-                        name: 'property-detail',
-                        params: { id: property.id },
-                    }"
-                    class="rounded-lg border border-mist-800 bg-mist-900 p-4 space-y-4">
-                    <img
-                        loading="lazy"
-                        :src="propertyImage(property.id)"
-                        :alt="`Picture of ${property.name}`"
-                        class="w-full h-50 object-cover rounded-xl mb-4" />
-
-                    <div class="flex justify-between items-start">
-                        <div class="flex flex-col">
-                            <div class="flex gap-2">
-                                <h2 class="text-lg font-bold capitalize">{{ property.id }}</h2>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer text-mist-400 hover:text-mist-100 text-sm"
-                                    @click.prevent="handleEditProperty(property.id)">
-                                    <fa-icon icon="pen-to-square" />
-                                </button>
-                            </div>
-                            <p class="mt-1 mr-4 text-xs line-clamp-2 text-mist-500">
-                                <fa-icon icon="map-marker-alt" /> {{ property.address }}
-                            </p>
-                        </div>
-                        <div
-                            class="rounded px-2 py-0.5 text-xs mt-1"
-                            :class="[
-                                isPropertyOccupied(property.id)
-                                    ? 'bg-amber-500/20 text-amber-400'
-                                    : 'bg-lime-500/20 text-lime-400',
-                            ]">
-                            {{ isPropertyOccupied(property.id) ? 'Occupied ' : 'Available' }}
-                        </div>
-                    </div>
-                    <ul class="flex space-x-4 text-sm text-mist-400">
-                        <li class="whitespace-nowrap">
-                            <fa-icon icon="bed" /> {{ property.bedrooms }} Bedroom
-                        </li>
-                        <li class="whitespace-nowrap">
-                            <fa-icon icon="shower" /> {{ property.bathrooms }} Bathroom
-                        </li>
-                        <li class="whitespace-nowrap">
-                            <fa-icon icon="ruler-combined" /> {{ property.plotSize }} m&sup3;
-                        </li>
-                    </ul>
-                    <div>
-                        <span>{{ formatIDR(property.price) }}</span>
-                        <span class="text-xs"> / night</span>
-                    </div>
-                </RouterLink>
+                    :property="property"
+                    :bookings="bookings"
+                    @edit-property="handleEditProperty(property.id)" />
             </div>
         </div>
 
@@ -288,8 +210,8 @@ watch(
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
-                    <span class="text-lime-400 mr-3">↓ {{ todaysArrivals.length }} In</span>
-                    <span class="text-amber-400">↑ {{ todaysDepartures.length }} Out</span>
+                    <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
+                    <span class="text-amber-400">↑ {{ todaysTurnover.out }} Out</span>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>

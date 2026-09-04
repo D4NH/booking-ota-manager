@@ -98,7 +98,10 @@ const toggleMonth = (monthKey: string) => {
     }
 };
 const handleAddBooking = () => {
-    modalStore.openBookingModal();
+    modalStore.openBookingModal({
+        propertyId: selectedProperty.value,
+        checkInDate: currentDayStr.value,
+    });
 };
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });

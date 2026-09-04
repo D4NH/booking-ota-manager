@@ -15,8 +15,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'close'): void;
-    (e: 'save', payload: Omit<Booking, 'id' | 'createdAt'>): void;
+    close: [];
+    save: [payload: Omit<Booking, 'id' | 'createdAt'>];
 }>();
 
 const bookingStore = useBookingStore();

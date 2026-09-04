@@ -6,21 +6,20 @@ import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { formatIDR } from '@/utils/money';
 
 const props = defineProps<{
-    property: Property;
     bookings: Booking[];
     properties: Property[];
-    targetMonth: string;
+    propertyId: string;
 }>();
 
 const bookingsRef = toRef(props, 'bookings');
 const propertiesRef = toRef(props, 'properties');
-const targetMonthRef = toRef(props, 'targetMonth');
 
 const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(
     bookingsRef,
     propertiesRef,
-    targetMonthRef,
-    props.property.id
+    {
+        propertyId: props.propertyId,
+    }
 );
 </script>
 

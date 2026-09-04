@@ -1,7 +1,7 @@
-import { computed, ref, unref, type Ref } from 'vue';
+import { computed, unref, type Ref } from 'vue';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
-import { getCurrentMonth, getPreviousMonth } from '@/utils/date';
+import { getCurrentMonth, getPreviousMonth, getDaysInMonth } from '@/utils/date';
 
 export interface MonthlyMetrics {
     totalPayout: number;
@@ -13,20 +13,10 @@ export interface MonthlyMetrics {
     revenueGrowthPercent: number;
 }
 
-/**
- * Returns total days in a given target month ("YYYY-MM")
- */
-export const getDaysInMonth = (targetMonthStr: string): number => {
-    if (!targetMonthStr) return 0;
-    const [yearStr, monthStr] = targetMonthStr.split('-');
-    const year = Number(yearStr);
-    const month = Number(monthStr);
-
-    if (isNaN(year) || isNaN(month)) return 0;
-
-    // Day 0 of the following month returns the last day of the target month
-    return new Date(year, month, 0).getDate();
-};
+export interface UseMonthlyMetricsOptions {
+    targetMonth?: Ref<string | undefined> | string;
+    propertyId?: Ref<string | 'all' | undefined> | string;
+}
 
 /**
  * Helper to safely split "YYYY-MM-DD" strings into number tuple [year, month, day]
@@ -77,8 +67,7 @@ export const getOverlappingNights = (
 export function useMonthlyMetrics(
     bookings: Ref<Booking[]>,
     properties: Ref<Property[]>,
-    targetMonth: Ref<string> = ref(getCurrentMonth(new Date())),
-    selectedPropertyId?: Ref<string | 'all'> | string
+    options: UseMonthlyMetricsOptions = {}
 ) {
     const metrics = computed<MonthlyMetrics>(() => {
         let totalPayout = 0;
@@ -87,20 +76,17 @@ export function useMonthlyMetrics(
         let currentMonthRevenue = 0;
         let lastMonthRevenue = 0;
 
-        const currentMonth = targetMonth.value || getCurrentMonth(new Date());
+        const rawMonth = unref(options.targetMonth);
+        const currentMonth = rawMonth || getCurrentMonth(new Date());
         const previousMonth = getPreviousMonth(new Date());
         const list = bookings.value || [];
         const propertyList = properties.value || [];
-
-        // Resolve optional propertyId parameter
-        const activePropertyId = unref(selectedPropertyId);
+        const rawPropertyId = unref(options.propertyId);
+        const activePropertyId = rawPropertyId && rawPropertyId !== 'all' ? rawPropertyId : null;
         const filterByProperty = activePropertyId && activePropertyId !== 'all';
-
-        // Filter active properties count to calculate accurate totalCapacityNights
         const activePropertiesCount = filterByProperty
             ? propertyList.filter((p) => p.id === activePropertyId).length
             : propertyList.length;
-
         const daysInCurrentMonth = getDaysInMonth(currentMonth);
         const totalCapacityNights = activePropertiesCount * daysInCurrentMonth;
 

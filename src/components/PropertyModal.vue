@@ -8,8 +8,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'close'): void;
-    (e: 'save', payload: Omit<Property, 'createdAt'>): void;
+    close: [];
+    save: [payload: Omit<Property, 'createdAt'>];
 }>();
 
 const defaultForm: Property = {
