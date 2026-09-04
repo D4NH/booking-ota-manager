@@ -12,16 +12,17 @@ export function useDateKeys() {
 
     let midnightTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const scheduleMidnightRefresh = () => {
-        const today = new Date();
-        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-        const msUntilMidnight = tomorrow.getTime() - today.getTime();
+    // 1. "YYYY-MM-DD"
+    const currentDayStr = computed(() => getCurrentDate(now.value));
 
-        midnightTimer = setTimeout(() => {
-            now.value = new Date();
-            scheduleMidnightRefresh();
-        }, msUntilMidnight);
-    };
+    // 2. "YYYY-MM"
+    const currentMonthKey = computed(() => getCurrentMonth(now.value));
+
+    // 3. "YYYY-MM" for Previous Month
+    const lastMonthKey = computed(() => {
+        const d = new Date(now.value.getFullYear(), now.value.getMonth() - 1, 1);
+        return getCurrentMonth(d);
+    });
 
     onMounted(() => {
         scheduleMidnightRefresh();
@@ -35,17 +36,16 @@ export function useDateKeys() {
         if (hourlyTimer) clearInterval(hourlyTimer);
     });
 
-    // 1. "YYYY-MM-DD"
-    const currentDayStr = computed(() => getCurrentDate(now.value));
+    const scheduleMidnightRefresh = () => {
+        const today = new Date();
+        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        const msUntilMidnight = tomorrow.getTime() - today.getTime();
 
-    // 2. "YYYY-MM"
-    const currentMonthKey = computed(() => getCurrentMonth(now.value));
-
-    // 3. "YYYY-MM" for Previous Month
-    const lastMonthKey = computed(() => {
-        const d = new Date(now.value.getFullYear(), now.value.getMonth() - 1, 1);
-        return getCurrentMonth(d);
-    });
+        midnightTimer = setTimeout(() => {
+            now.value = new Date();
+            scheduleMidnightRefresh();
+        }, msUntilMidnight);
+    };
 
     return {
         now,

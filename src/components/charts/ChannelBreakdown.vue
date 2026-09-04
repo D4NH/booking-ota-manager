@@ -51,21 +51,17 @@ const channelStats = computed(() => {
         count: counts[c.name] || 0,
     }));
 });
-
 const totalBookings = computed(() => channelStats.value.reduce((sum, item) => sum + item.count, 0));
-
 const centerLabel = computed(() =>
     hoveredIndex.value !== null && channelStats.value[hoveredIndex.value]
         ? channelStats.value[hoveredIndex.value]?.name
         : 'Total Bookings'
 );
-
 const centerValue = computed(() =>
     hoveredIndex.value !== null && channelStats.value[hoveredIndex.value]
         ? channelStats.value[hoveredIndex.value]?.count
         : totalBookings.value
 );
-
 const chartData = computed<ChartData<'doughnut'>>(() => ({
     labels: channelStats.value.map((item) => item.name),
     datasets: [
@@ -78,7 +74,6 @@ const chartData = computed<ChartData<'doughnut'>>(() => ({
         },
     ],
 }));
-
 const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -111,7 +106,6 @@ const highlightSlice = (index: number) => {
     chart.setActiveElements([{ datasetIndex: 0, index }]);
     chart.update();
 };
-
 const clearHighlight = () => {
     hoveredIndex.value = null;
     const chart = getChartInstance();

@@ -8,8 +8,6 @@ import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 
-const { currentDayStr } = useDateKeys();
-
 const props = defineProps<{
     bookingToEdit?: Booking | null;
     initialCheckInDate?: string;
@@ -23,6 +21,7 @@ const emit = defineEmits<{
 
 const bookingStore = useBookingStore();
 const { deleteBooking } = useBookingSync();
+const { currentDayStr } = useDateKeys();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (props.bookingToEdit?.propertyId) return props.bookingToEdit.propertyId as PropertyId;
@@ -67,19 +66,6 @@ const validationError = computed<string | null>(() => {
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
 const checkInMinDate = computed(() => (props.bookingToEdit ? '' : currentDayStr.value));
-
-watch(
-    () => [form.value.checkIn, form.value.checkOut],
-    ([start, end]) => {
-        if (start && end) {
-            const startDate = new Date(start);
-            const endDate = new Date(end);
-            const diffTime = endDate.getTime() - startDate.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            form.value.nights = diffDays > 0 ? diffDays : 1;
-        }
-    }
-);
 
 const handleDeleteBooking = async (): Promise<void> => {
     if (!props.bookingToEdit) return;
@@ -131,6 +117,19 @@ const triggerDatePicker = (event: MouseEvent): void => {
         target?.focus();
     }
 };
+
+watch(
+    () => [form.value.checkIn, form.value.checkOut],
+    ([start, end]) => {
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const diffTime = endDate.getTime() - startDate.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            form.value.nights = diffDays > 0 ? diffDays : 1;
+        }
+    }
+);
 </script>
 
 <template>

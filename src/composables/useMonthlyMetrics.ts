@@ -1,10 +1,10 @@
-import { computed, ref, type Ref } from 'vue';
+import { computed, ref, unref, type Ref } from 'vue';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 import { getCurrentMonth, getPreviousMonth } from '@/utils/date';
 
 export interface MonthlyMetrics {
-    checkoutPayout: number;
+    totalPayout: number;
     occupiedNights: number;
     totalCapacityNights: number;
     occupancyPercentage: number;
@@ -77,36 +77,67 @@ export const getOverlappingNights = (
 export function useMonthlyMetrics(
     bookings: Ref<Booking[]>,
     properties: Ref<Property[]>,
-    targetMonth: Ref<string> = ref(getCurrentMonth(new Date()))
+    targetMonth: Ref<string> = ref(getCurrentMonth(new Date())),
+    selectedPropertyId?: Ref<string | 'all'> | string
 ) {
     const metrics = computed<MonthlyMetrics>(() => {
-        let checkoutPayout = 0;
+        let totalPayout = 0;
         let occupiedNights = 0;
         let totalBookingsCount = 0;
+        let currentMonthRevenue = 0;
+        let lastMonthRevenue = 0;
 
         const currentMonth = targetMonth.value || getCurrentMonth(new Date());
         const previousMonth = getPreviousMonth(new Date());
         const list = bookings.value || [];
         const propertyList = properties.value || [];
 
-        const daysInCurrentMonth = getDaysInMonth(currentMonth);
-        const totalCapacityNights = propertyList.length * daysInCurrentMonth;
+        // Resolve optional propertyId parameter
+        const activePropertyId = unref(selectedPropertyId);
+        const filterByProperty = activePropertyId && activePropertyId !== 'all';
 
+        // Filter active properties count to calculate accurate totalCapacityNights
+        const activePropertiesCount = filterByProperty
+            ? propertyList.filter((p) => p.id === activePropertyId).length
+            : propertyList.length;
+
+        const daysInCurrentMonth = getDaysInMonth(currentMonth);
+        const totalCapacityNights = activePropertiesCount * daysInCurrentMonth;
+
+        // Single O(N) pass to aggregate all counts and metrics
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
+            if (!b) continue;
 
-            if (!b || b.status === 'Unavailable') continue;
-
-            const isCheckInMonth = b.checkIn?.startsWith(currentMonth) ?? false;
-            const isCheckOutMonth = b.checkOut?.startsWith(currentMonth) ?? false;
-
-            if (isCheckInMonth) {
-                checkoutPayout += b.payout || 0;
+            // Property filter check
+            if (filterByProperty && b.propertyId !== activePropertyId) {
+                continue;
             }
 
-            if (isCheckInMonth || isCheckOutMonth) {
+            const checkIn = b.checkIn || '';
+            const checkOut = b.checkOut || '';
+            const payout = b.payout || 0;
+            const isAvailable = b.status !== 'Unavailable';
+
+            const isCheckInCurrent = checkIn.startsWith(currentMonth);
+            const isCheckInPrevious = checkIn.startsWith(previousMonth);
+            const isCheckOutCurrent = checkOut.startsWith(currentMonth);
+
+            // 1. Current Month Active Booking Aggregations
+            if (isCheckInCurrent && isAvailable) {
+                totalPayout += payout;
+                currentMonthRevenue += payout;
                 totalBookingsCount++;
-                occupiedNights += getOverlappingNights(b.checkIn, b.checkOut, currentMonth);
+            }
+
+            // 2. Previous Month Revenue Tracking (for growth calculation)
+            if (isCheckInPrevious && isAvailable) {
+                lastMonthRevenue += payout;
+            }
+
+            // 3. Occupied Nights Calculation
+            if (isCheckInCurrent || isCheckOutCurrent) {
+                occupiedNights += getOverlappingNights(checkIn, checkOut, currentMonth);
             }
         }
 
@@ -115,16 +146,7 @@ export function useMonthlyMetrics(
                 ? Math.min(100, Math.round((occupiedNights / totalCapacityNights) * 100))
                 : 0;
 
-        const averageDailyRate =
-            occupiedNights > 0 ? Math.round(checkoutPayout / occupiedNights) : 0;
-
-        const currentMonthRevenue = list
-            .filter((b) => b.checkIn?.startsWith(currentMonth) ?? false)
-            .reduce((acc, b) => acc + (b.payout || 0), 0);
-
-        const lastMonthRevenue = list
-            .filter((b) => b.checkIn?.startsWith(previousMonth) ?? false)
-            .reduce((acc, b) => acc + (b.payout || 0), 0);
+        const averageDailyRate = occupiedNights > 0 ? Math.round(totalPayout / occupiedNights) : 0;
 
         const revenueGrowthPercent =
             lastMonthRevenue === 0
@@ -132,7 +154,7 @@ export function useMonthlyMetrics(
                 : Math.round(((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100);
 
         return {
-            checkoutPayout,
+            totalPayout,
             occupiedNights,
             totalCapacityNights,
             occupancyPercentage,
@@ -144,7 +166,7 @@ export function useMonthlyMetrics(
 
     return {
         metrics,
-        checkoutPayout: computed(() => metrics.value.checkoutPayout),
+        totalPayout: computed(() => metrics.value.totalPayout),
         occupiedNights: computed(() => metrics.value.occupiedNights),
         totalCapacityNights: computed(() => metrics.value.totalCapacityNights),
         occupancyPercentage: computed(() => metrics.value.occupancyPercentage),

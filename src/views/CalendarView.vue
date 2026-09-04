@@ -108,21 +108,6 @@ const filteredBookings = computed(() =>
     )
 );
 
-watch(
-    () => route.params.id,
-    (newId) => {
-        selectedProperty.value = (newId as PropertyId) || 'all';
-    }
-);
-watch(
-    currentDate,
-    (newDate) => {
-        selectedMonth.value = newDate.getMonth();
-        selectedYear.value = newDate.getFullYear();
-    },
-    { immediate: true }
-);
-
 const prevMonth = (): void => {
     currentDate.value = new Date(
         currentDate.value.getFullYear(),
@@ -167,6 +152,21 @@ const handleBookingClick = (booking: Booking, event: Event) => {
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
+
+watch(
+    () => route.params.id,
+    (newId) => {
+        selectedProperty.value = (newId as PropertyId) || 'all';
+    }
+);
+watch(
+    currentDate,
+    (newDate) => {
+        selectedMonth.value = newDate.getMonth();
+        selectedYear.value = newDate.getFullYear();
+    },
+    { immediate: true }
+);
 </script>
 
 <template>

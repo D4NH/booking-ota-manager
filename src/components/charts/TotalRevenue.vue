@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-
 import { PROPERTY_LIST } from '@/config/properties';
 import { SHORT_MONTH_NAMES } from '@/config/constants';
 import type { Booking } from '@/types/booking';

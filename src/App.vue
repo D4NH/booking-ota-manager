@@ -7,10 +7,12 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
+import type { Property } from '@/types/property';
 
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BookingModal from '@/components/BookingModal.vue';
+import PropertyModal from '@/components/PropertyModal.vue';
 
 useHead({
     title: 'Mai House Jogja',
@@ -24,13 +26,15 @@ useHead({
 const { saveBooking } = useBookingSync();
 const bookingStore = useBookingStore();
 const modalStore = useModalStore();
-const { isBookingModalOpen, bookingToEdit, initialCheckInDate, currentProperty } =
-    storeToRefs(modalStore);
+const {
+    isBookingModalOpen,
+    bookingToEdit,
+    initialCheckInDate,
+    currentProperty,
+    isPropertyModalOpen,
+    propertyToEdit,
+} = storeToRefs(modalStore);
 const propertyStore = usePropertyStore();
-
-onMounted(async () => {
-    await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()]);
-});
 
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     const success = await saveBooking(payload, bookingToEdit.value);
@@ -38,6 +42,14 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
         modalStore.closeBookingModal();
     }
 };
+const handleSaveProperty = async (propertyData: Property): Promise<void> => {
+    await propertyStore.saveProperty(propertyData);
+    modalStore.closePropertyModal();
+};
+
+onMounted(async () => {
+    await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()]);
+});
 </script>
 
 <template>
@@ -55,6 +67,13 @@ const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Pr
             :current-property="currentProperty"
             @close="modalStore.closeBookingModal"
             @save="handleSaveBooking" />
+
+        <PropertyModal
+            v-if="isPropertyModalOpen"
+            :property-to-edit="propertyToEdit"
+            :current-property="currentProperty"
+            @close="modalStore.closePropertyModal"
+            @save="handleSaveProperty" />
 
         <AppFooter />
     </div>

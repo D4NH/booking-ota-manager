@@ -63,7 +63,10 @@ const propertyBookings = computed(() =>
     bookings.value.filter((b) => b.propertyId === selectedProperty.value)
 );
 
-const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(propertyBookings);
+const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(
+    propertyBookings,
+    selectedProperty
+);
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDayStr.value >= checkIn &&

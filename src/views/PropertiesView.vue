@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
+import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_LIST } from '@/config/properties';
-import type { Property, PropertyId } from '@/types/property';
-import { getCurrentDate, getCurrentMonth, getDaysInMonth } from '@/utils/date';
+import type { PropertyId } from '@/types/property';
+import { getCurrentMonth } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import PropertyModal from '@/components/PropertyModal.vue';
+import PropertyStats from '@/components/PropertyStats.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
 import TotalRevenue from '@/components/charts/TotalRevenue.vue';
 
@@ -21,69 +22,18 @@ const router = useRouter();
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
+const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
-const { todaysArrivals, currentStays } = useDailyOperations(bookings);
 
-const isPropertyModalOpen = ref(false);
-const selectedProperty = ref<Property | null>(null);
+const selectedPropertyId = ref<string | 'all'>('all');
 
-const activeTab = computed(() =>
-    (route.params.id as string) ? route.name === 'property-detail' && route.params.id : 'all'
+const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(
+    bookings,
+    selectedPropertyId
 );
-const propertyName = computed(() =>
-    activeTab.value === 'all'
-        ? 'Property Management'
-        : properties.value.find((prop) => prop.id === activeTab.value)?.name
-);
-const propertyBookings = computed(() =>
-    activeTab.value === 'all'
-        ? bookings.value
-        : bookings.value.filter(
-              (b) => b.propertyId === activeTab.value && b.status !== 'Unavailable'
-          )
-);
-const propertyMetrics = computed(() => {
-    const today = getCurrentDate();
-    const currentHour = new Date().getHours();
-    const currentMonth = getCurrentMonth();
-    const daysInCurrentMonth = getDaysInMonth(currentMonth);
-
-    return sortedProperties.value.map((property) => {
-        const bookings = propertyBookings.value.filter(
-            (booking) => booking.propertyId === property.id && booking.status !== 'Unavailable'
-        );
-        const bookingsCount = bookings.filter((booking) =>
-            booking.checkIn.startsWith(currentMonth)
-        ).length;
-        const bookingsPayout = bookings
-            .filter((booking) => booking.checkIn.startsWith(currentMonth))
-            .reduce((acc, b) => acc + (b.payout || 0), 0);
-        const bookedNights = bookings
-            .filter((booking) => booking.checkIn.startsWith(currentMonth))
-            .reduce((acc, b) => acc + (b.nights || 0), 0);
-        const occupancyPercentage = Math.min(
-            100,
-            Math.round((bookedNights / daysInCurrentMonth) * 100)
-        );
-        const todaysArrival = bookings.filter((booking) => booking.checkIn === today).length;
-
-        const todaysDeparture = bookings.filter((booking) =>
-            currentHour >= 15 ? false : booking.checkOut === today
-        ).length;
-
-        return {
-            property,
-            bookings: bookingsCount,
-            payout: bookingsPayout,
-            occupancyPercentage,
-            todaysArrival,
-            todaysDeparture,
-        };
-    });
-});
 const occupiedPropertyIds = computed(() => {
     const ids = new Set<string>();
 
@@ -101,30 +51,35 @@ const occupiedPropertyIds = computed(() => {
 });
 
 const {
-    checkoutPayout,
+    totalPayout,
     occupiedNights,
     totalCapacityNights,
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(propertyBookings, properties);
+} = useMonthlyMetrics(bookings, properties, selectedPropertyId);
 
 const handleTabChange = (tabId: string) =>
     tabId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: tabId } });
-const handleEditProperty = (id: PropertyId) => {
-    const found = properties.value.find((p) => p.id === id);
-    selectedProperty.value = found ? { ...found } : null;
-    isPropertyModalOpen.value = true;
+
+const handleEditProperty = (propertyId: PropertyId) => {
+    const property = properties.value.find((p) => p.id === propertyId);
+    modalStore.openPropertyModal({ property });
 };
-const handleSaveProperty = async (propertyData: Property) => {
-    await propertyStore.saveProperty(propertyData);
-    isPropertyModalOpen.value = false;
-};
+
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
 const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.has(id);
+
+watch(
+    () => route.params.id,
+    (newId) => {
+        selectedPropertyId.value = typeof newId === 'string' && newId ? newId : 'all';
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
@@ -137,9 +92,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
 
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-xl font-bold text-mist-100">
-                    {{ propertyName }}
-                </h1>
+                <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
                 <p class="text-xs text-mist-400">
                     Select a property to view detailed analytics or manage listing settings
                 </p>
@@ -150,7 +103,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
-                        activeTab === 'all'
+                        selectedPropertyId === 'all'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
@@ -163,7 +116,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                     type="button"
                     class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
-                        activeTab === prop.id
+                        selectedPropertyId === prop.id
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
@@ -227,34 +180,13 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
             </div>
             <!-- Metrics -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                <div
-                    v-for="metric in propertyMetrics"
-                    :key="metric.property.id"
-                    class="space-y-4">
-                    <!-- Metrics -->
-                    <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
-                        <div class="flex justify-around w-full space-x-4">
-                            <div class="flex flex-col items-center space-y-2">
-                                <span class="text-xs text-mist-400">Occupancy</span>
-                                <span class="text-lg font-bold text-lime-400">
-                                    {{ metric.occupancyPercentage }} %
-                                </span>
-                            </div>
-                            <div class="flex flex-col items-center space-y-2">
-                                <span class="text-xs text-mist-400">Revenue</span>
-                                <span class="text-lg font-mono font-bold text-mist-100">
-                                    {{ formatIDR(metric.payout) }}
-                                </span>
-                            </div>
-                            <div class="flex flex-col items-center space-y-2">
-                                <span class="text-xs text-mist-400">Bookings</span>
-                                <span class="text-lg font-bold text-mist-100">
-                                    {{ metric.bookings }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PropertyStats
+                    v-for="property in sortedProperties"
+                    :key="property.id"
+                    :property="property"
+                    :bookings="bookings"
+                    :properties="sortedProperties"
+                    :target-month="getCurrentMonth()" />
             </div>
             <!-- Properties -->
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -323,7 +255,7 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
-                    {{ formatIDR(checkoutPayout) }}
+                    {{ formatIDR(totalPayout) }}
                 </p>
                 <div class="flex items-center gap-1 text-xs mt-1">
                     <span
@@ -353,14 +285,16 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+                <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
+                <div class="text-lg font-bold text-mist-200 mt-1">
+                    <span class="text-lime-400 mr-3">↓ {{ todaysArrivals.length }} In</span>
+                    <span class="text-amber-400">↑ {{ todaysDepartures.length }} Out</span>
+                </div>
+                <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
+            </div>
         </div>
 
         <RouterView />
-
-        <PropertyModal
-            :is-open="isPropertyModalOpen"
-            :property-to-edit="selectedProperty"
-            @close="isPropertyModalOpen = false"
-            @save="handleSaveProperty" />
     </div>
 </template>

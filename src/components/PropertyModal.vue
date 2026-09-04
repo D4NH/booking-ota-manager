@@ -3,16 +3,14 @@ import { ref, watch, computed } from 'vue';
 import type { Property, PropertyId } from '@/types/property';
 
 const props = defineProps<{
-    isOpen: boolean;
     propertyToEdit?: Property | null;
+    currentProperty?: PropertyId | 'all';
 }>();
 
 const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'save', payload: Omit<Property, 'createdAt'>): void;
 }>();
-
-const isEditing = computed(() => Boolean(props.propertyToEdit?.id));
 
 const defaultForm: Property = {
     id: '' as PropertyId,
@@ -28,26 +26,7 @@ const defaultForm: Property = {
 
 const form = ref<Property>({ ...defaultForm });
 
-watch(
-    () => props.propertyToEdit,
-    (newVal) => {
-        form.value = newVal ? { ...newVal } : { ...defaultForm };
-    },
-    { immediate: true }
-);
-
-watch(
-    () => props.isOpen,
-    (isOpen) => {
-        if (!isOpen) {
-            form.value = { ...defaultForm };
-        }
-    }
-);
-
-const handleClose = () => {
-    emit('close');
-};
+const isEditing = computed(() => Boolean(props.propertyToEdit?.id));
 
 const handleSubmit = () => {
     if (!form.value.name || !form.value.codePrefix) return;
@@ -63,16 +42,21 @@ const handleSubmit = () => {
     };
 
     emit('save', payload);
-    handleClose();
+    emit('close');
 };
+watch(
+    () => props.propertyToEdit,
+    (newVal) => {
+        form.value = newVal ? { ...newVal } : { ...defaultForm };
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
     <Teleport to="body">
         <div
-            v-if="isOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            @click.self="handleClose">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div
                 class="w-full max-w-lg rounded-2xl border border-mist-800 bg-mist-900 p-6 shadow-2xl transition-all"
                 role="dialog"
@@ -92,7 +76,7 @@ const handleSubmit = () => {
                     <button
                         type="button"
                         class="rounded-lg p-1 text-mist-400 transition-colors hover:bg-mist-800 hover:text-mist-200"
-                        @click="handleClose">
+                        @click="emit('close')">
                         ✕
                     </button>
                 </div>
@@ -211,7 +195,7 @@ const handleSubmit = () => {
                         <button
                             type="button"
                             class="rounded-lg border border-mist-800 px-4 py-2 text-xs font-semibold text-mist-300 transition-colors hover:bg-mist-800"
-                            @click="handleClose">
+                            @click="emit('close')">
                             Cancel
                         </button>
                         <button

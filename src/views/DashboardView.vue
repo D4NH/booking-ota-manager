@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
@@ -10,11 +10,9 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
-import type { Property, PropertyId } from '@/types/property';
+import type { PropertyId } from '@/types/property';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
-
-import PropertyModal from '@/components/PropertyModal.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -26,16 +24,13 @@ const { syncStatus } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
 const { currentDayStr } = useDateKeys();
 const {
-    checkoutPayout,
+    totalPayout,
     occupiedNights,
     totalCapacityNights,
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings, properties);
-
-const isPropertyModalOpen = ref(false);
-const selectedProperty = ref<Property | null>(null);
 
 const occupiedPropertyIds = computed<Set<string>>(() => {
     const ids = new Set<string>();
@@ -57,14 +52,9 @@ const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.ha
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
-const handleEditProperty = (id: PropertyId) => {
-    const found = properties.value.find((p) => p.id === id);
-    selectedProperty.value = found ? { ...found } : null;
-    isPropertyModalOpen.value = true;
-};
-const handleSaveProperty = async (propertyData: Property) => {
-    await propertyStore.saveProperty(propertyData);
-    isPropertyModalOpen.value = false;
+const handleEditProperty = (propertyId: PropertyId) => {
+    const property = properties.value.find((p) => p.id === propertyId);
+    modalStore.openPropertyModal({ property });
 };
 const propertyImage = (id: string) =>
     id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
@@ -82,7 +72,7 @@ const propertyImage = (id: string) =>
             <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
-                    {{ formatIDR(checkoutPayout) }}
+                    {{ formatIDR(totalPayout) }}
                 </p>
                 <div class="flex items-center gap-1 text-xs mt-1">
                     <span
@@ -412,11 +402,5 @@ const propertyImage = (id: string) =>
                 </table>
             </div>
         </div>
-
-        <PropertyModal
-            :is-open="isPropertyModalOpen"
-            :property-to-edit="selectedProperty"
-            @close="isPropertyModalOpen = false"
-            @save="handleSaveProperty" />
     </div>
 </template>

@@ -9,15 +9,6 @@ import type { Booking } from '@/types/booking';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-export interface NotificationItem {
-    id: string;
-    title: string;
-    message: string;
-    timestamp: string;
-    type: 'booking' | 'payment' | 'system';
-    read: boolean;
-}
-
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const { currentDayStr } = useDateKeys();
@@ -57,9 +48,10 @@ const pendingPayments = computed(() => {
     };
 });
 
-// onMounted(() => {
-//     emit('has-notifications', Boolean(pendingPayments.value.notificationsCount));
-// });
+const handleEditBooking = (booking: Booking) => {
+    modalStore.openBookingModal({ booking });
+};
+
 watch(
     () => pendingPayments.value,
     () => {
@@ -67,10 +59,6 @@ watch(
     },
     { immediate: true }
 );
-
-const handleEditBooking = (booking: Booking) => {
-    modalStore.openBookingModal({ booking });
-};
 </script>
 
 <template>
