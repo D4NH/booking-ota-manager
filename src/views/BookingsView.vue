@@ -186,16 +186,24 @@ const selectProperty = (id: string) => {
             class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex items-center gap-2">
                 <div class="w-50">
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Search guest, ID or notes..."
-                        class="w-full rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                    <div class="relative w-full max-w-xs">
+                        <div
+                            class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                            <fa-icon
+                                icon="magnifying-glass"
+                                class="w-4 h-4" />
+                        </div>
+                        <input
+                            v-model="searchQuery"
+                            type="text"
+                            placeholder="Search..."
+                            class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                    </div>
                 </div>
                 <div class="relative w-50">
                     <select
                         v-model="selectedMonth"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
                         <option value="all">All Months</option>
                         <option
                             v-for="mKey in availableMonths"

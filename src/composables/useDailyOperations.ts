@@ -99,7 +99,7 @@ export function useDailyOperations(
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (!b || b.status === 'Unavailable') continue;
+            if (!b || b.status === 'Unavailable' || b.status === 'Waiting for payout') continue;
 
             if (activePropertyId && b.propertyId !== activePropertyId) continue;
 

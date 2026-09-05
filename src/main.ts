@@ -12,7 +12,7 @@ import router from './router';
 
 import {
     faMapMarkerAlt,
-    faCalendarDay,
+    faCalendarDays,
     faArrowsRotate,
     faPenToSquare,
     faChevronLeft,
@@ -27,12 +27,15 @@ import {
     faShower,
     faHouse,
     faRulerCombined,
-    faBook,
+    faMagnifyingGlass,
+    faHashtag,
+    faIdCard,
+    faRupiahSign,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
     faMapMarkerAlt,
-    faCalendarDay,
+    faCalendarDays,
     faArrowsRotate,
     faPenToSquare,
     faChevronLeft,
@@ -47,7 +50,10 @@ library.add(
     faShower,
     faHouse,
     faRulerCombined,
-    faBook
+    faMagnifyingGlass,
+    faHashtag,
+    faIdCard,
+    faRupiahSign
 );
 
 const app = createApp(App);
