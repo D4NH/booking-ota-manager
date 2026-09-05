@@ -23,7 +23,8 @@ const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { syncStatus } = useBookingSync();
-const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings);
+const { todaysArrivals, todaysDepartures, currentStays, todaysTurnover } =
+    useDailyOperations(bookings);
 const { currentDayStr } = useDateKeys();
 const {
     totalPayout,
@@ -34,23 +35,6 @@ const {
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings, properties);
 
-const occupiedPropertyIds = computed<Set<string>>(() => {
-    const ids = new Set<string>();
-
-    for (let i = 0; i < currentStays.value.length; i++) {
-        const stay = currentStays.value[i];
-        if (stay?.propertyId) ids.add(stay.propertyId);
-    }
-
-    for (let i = 0; i < todaysArrivals.value.length; i++) {
-        const arrival = todaysArrivals.value[i];
-        if (arrival?.propertyId) ids.add(arrival.propertyId);
-    }
-
-    return ids;
-});
-
-const isPropertyOccupied = (id: string): boolean => occupiedPropertyIds.value.has(id);
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
@@ -262,7 +246,7 @@ const propertyImage = (id: string) =>
                 </div>
             </div>
             <!-- Today's Departures -->
-            <!-- <div class="shadow-md">
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
