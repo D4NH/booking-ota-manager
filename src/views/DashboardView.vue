@@ -14,6 +14,8 @@ import type { PropertyId } from '@/types/property';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
+import OccupiedTag from '@/components/OccupiedTag.vue';
+
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
@@ -69,7 +71,7 @@ const propertyImage = (id: string) =>
 
         <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
@@ -83,7 +85,7 @@ const propertyImage = (id: string) =>
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
                 <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
@@ -95,18 +97,18 @@ const propertyImage = (id: string) =>
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
-                    <span class="text-lime-400 mr-3">↓ {{ todaysArrivals.length }} In</span>
-                    <span class="text-amber-400">↑ {{ todaysDepartures.length }} Out</span>
+                    <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
+                    <span class="text-amber-400">↑ {{ todaysTurnover.out }} Out</span>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>
@@ -126,7 +128,7 @@ const propertyImage = (id: string) =>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Arriving Today -->
-            <div>
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -193,7 +195,7 @@ const propertyImage = (id: string) =>
                 </div>
             </div>
             <!-- Current Stays -->
-            <div>
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -260,7 +262,7 @@ const propertyImage = (id: string) =>
                 </div>
             </div>
             <!-- Today's Departures -->
-            <div>
+            <!-- <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -331,8 +333,8 @@ const propertyImage = (id: string) =>
         </div>
 
         <!-- Properties -->
-        <div class="grid grid-cols-1 gap-4">
-            <div class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+        <div class="grid grid-cols-1 gap-4 shadow-md">
+            <div class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
                         class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
@@ -370,20 +372,9 @@ const propertyImage = (id: string) =>
                                     </p>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                    <!-- Add maintenance state -->
-                                    <span
-                                        :class="[
-                                            'rounded px-2 py-0.5 text-xs text-nowrap',
-                                            isPropertyOccupied(property.id)
-                                                ? 'bg-amber-500/20 text-amber-400'
-                                                : 'bg-lime-500/20 text-lime-400',
-                                        ]">
-                                        {{
-                                            isPropertyOccupied(property.id)
-                                                ? 'Occupied'
-                                                : 'Available'
-                                        }}
-                                    </span>
+                                    <OccupiedTag
+                                        :bookings="bookings"
+                                        :property="property" />
                                 </td>
                                 <td class="px-4 py-3 font-medium text-mist-100 font-mono">
                                     {{ formatIDR(property.price) }}

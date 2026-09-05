@@ -9,7 +9,6 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { formatDate, getCurrentMonth } from '@/utils/date';
 
@@ -21,13 +20,16 @@ const modalStore = useModalStore();
 const { syncStatus, deleteBooking } = useBookingSync();
 const { currentDayStr } = useDateKeys();
 
-const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
 
+const selectedPropertyId = computed<string>(() => {
+    const id = route.params.id;
+    return typeof id === 'string' && id ? id : 'all';
+});
 const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
 const filteredBookings = computed(() => {
-    const prop = selectedProperty.value;
+    const prop = selectedPropertyId.value;
     const hidden = hiddenStatuses.value;
 
     return bookings.value
@@ -57,10 +59,6 @@ const groupedBookings = computed(() => {
             count: groups[key]?.length,
             bookings: groups[key],
         }));
-});
-const selectedPropertyId = computed<string>(() => {
-    const id = route.params.id;
-    return typeof id === 'string' && id ? id : 'all';
 });
 
 const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bookings, {
@@ -102,7 +100,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Arriving Today -->
-            <div>
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -115,7 +113,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                     </div>
                     <div
                         v-if="todaysArrivals.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-10">
+                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-15">
                         No arrivals scheduled for today.
                     </div>
                     <div
@@ -157,7 +155,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                 </div>
             </div>
             <!-- Current Stays -->
-            <div>
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -212,7 +210,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                 </div>
             </div>
             <!-- Today's Departures -->
-            <div>
+            <div class="shadow-md">
                 <div
                     class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
                     <div
@@ -291,7 +289,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
         </div>
         <div
             v-else
-            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">

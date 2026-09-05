@@ -151,7 +151,7 @@ const selectProperty = (id: string) => {
                         class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                         :class="[
                             selectedProperty === 'all'
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
                                 : 'text-mist-400 hover:text-mist-200',
                         ]"
                         @click="selectedProperty = 'all'">
@@ -164,7 +164,7 @@ const selectProperty = (id: string) => {
                         class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                         :class="[
                             selectedProperty === prop.id
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
                                 : 'text-mist-400 hover:text-mist-200',
                         ]"
                         @click="selectProperty(prop.id)">
@@ -183,7 +183,7 @@ const selectProperty = (id: string) => {
 
         <!-- Filter Bar -->
         <div
-            class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
+            class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex items-center gap-2">
                 <div class="w-50">
                     <input
@@ -239,7 +239,7 @@ const selectProperty = (id: string) => {
             </div>
             <button
                 type="button"
-                class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                class="cursor-pointer rounded-lg bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
                 @click="handleAddBooking">
                 <fa-icon
                     class="text-xs"
@@ -251,12 +251,12 @@ const selectProperty = (id: string) => {
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="rounded-lg border border-dashed border-mist-800 p-12 text-center">
+            class="rounded-lg border border-dashed border-mist-800 p-12 text-center shadow-md">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
         <div
             v-else
-            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-xs font-semibold uppercase text-mist-400">

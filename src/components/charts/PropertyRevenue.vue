@@ -88,7 +88,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
-    <div class="flex flex-col h-full rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
+    <div class="flex flex-col h-full rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div>
             <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
             <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>

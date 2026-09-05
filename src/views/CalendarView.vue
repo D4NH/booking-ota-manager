@@ -184,7 +184,7 @@ watch(
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                     :class="[
                         selectedProperty === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="selectedProperty = 'all'">
@@ -197,7 +197,7 @@ watch(
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
                     :class="[
                         selectedProperty === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="selectProperty(prop.id)">
@@ -274,7 +274,7 @@ watch(
         </div>
 
         <!-- Calendar Grid Table -->
-        <div class="rounded-lg border border-mist-800 bg-mist-900 shadow-lg">
+        <div class="rounded-lg border border-mist-800 bg-mist-900 shadow-md">
             <div
                 class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
@@ -314,7 +314,7 @@ watch(
                             <!-- Calendar Event Badge -->
                             <div
                                 :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
-                                class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-sm cursor-pointer"
+                                class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-md cursor-pointer"
                                 :class="[
                                     b.status === 'Booked'
                                         ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/50'
@@ -371,7 +371,7 @@ watch(
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
                                         class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium">
-                                        WhatsApp payment follow-up pending
+                                        Guest still needs to pay the remaining amount
                                     </div>
                                     <!-- Notes -->
                                     <div

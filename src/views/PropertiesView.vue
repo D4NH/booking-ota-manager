@@ -77,7 +77,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
                         selectedPropertyId === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="handleTabChange('all')">
@@ -90,7 +90,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
                         selectedPropertyId === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
                     @click="handleTabChange(prop.id)">
@@ -107,36 +107,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
 
         <div v-if="route.meta.isOverview">
             <!-- Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                <div
-                    class="lg:col-span-1 rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg space-y-4">
-                    <div>
-                        <h3 class="text-base font-bold text-mist-100">Performance Summary</h3>
-                        <p class="text-xs text-mist-400">Current month occupancy & yield</p>
-                    </div>
-
-                    <!-- Metrics Grid -->
-                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
-                        <span class="block text-[11px] text-mist-400">Occupancy</span>
-                        <span class="text-lg font-extrabold font-mono text-lime-400"> 20 % </span>
-                    </div>
-
-                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
-                        <span class="block text-[11px] text-mist-400">Avg Daily Rate</span>
-                        <span class="text-sm font-bold font-mono text-mist-100">450000</span>
-                    </div>
-
-                    <div class="rounded-lg bg-mist-800/40 p-3 text-center">
-                        <span class="block text-[11px] text-mist-400">Avg Stay</span>
-                        <span class="text-sm font-bold font-mono text-mist-100"> 2.5 days </span>
-                    </div>
-
-                    <div
-                        class="flex items-center justify-between border-t border-mist-800/60 pt-3 text-xs">
-                        <span class="text-mist-400">Check-ins Today</span>
-                        <span class="font-bold text-mist-200">2 Guests</span>
-                    </div>
-                </div>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <TotalRevenue
                     class="lg:col-span-2"
                     :data="bookings" />
@@ -174,7 +145,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div
             v-else
             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
@@ -188,7 +159,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
                 <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
@@ -200,14 +171,14 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4">
+            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
                     <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>

@@ -73,7 +73,7 @@ watch(
         <Transition name="slide">
             <aside
                 v-if="isOpen"
-                class="fixed top-0 right-0 z-50 flex h-full w-80 max-w-[calc(100vw-2rem)] flex-col border-l border-mist-800 bg-mist-900 shadow-2xl">
+                class="fixed top-0 right-0 z-50 flex h-full w-80 max-w-[calc(100vw-2rem)] flex-col border-l border-mist-800 bg-mist-900 shadow-xl">
                 <!-- Sidebar Header -->
                 <div class="flex items-center justify-between p-4">
                     <div class="flex items-center space-x-2">

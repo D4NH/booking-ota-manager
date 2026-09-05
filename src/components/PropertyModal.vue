@@ -58,7 +58,7 @@ watch(
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-lg rounded-2xl border border-mist-800 bg-mist-900 p-6 shadow-2xl transition-all"
+                class="w-full max-w-lg rounded-2xl border border-mist-800 bg-mist-900 p-6 shadow-xl transition-all"
                 role="dialog"
                 aria-modal="true">
                 <!-- Modal Header -->
