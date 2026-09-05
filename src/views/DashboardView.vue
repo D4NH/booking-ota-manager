@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
@@ -25,7 +24,7 @@ const { properties, sortedProperties } = storeToRefs(propertyStore);
 const { syncStatus } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays, todaysTurnover } =
     useDailyOperations(bookings);
-const { currentDayStr } = useDateKeys();
+const { currentDay } = useDateKeys();
 const {
     totalPayout,
     occupiedNights,
@@ -50,7 +49,7 @@ const propertyImage = (id: string) =>
     <div class="mx-auto max-w-7xl space-y-4">
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <p class="text-xs text-mist-400">Live operational activity for {{ currentDayStr }}</p>
+            <p class="text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
         </div>
 
         <!-- Monthly Summary Cards -->

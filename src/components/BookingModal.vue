@@ -21,7 +21,7 @@ const emit = defineEmits<{
 
 const bookingStore = useBookingStore();
 const { deleteBooking } = useBookingSync();
-const { currentDayStr } = useDateKeys();
+const { currentDay } = useDateKeys();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (props.bookingToEdit?.propertyId) return props.bookingToEdit.propertyId as PropertyId;
@@ -65,7 +65,7 @@ const validationError = computed<string | null>(() => {
     return null;
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
-const checkInMinDate = computed(() => (props.bookingToEdit ? '' : currentDayStr.value));
+const checkInMinDate = computed(() => (props.bookingToEdit ? '' : currentDay.value));
 
 const handleDeleteBooking = async (): Promise<void> => {
     if (!props.bookingToEdit) return;

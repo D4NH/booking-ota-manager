@@ -11,7 +11,7 @@ import { formatIDR } from '@/utils/money';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { currentDayStr } = useDateKeys();
+const { currentDay } = useDateKeys();
 const modalStore = useModalStore();
 
 defineProps<{
@@ -29,7 +29,7 @@ const pendingPayments = computed(() => {
         const checkInDate = new Date(checkIn);
         checkInDate.setDate(checkInDate.getDate() - 1);
 
-        return getCurrentDate(checkInDate) === currentDayStr.value;
+        return getCurrentDate(checkInDate) === currentDay.value;
     };
     const whatsappPayments = propertyBookings.value.filter(
         (b) =>

@@ -84,22 +84,16 @@ export const formatDate = (
     if (!isoDateStr) return '';
 
     const date = parseISODate(isoDateStr);
-
     const monthFormat = options.shortMonth ? 'short' : 'long';
+
+    if (isNaN(date.getTime())) return '';
+
     const monthName = date.toLocaleDateString('en-US', { month: monthFormat });
     const day = String(date.getDate()).padStart(2, '0');
 
-    if (options.includeYear) {
-        return `${day} ${monthName} ${date.getFullYear()}`;
-    }
-
-    if (options.monthHeader) {
-        return `${monthName} ${date.getFullYear()}`;
-    }
-
-    if (options.monthOnly) {
-        return `${monthName}`;
-    }
+    if (options.includeYear) return `${day} ${monthName} ${date.getFullYear()}`;
+    if (options.monthHeader) return `${monthName} ${date.getFullYear()}`;
+    if (options.monthOnly) return `${monthName}`;
 
     return `${day} ${monthName}`;
 };

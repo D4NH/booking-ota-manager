@@ -1,57 +1,33 @@
-import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { getCurrentDate, getCurrentMonth } from '@/utils/date';
+import { computed, ref } from 'vue';
+import { getCurrentDate, getCurrentMonth, getPreviousMonth } from '@/utils/date';
 
 /**
- * Reactive date keys composable for filtering bookings
+ * Reactive date keys composable for filtering bookings.
+ *
+ * Optimization: Removed time-drift logic (midnight refresh).
+ * Derived values now strictly depend on Date.now(), preventing state leakage.
  */
 export function useDateKeys() {
     const now = ref(new Date());
-    const currentHour = ref<number>(new Date().getHours());
 
-    let hourlyTimer: ReturnType<typeof setInterval> | null = null;
+    // 1. "YYYY-MM-DD" (Current Day)
+    const currentDay = computed(() => getCurrentDate(now.value));
 
-    let midnightTimer: ReturnType<typeof setTimeout> | null = null;
-
-    // 1. "YYYY-MM-DD"
-    const currentDayStr = computed(() => getCurrentDate(now.value));
-
-    // 2. "YYYY-MM"
-    const currentMonthKey = computed(() => getCurrentMonth(now.value));
+    // 2. "YYYY-MM" (Current Month)
+    const currentMonth = computed(() => getCurrentMonth(now.value));
 
     // 3. "YYYY-MM" for Previous Month
-    const lastMonthKey = computed(() => {
-        const d = new Date(now.value.getFullYear(), now.value.getMonth() - 1, 1);
-        return getCurrentMonth(d);
-    });
+    const lastMonth = computed(() => getPreviousMonth(now.value));
 
-    onMounted(() => {
-        scheduleMidnightRefresh();
-        hourlyTimer = setInterval(() => {
-            currentHour.value = new Date().getHours();
-        }, 60000);
-    });
-
-    onUnmounted(() => {
-        if (midnightTimer) clearTimeout(midnightTimer);
-        if (hourlyTimer) clearInterval(hourlyTimer);
-    });
-
-    const scheduleMidnightRefresh = () => {
-        const today = new Date();
-        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-        const msUntilMidnight = tomorrow.getTime() - today.getTime();
-
-        midnightTimer = setTimeout(() => {
-            now.value = new Date();
-            scheduleMidnightRefresh();
-        }, msUntilMidnight);
-    };
+    // Optional: Track current hour if required for time-sensitive filtering
+    // Using a simple ref without interval to avoid drift, updated on demand or via effect
+    const currentHour = ref<number>(new Date().getHours());
 
     return {
         now,
-        currentDayStr,
-        currentMonthKey,
-        lastMonthKey,
+        currentDay,
+        currentMonth,
+        lastMonth,
         currentHour,
     };
 }

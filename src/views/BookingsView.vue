@@ -19,7 +19,7 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
 const { syncStatus, deleteBooking } = useBookingSync();
-const { currentDayStr } = useDateKeys();
+const { currentDay } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
@@ -100,7 +100,7 @@ const toggleMonth = (monthKey: string) => {
 const handleAddBooking = () => {
     modalStore.openBookingModal({
         propertyId: selectedProperty.value,
-        checkInDate: currentDayStr.value,
+        checkInDate: currentDay.value,
     });
 };
 const handleEditBooking = (booking: Booking) => {
@@ -123,7 +123,7 @@ const handleClearAllLocal = async (): Promise<void> => {
         setTimeout(() => (syncStatus.value = ''), 3000);
     }
 };
-const isCurrentBooking = (checkIn: string): boolean => currentDayStr.value === checkIn;
+const isCurrentBooking = (checkIn: string): boolean => currentDay.value === checkIn;
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };

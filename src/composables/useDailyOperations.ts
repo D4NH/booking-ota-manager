@@ -10,7 +10,7 @@ export function useDailyOperations(
     bookings: Ref<Booking[]>,
     options: UseDailyOperationsOptions = {}
 ) {
-    const { currentDayStr, currentHour } = useDateKeys();
+    const { currentDay, currentHour } = useDateKeys();
     const getActivePropertyId = () => {
         const rawId = unref(options.propertyId);
         return rawId && rawId !== 'all' ? rawId : null;
@@ -20,7 +20,7 @@ export function useDailyOperations(
         const hour = currentHour.value;
         if (hour >= 15) return [];
 
-        const today = currentDayStr.value;
+        const today = currentDay.value;
         const activePropertyId = getActivePropertyId();
         const list = bookings.value || [];
         const result: Booking[] = [];
@@ -39,7 +39,7 @@ export function useDailyOperations(
         return result;
     });
     const currentStays = computed<Booking[]>(() => {
-        const today = currentDayStr.value;
+        const today = currentDay.value;
         const hour = currentHour.value;
         const activePropertyId = getActivePropertyId();
         const list = bookings.value || [];
@@ -74,7 +74,7 @@ export function useDailyOperations(
         const hour = currentHour.value;
         if (hour >= 15) return [];
 
-        const today = currentDayStr.value;
+        const today = currentDay.value;
         const activePropertyId = getActivePropertyId();
         const list = bookings.value || [];
         const result: Booking[] = [];
@@ -95,7 +95,7 @@ export function useDailyOperations(
     const isOccupied = computed<boolean>(() => {
         const activePropertyId = getActivePropertyId();
         const list = bookings.value || [];
-        const today = currentDayStr.value;
+        const today = currentDay.value;
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];

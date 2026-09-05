@@ -18,7 +18,7 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
 const { syncStatus, deleteBooking } = useBookingSync();
-const { currentDayStr } = useDateKeys();
+const { currentDay } = useDateKeys();
 
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
 const collapsedMonths = ref<string[]>([]);
@@ -66,9 +66,7 @@ const { todaysArrivals, todaysDepartures, currentStays } = useDailyOperations(bo
 });
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
-    currentDayStr.value >= checkIn &&
-    currentDayStr.value <= checkOut &&
-    status !== 'Waiting for payout';
+    currentDay.value >= checkIn && currentDay.value <= checkOut && status !== 'Waiting for payout';
 const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
 

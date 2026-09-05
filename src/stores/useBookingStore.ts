@@ -44,7 +44,6 @@ export const useBookingStore = defineStore('booking', () => {
         return conflict || null;
     };
 
-    // Local Actions
     const addBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking> => {
         const newId =
             typeof crypto !== 'undefined' && crypto.randomUUID
