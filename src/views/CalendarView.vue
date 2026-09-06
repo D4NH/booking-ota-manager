@@ -2,8 +2,9 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { getPropertyTheme } from '@/config/properties';
 import { MONTH_NAMES } from '@/config/constants';
+import { getPropertyTheme } from '@/config/properties';
+import { getStatusStyle } from '@/config/status';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
@@ -28,6 +29,7 @@ const selectedYear = ref<number>(currentDate.value.getFullYear());
 
 const currentMonth = computed(() => currentDate.value.getMonth());
 const currentYear = computed(() => currentDate.value.getFullYear());
+
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -35,19 +37,18 @@ const calendarDays = computed<CalendarDay[]>(() => {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    // Shift Day index
+    // Shift day index
     const rawDayIndex = firstDayOfMonth.getDay();
-    const startingDayOfWeek = (rawDayIndex + 6) % 7;
+    const startingDayOfWeek = (rawDayIndex + 6) % 7; // Mon = 0, Sun = 6
     const totalDaysInMonth = lastDayOfMonth.getDate();
 
-    // Format today's date string in local time
     const now = new Date();
     const days: CalendarDay[] = [];
     const today = getCurrentDate(now);
 
-    // Previous month padding days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
 
+    // Previous month padding days
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
         const dateStr = getCurrentDate(prevDate);
@@ -72,8 +73,8 @@ const calendarDays = computed<CalendarDay[]>(() => {
         });
     }
 
+    // Next month padding days
     const remainingCells = 42 - days.length;
-
     for (let day = 1; day <= remainingCells; day++) {
         const nextDate = new Date(year, month + 1, day);
         const dateStr = getCurrentDate(nextDate);
@@ -88,15 +89,16 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     return days;
 });
+
 const yearOptions = computed(() => {
     const currentYear = new Date().getFullYear();
     const years: number[] = [];
-
     for (let y = currentYear - 2; y <= currentYear + 3; y++) {
         years.push(y);
     }
     return years;
 });
+
 const filteredBookings = computed(() =>
     bookings.value.filter((b) =>
         selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value
@@ -104,6 +106,50 @@ const filteredBookings = computed(() =>
             : b.status
     )
 );
+
+// Date offset helper without timezone issues
+const getOffsetDate = (dateStr: string, offsetDays: number): string => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(Number(y), Number(m) - 1, Number(d) + offsetDays);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getStaysForDate = (dateStr: string): Booking[] =>
+    filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
+
+// Multi-day styling
+const getRibbonClasses = (b: Booking, dateStr: string, dayIndex: number) => {
+    const dayOfWeek = dayIndex % 7; // 0 = Mon, 6 = Sun
+    const isCheckIn = b.checkIn === dateStr;
+    const lastNight = getOffsetDate(b.checkOut, -1);
+    const isLastNight = lastNight === dateStr;
+    const isSingleNight = b.nights === 1 || (isCheckIn && isLastNight);
+
+    if (isSingleNight) {
+        return 'rounded-md mx-0 border';
+    }
+
+    const classes: string[] = ['border-y'];
+
+    // Left edge
+    if (isCheckIn || dayOfWeek === 0) {
+        classes.push('rounded-l-md ml-0 border-l');
+    } else {
+        classes.push('rounded-l-none -ml-2 border-l-0 pl-3');
+    }
+
+    // Right edge
+    if (isLastNight || dayOfWeek === 6) {
+        classes.push('rounded-r-md mr-0 border-r');
+    } else {
+        classes.push('rounded-r-none -mr-2 border-r-0 pr-3');
+    }
+
+    return classes.join(' ');
+};
 
 const prevMonth = (): void => {
     currentDate.value = new Date(
@@ -130,8 +176,6 @@ const handleYearChange = (e: Event): void => {
 const goToToday = (): void => {
     currentDate.value = new Date();
 };
-const getBookingsForDate = (dateStr: string): Booking[] =>
-    filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
 const handleAddBooking = () => {
     modalStore.openBookingModal();
 };
@@ -230,24 +274,26 @@ watch(
                 <select
                     name="month-selector"
                     :value="selectedMonth"
-                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 text-right"
+                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 text-right text-mist-200"
                     @change="handleMonthChange">
                     <option
                         v-for="(name, index) in MONTH_NAMES"
                         :key="index"
-                        :value="index">
+                        :value="index"
+                        class="bg-mist-900">
                         {{ name }}
                     </option>
                 </select>
                 <select
                     name="year-selector"
                     :value="selectedYear"
-                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 ml-2"
+                    class="appearance-none cursor-pointer rounded-lg outline-none w-24 ml-2 text-mist-200"
                     @change="handleYearChange">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
-                        :value="year">
+                        :value="year"
+                        class="bg-mist-900">
                         {{ year }}
                     </option>
                 </select>
@@ -263,7 +309,7 @@ watch(
             </button>
         </div>
 
-        <!-- Calendar Grid Table -->
+        <!-- Calendar Grid -->
         <div class="rounded-lg border border-mist-800 bg-mist-900 shadow-md">
             <div
                 class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
@@ -275,98 +321,111 @@ watch(
                 <div class="py-2.5">Sat</div>
                 <div class="py-2.5">Sun</div>
             </div>
+
             <div class="grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
                 <div
-                    v-for="day in calendarDays"
+                    v-for="(day, dayIndex) in calendarDays"
                     :key="day.dateStr"
                     :class="[
-                        'min-h-27.5 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
+                        'min-h-30 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40 relative',
                         !day.isCurrentMonth ? 'bg-mist-950/40 opacity-40' : '',
                         day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
                     ]"
                     @click="handleCellClick(day)">
-                    <!-- Day Number Badge -->
-                    <div class="flex items-center justify-between">
+                    <!-- Day Number Header -->
+                    <div class="flex items-center justify-between mb-1">
                         <span
                             :class="[
                                 'text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center',
-                                day.isToday ? 'bg-lime-500 text-mist-950' : 'text-mist-400',
+                                day.isToday
+                                    ? 'bg-lime-500 text-mist-950 shadow-sm'
+                                    : 'text-mist-400',
                             ]">
                             {{ day.dayNumber }}
                         </span>
                     </div>
-                    <!-- Bookings -->
-                    <div class="space-y-1 mt-1">
+
+                    <!-- Bookings Area -->
+                    <div class="space-y-1.5 flex-1 flex flex-col justify-start">
                         <div
-                            v-for="b in getBookingsForDate(day.dateStr)"
-                            :key="b.id || b.bookingId"
-                            class="group relative">
-                            <!-- Calendar Event Badge -->
+                            v-for="b in getStaysForDate(day.dateStr)"
+                            :key="'stay-' + (b.id || b.bookingId)"
+                            class="group relative z-10">
                             <div
                                 :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
-                                class="rounded px-1.5 py-1 text-xs font-medium truncate border transition shadow-md cursor-pointer"
                                 :class="[
-                                    b.status === 'Booked'
-                                        ? 'border-mist-500/40 bg-mist-500/20 text-mist-300 hover:bg-mist-500/50'
-                                        : b.status === 'Waiting for payment'
-                                          ? 'border-amber-500/40 bg-amber-500/20 text-amber-300 hover:bg-amber-500/70'
-                                          : b.status === 'Unavailable'
-                                            ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/70'
-                                            : 'border-mist-700 bg-mist-800 text-mist-300',
+                                    'py-1 px-1.5 text-xs transition shadow-sm cursor-pointer',
+                                    getRibbonClasses(b, day.dateStr, dayIndex),
+                                    getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-semibold text-sm text-mist-200 truncate">
-                                        {{ b.guestName }}
-                                    </span>
-                                    <RouterLink
-                                        v-if="
-                                            b.status !== 'Unavailable' && selectedProperty === 'all'
-                                        "
-                                        :to="{
-                                            name: 'property-detail',
-                                            params: { id: b.propertyId },
-                                        }"
-                                        class="capitalize rounded px-1.5 py-0.5 text-xs font-bold"
-                                        :class="[
-                                            getPropertyTheme(b.propertyId).bg,
-                                            getPropertyTheme(b.propertyId).text,
-                                        ]">
-                                        {{ b.propertyId }}
-                                    </RouterLink>
-                                </div>
+                                <!-- Start of multi-day stay -->
                                 <div
-                                    v-if="b.status !== 'Unavailable'"
-                                    class="text-xs text-mist-400">
-                                    {{ b.listing }}
+                                    v-if="
+                                        b.checkIn === day.dateStr ||
+                                        dayIndex % 7 === 0 ||
+                                        b.nights === 1
+                                    "
+                                    class="flex flex-col gap-1 h-10">
+                                    <div class="flex justify-between items-start">
+                                        <span class="font-semibold text-xs text-mist-100 truncate">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <span
+                                            v-if="
+                                                b.status !== 'Unavailable' &&
+                                                selectedProperty === 'all'
+                                            "
+                                            class="capitalize rounded px-1 py-0.2 text-[10px] font-bold shrink-0"
+                                            :class="[
+                                                getPropertyTheme(b.propertyId).bg,
+                                                getPropertyTheme(b.propertyId).text,
+                                            ]">
+                                            {{ b.propertyId }}
+                                        </span>
+                                    </div>
+                                    <div
+                                        v-if="b.status !== 'Unavailable'"
+                                        class="text-xs text-mist-400">
+                                        {{ b.listing }}
+                                    </div>
+                                </div>
+
+                                <!-- Continuation bar label -->
+                                <div
+                                    v-else
+                                    class="text-xs text-mist-400 font-medium truncate flex items-start gap-1 opacity-75 h-10">
+                                    <span class="truncate">{{ b.guestName }}</span>
                                 </div>
                             </div>
 
-                            <!-- Popover -->
+                            <!-- Popover for Stay Details -->
                             <div
                                 v-if="day.isCurrentMonth"
-                                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-60 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
                                     class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                    <div
-                                        class="flex items-center justify-between border-b border-mist-800 pb-1.5 mb-1.5">
+                                    <div class="border-b border-mist-800 pb-1.5 mb-1.5">
                                         <span class="font-bold text-mist-200">
                                             {{ b.guestName }}
                                         </span>
-                                        <span class="text-[10px] text-mist-400">
+                                        <span class="block mt-1 text-[10px] text-mist-400">
                                             {{ b.checkIn }} → {{ b.checkOut }}
                                         </span>
                                     </div>
-                                    <!-- Payment Pending Alert -->
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
-                                        class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium">
-                                        Guest still needs to pay the remaining amount
+                                        class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium text-[11px]">
+                                        Payment pending
                                     </div>
-                                    <!-- Notes -->
+                                    <div
+                                        v-if="b.status === 'Waiting for payout'"
+                                        class="mb-1.5 rounded bg-sky-500/10 border border-sky-500/20 p-1.5 text-sky-300 font-medium text-[11px]">
+                                        Payout pending
+                                    </div>
                                     <div
                                         v-if="b.notes"
-                                        class="text-mist-300">
+                                        class="text-mist-300 text-[11px]">
                                         <span class="font-semibold text-mist-400">Notes:</span>
                                         <p class="mt-0.5 whitespace-pre-wrap italic">
                                             {{ b.notes }}
@@ -374,7 +433,7 @@ watch(
                                     </div>
                                     <div
                                         v-else
-                                        class="text-mist-500 italic">
+                                        class="text-mist-500 italic text-[11px]">
                                         No notes added
                                     </div>
                                 </div>
