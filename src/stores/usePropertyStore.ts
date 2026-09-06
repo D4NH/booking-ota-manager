@@ -3,6 +3,23 @@ import { defineStore } from 'pinia';
 import { db } from '@/db';
 import type { Property, PropertyId } from '@/types/property';
 
+import { toast } from 'vue-toastflow';
+
+const toastConfig = {
+    loading: {
+        title: 'Saving property...',
+        description: 'Please wait.',
+    },
+    success: {
+        title: 'Success!',
+        description: 'Property saved successfully.',
+    },
+    error: {
+        title: 'Error',
+        description: 'Failed to save the property.',
+    },
+};
+
 export const usePropertyStore = defineStore('property', () => {
     const properties = ref<Property[]>([]);
     const preferredOrder = ['piyungan', 'wonosari', 'bantul'];
@@ -23,15 +40,16 @@ export const usePropertyStore = defineStore('property', () => {
         });
     });
 
-    // Add or update property
     const saveProperty = async (propertyData: Property): Promise<void> => {
-        const existing = await db.properties.get(propertyData.id);
-        if (existing) {
-            await db.properties.put({ ...existing, ...propertyData });
-        } else {
-            await db.properties.add(propertyData);
-        }
-        await loadProperties();
+        await toast.loading(async () => {
+            const existing = await db.properties.get(propertyData.id);
+            if (existing) {
+                await db.properties.put({ ...existing, ...propertyData });
+            } else {
+                await db.properties.add(propertyData);
+            }
+            await loadProperties();
+        }, toastConfig);
     };
 
     // Delete single property

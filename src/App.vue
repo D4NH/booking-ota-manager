@@ -9,6 +9,8 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 
+import { ToastContainer } from 'vue-toastflow';
+
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
 import BookingModal from '@/components/BookingModal.vue';
@@ -75,6 +77,8 @@ onMounted(async () => {
             @close="modalStore.closePropertyModal"
             @save="handleSaveProperty" />
 
+
+        <ToastContainer />
         <AppFooter />
     </div>
 </template>

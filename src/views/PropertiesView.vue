@@ -3,7 +3,6 @@ import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useBookingSync } from '@/composables/useBookingSync';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useModalStore } from '@/stores/useModalStore';
@@ -25,8 +24,6 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
-
-const { syncStatus } = useBookingSync();
 
 const selectedPropertyId = computed<string>(() => {
     const id = route.params.id;
@@ -57,12 +54,6 @@ const handleEditProperty = (propertyId: PropertyId) => {
 
 <template>
     <div class="mx-auto max-w-7xl space-y-4">
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            {{ syncStatus }}
-        </div>
-
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Property Management</h1>

@@ -115,7 +115,6 @@ export const useBookingStore = defineStore('booking', () => {
         }
 
         await sheetsApi.appendSheetRow(targetId, formatSheetRow(payload));
-
         await addBooking(payload);
     };
     const updateBookingWithRemoteSync = async (
@@ -140,7 +139,6 @@ export const useBookingStore = defineStore('booking', () => {
             updated.bookingId,
             formatSheetRow(updated)
         );
-
         await updateBooking(updated);
     };
     const deleteBookingWithRemoteSync = async (
@@ -183,11 +181,10 @@ export const useBookingStore = defineStore('booking', () => {
 
         type ListingType = (typeof VALID_LISTINGS)[number];
 
-        // Track min and max checkIn dates to bound deletion scope (prevents wiping other years)
         let minCheckIn = '9999-12-31';
         let maxCheckIn = '0000-01-01';
 
-        // 1. Process incoming rows from Google Sheets
+        // Process incoming rows from Google Sheets
         for (const row of rows) {
             const rawBookingId = String(row[0] || '').trim();
             const rawListing = String(row[1] || '').trim();
@@ -260,7 +257,7 @@ export const useBookingStore = defineStore('booking', () => {
             importedCount++;
         }
 
-        // 2. Query Dexie for records strictly within the imported date range
+        // Query Dexie for records strictly within the imported date range
         let deletedCount = 0;
 
         if (processedBookingIds.size > 0) {
@@ -270,7 +267,7 @@ export const useBookingStore = defineStore('booking', () => {
                 .filter((b) => b.checkIn >= minCheckIn && b.checkIn <= maxCheckIn)
                 .toArray();
 
-            // 3. Find records within this year/range that are missing from the sheet payload
+            // Find records within this year/range that are missing from the sheet payload
             const staleBookings = localDbBookings.filter(
                 (b) => !processedBookingIds.has(b.bookingId)
             );
@@ -285,7 +282,7 @@ export const useBookingStore = defineStore('booking', () => {
             }
         }
 
-        // 4. Reload Pinia store from Dexie
+        // Reload Pinia store from Dexie
         await loadBookings();
 
         return { importedCount, deletedCount };

@@ -17,7 +17,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
-const { syncStatus, deleteBooking } = useBookingSync();
+const { deleteBooking } = useBookingSync();
 const { currentDay } = useDateKeys();
 
 const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
@@ -85,12 +85,6 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
 
 <template>
     <div class="mx-auto max-w-7xl space-y-4">
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            {{ syncStatus }}
-        </div>
-
         <!-- Daily Operations -->
         <div class="mt-12">
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>

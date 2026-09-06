@@ -18,7 +18,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
-const { syncStatus, deleteBooking } = useBookingSync();
+const { deleteBooking, clearAllLocalBookings } = useBookingSync();
 const { currentDay } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
@@ -110,18 +110,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
     await deleteBooking(booking);
 };
 const handleClearAllLocal = async (): Promise<void> => {
-    if (!window.confirm('Wipe ALL local bookings? (Google Sheets files will remain untouched)'))
-        return;
-
-    try {
-        await bookingStore.clearAllLocalBookings();
-        syncStatus.value = 'All local bookings cleared.';
-    } catch (err) {
-        console.error('Clear DB Error:', err);
-        syncStatus.value = 'Failed to clear local data.';
-    } finally {
-        setTimeout(() => (syncStatus.value = ''), 3000);
-    }
+    await clearAllLocalBookings();
 };
 const isCurrentBooking = (checkIn: string): boolean => currentDay.value === checkIn;
 const selectProperty = (id: string) => {
@@ -172,13 +161,6 @@ const selectProperty = (id: string) => {
                     </button>
                 </div>
             </div>
-        </div>
-
-        <!-- Status Alert -->
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            {{ syncStatus }}
         </div>
 
         <!-- Filter Bar -->

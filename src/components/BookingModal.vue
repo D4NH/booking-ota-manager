@@ -36,7 +36,7 @@ const form = ref({
     checkIn: props.bookingToEdit?.checkIn || props.initialCheckInDate || '',
     checkOut: props.bookingToEdit?.checkOut || '',
     nights: props.bookingToEdit?.nights || 1,
-    payout: props.bookingToEdit?.payout || 0,
+    payout: props.bookingToEdit?.payout || '',
     listing: props.bookingToEdit?.listing || '',
     status: props.bookingToEdit?.status || 'Booked',
     notes: props.bookingToEdit?.notes || '',
@@ -75,8 +75,12 @@ const handleDeleteBooking = async (): Promise<void> => {
 const handleSubmit = () => {
     if (validationError.value) return;
 
+    const propertyId = form.value.propertyId;
+
+    if (!propertyId) return;
+
     emit('save', {
-        propertyId: form.value.propertyId,
+        propertyId,
         bookingId: form.value.bookingId.trim(),
         guestName: form.value.guestName.trim(),
         checkIn: form.value.checkIn,
@@ -170,15 +174,26 @@ watch(
                     @submit.prevent="handleSubmit">
                     <!-- Property Selection -->
                     <div class="relative">
-                        <label class="mb-1 block text-xs font-medium text-mist-400">Property</label>
+                        <label
+                            for="property"
+                            class="mb-1 block text-xs font-medium text-mist-400">
+                            Property
+                        </label>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 left-3 top-5 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="house" />
+                        </div>
                         <select
+                            id="property"
                             v-model="form.propertyId"
-                            class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                            required>
+                            name="property"
+                            required
+                            class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                             <option
                                 value=""
-                                disabled
-                                selected>
+                                disabled>
                                 --
                             </option>
                             <option
@@ -199,91 +214,117 @@ watch(
                     <!-- Booking ID & Guest Name -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                            <label
+                                for="bookingId"
+                                class="mb-1 block text-xs font-medium text-mist-400">
                                 Booking ID
                             </label>
-                            <input
-                                v-model="form.bookingId"
-                                type="text"
-                                placeholder="e.g. MHJ-000000"
-                                :disabled="Boolean(bookingToEdit)"
-                                :class="{
-                                    'cursor-not-allowed disabled:bg-mist-900':
-                                        Boolean(bookingToEdit),
-                                }"
-                                class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
-                                required />
+                            <div class="relative">
+                                <div
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                    <fa-icon
+                                        icon="hashtag"
+                                        class="text-xs" />
+                                </div>
+                                <input
+                                    id="bookingId"
+                                    v-model="form.bookingId"
+                                    type="text"
+                                    placeholder="MHJ-000000"
+                                    :disabled="Boolean(bookingToEdit)"
+                                    :class="{
+                                        'cursor-not-allowed disabled:bg-mist-900':
+                                            Boolean(bookingToEdit),
+                                    }"
+                                    class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    required />
+                            </div>
                         </div>
-
                         <div>
                             <label class="mb-1 block text-xs font-medium text-mist-400">
                                 Guest Name
+                                <div class="relative mt-1">
+                                    <div
+                                        class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                        <fa-icon
+                                            icon="id-card"
+                                            class="text-xs" />
+                                    </div>
+                                    <input
+                                        v-model="form.guestName"
+                                        type="text"
+                                        placeholder="Full Name"
+                                        class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                        required />
+                                </div>
                             </label>
-                            <input
-                                v-model="form.guestName"
-                                type="text"
-                                placeholder="Full Name"
-                                class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"
-                                required />
                         </div>
                     </div>
 
                     <!-- Dates & Nights -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Check In
-                            </label>
-                            <input
-                                v-model="form.checkIn"
-                                type="date"
-                                class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                                required
-                                :min="checkInMinDate"
-                                max="2028-12-31"
-                                @click="triggerDatePicker"
-                                @blur="sanitizeDate('checkIn')"
-                                @change="calculateNights" />
-                        </div>
-                        <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Check Out
-                            </label>
-                            <input
-                                v-model="form.checkOut"
-                                type="date"
-                                class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                                required
-                                :min="checkIn"
-                                max="2028-12-31"
-                                @click="triggerDatePicker"
-                                @blur="sanitizeDate('checkOut')"
-                                @change="calculateNights" />
-                        </div>
                         <div>
                             <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Nights
+                                Check In
+                                <div class="relative mt-1">
+                                    <input
+                                        v-model="form.checkIn"
+                                        type="date"
+                                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                        required
+                                        :min="checkInMinDate"
+                                        max="2028-12-31"
+                                        @click="triggerDatePicker"
+                                        @blur="sanitizeDate('checkIn')"
+                                        @change="calculateNights" />
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
+                                        <fa-icon
+                                            class="text-sm"
+                                            icon="calendar-days" />
+                                    </div>
+                                </div>
                             </label>
+                        </div>
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Check Out
+                            <div class="relative mt-1">
+                                <input
+                                    v-model="form.checkOut"
+                                    type="date"
+                                    class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                    required
+                                    :min="checkIn"
+                                    max="2028-12-31"
+                                    @click="triggerDatePicker"
+                                    @blur="sanitizeDate('checkOut')"
+                                    @change="calculateNights" />
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
+                                    <fa-icon
+                                        class="text-sm"
+                                        icon="calendar-days" />
+                                </div>
+                            </div>
+                        </label>
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Nights
                             <input
                                 v-model.number="form.nights"
                                 type="number"
                                 min="1"
                                 disabled
-                                class="w-full px-3 py-2.5 text-sm text-mist-200 focus:outline-none"
-                                required />
-                        </div>
+                                class="mt-1 w-full px-3 py-2.5 text-sm text-mist-200 focus:outline-none" />
+                        </label>
                     </div>
 
                     <!-- Channel, Status & Payout -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Channel
-                            </label>
-
+                        <label class="mb-1 block text-xs font-medium text-mist-400 relative">
+                            Channel
                             <select
                                 v-model="form.listing"
-                                class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                                class="mt-1 w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                                 <option
                                     value=""
                                     disabled
@@ -303,15 +344,13 @@ watch(
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
-                        </div>
-
-                        <div class="relative">
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Status
-                            </label>
+                        </label>
+                        <label class="relative mb-1 block text-xs font-medium text-mist-400">
+                            Status
                             <select
                                 v-model="form.status"
-                                class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                                name="status"
+                                class="mt-1 w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                                 <option value="Booked">Booked</option>
                                 <option value="Checked-in">Checked-in</option>
                                 <option value="Waiting for payment">Waiting for payment</option>
@@ -326,31 +365,35 @@ watch(
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
-                        </div>
-
-                        <div>
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
-                                Payout (IDR)
-                            </label>
-                            <input
-                                v-model.number="form.payout"
-                                type="number"
-                                class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none"
-                                required />
-                        </div>
+                        </label>
+                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                            Payout (IDR)
+                            <div class="relative mt-1">
+                                <div
+                                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                    <fa-icon
+                                        icon="rupiah-sign"
+                                        class="text-xs" />
+                                </div>
+                                <input
+                                    v-model="form.payout"
+                                    type="number"
+                                    placeholder="1.000.000"
+                                    class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    required />
+                            </div>
+                        </label>
                     </div>
 
                     <!-- Notes -->
-                    <div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400">
-                            Notes (Optional)
-                        </label>
+                    <label class="mb-1 block text-xs font-medium text-mist-400">
+                        Notes (Optional)
                         <textarea
                             v-model="form.notes"
                             rows="2"
                             placeholder="Special requests, extra beds..."
-                            class="w-full rounded-lg border border-mist-700 bg-mist-950 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none"></textarea>
-                    </div>
+                            class="mt-1 w-full rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                    </label>
 
                     <!-- Action Controls -->
                     <div

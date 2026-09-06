@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useBookingSync } from '@/composables/useBookingSync';
 import { getPropertyTheme } from '@/config/properties';
 import { MONTH_NAMES } from '@/config/constants';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -20,8 +19,6 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
-
-const { syncStatus } = useBookingSync();
 
 const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const selectedCheckInDate = ref<string>('');
@@ -204,13 +201,6 @@ watch(
                     <span class="capitalize">{{ prop.id }}</span>
                 </button>
             </div>
-        </div>
-
-        <!-- Sync Alert Message -->
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-300">
-            {{ syncStatus }}
         </div>
 
         <!-- Month Navigation Controls -->

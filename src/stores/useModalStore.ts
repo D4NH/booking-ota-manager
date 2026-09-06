@@ -17,28 +17,27 @@ export const useModalStore = defineStore('modal', () => {
         propertyId?: PropertyId | 'all';
     }) => {
         bookingToEdit.value = options?.booking || null;
-        initialCheckInDate.value = options?.checkInDate || '';
         currentProperty.value = options?.propertyId || 'all';
+        initialCheckInDate.value = options?.checkInDate || '';
         isBookingModalOpen.value = true;
     };
     const closeBookingModal = () => {
-        isBookingModalOpen.value = false;
         bookingToEdit.value = null;
         initialCheckInDate.value = '';
+        isBookingModalOpen.value = false;
     };
 
     const openPropertyModal = (options?: {
         property?: Property | null;
         propertyId?: PropertyId | 'all';
     }) => {
-        propertyToEdit.value = options?.property || null;
         currentProperty.value = options?.propertyId || 'all';
+        propertyToEdit.value = options?.property || null;
         isPropertyModalOpen.value = true;
     };
     const closePropertyModal = () => {
+        propertyToEdit.value = null;
         isPropertyModalOpen.value = false;
-        bookingToEdit.value = null;
-        initialCheckInDate.value = '';
     };
 
     return {

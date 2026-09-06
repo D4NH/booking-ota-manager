@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useDailyOperations } from '@/composables/useDailyOperations';
@@ -21,7 +20,6 @@ const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
-const { syncStatus } = useBookingSync();
 const { todaysArrivals, todaysDepartures, currentStays, todaysTurnover } =
     useDailyOperations(bookings);
 const { currentDay } = useDateKeys();
@@ -95,13 +93,6 @@ const propertyImage = (id: string) =>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
             </div>
-        </div>
-
-        <!-- Status Alert -->
-        <div
-            v-if="syncStatus"
-            class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-            {{ syncStatus }}
         </div>
 
         <!-- Daily Operations -->
