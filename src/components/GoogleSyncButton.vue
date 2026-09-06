@@ -5,6 +5,8 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 
+import { toast } from 'vue-toastflow';
+
 const props = defineProps<{
     propertyId?: PropertyId | 'all';
 }>();
@@ -13,71 +15,79 @@ const bookingStore = useBookingStore();
 const { isAuthenticated, initAuth, fetchSheetRows } = useGoogleSheets();
 
 const isSyncing = ref<boolean>(false);
-const syncLabel = ref<string>('');
 
 const handleSync = async (): Promise<void> => {
     try {
-        isSyncing.value = true;
+        await toast.loading(
+            async () => {
+                if (!isAuthenticated.value) {
+                    await initAuth();
+                }
 
-        if (!isAuthenticated.value) {
-            await initAuth();
-        }
+                let totalImported = 0;
+                let totalUpdated = 0;
+                let totalDeleted = 0;
 
-        let totalImported = 0;
-        let totalDeleted = 0;
+                // Sync logic
+                if (props.propertyId && props.propertyId !== 'all') {
+                    const spreadsheetId = PROPERTY_CONFIGS[props.propertyId]?.spreadsheetId;
+                    if (!spreadsheetId)
+                        throw new Error('Spreadsheet ID missing for selected property');
 
-        if (props.propertyId && props.propertyId !== 'all') {
-            // Sync Single File
-            const spreadsheetId = PROPERTY_CONFIGS[props.propertyId]?.spreadsheetId;
-            if (!spreadsheetId) throw new Error('Spreadsheet ID missing for selected property');
+                    const rows = await fetchSheetRows(spreadsheetId);
+                    const { importedCount, updatedCount, deletedCount } =
+                        await bookingStore.importBookingsFromGoogleSheets(props.propertyId, rows);
 
-            syncLabel.value = `Syncing ${props.propertyId}...`;
-            const rows = await fetchSheetRows(spreadsheetId);
+                    totalImported += importedCount;
+                    totalUpdated += updatedCount;
+                    totalDeleted += deletedCount;
+                } else {
+                    for (const prop of PROPERTY_LIST) {
+                        const spreadsheetId =
+                            PROPERTY_CONFIGS[prop.id as PropertyId]?.spreadsheetId;
+                        if (!spreadsheetId) continue;
 
-            const { importedCount, deletedCount } =
-                await bookingStore.importBookingsFromGoogleSheets(props.propertyId, rows);
+                        const rows = await fetchSheetRows(spreadsheetId);
+                        const { importedCount, updatedCount, deletedCount } =
+                            await bookingStore.importBookingsFromGoogleSheets(
+                                prop.id as PropertyId,
+                                rows
+                            );
 
-            totalImported += importedCount;
-            totalDeleted += deletedCount;
-        } else {
-            // Sync All Files
-            for (const prop of PROPERTY_LIST) {
-                const spreadsheetId = PROPERTY_CONFIGS[prop.id as PropertyId]?.spreadsheetId;
-                if (!spreadsheetId) continue;
+                        totalImported += importedCount;
+                        totalUpdated += updatedCount;
+                        totalDeleted += deletedCount;
+                    }
+                }
 
-                syncLabel.value = `Syncing ${prop.name}...`;
-                const rows = await fetchSheetRows(spreadsheetId);
-
-                const { importedCount, deletedCount } =
-                    await bookingStore.importBookingsFromGoogleSheets(prop.id as PropertyId, rows);
-
-                totalImported += importedCount;
-                totalDeleted += deletedCount;
+                return { totalImported, totalUpdated, totalDeleted };
+            },
+            {
+                loading: {
+                    title: 'Syncing...',
+                    description: 'Updating bookings from Google Sheets.',
+                },
+                success: (data) => ({
+                    title: 'Sync Complete',
+                    description: `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted} records.`,
+                }),
+                error: (err) => ({
+                    title: 'Sync failed',
+                    description:
+                        err instanceof Error
+                            ? err.message
+                            : 'An unexpected error occurred during sync.',
+                }),
             }
-        }
-
-        syncLabel.value = `Sync Complete! Imported ${totalImported}, removed ${totalDeleted} records.`;
+        );
     } catch (err) {
         console.error('Google Sync Failed:', err);
-        syncLabel.value = 'Sync failed.';
-    } finally {
-        isSyncing.value = false;
-        setTimeout(() => {
-            syncLabel.value = '';
-        }, 4000);
     }
 };
 </script>
 
 <template>
     <div class="flex items-center gap-2">
-        <!-- Feedback status string -->
-        <span
-            v-if="syncLabel"
-            class="text-xs text-mist-400 font-mono">
-            {{ syncLabel }}
-        </span>
-
         <!-- Auth indicator + Action Button -->
         <button
             type="button"

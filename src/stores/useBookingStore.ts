@@ -166,8 +166,9 @@ export const useBookingStore = defineStore('booking', () => {
     const importBookingsFromGoogleSheets = async (
         propertyId: PropertyId,
         rows: (string | number)[][]
-    ): Promise<{ importedCount: number; deletedCount: number }> => {
+    ): Promise<{ importedCount: number; updatedCount: number; deletedCount: number }> => {
         let importedCount = 0;
+        let updatedCount = 0;
         const processedBookingIds = new Set<string>();
 
         const VALID_LISTINGS = [
@@ -254,7 +255,14 @@ export const useBookingStore = defineStore('booking', () => {
                 id: fallbackId,
             } as Booking);
 
-            importedCount++;
+            if (!existing) {
+                importedCount++;
+            } else if (
+                payload.status !== existing.status ||
+                payload.guestName !== existing.guestName
+            ) {
+                updatedCount++;
+            }
         }
 
         // Query Dexie for records strictly within the imported date range
@@ -285,7 +293,7 @@ export const useBookingStore = defineStore('booking', () => {
         // Reload Pinia store from Dexie
         await loadBookings();
 
-        return { importedCount, deletedCount };
+        return { importedCount, updatedCount, deletedCount };
     };
 
     return {
