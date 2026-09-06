@@ -28,9 +28,9 @@ const handleSync = async (): Promise<void> => {
                 let totalUpdated = 0;
                 let totalDeleted = 0;
 
-                // Sync logic
                 if (props.propertyId && props.propertyId !== 'all') {
                     const spreadsheetId = PROPERTY_CONFIGS[props.propertyId]?.spreadsheetId;
+
                     if (!spreadsheetId)
                         throw new Error('Spreadsheet ID missing for selected property');
 
@@ -45,6 +45,7 @@ const handleSync = async (): Promise<void> => {
                     for (const prop of PROPERTY_LIST) {
                         const spreadsheetId =
                             PROPERTY_CONFIGS[prop.id as PropertyId]?.spreadsheetId;
+
                         if (!spreadsheetId) continue;
 
                         const rows = await fetchSheetRows(spreadsheetId);
@@ -88,7 +89,6 @@ const handleSync = async (): Promise<void> => {
 
 <template>
     <div class="flex items-center gap-2">
-        <!-- Auth indicator + Action Button -->
         <button
             type="button"
             :disabled="isSyncing"

@@ -77,7 +77,6 @@ onMounted(async () => {
             @close="modalStore.closePropertyModal"
             @save="handleSaveProperty" />
 
-
         <ToastContainer />
         <AppFooter />
     </div>

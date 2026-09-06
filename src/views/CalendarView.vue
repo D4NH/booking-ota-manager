@@ -280,7 +280,7 @@ watch(
                     v-for="day in calendarDays"
                     :key="day.dateStr"
                     :class="[
-                        'min-h-[110px] p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
+                        'min-h-27.5 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
                         !day.isCurrentMonth ? 'bg-mist-950/40 opacity-40' : '',
                         day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
                     ]"
