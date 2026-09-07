@@ -1,3 +1,4 @@
+@@ -1,122 +0,0 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
@@ -23,6 +24,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const props = defineProps<{
     data: MonthlyPropertyRevenue[];
     selectedProperty?: PropertyId | 'all';
+    totalRevenue?: number;
 }>();
 
 const chartData = computed<ChartData<'bar'>>(() => {
@@ -88,27 +90,27 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
-    <div class="flex flex-col h-full rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-md">
+    <div class="flex flex-col h-full rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex justify-between">
             <div>
-                <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
-                <p class="text-xs text-mist-400">Monthly payout comparison across properties</p>
+                <p class="text-xs text-mist-400">Total Revenue</p>
+                <span class="text-lg font-bold font-mono text-mist-100">
+                    {{ formatIDR(totalRevenue ?? 0) }}
+                </span>
             </div>
-            <div class="text-lg font-bold font-mono whitespace-nowrap">
-                <slot />
-            </div>
+            <slot />
         </div>
 
         <div class="my-4 flex gap-3">
             <div
                 v-for="item in PROPERTY_LIST"
                 :key="item.id"
-                class="flex items-center justify-between text-xs font-medium">
+                class="flex items-center">
                 <div class="flex items-center space-x-2.5">
                     <span
                         class="h-3 w-3 shrink-0 rounded-full"
                         :style="{ backgroundColor: item.color }" />
-                    <span class="text-mist-200 capitalize">{{ item.id }}</span>
+                    <span class="text-sm text-mist-200 capitalize">{{ item.id }}</span>
                 </div>
             </div>
         </div>

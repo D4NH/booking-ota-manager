@@ -9,7 +9,7 @@ import type { ChannelStat } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
-import MonthlyRevenue from '@/components/charts/MonthlyRevenue.vue';
+import SalesStatistics from '@/components/charts/SalesStatistics.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -176,7 +176,7 @@ const handleTabChange = (id: string) => {
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <!-- Monthly Revenue Comparison & Breakdown Grid -->
-            <MonthlyRevenue
+            <SalesStatistics
                 class="col-span-2 shadow-md"
                 :data="monthlyPropertyData"
                 :selected-property="selectedProperty" />

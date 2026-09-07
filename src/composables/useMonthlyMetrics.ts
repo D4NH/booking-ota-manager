@@ -18,6 +18,13 @@ export interface UseMonthlyMetricsOptions {
     propertyId?: ComputedRef<string | 'all' | undefined> | string;
 }
 
+export interface MonthlyMetricMonth {
+    label: string;
+    piyungan: number;
+    wonosari: number;
+    bantul: number;
+}
+
 /**
  * Calculates exact overlapping nights belonging strictly to target month ("YYYY-MM")
  */

@@ -14,7 +14,7 @@ import { formatIDR } from '@/utils/money';
 import PropertyStats from '@/components/PropertyStats.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
-import MonthlyRevenue from '@/components/charts/MonthlyRevenue.vue';
+import SalesStatistics from '@/components/charts/SalesStatistics.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -30,7 +30,7 @@ const selectedPropertyId = computed<string>(() => {
 
     return typeof id === 'string' && id ? id : 'all';
 });
-
+const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
 const { todaysTurnover } = useDailyOperations(bookings, {
     propertyId: selectedPropertyId,
 });
@@ -105,13 +105,19 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div v-if="route.meta.isOverview">
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <MonthlyRevenue
+                <SalesStatistics
                     class="lg:col-span-2"
-                    :data="monthlyPropertyData" />
+                    :data="monthlyPropertyData"
+                    :total-revenue="totalRevenue" />
 
                 <ChannelBreakdown
-                    class="lg:col-span-2"
+                    class="lg:col-span-1"
                     :bookings="bookings" />
+
+                <div
+                    class="lg:col-span-1 rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
+                    2
+                </div>
             </div>
             <div class="mt-8">
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
