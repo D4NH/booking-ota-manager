@@ -29,7 +29,6 @@ const selectedYear = ref<number>(currentDate.value.getFullYear());
 
 const currentMonth = computed(() => currentDate.value.getMonth());
 const currentYear = computed(() => currentDate.value.getFullYear());
-
 const calendarDays = computed<CalendarDay[]>(() => {
     const year = currentYear.value;
     const month = currentMonth.value;
@@ -89,7 +88,6 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     return days;
 });
-
 const yearOptions = computed(() => {
     const currentYear = new Date().getFullYear();
     const years: number[] = [];
@@ -98,7 +96,6 @@ const yearOptions = computed(() => {
     }
     return years;
 });
-
 const filteredBookings = computed(() =>
     bookings.value.filter((b) =>
         selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value
@@ -116,10 +113,20 @@ const getOffsetDate = (dateStr: string, offsetDays: number): string => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
+const getStaysForDate = (dateStr: string): Booking[] => {
+    return filteredBookings.value
+        .filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut)
+        .sort((a, b) => {
+            const aIsMulti = a.nights > 1 ? 1 : 0;
+            const bIsMulti = b.nights > 1 ? 1 : 0;
 
-const getStaysForDate = (dateStr: string): Booking[] =>
-    filteredBookings.value.filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut);
+            if (aIsMulti !== bIsMulti) return bIsMulti - aIsMulti;
+            if (a.checkIn !== b.checkIn) return a.checkIn.localeCompare(b.checkIn);
+            if (a.nights !== b.nights) return b.nights - a.nights;
 
+            return (a.id || a.bookingId).localeCompare(b.id || b.bookingId);
+        });
+};
 // Multi-day styling
 const getRibbonClasses = (b: Booking, dateStr: string, dayIndex: number) => {
     const dayOfWeek = dayIndex % 7; // 0 = Mon, 6 = Sun
@@ -150,7 +157,6 @@ const getRibbonClasses = (b: Booking, dateStr: string, dayIndex: number) => {
 
     return classes.join(' ');
 };
-
 const prevMonth = (): void => {
     currentDate.value = new Date(
         currentDate.value.getFullYear(),
