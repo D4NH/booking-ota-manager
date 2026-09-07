@@ -29,7 +29,7 @@ const propertyImage = (id: string) =>
             loading="lazy"
             :src="propertyImage(property.id)"
             :alt="`Picture of ${property.name}`"
-            class="w-full h-50 object-cover rounded-xl mb-4" />
+            class="w-full h-50 object-cover rounded-lg mb-4" />
 
         <div class="flex justify-between items-start">
             <div class="flex flex-col">

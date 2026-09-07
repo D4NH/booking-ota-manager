@@ -84,7 +84,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-4">
+    <div class="space-y-4">
         <!-- Daily Operations -->
         <div class="mt-12">
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>

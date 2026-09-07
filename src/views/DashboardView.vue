@@ -335,7 +335,7 @@ const propertyImage = (id: string) =>
                                             loading="lazy"
                                             :src="propertyImage(property.id)"
                                             :alt="`Picture of ${property.name}`"
-                                            class="h-20 w-20 object-cover rounded-xl" />
+                                            class="h-20 w-20 object-cover rounded-lg" />
                                     </RouterLink>
                                 </td>
                                 <td class="pr-4 py-3 font-medium text-mist-100">

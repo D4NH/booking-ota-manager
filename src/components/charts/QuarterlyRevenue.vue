@@ -146,7 +146,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 
 <template>
     <div
-        class="flex flex-col justify-between rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-md">
+        class="flex flex-col justify-between rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex justify-between">
             <div>
                 <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
