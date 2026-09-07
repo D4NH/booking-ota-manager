@@ -32,6 +32,11 @@ import {
     faHashtag,
     faIdCard,
     faRupiahSign,
+    faCircleInfo,
+    faChartPie,
+    faCalendarCheck,
+    faTableCellsLarge,
+    faCopyright,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -54,7 +59,12 @@ library.add(
     faMagnifyingGlass,
     faHashtag,
     faIdCard,
-    faRupiahSign
+    faRupiahSign,
+    faCircleInfo,
+    faChartPie,
+    faCalendarCheck,
+    faTableCellsLarge,
+    faCopyright
 );
 
 const app = createApp(App);

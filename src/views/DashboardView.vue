@@ -44,7 +44,7 @@ const propertyImage = (id: string) =>
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-4">
+    <div class="space-y-4">
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
             <p class="text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
@@ -96,7 +96,7 @@ const propertyImage = (id: string) =>
         </div>
 
         <!-- Daily Operations -->
-        <div class="mt-12">
+        <div class="mt-8">
             <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
             <p class="text-xs text-mist-400">Active Stays</p>
         </div>

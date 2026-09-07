@@ -183,7 +183,7 @@ onActivated(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-[calc(100vh-15.5rem)] space-y-4">
+    <div class="flex flex-col h-full min-h-0 space-y-4 mb-4">
         <!-- Header -->
         <div class="flex shrink-0 items-center justify-between gap-4">
             <div>

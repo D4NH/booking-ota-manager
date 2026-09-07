@@ -2,19 +2,20 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
+import { SHORT_MONTH_NAMES } from '@/config/constants';
+import { PROPERTY_LIST } from '@/config/properties';
+import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import { PROPERTY_LIST } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
 import PropertyStats from '@/components/PropertyStats.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
-import TotalRevenue from '@/components/charts/TotalRevenue.vue';
+import PropertyRevenue from '@/components/charts/PropertyRevenue.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -28,6 +29,34 @@ const { properties, sortedProperties } = storeToRefs(propertyStore);
 const selectedPropertyId = computed<string>(() => {
     const id = route.params.id;
     return typeof id === 'string' && id ? id : 'all';
+});
+const monthlyPropertyData = computed(() => {
+    const yearPrefix = `${new Date().getFullYear().toString()}-`;
+
+    const monthlyPropertyBookings = SHORT_MONTH_NAMES.map((label) => ({
+        label,
+        piyungan: 0,
+        wonosari: 0,
+        bantul: 0,
+    }));
+
+    for (const b of bookings.value) {
+        if (!b.checkIn.startsWith(yearPrefix) || b.status === 'Unavailable') continue;
+
+        const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
+        const targetMonth = monthlyPropertyBookings[monthIndex];
+
+        if (
+            targetMonth &&
+            (b.propertyId === 'piyungan' ||
+                b.propertyId === 'wonosari' ||
+                b.propertyId === 'bantul')
+        ) {
+            targetMonth[b.propertyId] += b.payout || 0;
+        }
+    }
+
+    return monthlyPropertyBookings;
 });
 
 const { todaysTurnover } = useDailyOperations(bookings, {
@@ -53,7 +82,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-4">
+    <div class="space-y-4">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
@@ -99,9 +128,10 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div v-if="route.meta.isOverview">
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <TotalRevenue
+                <PropertyRevenue
                     class="lg:col-span-2"
-                    :data="bookings" />
+                    :data="monthlyPropertyData" />
+
                 <ChannelBreakdown
                     class="lg:col-span-2"
                     :bookings="bookings" />

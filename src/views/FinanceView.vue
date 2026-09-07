@@ -116,7 +116,7 @@ const handleTabChange = (id: string) => {
 </script>
 
 <template>
-    <div class="mx-auto max-w-7xl space-y-4">
+    <div class="space-y-4">
         <!-- Header Controls -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>

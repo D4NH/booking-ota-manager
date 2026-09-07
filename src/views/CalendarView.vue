@@ -211,9 +211,9 @@ watch(
 </script>
 
 <template>
-    <div class="space-y-4">
+    <div class="flex flex-col h-full min-h-0 space-y-4 mb-4">
         <!-- Header Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
                 <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
@@ -249,7 +249,7 @@ watch(
 
         <!-- Month Navigation Controls -->
         <div
-            class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
+            class="flex shrink-0 items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -310,9 +310,10 @@ watch(
         </div>
 
         <!-- Calendar Grid -->
-        <div class="rounded-lg border border-mist-800 bg-mist-900 shadow-md">
+        <div
+            class="flex-1 min-h-0 flex flex-col rounded-lg border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <div
-                class="grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
+                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
                 <div class="py-2.5">Tue</div>
                 <div class="py-2.5">Wed</div>
@@ -322,12 +323,13 @@ watch(
                 <div class="py-2.5">Sun</div>
             </div>
 
-            <div class="grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
+            <div
+                class="flex-1 min-h-0 overflow-y-auto grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
                 <div
                     v-for="(day, dayIndex) in calendarDays"
                     :key="day.dateStr"
                     :class="[
-                        'min-h-30 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40 relative',
+                        'min-h-30 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
                         !day.isCurrentMonth ? 'bg-mist-950/40 opacity-40' : '',
                         day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
                     ]"
