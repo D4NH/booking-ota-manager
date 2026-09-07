@@ -1,7 +1,7 @@
-import { computed, unref, type Ref } from 'vue';
+import { computed, unref, type ComputedRef, type Ref } from 'vue';
+import { getCurrentMonth, getPreviousMonth, getDaysInMonth, parseISODate } from '@/utils/date';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
-import { getCurrentMonth, getPreviousMonth, getDaysInMonth } from '@/utils/date';
 
 export interface MonthlyMetrics {
     totalPayout: number;
@@ -14,24 +14,14 @@ export interface MonthlyMetrics {
 }
 
 export interface UseMonthlyMetricsOptions {
-    targetMonth?: Ref<string | undefined> | string;
-    propertyId?: Ref<string | 'all' | undefined> | string;
+    targetMonth?: ComputedRef<string | undefined> | string;
+    propertyId?: ComputedRef<string | 'all' | undefined> | string;
 }
-
-/**
- * Helper to safely split "YYYY-MM-DD" strings into number tuple [year, month, day]
- */
-const parseDateTuple = (dateStr: string): [number, number, number] | null => {
-    if (!dateStr) return null;
-    const parts = dateStr.split('-').map(Number);
-    if (parts.length < 3 || parts.some(isNaN)) return null;
-    return [parts[0]!, parts[1]!, parts[2]!];
-};
 
 /**
  * Calculates exact overlapping nights belonging strictly to target month ("YYYY-MM")
  */
-export const getOverlappingNights = (
+const getOverlappingNights = (
     checkInStr: string,
     checkOutStr: string,
     targetMonthStr: string
@@ -44,19 +34,13 @@ export const getOverlappingNights = (
 
     if (isNaN(year) || isNaN(month)) return 0;
 
-    const inTuple = parseDateTuple(checkInStr);
-    const outTuple = parseDateTuple(checkOutStr);
-
-    if (!inTuple || !outTuple) return 0;
-
+    const checkInDate = parseISODate(checkInStr);
+    const checkOutDate = parseISODate(checkOutStr);
     const monthStart = new Date(year, month - 1, 1);
     const monthEnd = new Date(year, month, 1);
 
-    const checkIn = new Date(inTuple[0], inTuple[1] - 1, inTuple[2]);
-    const checkOut = new Date(outTuple[0], outTuple[1] - 1, outTuple[2]);
-
-    const start = checkIn < monthStart ? monthStart : checkIn;
-    const end = checkOut > monthEnd ? monthEnd : checkOut;
+    const start = checkInDate < monthStart ? monthStart : checkInDate;
+    const end = checkOutDate > monthEnd ? monthEnd : checkOutDate;
 
     if (start >= end) return 0;
 
@@ -90,12 +74,10 @@ export function useMonthlyMetrics(
         const daysInCurrentMonth = getDaysInMonth(currentMonth);
         const totalCapacityNights = activePropertiesCount * daysInCurrentMonth;
 
-        // Single O(N) pass to aggregate all counts and metrics
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
             if (!b) continue;
 
-            // Property filter check
             if (filterByProperty && b.propertyId !== activePropertyId) {
                 continue;
             }
@@ -109,19 +91,16 @@ export function useMonthlyMetrics(
             const isCheckInPrevious = checkIn.startsWith(previousMonth);
             const isCheckOutCurrent = checkOut.startsWith(currentMonth);
 
-            // 1. Current Month Active Booking Aggregations
             if (isCheckInCurrent && isAvailable) {
                 totalPayout += payout;
                 currentMonthRevenue += payout;
                 totalBookingsCount++;
             }
 
-            // 2. Previous Month Revenue Tracking (for growth calculation)
             if (isCheckInPrevious && isAvailable) {
                 lastMonthRevenue += payout;
             }
 
-            // 3. Occupied Nights Calculation
             if (isCheckInCurrent || isCheckOutCurrent) {
                 occupiedNights += getOverlappingNights(checkIn, checkOut, currentMonth);
             }
@@ -150,14 +129,60 @@ export function useMonthlyMetrics(
         };
     });
 
+    const monthlyPropertyData = computed(() => {
+        const currentYear = new Date().getFullYear().toString();
+
+        const monthlyPropertyBookings = [
+            { label: 'Jan', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Feb', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Mar', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Apr', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'May', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Jun', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Jul', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Aug', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Sep', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Oct', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Nov', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Dec', piyungan: 0, wonosari: 0, bantul: 0 },
+        ];
+
+        for (const b of bookings.value) {
+            if (!b.checkIn.startsWith(currentYear) || b.status === 'Unavailable') continue;
+
+            const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
+            const targetMonth = monthlyPropertyBookings[monthIndex];
+
+            if (
+                targetMonth &&
+                (b.propertyId === 'piyungan' ||
+                    b.propertyId === 'wonosari' ||
+                    b.propertyId === 'bantul')
+            ) {
+                targetMonth[b.propertyId] += b.payout || 0;
+            }
+        }
+
+        return monthlyPropertyBookings;
+    });
+
+    const totalPayoutValue = computed(() => metrics.value.totalPayout);
+    const occupiedNightsValue = computed(() => metrics.value.occupiedNights);
+    const totalCapacityNightsValue = computed(() => metrics.value.totalCapacityNights);
+    const occupancyPercentageValue = computed(() => metrics.value.occupancyPercentage);
+    const totalBookingsCountValue = computed(() => metrics.value.totalBookingsCount);
+    const averageDailyRateValue = computed(() => metrics.value.averageDailyRate);
+    const revenueGrowthPercentValue = computed(() => metrics.value.revenueGrowthPercent);
+
     return {
         metrics,
-        totalPayout: computed(() => metrics.value.totalPayout),
-        occupiedNights: computed(() => metrics.value.occupiedNights),
-        totalCapacityNights: computed(() => metrics.value.totalCapacityNights),
-        occupancyPercentage: computed(() => metrics.value.occupancyPercentage),
-        totalBookingsCount: computed(() => metrics.value.totalBookingsCount),
-        averageDailyRate: computed(() => metrics.value.averageDailyRate),
-        revenueGrowthPercent: computed(() => metrics.value.revenueGrowthPercent),
+        totalPayout: totalPayoutValue,
+        occupiedNights: occupiedNightsValue,
+        totalCapacityNights: totalCapacityNightsValue,
+        occupancyPercentage: occupancyPercentageValue,
+        totalBookingsCount: totalBookingsCountValue,
+        averageDailyRate: averageDailyRateValue,
+        revenueGrowthPercent: revenueGrowthPercentValue,
+        monthlyPropertyData,
     };
 }

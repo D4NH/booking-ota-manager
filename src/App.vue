@@ -54,7 +54,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen overflow-hidden">
+    <div class="flex flex-col h-screen">
         <div class="flex flex-1 min-h-0 gap-4">
             <AppSidebar />
 

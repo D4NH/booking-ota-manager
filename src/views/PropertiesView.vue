@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
-import { SHORT_MONTH_NAMES } from '@/config/constants';
 import { PROPERTY_LIST } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -15,48 +14,21 @@ import { formatIDR } from '@/utils/money';
 import PropertyStats from '@/components/PropertyStats.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
-import PropertyRevenue from '@/components/charts/PropertyRevenue.vue';
+import MonthlyRevenue from '@/components/charts/MonthlyRevenue.vue';
 
 const route = useRoute();
 const router = useRouter();
 
 const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { properties, sortedProperties } = storeToRefs(propertyStore);
+const { bookings } = storeToRefs(bookingStore);
+const { sortedProperties } = storeToRefs(propertyStore);
 
 const selectedPropertyId = computed<string>(() => {
     const id = route.params.id;
+
     return typeof id === 'string' && id ? id : 'all';
-});
-const monthlyPropertyData = computed(() => {
-    const yearPrefix = `${new Date().getFullYear().toString()}-`;
-
-    const monthlyPropertyBookings = SHORT_MONTH_NAMES.map((label) => ({
-        label,
-        piyungan: 0,
-        wonosari: 0,
-        bantul: 0,
-    }));
-
-    for (const b of bookings.value) {
-        if (!b.checkIn.startsWith(yearPrefix) || b.status === 'Unavailable') continue;
-
-        const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
-        const targetMonth = monthlyPropertyBookings[monthIndex];
-
-        if (
-            targetMonth &&
-            (b.propertyId === 'piyungan' ||
-                b.propertyId === 'wonosari' ||
-                b.propertyId === 'bantul')
-        ) {
-            targetMonth[b.propertyId] += b.payout || 0;
-        }
-    }
-
-    return monthlyPropertyBookings;
 });
 
 const { todaysTurnover } = useDailyOperations(bookings, {
@@ -69,14 +41,17 @@ const {
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(bookings, properties, { propertyId: selectedPropertyId });
+    monthlyPropertyData,
+} = useMonthlyMetrics(bookings, sortedProperties, {
+    propertyId: selectedPropertyId,
+});
 
 const handleTabChange = (tabId: string) =>
     tabId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: tabId } });
 const handleEditProperty = (propertyId: PropertyId) => {
-    const property = properties.value.find((p) => p.id === propertyId);
+    const property = sortedProperties.value.find((p) => p.id === propertyId);
     modalStore.openPropertyModal({ property });
 };
 </script>
@@ -90,6 +65,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     Select a property to view detailed analytics or manage listing settings
                 </p>
             </div>
+
             <!-- Switcher Tabs -->
             <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -117,6 +93,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     {{ prop.id }}
                 </button>
             </div>
+
             <!-- <button
                     type="button"
                     class="ml-5 cursor-pointer rounded-lg bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
@@ -128,7 +105,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div v-if="route.meta.isOverview">
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <PropertyRevenue
+                <MonthlyRevenue
                     class="lg:col-span-2"
                     :data="monthlyPropertyData" />
 
@@ -136,7 +113,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="lg:col-span-2"
                     :bookings="bookings" />
             </div>
-            <div class="mt-12">
+            <div class="mt-8">
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">
                     Real-time availability and unit operational status

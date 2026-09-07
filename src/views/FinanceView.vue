@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { SHORT_MONTH_NAMES } from '@/config/constants';
+import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -9,7 +9,7 @@ import type { ChannelStat } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
-import PropertyRevenue from '@/components/charts/PropertyRevenue.vue';
+import MonthlyRevenue from '@/components/charts/MonthlyRevenue.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -81,33 +81,9 @@ const channelStats = computed<ChannelStat[]>(() => {
         }))
         .sort((a, b) => b.revenue - a.revenue);
 });
-const monthlyPropertyData = computed(() => {
-    const yearPrefix = `${selectedYear.value}-`;
 
-    const monthlyPropertyBookings = SHORT_MONTH_NAMES.map((label) => ({
-        label,
-        piyungan: 0,
-        wonosari: 0,
-        bantul: 0,
-    }));
-
-    for (const b of bookings.value) {
-        if (!b.checkIn.startsWith(yearPrefix) || b.status === 'Unavailable') continue;
-
-        const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
-        const targetMonth = monthlyPropertyBookings[monthIndex];
-
-        if (
-            targetMonth &&
-            (b.propertyId === 'piyungan' ||
-                b.propertyId === 'wonosari' ||
-                b.propertyId === 'bantul')
-        ) {
-            targetMonth[b.propertyId] += b.payout || 0;
-        }
-    }
-
-    return monthlyPropertyBookings;
+const { monthlyPropertyData } = useMonthlyMetrics(bookings, sortedProperties, {
+    propertyId: selectedProperty.value,
 });
 
 const handleTabChange = (id: string) => {
@@ -200,7 +176,7 @@ const handleTabChange = (id: string) => {
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <!-- Monthly Revenue Comparison & Breakdown Grid -->
-            <PropertyRevenue
+            <MonthlyRevenue
                 class="col-span-2 shadow-md"
                 :data="monthlyPropertyData"
                 :selected-property="selectedProperty" />
