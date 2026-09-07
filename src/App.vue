@@ -11,8 +11,7 @@ import type { Property } from '@/types/property';
 
 import { ToastContainer } from 'vue-toastflow';
 
-import AppHeader from '@/components/AppHeader.vue';
-import AppFooter from '@/components/AppFooter.vue';
+import AppSidebar from '@/components/AppSidebar.vue';
 import BookingModal from '@/components/BookingModal.vue';
 import PropertyModal from '@/components/PropertyModal.vue';
 
@@ -55,12 +54,14 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-screen px-6">
-        <AppHeader />
+    <div class="flex flex-col h-screen overflow-hidden">
+        <div class="flex flex-1 min-h-0 gap-4">
+            <AppSidebar />
 
-        <main class="grow">
-            <RouterView />
-        </main>
+            <main class="flex-1 min-w-0 min-h-0 flex flex-col mt-4 pr-4">
+                <RouterView />
+            </main>
+        </div>
 
         <BookingModal
             v-if="isBookingModalOpen"
@@ -69,15 +70,12 @@ onMounted(async () => {
             :current-property="currentProperty"
             @close="modalStore.closeBookingModal"
             @save="handleSaveBooking" />
-
         <PropertyModal
             v-if="isPropertyModalOpen"
             :property-to-edit="propertyToEdit"
             :current-property="currentProperty"
             @close="modalStore.closePropertyModal"
             @save="handleSaveProperty" />
-
         <ToastContainer />
-        <AppFooter />
     </div>
 </template>
