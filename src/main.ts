@@ -37,6 +37,8 @@ import {
     faCalendarCheck,
     faTableCellsLarge,
     faCopyright,
+    faCircleCheck,
+    faCommentDots,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -64,7 +66,9 @@ library.add(
     faChartPie,
     faCalendarCheck,
     faTableCellsLarge,
-    faCopyright
+    faCopyright,
+    faCircleCheck,
+    faCommentDots
 );
 
 const app = createApp(App);

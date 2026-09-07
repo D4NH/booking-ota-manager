@@ -1,15 +1,14 @@
-<!-- src/components/AppSidebar.vue -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
-import { formatDate, getCurrentDate } from '@/utils/date';
-import { formatIDR } from '@/utils/money';
+import { getCurrentDate } from '@/utils/date';
+
+import NotificationsPopover from '@/components/NotificationsPopover.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -17,6 +16,7 @@ const { currentDay } = useDateKeys();
 const modalStore = useModalStore();
 
 const isCollapsed = ref(false);
+const isNotificationCollapsed = ref(true);
 
 const pendingPayments = computed(() => {
     const isPaymentDueOneDayBeforeCheckIn = (checkIn: string): boolean => {
@@ -54,6 +54,9 @@ const navLinks = [
 ];
 const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
+};
+const toggleNotifications = () => {
+    isNotificationCollapsed.value = !isNotificationCollapsed.value;
 };
 const currentYear = new Date().getFullYear();
 </script>
@@ -96,135 +99,12 @@ const currentYear = new Date().getFullYear();
             </RouterLink>
         </nav>
 
-        <!-- Notifications -->
-        <div class="flex items-center justify-between p-4">
-            <div class="flex items-center space-x-2">
-                <h2 class="text-sm font-bold text-mist-100">Notifications</h2>
-                <span
-                    v-if="pendingPayments.notificationsCount !== 0"
-                    class="rounded-full bg-lime-500/20 px-2 py-0.5 text-[10px] font-semibold text-lime-400">
-                    {{ pendingPayments.notificationsCount }} New
-                </span>
-            </div>
-        </div>
-
-        <div
-            v-if="pendingPayments.notificationsCount === 0"
-            class="py-12 text-center text-xs text-mist-500">
-            No notifications
-        </div>
-
-        <!-- Pending Whatsapp Payments -->
-        <div
-            v-if="pendingPayments.whatsappPayments.length !== 0"
-            class="border-t border-mist-800">
-            <div
-                class="flex items-center justify-between border-b border-mist-800/60 bg-mist-950/40 px-4 py-2 text-xs text-mist-400">
-                Pending Whatsapp Payments
-            </div>
-            <div class="flex-1 overflow-y-auto divide-y divide-mist-800/40 p-4 space-y-2">
-                <div
-                    v-for="b in pendingPayments.whatsappPayments"
-                    :key="b.id"
-                    class="space-y-2 py-4 first:pt-0 last:pb-0">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm text-mist-200">
-                                {{ b.guestName }}
-                            </span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                @click="handleEditBooking(b)">
-                                <fa-icon icon="pen-to-square" />
-                            </button>
-                        </div>
-                        <RouterLink
-                            :to="{
-                                name: 'property-detail',
-                                params: { id: b.propertyId },
-                            }"
-                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                            :class="[
-                                getPropertyTheme(b.propertyId).bg,
-                                getPropertyTheme(b.propertyId).text,
-                            ]">
-                            {{ b.propertyId }}
-                        </RouterLink>
-                    </div>
-                    <div class="flex justify-between text-xs text-mist-400">
-                        <span>
-                            {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                            &rarr;
-                            {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                            {{ b.nights }} night(s)
-                        </span>
-                        <span>{{ b.listing }}</span>
-                    </div>
-                    <div class="flex justify-end text-xs text-mist-400">
-                        <span class="font-mono text-lime-400">
-                            {{ formatIDR(b.payout) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Payouts -->
-        <div
-            v-if="pendingPayments.bookingPayouts.length !== 0"
-            class="border-t border-mist-800">
-            <div
-                class="flex items-center justify-between border-b border-mist-800/60 bg-mist-950/40 px-4 py-2 text-xs text-mist-400">
-                Pending Booking Payouts
-            </div>
-            <div class="flex-1 overflow-y-auto divide-y divide-mist-800/40 p-4 space-y-2">
-                <div
-                    v-for="b in pendingPayments.bookingPayouts"
-                    :key="b.id"
-                    class="space-y-2 py-4 first:pt-0 last:pb-0">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm text-mist-200 truncate">
-                                {{ b.guestName }}
-                            </span>
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                @click="handleEditBooking(b)">
-                                <fa-icon icon="pen-to-square" />
-                            </button>
-                        </div>
-                        <RouterLink
-                            :to="{
-                                name: 'property-detail',
-                                params: { id: b.propertyId },
-                            }"
-                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
-                            :class="[
-                                getPropertyTheme(b.propertyId).bg,
-                                getPropertyTheme(b.propertyId).text,
-                            ]">
-                            {{ b.propertyId }}
-                        </RouterLink>
-                    </div>
-                    <div class="flex justify-between text-xs text-mist-400">
-                        <span>
-                            {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                            &rarr;
-                            {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                            {{ b.nights }} night(s)
-                        </span>
-                        <span>{{ b.listing }}</span>
-                    </div>
-                    <div class="flex justify-end text-xs text-mist-400">
-                        <span class="font-mono text-lime-400">
-                            {{ formatIDR(b.payout) }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <NotificationsPopover
+            :is-open="isNotificationCollapsed"
+            :pending-payments="pendingPayments.whatsappPayments"
+            :pending-payouts="pendingPayments.bookingPayouts"
+            @close="toggleNotifications"
+            @edit="handleEditBooking" />
 
         <div class="border-t border-mist-800 p-3 overflow-hidden">
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">
