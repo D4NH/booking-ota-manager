@@ -3,7 +3,6 @@ import { ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useDateKeys } from '@/composables/useDateKeys';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import { getCurrentDate } from '@/utils/date';
@@ -12,25 +11,24 @@ import NotificationsPopover from '@/components/NotificationsPopover.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { currentDay } = useDateKeys();
 const modalStore = useModalStore();
 
 const isCollapsed = ref(false);
 const isNotificationCollapsed = ref(true);
 
 const pendingPayments = computed(() => {
-    const isPaymentDueOneDayBeforeCheckIn = (checkIn: string): boolean => {
-        const checkInDate = new Date(checkIn);
-        checkInDate.setDate(checkInDate.getDate() - 1);
+    const isWithinWindow = (checkIn: string): boolean => {
+        const dueDate = new Date(checkIn);
+        dueDate.setDate(dueDate.getDate() - 1);
 
-        return getCurrentDate(checkInDate) === currentDay.value;
+        return getCurrentDate(new Date()) >= getCurrentDate(dueDate);
     };
+
     const whatsappPayments = bookings.value.filter(
         (b) =>
-            (b.listing === 'Whatsapp' &&
-                b.status === 'Waiting for payment' &&
-                isPaymentDueOneDayBeforeCheckIn(b.checkIn)) ||
-            getCurrentDate(new Date(b.checkIn)) === currentDay.value
+            b.listing === 'Whatsapp' &&
+            b.status === 'Waiting for payment' &&
+            isWithinWindow(b.checkIn)
     );
     const bookingPayouts = bookings.value.filter((b) => b.status === 'Waiting for payout');
     const allNotifications = [...whatsappPayments, ...bookingPayouts];

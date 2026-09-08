@@ -2,7 +2,10 @@
 import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
 import { getPropertyTheme } from '@/config/properties';
+import { useBookingSync } from '@/composables/useBookingSync';
 import type { Booking } from '@/types/booking';
+
+const { markBookingComplete } = useBookingSync();
 
 const props = defineProps<{
     isOpen: boolean;
@@ -18,11 +21,16 @@ const emit = defineEmits<{
 }>();
 
 const totalCount = computed(() => props.pendingPayments.length + props.pendingPayouts.length);
+
+const handleInstantComplete = async (booking: Booking) => {
+    // 1-liner: handles local store, Google Sheets, and Toast notification automatically!
+    await markBookingComplete(booking);
+};
 </script>
 <template>
     <div class="bg-mist-900 border-t border-mist-800 overflow-hidden">
         <div
-            class="cursor-pointer flex items-center justify-between px-4 py-3 bg-mist-950/60"
+            class="cursor-pointer flex items-center justify-between px-4 py-3 bg-mist-950/50"
             :class="{ 'border-b border-mist-800': isOpen }"
             @click="emit('close')">
             <div class="flex items-center gap-2">
@@ -138,19 +146,21 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                     <span class="text-xs font-mono font-bold text-mist-200 shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
-                    <button
-                        type="button"
-                        class="text-xs text-mist-400 hover:text-mist-200"
-                        title="Edit booking details"
-                        @click="emit('edit', b)">
-                        <fa-icon icon="pen-to-square" />
-                    </button>
-                    <!-- <button
-                        type="button"
-                        class="rounded-md border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
-                        @click="emit('mark-payout-received', b)">
-                        Confirm Received
-                    </button> -->
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="cursor-pointer text-mist-400 hover:text-mist-100"
+                            @click="emit('edit', b)">
+                            <fa-icon icon="pen-to-square" />
+                        </button>
+                        <span class="text-mist-700">|</span>
+                        <button
+                            type="button"
+                            class="cursor-pointer text-mist-400 hover:text-mist-100"
+                            @click="handleInstantComplete(b)">
+                            <fa-icon icon="clipboard-check" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
