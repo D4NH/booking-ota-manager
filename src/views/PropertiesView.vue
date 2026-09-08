@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
+import { getBookedPropertiesCount } from '@/composables/useOccupancy';
+import { useOccupancy, calculateYearlyOccupancy } from '@/composables/useOccupancy';
 import { PROPERTY_LIST } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -14,6 +16,7 @@ import { formatIDR } from '@/utils/money';
 import PropertyStats from '@/components/PropertyStats.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
+import OccupancyRate from '@/components/charts/OccupancyRate.vue';
 import SalesStatistics from '@/components/charts/SalesStatistics.vue';
 
 const route = useRoute();
@@ -24,7 +27,11 @@ const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { bookings } = storeToRefs(bookingStore);
 const { sortedProperties } = storeToRefs(propertyStore);
+const { calculateMonthlyOccupancy } = useOccupancy();
 
+const activePropertiesCount = computed(() => {
+    return getBookedPropertiesCount(bookings.value);
+});
 const selectedPropertyId = computed<string>(() => {
     const id = route.params.id;
 
@@ -46,6 +53,20 @@ const {
     propertyId: selectedPropertyId,
 });
 
+const occupancyStats = computed(() => {
+    const currentDate = new Date();
+    const monthlyStats = calculateMonthlyOccupancy(
+        bookings.value,
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        'all',
+        activePropertiesCount.value
+    );
+    const yearlyStats = calculateYearlyOccupancy(bookings.value, currentDate.getFullYear());
+
+    return { monthlyStats, yearlyStats };
+});
+
 const handleTabChange = (tabId: string) =>
     tabId === 'all'
         ? router.push({ name: 'properties' })
@@ -61,13 +82,13 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
-                <p class="text-xs text-mist-400">
+                <p class="mt-1 text-xs text-mist-400">
                     Select a property to view detailed analytics or manage listing settings
                 </p>
             </div>
 
             <!-- Switcher Tabs -->
-            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+            <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
@@ -83,7 +104,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     v-for="prop in PROPERTY_LIST"
                     :key="prop.id"
                     type="button"
-                    class="capitalize rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                    class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
                         selectedPropertyId === prop.id
                             ? 'bg-mist-800 text-lime-400 shadow-md'
@@ -96,7 +117,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
 
             <!-- <button
                     type="button"
-                    class="ml-5 cursor-pointer rounded-lg bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
+                    class="ml-5 cursor-pointer rounded-md bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
                     @click="handleAddProperty">
                     + Add Property
                 </button> -->
@@ -110,14 +131,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     :data="monthlyPropertyData"
                     :total-revenue="totalRevenue" />
 
-                <ChannelBreakdown
-                    class="lg:col-span-1"
-                    :bookings="bookings" />
+                <ChannelBreakdown :bookings="bookings" />
 
-                <div
-                    class="lg:col-span-1 rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
-                    2
-                </div>
+                <OccupancyRate :stats="occupancyStats" />
             </div>
             <div class="mt-8">
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
@@ -149,8 +165,10 @@ const handleEditProperty = (propertyId: PropertyId) => {
         <div
             v-else
             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Monthly Revenue
+                </h3>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
                 </p>
@@ -163,26 +181,30 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Occupancy Rate
+                </h3>
                 <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
-                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
+                <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
-                        class="bg-lime-500 h-full transition-all duration-300"
+                        class="bg-lime-500 h-full transition-[width] duration-300"
                         :style="{ width: `${occupancyPercentage}%` }"></div>
                 </div>
                 <p class="text-xs text-mist-500 mt-1">
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Total Month Bookings
+                </h3>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
                     <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>

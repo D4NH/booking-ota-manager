@@ -117,10 +117,12 @@ const clearHighlight = () => {
 </script>
 
 <template>
-    <div class="flex h-full flex-col rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
-        <div class="mb-4">
-            <h3 class="text-base font-bold text-mist-100">Channel Distribution</h3>
-            <p class="text-xs text-mist-400">Total bookings split by acquisition source</p>
+    <div class="flex h-full flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                Channel Distribution
+            </h3>
+            <p class="mt-1 text-xs text-mist-500">Total bookings split by acquisition source</p>
         </div>
 
         <div class="flex flex-1 justify-center items-center">
