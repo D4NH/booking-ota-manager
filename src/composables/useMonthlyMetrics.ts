@@ -1,4 +1,5 @@
 import { computed, unref, type ComputedRef, type Ref } from 'vue';
+import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import { getCurrentMonth, getPreviousMonth, getDaysInMonth, parseISODate } from '@/utils/date';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
@@ -71,13 +72,10 @@ export function useMonthlyMetrics(
         const currentMonth = rawMonth || getCurrentMonth(new Date());
         const previousMonth = getPreviousMonth(new Date());
         const list = bookings.value || [];
-        const propertyList = properties.value || [];
         const rawPropertyId = unref(options.propertyId);
         const activePropertyId = rawPropertyId && rawPropertyId !== 'all' ? rawPropertyId : null;
         const filterByProperty = activePropertyId && activePropertyId !== 'all';
-        const activePropertiesCount = filterByProperty
-            ? propertyList.filter((p) => p.id === activePropertyId).length
-            : propertyList.length;
+        const activePropertiesCount = getBookedPropertiesCount(list);
         const daysInCurrentMonth = getDaysInMonth(currentMonth);
         const totalCapacityNights = activePropertiesCount * daysInCurrentMonth;
 
