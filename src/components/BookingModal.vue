@@ -33,7 +33,7 @@ const form = ref({
     propertyId: resolveInitialProperty(),
     bookingId: props.bookingToEdit?.bookingId || '',
     guestName: props.bookingToEdit?.guestName || '',
-    checkIn: props.bookingToEdit?.checkIn || props.initialCheckInDate || '',
+    checkIn: props.bookingToEdit?.checkIn || props.initialCheckInDate || currentDay,
     checkOut: props.bookingToEdit?.checkOut || '',
     nights: props.bookingToEdit?.nights || 1,
     payout: props.bookingToEdit?.payout || '',
@@ -294,7 +294,7 @@ watch(
                                     type="date"
                                     class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
                                     required
-                                    :min="checkIn"
+                                    :min="form.checkIn"
                                     max="2028-12-31"
                                     @click="triggerDatePicker"
                                     @blur="sanitizeDate('checkOut')"
