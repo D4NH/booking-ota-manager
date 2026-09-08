@@ -117,7 +117,7 @@ const clearHighlight = () => {
 </script>
 
 <template>
-    <div class="flex h-full flex-col rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
+    <div class="flex h-full flex-col rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="mb-4">
             <h3 class="text-base font-bold text-mist-100">Channel Distribution</h3>
             <p class="text-xs text-mist-400">Total bookings split by acquisition source</p>
@@ -145,14 +145,14 @@ const clearHighlight = () => {
                 <div
                     v-for="(item, index) in channelStats"
                     :key="item.name"
-                    class="rounded px-2.5 py-1 transition-colors hover:bg-mist-800/50"
+                    class="rounded-md px-2.5 py-1 transition-colors hover:bg-mist-800/50"
                     :class="{ 'bg-mist-800/60': hoveredIndex === index }"
                     @mouseenter="highlightSlice(index)"
                     @mouseleave="clearHighlight">
                     <div class="flex flex-col space-y-1">
                         <div class="flex items-center space-x-2.5">
                             <span
-                                class="h-3 w-3 shrink-0 rounded-full"
+                                class="h-2.5 w-2.5 shrink-0 rounded-md"
                                 :style="{ backgroundColor: item.color }" />
                             <span class="text-sm text-mist-200">{{ item.name }}</span>
                         </div>

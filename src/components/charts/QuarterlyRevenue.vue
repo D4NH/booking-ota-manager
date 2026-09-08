@@ -146,7 +146,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 
 <template>
     <div
-        class="flex flex-col justify-between rounded-lg border border-mist-800 bg-mist-900 p-5 shadow-md">
+        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex justify-between">
             <div>
                 <h3 class="text-base font-bold text-mist-100">Total Revenue</h3>
@@ -164,7 +164,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
                 class="flex items-center justify-between text-xs font-medium">
                 <div class="flex items-center space-x-2.5">
                     <span
-                        class="h-3 w-3 shrink-0 rounded-full"
+                        class="h-3 w-3 shrink-0 rounded-md"
                         :style="{ backgroundColor: item.color }" />
                     <span class="text-mist-200 capitalize">{{ item.id }}</span>
                 </div>

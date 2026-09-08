@@ -26,10 +26,10 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
             <div
                 v-for="prop in sortedProperties"
                 :key="prop.id"
-                class="rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-3">
+                class="rounded-md border border-mist-800 bg-mist-900 p-5 space-y-3">
                 <div class="flex items-center justify-between">
                     <span
-                        class="h-3 w-3 rounded-full"
+                        class="h-3 w-3 rounded-md"
                         :style="{ backgroundColor: prop.color || '#016730' }"></span>
                     <span class="font-mono text-xs font-bold text-mist-400">{{
                         prop.codePrefix

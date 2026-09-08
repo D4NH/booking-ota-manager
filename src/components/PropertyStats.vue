@@ -24,7 +24,7 @@ const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetri
 </script>
 
 <template>
-    <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+    <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="flex justify-around w-full space-x-4">
             <div class="flex flex-col items-center space-y-1">
                 <span class="text-xs text-mist-400">Occupancy</span>

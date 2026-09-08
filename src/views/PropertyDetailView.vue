@@ -94,12 +94,12 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
             <!-- Arriving Today -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysArrivals.length }}
                         </span>
                     </div>
@@ -149,12 +149,12 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
             <!-- Current Stays -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ currentStays.length }}
                         </span>
                     </div>
@@ -204,14 +204,14 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
             <!-- Today's Departures -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">
                             Today's Departures
                         </h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysDepartures.length }}
                         </span>
                     </div>
@@ -269,19 +269,19 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
 
             <button
                 type="button"
-                class="rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                class="rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
                 @click="handleAddBooking">
                 <fa-icon icon="plus" /> Add Booking
             </button>
         </div>
         <div
             v-if="groupedBookings.length === 0"
-            class="rounded-lg border border-dashed border-mist-800 p-12 text-center">
+            class="rounded-md border border-dashed border-mist-800 p-12 text-center">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
         <div
             v-else
-            class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-md">
+            class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/60 text-[11px] uppercase text-mist-500">
@@ -315,7 +315,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                                         {{ group.label }}
                                     </span>
                                     <span
-                                        class="rounded-full bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
+                                        class="rounded-md bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
                                         {{ group.count }}
                                     </span>
                                 </button>
@@ -339,7 +339,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                             </td>
                             <td class="px-4 py-3 text-center text-nowrap">
                                 <span
-                                    class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
+                                    class="rounded-md bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </td>
@@ -361,7 +361,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                                     v-if="b.payout !== 0"
                                     class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
-                                        class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between">
                                             <span class="font-bold text-mist-200">
                                                 Payout 15%
@@ -376,7 +376,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                             <td class="px-4 py-3 text-center text-nowrap">
                                 <span
                                     :class="[
-                                        'rounded px-2 py-0.5 text-xs text-nowrap',
+                                        'rounded-md px-2 py-0.5 text-xs text-nowrap',
                                         b.status === 'Booked'
                                             ? 'bg-lime-500/20 text-lime-400'
                                             : b.status === 'Checked-in'

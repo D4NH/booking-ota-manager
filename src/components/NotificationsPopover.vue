@@ -33,7 +33,7 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
             </div>
             <span
                 v-if="totalCount > 0"
-                class="rounded bg-lime-500/20 px-2 py-0.5 text-[10px] font-bold text-lime-400 border border-lime-500/30">
+                class="rounded-md bg-lime-500/20 px-2 py-0.5 text-[10px] font-bold text-lime-400 border border-lime-500/30">
                 {{ totalCount }} New
             </span>
         </div>
@@ -54,14 +54,14 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
             <div
                 v-for="b in pendingPayments"
                 :key="b.id || b.bookingId"
-                class="rounded border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
+                class="rounded-xs border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
                 @click="emit('edit', b)">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                     <span class="flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
                         Payment Pending
                     </span>
                     <span
-                        class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
                         :class="[
                             getPropertyTheme(b.propertyId).bg,
                             getPropertyTheme(b.propertyId).text,
@@ -69,7 +69,6 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                         {{ b.propertyId }}
                     </span>
                 </div>
-
                 <div class="flex flex-col items-start justify-between gap-2">
                     <p class="text-sm font-bold text-mist-100 leading-tight">
                         {{ b.guestName }}
@@ -81,13 +80,11 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                         {{ b.listing }}
                     </p>
                 </div>
-
                 <div
                     class="mt-2.5 flex items-center justify-between border-t border-mist-800/60 pt-2">
                     <span class="text-xs font-mono font-bold shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
-
                     <div class="flex items-center gap-2">
                         <button
                             type="button"
@@ -96,10 +93,9 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                             @click="emit('edit', b)">
                             <fa-icon icon="pen-to-square" />
                         </button>
-
                         <!-- <button
                             type="button"
-                            class="rounded bg-lime-500 px-2.5 py-1 text-[11px] font-bold text-mist-950 hover:bg-lime-400 transition"
+                            class="rounded-md bg-lime-500 px-2.5 py-1 text-[11px] font-bold text-mist-950 hover:bg-lime-400 transition"
                             @click="emit('mark-paid', b)">
                             Mark Paid
                         </button> -->
@@ -110,14 +106,13 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
             <div
                 v-for="b in pendingPayouts"
                 :key="'payout-' + (b.id || b.bookingId)"
-                class="rounded border-l-2 border-l-sky-500 border-b-0 p-3 hover:bg-mist-800/40 transition group">
+                class="rounded-xs border-l-2 border-l-sky-500 border-b-0 p-3 hover:bg-mist-800/40 transition group">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                     <span class="flex items-center gap-1.5 text-[11px] font-bold text-sky-400">
                         Payout Pending
                     </span>
-
                     <span
-                        class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
                         :class="[
                             getPropertyTheme(b.propertyId).bg,
                             getPropertyTheme(b.propertyId).text,
@@ -138,15 +133,8 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                     </p>
                 </div>
 
-                <!-- 1-Click Reconciliation Button -->
                 <div
                     class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-2">
-                    <!-- <button
-                        type="button"
-                        class="text-xs text-mist-400 hover:text-mist-200 mr-auto"
-                        @click="emit('edit', b)">
-                        Details
-                    </button> -->
                     <span class="text-xs font-mono font-bold text-mist-200 shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
@@ -159,7 +147,7 @@ const totalCount = computed(() => props.pendingPayments.length + props.pendingPa
                     </button>
                     <!-- <button
                         type="button"
-                        class="rounded border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
+                        class="rounded-md border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
                         @click="emit('mark-payout-received', b)">
                         Confirm Received
                     </button> -->

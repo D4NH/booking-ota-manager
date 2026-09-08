@@ -58,7 +58,7 @@ watch(
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-lg rounded-2xl border border-mist-800 bg-mist-900 p-6 shadow-xl transition-all"
+                class="w-full max-w-lg rounded-md border border-mist-800 bg-mist-900 p-6 shadow-xl transition-all"
                 role="dialog"
                 aria-modal="true">
                 <!-- Modal Header -->
@@ -75,7 +75,7 @@ watch(
                     </div>
                     <button
                         type="button"
-                        class="rounded-lg p-1 text-mist-400 transition-colors hover:bg-mist-800 hover:text-mist-200"
+                        class="rounded-md p-1 text-mist-400 transition-colors hover:bg-mist-800 hover:text-mist-200"
                         @click="emit('close')">
                         ✕
                     </button>
@@ -95,7 +95,7 @@ watch(
                             type="text"
                             required
                             placeholder="e.g. Mai House Jogja - Piyungan"
-                            class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                            class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                     </div>
 
                     <!-- Full Address -->
@@ -105,7 +105,7 @@ watch(
                             v-model="form.address"
                             rows="3"
                             placeholder="Enter property address..."
-                            class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400"></textarea>
+                            class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400"></textarea>
                     </div>
 
                     <!-- Code Prefix & Theme Color -->
@@ -119,7 +119,7 @@ watch(
                                 type="text"
                                 required
                                 placeholder="e.g. MHJ"
-                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                         </div>
 
                         <div>
@@ -130,11 +130,11 @@ watch(
                                 <input
                                     v-model="form.color"
                                     type="color"
-                                    class="h-9 w-12 cursor-pointer rounded border border-mist-800 bg-mist-950 p-1" />
+                                    class="h-9 w-12 cursor-pointer rounded-md border border-mist-800 bg-mist-950 p-1" />
                                 <input
                                     v-model="form.color"
                                     type="text"
-                                    class="w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                                    class="w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                             </div>
                         </div>
                     </div>
@@ -149,7 +149,7 @@ watch(
                             type="number"
                             min="0"
                             placeholder="e.g. 1499000"
-                            class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                            class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -162,7 +162,7 @@ watch(
                                 type="text"
                                 required
                                 placeholder="0"
-                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                         </div>
 
                         <div>
@@ -174,7 +174,7 @@ watch(
                                 type="text"
                                 required
                                 placeholder="0"
-                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                         </div>
 
                         <div>
@@ -186,7 +186,7 @@ watch(
                                 type="text"
                                 required
                                 placeholder="0"
-                                class="mt-1 w-full rounded-lg border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
                         </div>
                     </div>
 
@@ -194,13 +194,13 @@ watch(
                     <div class="mt-6 flex items-center justify-end gap-3 pt-2">
                         <button
                             type="button"
-                            class="rounded-lg border border-mist-800 px-4 py-2 text-xs font-semibold text-mist-300 transition-colors hover:bg-mist-800"
+                            class="rounded-md border border-mist-800 px-4 py-2 text-xs font-semibold text-mist-300 transition-colors hover:bg-mist-800"
                             @click="emit('close')">
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="rounded-lg bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300">
+                            class="rounded-md bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300">
                             {{ isEditing ? 'Save Changes' : 'Create Property' }}
                         </button>
                     </div>

@@ -18,7 +18,7 @@ const { isOccupied } = useDailyOperations(bookingsRef, {
 
 <template>
     <span
-        class="rounded px-2 py-0.5 text-xs mt-1"
+        class="rounded-md px-2 py-0.5 text-xs mt-1"
         :class="[isOccupied ? 'bg-amber-500/20 text-amber-400' : 'bg-lime-500/20 text-lime-400']">
         {{ isOccupied ? 'Occupied ' : 'Available' }}
     </span>

@@ -39,8 +39,6 @@ const handleEditProperty = (propertyId: PropertyId) => {
     const property = properties.value.find((p) => p.id === propertyId);
     modalStore.openPropertyModal({ property });
 };
-const propertyImage = (id: string) =>
-    id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
 </script>
 
 <template>
@@ -52,7 +50,7 @@ const propertyImage = (id: string) =>
 
         <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
@@ -66,10 +64,10 @@ const propertyImage = (id: string) =>
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
-                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden my-2">
+                <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
                         :style="{ width: `${occupancyPercentage}%` }"></div>
@@ -78,14 +76,14 @@ const propertyImage = (id: string) =>
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Active bookings</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
                 <div class="text-lg font-bold text-mist-200 mt-1">
                     <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
@@ -104,12 +102,12 @@ const propertyImage = (id: string) =>
             <!-- Arriving Today -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysArrivals.length }}
                         </span>
                     </div>
@@ -142,7 +140,7 @@ const propertyImage = (id: string) =>
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -171,12 +169,12 @@ const propertyImage = (id: string) =>
             <!-- Current Stays -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ currentStays.length }}
                         </span>
                     </div>
@@ -209,7 +207,7 @@ const propertyImage = (id: string) =>
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -238,14 +236,14 @@ const propertyImage = (id: string) =>
             <!-- Today's Departures -->
             <div class="shadow-md">
                 <div
-                    class="h-full flex flex-col space-y-3 rounded-lg border border-mist-800 bg-mist-900 p-4">
+                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                         <h2 class="text-xs font-bold uppercase text-mist-300">
                             Today's Departures
                         </h2>
                         <span
-                            class="rounded bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysDepartures.length }}
                         </span>
                     </div>
@@ -278,7 +276,7 @@ const propertyImage = (id: string) =>
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -308,7 +306,7 @@ const propertyImage = (id: string) =>
 
         <!-- Properties -->
         <div class="grid grid-cols-1 gap-4 shadow-md">
-            <div class="overflow-x-auto rounded-lg border border-mist-800 bg-mist-900">
+            <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
                         class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
@@ -333,9 +331,9 @@ const propertyImage = (id: string) =>
                                         }">
                                         <img
                                             loading="lazy"
-                                            :src="propertyImage(property.id)"
+                                            :src="`/images/${property.id}.jpg`"
                                             :alt="`Picture of ${property.name}`"
-                                            class="h-20 w-20 object-cover rounded-lg" />
+                                            class="h-20 w-20 object-cover rounded-md" />
                                     </RouterLink>
                                 </td>
                                 <td class="pr-4 py-3 font-medium text-mist-100">

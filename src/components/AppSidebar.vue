@@ -70,7 +70,7 @@ const currentYear = new Date().getFullYear();
         <div class="flex h-14 items-center border-b border-mist-800 px-4 overflow-hidden">
             <div class="flex items-center gap-3">
                 <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-lime-500 font-black text-mist-950">
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-lime-500 font-black text-mist-950">
                     M
                 </div>
                 <span
@@ -86,7 +86,7 @@ const currentYear = new Date().getFullYear();
                 v-for="link in navLinks"
                 :key="link.name"
                 :to="link.to"
-                class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition text-mist-400 hover:bg-mist-800/60 hover:text-mist-200"
+                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition text-mist-400 hover:bg-mist-800/60 hover:text-mist-200"
                 active-class="bg-mist-800 text-lime-400 font-semibold shadow-sm">
                 <fa-icon
                     :icon="link.icon"
@@ -117,7 +117,7 @@ const currentYear = new Date().getFullYear();
 
         <button
             type="button"
-            class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-mist-700 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
+            class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-mist-700 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
             :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
             @click="toggleSidebar">
             <fa-icon

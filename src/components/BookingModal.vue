@@ -141,7 +141,7 @@ watch(
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/80 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-2xl space-y-4 rounded-lg border border-mist-800 bg-mist-900 p-6 shadow-xl">
+                class="w-full max-w-2xl space-y-4 rounded-md border border-mist-800 bg-mist-900 p-6 shadow-xl">
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-base font-bold text-mist-100">
@@ -157,7 +157,7 @@ watch(
 
                 <div
                     v-if="channelWarning"
-                    class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+                    class="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
                     <ul class="ml-4 list-disc">
                         <li>{{ channelWarning }}</li>
                     </ul>
@@ -165,7 +165,7 @@ watch(
 
                 <div
                     v-if="validationError"
-                    class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                    class="rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
                     {{ validationError }}
                 </div>
 
@@ -190,7 +190,7 @@ watch(
                             v-model="form.propertyId"
                             name="property"
                             required
-                            class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                            class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                             <option
                                 value=""
                                 disabled>
@@ -236,7 +236,7 @@ watch(
                                         'cursor-not-allowed disabled:bg-mist-900':
                                             Boolean(bookingToEdit),
                                     }"
-                                    class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                     required />
                             </div>
                         </div>
@@ -254,7 +254,7 @@ watch(
                                         v-model="form.guestName"
                                         type="text"
                                         placeholder="Full Name"
-                                        class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                        class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                         required />
                                 </div>
                             </label>
@@ -270,7 +270,7 @@ watch(
                                     <input
                                         v-model="form.checkIn"
                                         type="date"
-                                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                        class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
                                         required
                                         :min="checkInMinDate"
                                         max="2028-12-31"
@@ -292,7 +292,7 @@ watch(
                                 <input
                                     v-model="form.checkOut"
                                     type="date"
-                                    class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                    class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
                                     required
                                     :min="checkIn"
                                     max="2028-12-31"
@@ -324,7 +324,7 @@ watch(
                             Channel
                             <select
                                 v-model="form.listing"
-                                class="mt-1 w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                                class="mt-1 w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                                 <option
                                     value=""
                                     disabled
@@ -350,7 +350,7 @@ watch(
                             <select
                                 v-model="form.status"
                                 name="status"
-                                class="mt-1 w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
+                                class="mt-1 w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none">
                                 <option value="Booked">Booked</option>
                                 <option value="Checked-in">Checked-in</option>
                                 <option value="Waiting for payment">Waiting for payment</option>
@@ -379,7 +379,7 @@ watch(
                                     v-model="form.payout"
                                     type="number"
                                     placeholder="1.000.000"
-                                    class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                     required />
                             </div>
                         </label>
@@ -392,7 +392,7 @@ watch(
                             v-model="form.notes"
                             rows="2"
                             placeholder="Special requests, extra beds..."
-                            class="mt-1 w-full rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
+                            class="mt-1 w-full rounded-md border border-mist-700 bg-mist-950/50 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
                     </label>
 
                     <!-- Action Controls -->
@@ -416,7 +416,7 @@ watch(
                             <button
                                 type="submit"
                                 :disabled="Boolean(validationError)"
-                                class="ml-5 cursor-pointer rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="ml-5 cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                                 {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
                             </button>
                         </div>

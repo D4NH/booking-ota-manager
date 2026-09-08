@@ -13,9 +13,6 @@ defineProps<{
 const emit = defineEmits<{
     'edit-property': [];
 }>();
-
-const propertyImage = (id: string) =>
-    id === 'bantul' ? 'https://placehold.co/300x400?text=Bantul' : `/images/${id}.jpg`;
 </script>
 
 <template>
@@ -24,12 +21,12 @@ const propertyImage = (id: string) =>
             name: 'property-detail',
             params: { id: property.id },
         }"
-        class="rounded-lg border border-mist-800 bg-mist-900 p-4 space-y-4 shadow-md">
+        class="rounded-md border border-mist-800 bg-mist-900 p-4 space-y-4 shadow-md">
         <img
             loading="lazy"
-            :src="propertyImage(property.id)"
+            :src="`/images/${property.id}.jpg`"
             :alt="`Picture of ${property.name}`"
-            class="w-full h-50 object-cover rounded-lg mb-4" />
+            class="w-full h-50 object-cover rounded-md mb-4" />
 
         <div class="flex justify-between items-start">
             <div class="flex flex-col">

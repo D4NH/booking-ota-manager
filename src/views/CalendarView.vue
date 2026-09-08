@@ -225,7 +225,7 @@ watch(
                 <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
             </div>
             <!-- Property Selector -->
-            <div class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+            <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
@@ -255,23 +255,23 @@ watch(
 
         <!-- Month Navigation Controls -->
         <div
-            class="flex shrink-0 items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4">
+            class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
+                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
@@ -280,7 +280,7 @@ watch(
                 <select
                     name="month-selector"
                     :value="selectedMonth"
-                    class="appearance-none cursor-pointer rounded-lg outline-none w-30 text-right text-mist-200"
+                    class="appearance-none cursor-pointer rounded-md outline-none w-30 text-right text-mist-200"
                     @change="handleMonthChange">
                     <option
                         v-for="(name, index) in MONTH_NAMES"
@@ -293,7 +293,7 @@ watch(
                 <select
                     name="year-selector"
                     :value="selectedYear"
-                    class="appearance-none cursor-pointer rounded-lg outline-none w-24 ml-2 text-mist-200"
+                    class="appearance-none cursor-pointer rounded-md outline-none w-24 ml-2 text-mist-200"
                     @change="handleYearChange">
                     <option
                         v-for="year in yearOptions"
@@ -306,7 +306,7 @@ watch(
             </div>
             <button
                 type="button"
-                class="self-end rounded-lg bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                class="self-end rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
                 @click="handleAddBooking">
                 <fa-icon
                     class="text-xs"
@@ -317,7 +317,7 @@ watch(
 
         <!-- Calendar Grid -->
         <div
-            class="flex-1 min-h-0 flex flex-col rounded-lg border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
+            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <div
                 class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>
@@ -344,7 +344,7 @@ watch(
                     <div class="flex items-center justify-between mb-1">
                         <span
                             :class="[
-                                'text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center',
+                                'text-xs font-bold rounded-md h-6 w-6 flex items-center justify-center',
                                 day.isToday
                                     ? 'bg-lime-500 text-mist-950 shadow-sm'
                                     : 'text-mist-400',
@@ -384,7 +384,7 @@ watch(
                                                 b.status !== 'Unavailable' &&
                                                 selectedProperty === 'all'
                                             "
-                                            class="capitalize rounded px-1 py-0.2 text-[10px] font-bold shrink-0"
+                                            class="capitalize rounded-md px-1 py-0.2 text-[10px] font-bold shrink-0"
                                             :class="[
                                                 getPropertyTheme(b.propertyId).bg,
                                                 getPropertyTheme(b.propertyId).text,
@@ -412,7 +412,7 @@ watch(
                                 v-if="day.isCurrentMonth"
                                 class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
-                                    class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="border-b border-mist-800 pb-1.5 mb-1.5">
                                         <span class="font-bold text-mist-200">
                                             {{ b.guestName }}
@@ -423,12 +423,12 @@ watch(
                                     </div>
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
-                                        class="mb-1.5 rounded bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium text-[11px]">
+                                        class="mb-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium text-[11px]">
                                         Payment pending
                                     </div>
                                     <div
                                         v-if="b.status === 'Waiting for payout'"
-                                        class="mb-1.5 rounded bg-sky-500/10 border border-sky-500/20 p-1.5 text-sky-300 font-medium text-[11px]">
+                                        class="mb-1.5 rounded-md bg-sky-500/10 border border-sky-500/20 p-1.5 text-sky-300 font-medium text-[11px]">
                                         Payout pending
                                     </div>
                                     <div

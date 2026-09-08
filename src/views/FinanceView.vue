@@ -106,7 +106,7 @@ const handleTabChange = (id: string) => {
                 <!-- Year Selector -->
                 <select
                     v-model="selectedYear"
-                    class="rounded-lg border border-mist-700 bg-mist-900 px-3 py-2 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                    class="rounded-md border border-mist-700 bg-mist-900 px-3 py-2 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
                     <option
                         v-for="yr in availableYears"
                         :key="yr"
@@ -117,7 +117,7 @@ const handleTabChange = (id: string) => {
 
                 <!-- Property Filter Switcher -->
                 <div
-                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1 shadow-md">
+                    class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shadow-md">
                     <button
                         type="button"
                         :class="[
@@ -149,21 +149,21 @@ const handleTabChange = (id: string) => {
 
         <!-- KPI Cards Row -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Revenue</p>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(totalRevenue) }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Across all properties</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Average Daily Rate (ADR)</p>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(averageDailyRate) }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Across {{ totalNights }} total nights</p>
             </div>
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <p class="text-xs uppercase font-bold text-mist-400">Total Booked Nights</p>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ totalNights }} Nights
@@ -182,7 +182,7 @@ const handleTabChange = (id: string) => {
                 :selected-property="selectedProperty" />
 
             <!-- Channel Distribution -->
-            <div class="rounded-lg border border-mist-800 bg-mist-900 p-5 space-y-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-5 space-y-4 shadow-md">
                 <div class="border-b border-mist-800 pb-4 mb-4">
                     <h2 class="text-base font-bold text-mist-100">Channel Distribution</h2>
                     <p class="text-xs text-mist-400">Revenue share by booking channel</p>
@@ -198,7 +198,7 @@ const handleTabChange = (id: string) => {
                                 {{ ch.percentage }}% ({{ formatIDR(ch.revenue) }})
                             </span>
                         </div>
-                        <div class="h-2 w-full rounded-full bg-mist-950 overflow-hidden">
+                        <div class="h-2 w-full rounded-md bg-mist-950 overflow-hidden">
                             <div
                                 class="h-full bg-lime-500 transition-all duration-300"
                                 :style="{ width: `${ch.percentage}%` }"></div>

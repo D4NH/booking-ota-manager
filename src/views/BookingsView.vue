@@ -198,7 +198,7 @@ onActivated(() => {
 
                 <!-- Property Selector -->
                 <div
-                    class="flex items-center gap-1 rounded-lg border border-mist-800 bg-mist-900 p-1">
+                    class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                     <button
                         type="button"
                         class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
@@ -229,7 +229,7 @@ onActivated(() => {
 
         <!-- Filter Bar -->
         <div
-            class="flex shrink-0 items-center justify-between rounded-lg border border-mist-800 bg-mist-900 p-4 shadow-md">
+            class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex items-center gap-2">
                 <div class="w-50">
                     <div class="relative w-full max-w-xs">
@@ -243,13 +243,13 @@ onActivated(() => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Search..."
-                            class="w-full rounded-lg bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                 </div>
                 <div class="relative w-50">
                     <select
                         v-model="selectedMonth"
-                        class="w-full appearance-none rounded-lg border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
+                        class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
                         <option value="all">All Months</option>
                         <option
                             v-for="mKey in availableMonths"
@@ -267,7 +267,7 @@ onActivated(() => {
                 </div>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-lg border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
                     @click="toggleFilters = !toggleFilters">
                     <fa-icon
                         class="text-xs"
@@ -281,7 +281,7 @@ onActivated(() => {
                         :key="status"
                         type="button"
                         :class="[
-                            'rounded-full px-2.5 py-1 text-xs border transition',
+                            'rounded-md px-2.5 py-1 text-xs border transition',
                             hiddenStatuses.includes(status)
                                 ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
                                 : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
@@ -293,7 +293,7 @@ onActivated(() => {
             </div>
             <button
                 type="button"
-                class="cursor-pointer rounded-lg bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
+                class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
                 @click="handleAddBooking">
                 <fa-icon
                     class="text-xs"
@@ -305,12 +305,12 @@ onActivated(() => {
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="flex-1 rounded-lg border border-dashed border-mist-800 p-12 text-center shadow-md">
+            class="flex-1 rounded-md border border-dashed border-mist-800 p-12 text-center shadow-md">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
         <div
             v-else
-            class="flex-1 min-h-0 overflow-x-auto rounded-lg border border-mist-800 bg-mist-900 shadow-md">
+            class="flex-1 min-h-0 overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950/60 text-xs font-semibold uppercase text-mist-400">
@@ -353,12 +353,12 @@ onActivated(() => {
                                         {{ group.label }}
                                         <span
                                             v-if="group.key === currentMonthKey"
-                                            class="rounded bg-lime-500/10 px-1.5 py-0.2 text-[10px] font-medium text-lime-400">
+                                            class="rounded-md bg-lime-500/10 px-1.5 py-0.2 text-[10px] font-medium text-lime-400">
                                             Current
                                         </span>
                                     </span>
                                     <span
-                                        class="rounded-full bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
+                                        class="rounded-md bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
                                         {{ group.count }}
                                     </span>
                                 </button>
@@ -383,14 +383,14 @@ onActivated(() => {
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
-                                    class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
+                                    class="rounded-md bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
                                     :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                    class="capitalize rounded px-2 py-0.5 text-xs font-medium text-nowrap"
+                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium text-nowrap"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -415,7 +415,7 @@ onActivated(() => {
                                     v-if="b.payout !== 0"
                                     class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
-                                        class="rounded-lg border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between">
                                             <span class="font-bold text-mist-200">
                                                 Payout 15%
@@ -458,7 +458,7 @@ onActivated(() => {
         <div class="flex shrink-0 justify-end">
             <button
                 type="button"
-                class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
+                class="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"
                 @click="handleClearAllLocal">
                 Clear Local DB
             </button>

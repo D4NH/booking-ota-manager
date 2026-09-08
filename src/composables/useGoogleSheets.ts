@@ -3,7 +3,7 @@ import { ref } from 'vue';
 const accessToken = ref<string | null>(localStorage.getItem('gdrive_token'));
 const isAuthenticated = ref<boolean>(Boolean(localStorage.getItem('gdrive_token')));
 
-export const useGoogleSheets = () => {
+export function useGoogleSheets() {
     const logout = (): void => {
         accessToken.value = null;
         isAuthenticated.value = false;
@@ -157,4 +157,4 @@ export const useGoogleSheets = () => {
         updateSheetRowByBookingId,
         deleteSheetRowByBookingId,
     };
-};
+}
