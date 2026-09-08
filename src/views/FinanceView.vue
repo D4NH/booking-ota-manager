@@ -150,21 +150,27 @@ const handleTabChange = (id: string) => {
         <!-- KPI Cards Row -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Total Revenue</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Total Revenue
+                </h3>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(totalRevenue) }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Across all properties</p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Average Daily Rate (ADR)</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Average Daily Rate (ADR)
+                </h3>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(averageDailyRate) }}
                 </p>
                 <p class="text-xs text-mist-500 mt-1">Across {{ totalNights }} total nights</p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Total Booked Nights</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Total Booked Nights
+                </h3>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ totalNights }} Nights
                 </p>

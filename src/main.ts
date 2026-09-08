@@ -39,6 +39,7 @@ import {
     faCopyright,
     faCircleCheck,
     faCommentDots,
+    faClipboardCheck,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -68,7 +69,8 @@ library.add(
     faTableCellsLarge,
     faCopyright,
     faCircleCheck,
-    faCommentDots
+    faCommentDots,
+    faClipboardCheck
 );
 
 const app = createApp(App);

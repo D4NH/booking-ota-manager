@@ -188,7 +188,7 @@ onActivated(() => {
         <div class="flex shrink-0 items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Bookings</h1>
-                <p class="text-xs text-mist-400">
+                <p class="mt-1 text-xs text-mist-400">
                     Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
                 </p>
             </div>

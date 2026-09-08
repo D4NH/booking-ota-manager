@@ -7,8 +7,8 @@ import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
-
 import type { Booking } from '@/types/booking';
+import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { formatDate, getCurrentMonth } from '@/utils/date';
 
@@ -76,7 +76,7 @@ const toggleMonth = (monthKey: string) => {
         collapsedMonths.value.push(monthKey);
     }
 };
-const handleAddBooking = () => modalStore.openBookingModal();
+const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> => {
     await deleteBooking(booking);
@@ -86,9 +86,9 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
 <template>
     <div class="space-y-4">
         <!-- Daily Operations -->
-        <div class="mt-12">
-            <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
-            <p class="text-xs text-mist-400">Active Stays</p>
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
+            <p class="mt-1 text-xs text-mist-400">Active Stays</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Arriving Today -->
@@ -97,7 +97,9 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                            Arriving Today
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysArrivals.length }}
@@ -152,7 +154,9 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                            Currently Staying
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ currentStays.length }}
@@ -207,9 +211,9 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                             Today's Departures
-                        </h2>
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysDepartures.length }}
@@ -261,16 +265,16 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
         </div>
 
         <!-- Upcoming Bookings -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-12">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
             <div>
-                <h1 class="text-xl font-bold text-mist-100">Upcoming Bookings</h1>
-                <p class="text-xs text-mist-400">Starting from {{ currentMonth }}</p>
+                <h2 class="text-xl font-bold text-mist-100">Upcoming Bookings</h2>
+                <p class="mt-1 text-xs text-mist-400">Starting from {{ currentMonth }}</p>
             </div>
 
             <button
                 type="button"
                 class="rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
-                @click="handleAddBooking">
+                @click="handleAddBooking(selectedPropertyId as PropertyId)">
                 <fa-icon icon="plus" /> Add Booking
             </button>
         </div>

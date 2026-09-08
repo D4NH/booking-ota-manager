@@ -45,13 +45,15 @@ const handleEditProperty = (propertyId: PropertyId) => {
     <div class="space-y-4">
         <div>
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <p class="text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
+            <p class="mt-1 text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
         </div>
 
         <!-- Monthly Summary Cards -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Monthly Revenue</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Monthly Revenue
+                </h3>
                 <p class="mt-1 font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
                 </p>
@@ -65,7 +67,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                 </div>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Occupancy Rate</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Occupancy Rate
+                </h3>
                 <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
                 <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
@@ -77,7 +81,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Total Month Bookings</p>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Total Month Bookings
+                </h3>
                 <p class="text-lg font-bold text-mist-100 mt-1">
                     {{ totalBookingsCount }}
                 </p>
@@ -95,8 +101,8 @@ const handleEditProperty = (propertyId: PropertyId) => {
 
         <!-- Daily Operations -->
         <div class="mt-8">
-            <h1 class="text-xl font-bold text-mist-100">Daily Operations</h1>
-            <p class="text-xs text-mist-400">Active Stays</p>
+            <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
+            <p class="mt-1 text-xs text-mist-400">Active Stays</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Arriving Today -->
@@ -105,7 +111,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">Arriving Today</h2>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                            Arriving Today
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysArrivals.length }}
@@ -172,7 +180,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">Currently Staying</h2>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                            Currently Staying
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ currentStays.length }}
@@ -239,9 +249,9 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
                     <div
                         class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h2 class="text-xs font-bold uppercase text-mist-300">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                             Today's Departures
-                        </h2>
+                        </h3>
                         <span
                             class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
                             {{ todaysDepartures.length }}

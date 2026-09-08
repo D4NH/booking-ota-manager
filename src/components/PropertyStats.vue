@@ -27,17 +27,23 @@ const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetri
     <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="flex justify-around w-full space-x-4">
             <div class="flex flex-col items-center space-y-1">
-                <span class="text-xs text-mist-400">Occupancy</span>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Occupancy
+                </h3>
                 <span class="text-lg font-bold text-lime-400"> {{ occupancyPercentage }} % </span>
             </div>
             <div class="flex flex-col items-center space-y-1">
-                <span class="text-xs text-mist-400">Revenue</span>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Revenue
+                </h3>
                 <span class="text-lg font-mono font-bold text-mist-100">
                     {{ formatIDR(totalPayout) }}
                 </span>
             </div>
             <div class="flex flex-col items-center space-y-1">
-                <span class="text-xs text-mist-400">Bookings</span>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Bookings
+                </h3>
                 <span class="text-lg font-bold text-mist-100">
                     {{ totalBookingsCount }}
                 </span>

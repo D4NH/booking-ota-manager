@@ -222,7 +222,7 @@ watch(
         <div class="flex shrink-0 flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
-                <p class="text-xs text-mist-400">Monthly schedule and room availability</p>
+                <p class="mt-1 text-xs text-mist-400">Monthly schedule and room availability</p>
             </div>
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
