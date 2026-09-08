@@ -69,7 +69,6 @@ export function useGoogleSheets() {
         return res;
     };
 
-    // Fetch matrix rows from target sheet range
     const fetchSheetRows = async (
         spreadsheetId: string,
         range: string = 'A2:J500'
@@ -82,7 +81,6 @@ export function useGoogleSheets() {
         return data.values || [];
     };
 
-    // Append new row
     const appendSheetRow = async (
         spreadsheetId: string,
         values: (string | number)[]
@@ -98,7 +96,6 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
-    // Update existing row matched by Booking ID
     const updateSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string,
@@ -125,7 +122,6 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
-    // Clear target row in Google Sheets
     const deleteSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string

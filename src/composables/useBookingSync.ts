@@ -51,6 +51,47 @@ export function useBookingSync() {
         }
     };
 
+    const updateBookingStatus = async (
+        booking: Booking,
+        newStatus: Booking['status']
+    ): Promise<boolean> => {
+        try {
+            await toast.loading(
+                async () => {
+                    // Merge new status into existing booking and trigger remote sync
+                    await bookingStore.updateBookingWithRemoteSync(
+                        { ...booking, status: newStatus },
+                        { updateSheetRowByBookingId }
+                    );
+                },
+                {
+                    loading: {
+                        title: `Marking as ${newStatus}...`,
+                        description: 'Syncing with Google Sheets and database.',
+                    },
+                    success: {
+                        title: 'Status Updated',
+                        description: `${booking.guestName} marked as ${newStatus}.`,
+                    },
+                    error: (err) => ({
+                        title: 'Update failed',
+                        description:
+                            err instanceof Error ? err.message : 'Google Sheets sync failed.',
+                    }),
+                }
+            );
+
+            return true;
+        } catch (err: unknown) {
+            console.error('Status update failed due to sync error:', err);
+            return false;
+        }
+    };
+
+    const markBookingComplete = async (booking: Booking): Promise<boolean> => {
+        return updateBookingStatus(booking, 'Completed');
+    };
+
     const deleteBooking = async (booking: Booking): Promise<boolean> => {
         const confirmed = window.confirm(
             `Are you sure you want to delete booking ${booking.bookingId} (${booking.guestName})? This will remove it from Google Sheets first.`
@@ -124,6 +165,8 @@ export function useBookingSync() {
 
     return {
         saveBooking,
+        updateBookingStatus,
+        markBookingComplete,
         deleteBooking,
         clearAllLocalBookings,
     };

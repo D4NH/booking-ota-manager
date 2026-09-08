@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { db } from '@/db';
 import { PROPERTY_CONFIGS } from '@/config/properties';
-import type { Booking } from '@/types/booking';
+import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 
 export const useBookingStore = defineStore('booking', () => {
@@ -140,6 +140,24 @@ export const useBookingStore = defineStore('booking', () => {
             formatSheetRow(updated)
         );
         await updateBooking(updated);
+    };
+    const updateBookingStatusWithSync = async (
+        booking: Booking,
+        newStatus: BookingStatus,
+        sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
+    ): Promise<void> => {
+        const updatedBooking: Booking = {
+            ...booking,
+            status: newStatus,
+        };
+
+        await updateBookingWithRemoteSync(updatedBooking, sheetsApi);
+    };
+    const markBookingComplete = async (
+        booking: Booking,
+        sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
+    ): Promise<void> => {
+        await updateBookingStatusWithSync(booking, 'Completed', sheetsApi);
     };
     const deleteBookingWithRemoteSync = async (
         booking: Booking,
@@ -306,6 +324,8 @@ export const useBookingStore = defineStore('booking', () => {
         clearAllLocalBookings,
         addBookingWithRemoteSync,
         updateBookingWithRemoteSync,
+        updateBookingStatusWithSync,
+        markBookingComplete,
         deleteBookingWithRemoteSync,
         importBookingsFromGoogleSheets,
     };

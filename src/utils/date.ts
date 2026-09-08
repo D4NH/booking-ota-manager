@@ -1,5 +1,5 @@
 /**
- * Current day formatted to YYYY-MM-DD
+ * Current date formatted to YYYY-MM-DD in local time
  */
 export const getCurrentDate = (date: Date = new Date()): string => {
     const year = date.getFullYear();
@@ -23,21 +23,18 @@ export const getCurrentMonth = (date: Date = new Date()): string => {
  * Previous month formatted to YYYY-MM
  */
 export const getPreviousMonth = (date: Date = new Date()): string => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
+    const d = new Date(date);
+    d.setMonth(d.getMonth() - 1);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
 
-    let prevMonth = month - 1;
-    let prevYear = year;
-
-    if (prevMonth < 0) {
-        prevMonth = 11;
-        prevYear -= 1;
-    }
-
-    const formattedMonth = String(prevMonth + 1).padStart(2, '0');
-
-    return `${prevYear}-${formattedMonth}`;
+    return `${year}-${month}`;
 };
+
+/**
+ * Current year formatted to YYYY
+ */
+export const getCurrentYear = (date: Date = new Date()): string => String(date.getFullYear());
 
 /**
  * Returns total days in a given target month ("YYYY-MM")
