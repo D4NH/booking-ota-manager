@@ -20,7 +20,7 @@ const modalStore = useModalStore();
 const { deleteBooking } = useBookingSync();
 const { currentDay } = useDateKeys();
 
-const hiddenStatuses = ref<Booking['status'][]>(['Completed', 'No show']);
+const hiddenStatuses = ref<Booking['status'][]>([]);
 const collapsedMonths = ref<string[]>([]);
 
 const selectedPropertyId = computed<string>(() => {
@@ -36,6 +36,8 @@ const filteredBookings = computed(() => {
         .filter((b) => {
             if (prop !== 'all' && b.propertyId !== prop) return false;
             if (hidden.includes(b.status)) return false;
+            // Only include bookings with checkIn >= current month start
+            if (b.checkIn < getCurrentMonth()) return false;
 
             return true;
         })
@@ -84,9 +86,9 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
 </script>
 
 <template>
-    <div class="space-y-4">
+    <div class="flex flex-col gap-4">
         <!-- Daily Operations -->
-        <div class="mt-8">
+        <div class="mt-4">
             <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
             <p class="mt-1 text-xs text-mist-400">Active Stays</p>
         </div>
@@ -265,7 +267,7 @@ const handleDeleteBooking = async (booking: Booking): Promise<void> => {
         </div>
 
         <!-- Upcoming Bookings -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4">
             <div>
                 <h2 class="text-xl font-bold text-mist-100">Upcoming Bookings</h2>
                 <p class="mt-1 text-xs text-mist-400">Starting from {{ currentMonth }}</p>
