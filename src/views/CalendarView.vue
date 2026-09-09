@@ -217,9 +217,9 @@ watch(
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 space-y-4 mb-4">
+    <div class="flex flex-col h-full min-h-0 gap-4">
         <!-- Header Bar -->
-        <div class="flex shrink-0 flex-wrap items-center justify-between gap-4">
+        <div class="flex shrink-0 flex-wrap items-center justify-between mt-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
                 <p class="mt-1 text-xs text-mist-400">Monthly schedule and room availability</p>
@@ -317,7 +317,7 @@ watch(
 
         <!-- Calendar Grid -->
         <div
-            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
+            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden mb-4">
             <div
                 class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>

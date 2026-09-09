@@ -183,9 +183,9 @@ onActivated(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 space-y-4 mb-4">
+    <div class="flex flex-col h-full min-h-0 gap-4">
         <!-- Header -->
-        <div class="flex shrink-0 items-center justify-between gap-4">
+        <div class="flex shrink-0 items-center justify-between gap-4 mt-4">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Bookings</h1>
                 <p class="mt-1 text-xs text-mist-400">
@@ -455,7 +455,7 @@ onActivated(() => {
             </table>
         </div>
 
-        <div class="flex shrink-0 justify-end">
+        <div class="flex shrink-0 justify-end mb-4">
             <button
                 type="button"
                 class="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"

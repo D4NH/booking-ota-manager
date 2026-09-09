@@ -42,14 +42,14 @@ const handleEditProperty = (propertyId: PropertyId) => {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div>
+    <div class="flex flex-col gap-4">
+        <div class="mt-4">
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
             <p class="mt-1 text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
         </div>
 
         <!-- Monthly Summary Cards -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
