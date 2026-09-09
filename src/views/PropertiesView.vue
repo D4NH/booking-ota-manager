@@ -4,16 +4,20 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
-import { getBookedPropertiesCount } from '@/composables/useOccupancy';
-import { useOccupancy, calculateYearlyOccupancy } from '@/composables/useOccupancy';
-import { PROPERTY_LIST } from '@/config/properties';
+import {
+    useOccupancy,
+    calculateYearlyOccupancy,
+    getBookedPropertiesCount,
+} from '@/composables/useOccupancy';
+import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
+import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import PropertyStats from '@/components/PropertyStats.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
 import OccupancyRate from '@/components/charts/OccupancyRate.vue';
@@ -29,30 +33,23 @@ const { bookings } = storeToRefs(bookingStore);
 const { sortedProperties } = storeToRefs(propertyStore);
 const { calculateMonthlyOccupancy } = useOccupancy();
 
-const activePropertiesCount = computed(() => {
-    return getBookedPropertiesCount(bookings.value);
-});
+const activePropertiesCount = computed(() => getBookedPropertiesCount(bookings.value));
 const selectedPropertyId = computed<string>(() => {
     const id = route.params.id;
 
     return typeof id === 'string' && id ? id : 'all';
 });
-const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
-const { todaysTurnover } = useDailyOperations(bookings, {
-    propertyId: selectedPropertyId,
-});
-const {
-    totalPayout,
-    occupiedNights,
-    totalCapacityNights,
-    occupancyPercentage,
-    totalBookingsCount,
-    revenueGrowthPercent,
-    monthlyPropertyData,
-} = useMonthlyMetrics(bookings, sortedProperties, {
-    propertyId: selectedPropertyId,
+// Separate computed for property NAME
+const activePropertyName = computed<string>(() => {
+    if (selectedPropertyId.value === 'all') {
+        return 'Property Management';
+    }
+
+    const property = sortedProperties.value.find((prop) => prop.id === selectedPropertyId.value);
+    return property?.name ?? '';
 });
 
+const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
 const occupancyStats = computed(() => {
     const currentDate = new Date();
     const monthlyStats = calculateMonthlyOccupancy(
@@ -66,11 +63,25 @@ const occupancyStats = computed(() => {
 
     return { monthlyStats, yearlyStats };
 });
+const { todaysArrivals, todaysDepartures, currentStays, todaysTurnover } = useDailyOperations(
+    bookings,
+    { propertyId: selectedPropertyId }
+);
+const {
+    totalPayout,
+    occupiedNights,
+    totalCapacityNights,
+    occupancyPercentage,
+    totalBookingsCount,
+    revenueGrowthPercent,
+    monthlyPropertyData,
+} = useMonthlyMetrics(bookings, sortedProperties, { propertyId: selectedPropertyId });
 
 const handleTabChange = (tabId: string) =>
     tabId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: tabId } });
+const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleEditProperty = (propertyId: PropertyId) => {
     const property = sortedProperties.value.find((p) => p.id === propertyId);
     modalStore.openPropertyModal({ property });
@@ -78,15 +89,14 @@ const handleEditProperty = (propertyId: PropertyId) => {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4">
             <div>
-                <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
+                <h1 class="text-xl font-bold text-mist-100">{{ activePropertyName }}</h1>
                 <p class="mt-1 text-xs text-mist-400">
                     Select a property to view detailed analytics or manage listing settings
                 </p>
             </div>
-
             <!-- Switcher Tabs -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -114,7 +124,6 @@ const handleEditProperty = (propertyId: PropertyId) => {
                     {{ prop.id }}
                 </button>
             </div>
-
             <!-- <button
                     type="button"
                     class="ml-5 cursor-pointer rounded-md bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
@@ -123,41 +132,251 @@ const handleEditProperty = (propertyId: PropertyId) => {
                 </button> -->
         </div>
 
-        <div v-if="route.meta.isOverview">
+        <div
+            v-if="route.meta.isOverview"
+            class="flex flex-col gap-4">
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <SalesStatistics
                     class="lg:col-span-2"
                     :data="monthlyPropertyData"
                     :total-revenue="totalRevenue" />
-
                 <ChannelBreakdown :bookings="bookings" />
-
                 <OccupancyRate :stats="occupancyStats" />
             </div>
-            <div class="mt-8">
+
+            <div class="mt-4">
+                <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
+                <p class="mt-1 text-xs text-mist-400">Active Stays</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Arriving Today -->
+                <div class="shadow-md">
+                    <div
+                        class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
+                        <div
+                            class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                            <h3
+                                class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                                Arriving Today
+                            </h3>
+                            <span
+                                class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                                {{ todaysArrivals.length }}
+                            </span>
+                        </div>
+                        <div
+                            v-if="todaysArrivals.length === 0"
+                            class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-10">
+                            No arrivals scheduled for today.
+                        </div>
+                        <div
+                            v-else
+                            class="divide-y divide-mist-800">
+                            <div
+                                v-for="b in todaysArrivals"
+                                :key="b.id"
+                                class="space-y-2 py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-mist-200">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                            @click="handleEditBooking(b)">
+                                            <fa-icon icon="pen-to-square" />
+                                        </button>
+                                    </div>
+                                    <RouterLink
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div class="flex justify-between text-xs text-mist-400">
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                        {{ b.nights }} night(s)
+                                    </span>
+                                    <span>{{ b.listing }}</span>
+                                </div>
+                                <div class="flex justify-end text-xs text-mist-400">
+                                    <span class="font-mono text-lime-400">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Current Stays -->
+                <div class="shadow-md">
+                    <div
+                        class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
+                        <div
+                            class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                            <h3
+                                class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                                Currently Staying
+                            </h3>
+                            <span
+                                class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                                {{ currentStays.length }}
+                            </span>
+                        </div>
+                        <div
+                            v-if="currentStays.length === 0"
+                            class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
+                            No guests currently in-house.
+                        </div>
+                        <div
+                            v-else
+                            class="divide-y divide-mist-800">
+                            <div
+                                v-for="b in currentStays"
+                                :key="b.id"
+                                class="space-y-2 py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-mist-200">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                            @click="handleEditBooking(b)">
+                                            <fa-icon icon="pen-to-square" />
+                                        </button>
+                                    </div>
+                                    <RouterLink
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div class="flex justify-between text-xs text-mist-400">
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                        {{ b.nights }} night(s)
+                                    </span>
+                                    <span>{{ b.listing }}</span>
+                                </div>
+                                <div class="flex justify-end text-xs text-mist-400">
+                                    <span class="font-mono text-lime-400">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Today's Departures -->
+                <div class="shadow-md">
+                    <div
+                        class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
+                        <div
+                            class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                            <h3
+                                class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                                Today's Departures
+                            </h3>
+                            <span
+                                class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
+                                {{ todaysDepartures.length }}
+                            </span>
+                        </div>
+                        <div
+                            v-if="todaysDepartures.length === 0"
+                            class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
+                            No departures scheduled for today.
+                        </div>
+                        <div
+                            v-else
+                            class="divide-y divide-mist-800">
+                            <div
+                                v-for="b in todaysDepartures"
+                                :key="b.id"
+                                class="space-y-2 py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-mist-200">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
+                                            @click="handleEditBooking(b)">
+                                            <fa-icon icon="pen-to-square" />
+                                        </button>
+                                    </div>
+                                    <RouterLink
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <div class="flex justify-between text-xs text-mist-400">
+                                    <span>
+                                        {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                        &rarr;
+                                        {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                        {{ b.nights }} night(s)
+                                    </span>
+                                    <span>{{ b.listing }}</span>
+                                </div>
+                                <div class="flex justify-end text-xs text-mist-400">
+                                    <span class="font-mono text-lime-400">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
                 <p class="text-xs text-mist-400">
                     Real-time availability and unit operational status
                 </p>
             </div>
-            <!-- Metrics -->
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                <PropertyStats
-                    v-for="property in sortedProperties"
-                    :key="property.id"
-                    :bookings="bookings"
-                    :property-id="property.id"
-                    :properties="sortedProperties" />
-            </div>
             <!-- Properties -->
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
                     :property="property"
+                    :properties="sortedProperties"
                     :bookings="bookings"
-                    @edit-property="handleEditProperty(property.id)" />
+                    @edit="handleEditProperty(property.id)" />
             </div>
         </div>
 

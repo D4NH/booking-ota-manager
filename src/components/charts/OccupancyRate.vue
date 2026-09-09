@@ -27,7 +27,7 @@ onMounted(() => {
 
 <template>
     <div
-        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-4">
         <div>
             <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Occupancy Rate
@@ -101,23 +101,24 @@ onMounted(() => {
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 border-t border-mist-800/60 pt-3">
-            <div class="rounded-md bg-mist-950/50 p-2 text-center">
-                <span class="block text-[10px] uppercase font-semibold text-mist-500">
-                    Active Properties
-                </span>
-                <span class="text-sm font-bold font-mono text-lime-400">
-                    {{ yearlyStats.activePropertiesCount }}
-                </span>
-            </div>
-
-            <div class="rounded-md bg-mist-950/50 p-2 text-center">
-                <span class="block text-[10px] uppercase font-semibold text-mist-500">
-                    Vacant Nights
-                </span>
-                <span class="text-sm font-bold font-mono text-mist-300">
-                    {{ yearlyStats.vacantNights }}
-                </span>
+        <div class="rounded-md border-mist-800/80 bg-mist-950/50 p-2">
+            <div class="grid grid-cols-2 divide-x divide-mist-800/80 text-center">
+                <div class="px-1">
+                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        Active Properties
+                    </span>
+                    <span class="font-mono text-xs font-bold text-lime-400">
+                        {{ yearlyStats.activePropertiesCount }}
+                    </span>
+                </div>
+                <div class="px-1">
+                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        Vacant Nights
+                    </span>
+                    <span class="font-mono text-xs font-bold text-mist-100">
+                        {{ yearlyStats.vacantNights }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>

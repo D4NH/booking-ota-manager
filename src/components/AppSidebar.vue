@@ -74,7 +74,7 @@ const currentYear = new Date().getFullYear();
                 <span
                     v-show="!isCollapsed"
                     class="font-bold text-mist-100 text-nowrap transition-opacity duration-200">
-                    Mai House
+                    Mai House Jogja
                 </span>
             </div>
         </div>
@@ -85,7 +85,7 @@ const currentYear = new Date().getFullYear();
                 :key="link.name"
                 :to="link.to"
                 class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition text-mist-400 hover:bg-mist-800/60 hover:text-mist-200"
-                active-class="bg-mist-800 text-lime-400 font-semibold shadow-sm">
+                active-class="bg-mist-800/70 text-lime-400 font-semibold shadow-sm">
                 <fa-icon
                     :icon="link.icon"
                     class="w-4 h-4 shrink-0 text-center" />

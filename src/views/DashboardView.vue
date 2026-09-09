@@ -100,7 +100,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
         </div>
 
         <!-- Daily Operations -->
-        <div class="mt-8">
+        <div class="mt-4">
             <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
             <p class="mt-1 text-xs text-mist-400">Active Stays</p>
         </div>
@@ -315,6 +315,10 @@ const handleEditProperty = (propertyId: PropertyId) => {
         </div>
 
         <!-- Properties -->
+        <div class="mt-4">
+            <h1 class="text-xl font-bold text-mist-100">Properties</h1>
+            <p class="text-xs text-mist-400">Real-time availability and unit operational status</p>
+        </div>
         <div class="grid grid-cols-1 gap-4 shadow-md">
             <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
