@@ -148,7 +148,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -217,7 +217,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
@@ -286,7 +286,7 @@ const handleEditProperty = (propertyId: PropertyId) => {
                                         name: 'property-detail',
                                         params: { id: b.propertyId },
                                     }"
-                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium"
+                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,

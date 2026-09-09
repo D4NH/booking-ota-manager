@@ -383,14 +383,14 @@ onActivated(() => {
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
-                                    class="rounded-md bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
+                                    class="rounded-sm bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <RouterLink
                                     :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                    class="capitalize rounded-md px-2 py-0.5 text-xs font-medium text-nowrap"
+                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium text-nowrap"
                                     :class="[
                                         getPropertyTheme(b.propertyId).bg,
                                         getPropertyTheme(b.propertyId).text,
