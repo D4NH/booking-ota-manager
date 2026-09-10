@@ -14,7 +14,7 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
 const isCollapsed = ref(false);
-const isNotificationCollapsed = ref(true);
+const isNotificationOpen = ref(true);
 
 const pendingPayments = computed(() => {
     const isWithinWindow = (checkIn: string): boolean => {
@@ -52,9 +52,10 @@ const navLinks = [
 ];
 const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
+    isNotificationOpen.value = false;
 };
 const toggleNotifications = () => {
-    isNotificationCollapsed.value = !isNotificationCollapsed.value;
+    isNotificationOpen.value = !isNotificationOpen.value;
 };
 const currentYear = new Date().getFullYear();
 </script>
@@ -98,7 +99,7 @@ const currentYear = new Date().getFullYear();
         </nav>
 
         <NotificationsPopover
-            :is-open="isNotificationCollapsed"
+            :is-open="isNotificationOpen"
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
             @close="toggleNotifications"

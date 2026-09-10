@@ -55,11 +55,10 @@ onMounted(async () => {
 
 <template>
     <div class="flex flex-col h-screen overflow-hidden">
-        <div class="flex flex-1 min-h-0 gap-4">
-            <AppSidebar />
+        <div class="flex flex-1 min-h-0">
+            <AppSidebar class="shrink-0" />
 
-            <!-- <main class="flex-1 min-w-0 min-h-0 overflow-y-auto pr-1"> -->
-            <main class="flex-1 min-w-0 min-h-0 overflow-y-auto gap-4 pr-4">
+            <main class="flex-1 min-w-0 min-h-0 mx-4">
                 <RouterView />
             </main>
         </div>
