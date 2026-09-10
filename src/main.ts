@@ -43,6 +43,8 @@ import {
     faHouseUser,
     faBookmark,
     faCoins,
+    faReceipt,
+    faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -76,7 +78,9 @@ library.add(
     faClipboardCheck,
     faHouseUser,
     faBookmark,
-    faCoins
+    faCoins,
+    faReceipt,
+    faTriangleExclamation
 );
 
 const app = createApp(App);

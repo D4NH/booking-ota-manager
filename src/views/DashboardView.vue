@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useDateKeys } from '@/composables/useDateKeys';
-import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useDailyOperations } from '@/composables/useDailyOperations';
-import { getPropertyTheme } from '@/config/properties';
+import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/property';
-import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
+import { getCurrentMonth, formatDate } from '@/utils/date';
 
-import OccupiedTag from '@/components/OccupiedTag.vue';
+import PropertyCard from '@/components/PropertyCard.vue';
+import MonthOverMonth from '@/components/charts/MonthOverMonth.vue';
+import RecentBookings from '@/components/RecentBookings.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { properties, sortedProperties } = storeToRefs(propertyStore);
+const { sortedProperties } = storeToRefs(propertyStore);
 
-const { todaysArrivals, todaysDepartures, currentStays, todaysTurnover } =
-    useDailyOperations(bookings);
-const { currentDay } = useDateKeys();
+const { todaysTurnover } = useDailyOperations(bookings);
+
 const {
     totalPayout,
     occupiedNights,
@@ -30,26 +28,29 @@ const {
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(bookings, properties);
+} = useMonthlyMetrics(bookings, sortedProperties);
 
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
-const handleEditProperty = (propertyId: PropertyId) => {
-    const property = properties.value.find((p) => p.id === propertyId);
-    modalStore.openPropertyModal({ property });
-};
 </script>
 
 <template>
-    <div class="flex flex-col gap-4">
-        <div class="mt-4">
+    <!-- To make page fit viewport: flex flex-col h-full min-h-0 gap-4 -->
+    <!-- To make scrollable: h-full min-h-0 overflow-y-auto space-y-4 -->
+    <div class="h-full min-h-0 overflow-y-auto space-y-4">
+        <div class="shrink-0 flex flex-col mt-4">
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <p class="mt-1 text-xs text-mist-400">Live operational activity for {{ currentDay }}</p>
+            <div class="mt-1 text-xs text-mist-400">
+                Live operational activity for
+                <span class="font-bold">{{
+                    formatDate(getCurrentMonth(), { monthHeader: true })
+                }}</span>
+            </div>
         </div>
 
         <!-- Monthly Summary Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
@@ -99,285 +100,45 @@ const handleEditProperty = (propertyId: PropertyId) => {
             </div>
         </div>
 
-        <!-- Daily Operations -->
-        <div class="mt-4">
-            <h2 class="text-xl font-bold text-mist-100">Daily Operations</h2>
-            <p class="mt-1 text-xs text-mist-400">Active Stays</p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <!-- Arriving Today -->
-            <div class="shadow-md">
-                <div
-                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
-                    <div
-                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                            Arriving Today
-                        </h3>
-                        <span
-                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                            {{ todaysArrivals.length }}
-                        </span>
-                    </div>
-                    <div
-                        v-if="todaysArrivals.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500 min-h-10">
-                        No arrivals scheduled for today.
-                    </div>
-                    <div
-                        v-else
-                        class="divide-y divide-mist-800">
-                        <div
-                            v-for="b in todaysArrivals"
-                            :key="b.id"
-                            class="space-y-2 py-4 first:pt-0 last:pb-0">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-sm text-mist-200">
-                                        {{ b.guestName }}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                        @click="handleEditBooking(b)">
-                                        <fa-icon icon="pen-to-square" />
-                                    </button>
-                                </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
-                                <span>
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                    &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
-                                <span class="font-mono text-lime-400">
-                                    {{ formatIDR(b.payout) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Current Stays -->
-            <div class="shadow-md">
-                <div
-                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
-                    <div
-                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                            Currently Staying
-                        </h3>
-                        <span
-                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                            {{ currentStays.length }}
-                        </span>
-                    </div>
-                    <div
-                        v-if="currentStays.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                        No guests currently in-house.
-                    </div>
-                    <div
-                        v-else
-                        class="divide-y divide-mist-800">
-                        <div
-                            v-for="b in currentStays"
-                            :key="b.id"
-                            class="space-y-2 py-4 first:pt-0 last:pb-0">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-sm text-mist-200">
-                                        {{ b.guestName }}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                        @click="handleEditBooking(b)">
-                                        <fa-icon icon="pen-to-square" />
-                                    </button>
-                                </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
-                                <span>
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                    &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
-                                <span class="font-mono text-lime-400">
-                                    {{ formatIDR(b.payout) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Today's Departures -->
-            <div class="shadow-md">
-                <div
-                    class="h-full flex flex-col space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4">
-                    <div
-                        class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                            Today's Departures
-                        </h3>
-                        <span
-                            class="rounded-md bg-mist-500/20 px-2 py-0.5 text-[10px] font-bold text-mist-400">
-                            {{ todaysDepartures.length }}
-                        </span>
-                    </div>
-                    <div
-                        v-if="todaysDepartures.length === 0"
-                        class="flex flex-1 items-center justify-center text-center text-xs text-mist-500">
-                        No departures scheduled for today.
-                    </div>
-                    <div
-                        v-else
-                        class="divide-y divide-mist-800">
-                        <div
-                            v-for="b in todaysDepartures"
-                            :key="b.id"
-                            class="space-y-2 py-4 first:pt-0 last:pb-0">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-sm text-mist-200">
-                                        {{ b.guestName }}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                                        @click="handleEditBooking(b)">
-                                        <fa-icon icon="pen-to-square" />
-                                    </button>
-                                </div>
-                                <RouterLink
-                                    :to="{
-                                        name: 'property-detail',
-                                        params: { id: b.propertyId },
-                                    }"
-                                    class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium"
-                                    :class="[
-                                        getPropertyTheme(b.propertyId).bg,
-                                        getPropertyTheme(b.propertyId).text,
-                                    ]">
-                                    {{ b.propertyId }}
-                                </RouterLink>
-                            </div>
-                            <div class="flex justify-between text-xs text-mist-400">
-                                <span>
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                    &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                    {{ b.nights }} night(s)
-                                </span>
-                                <span>{{ b.listing }}</span>
-                            </div>
-                            <div class="flex justify-end text-xs text-mist-400">
-                                <span class="font-mono text-lime-400">
-                                    {{ formatIDR(b.payout) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Properties -->
+        <div class="flex flex-col shrink-0 mt-4">
+            <h1 class="text-xl font-bold text-mist-100">Properties</h1>
+            <p class="text-xs text-mist-400">Real-time availability and unit operational status</p>
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <PropertyCard
+                    v-for="property in sortedProperties"
+                    :key="property.id"
+                    :property="property"
+                    :properties="sortedProperties"
+                    :bookings="bookings"
+                    :use-daily-ops="true" />
             </div>
         </div>
 
-        <!-- Properties -->
-        <div class="mt-4">
-            <h1 class="text-xl font-bold text-mist-100">Properties</h1>
-            <p class="text-xs text-mist-400">Real-time availability and unit operational status</p>
-        </div>
-        <div class="grid grid-cols-1 gap-4 shadow-md">
-            <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900">
-                <table class="w-full text-left text-sm text-mist-300 table-fixed">
-                    <thead
-                        class="border-b border-mist-800 bg-mist-950/60 text-xs uppercase text-mist-500">
-                        <tr>
-                            <th class="w-25 px-4 py-2.5">Property</th>
-                            <th class="pr-4 py-2.5"></th>
-                            <th class="w-35 px-4 py-2.5 text-center">Status</th>
-                            <th class="w-35 px-4 py-2.5">Price</th>
-                            <th class="w-20 px-4 py-2.5 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-mist-800/60">
-                        <template
-                            v-for="property in sortedProperties"
-                            :key="property.id">
-                            <tr class="hover:bg-mist-800/30">
-                                <td class="px-4 py-3">
-                                    <RouterLink
-                                        :to="{
-                                            name: 'property-detail',
-                                            params: { id: property.id },
-                                        }">
-                                        <img
-                                            loading="lazy"
-                                            :src="`/images/${property.id}.jpg`"
-                                            :alt="`Picture of ${property.name}`"
-                                            class="h-20 w-20 object-cover rounded-md" />
-                                    </RouterLink>
-                                </td>
-                                <td class="pr-4 py-3 font-medium text-mist-100">
-                                    <h2 class="font-bold">{{ property.name }}</h2>
-                                    <p class="mt-1 text-xs text-mist-500 truncate">
-                                        <fa-icon icon="map-marker-alt" />
-                                        {{ property.address }}
-                                    </p>
-                                </td>
-                                <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                    <OccupiedTag
-                                        :bookings="bookings"
-                                        :property="property" />
-                                </td>
-                                <td class="px-4 py-3 font-medium text-mist-100 font-mono">
-                                    {{ formatIDR(property.price) }}
-                                </td>
-                                <td class="px-4 py-3 font-medium text-mist-100 text-center">
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-mist-400 hover:text-mist-100"
-                                        @click="handleEditProperty(property.id)">
-                                        <fa-icon icon="pen-to-square" />
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-0 my-4">
+            <div class="flex flex-col h-full min-h-0">
+                <div class="shrink-0 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-mist-100">Recent Bookings</h2>
+                        <p class="mt-0.5 text-xs text-mist-400">
+                            Latest reservations across all channels
+                        </p>
+                    </div>
+                    <!-- <RouterLink
+                        :to="{ name: 'bookings' }"
+                        class="text-xs font-semibold text-lime-400 hover:text-lime-300 transition">
+                        View all &rarr;
+                    </RouterLink> -->
+                </div>
+                <div
+                    class="mt-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md p-4">
+                    <RecentBookings
+                        :bookings="bookings"
+                        @select-booking="handleEditBooking" />
+                </div>
             </div>
+
+            <MonthOverMonth :bookings="bookings" />
         </div>
     </div>
 </template>
