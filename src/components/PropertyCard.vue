@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRef } from 'vue';
+import { computed, toRef } from 'vue';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { Booking } from '@/types/booking';
@@ -30,19 +30,28 @@ const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetri
         propertyId: props.property.id,
     }
 );
-const { todaysArrivals, currentStays } = useDailyOperations(bookingsRef, {
+const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(bookingsRef, {
     propertyId: props.property.id,
 });
+
+const staySections = computed(() =>
+    [
+        { label: 'Arriving Today', items: todaysArrivals.value },
+        { label: 'Currently Staying', items: currentStays.value },
+        { label: 'Leaving Today', items: todaysDepartures.value },
+    ].filter((section) => section.items.length > 0)
+);
+
+const hasActiveStays = computed(() => staySections.value.length > 0);
 </script>
 
 <template>
     <div
-        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-mist-700 hover:shadow-lg mb-4">
+        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 shadow-md mb-4">
         <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
             <div>
                 <div class="flex items-center justify-between gap-2">
-                    <h3
-                        class="text-base font-bold text-mist-100 truncate group-hover:text-lime-400 transition">
+                    <h3 class="text-base font-bold text-mist-100 truncate">
                         {{ property.name }}
                     </h3>
                     <OccupiedTag
@@ -60,51 +69,40 @@ const { todaysArrivals, currentStays } = useDailyOperations(bookingsRef, {
             </div>
 
             <div v-if="useDailyOps">
-                <div v-if="todaysArrivals.length || currentStays.length">
-                    <span
-                        class="flex items-center gap-1.5 text-[11px] font-bold text-lime-400 mb-1.5">
-                        Currently Staying
-                    </span>
+                <div
+                    v-if="hasActiveStays"
+                    class="space-y-4">
                     <div
-                        v-for="b in todaysArrivals"
-                        :key="'payout-' + (b.id || b.bookingId)">
-                        <div class="flex flex-col justify-between space-y-0.5">
-                            <span class="text-sm font-bold text-mist-100">
-                                {{ b.guestName }}
-                            </span>
-                            <span class="text-xs text-mist-400">
-                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                &rarr;
-                                {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                {{ b.nights }} night(s)
-                            </span>
-                            <span class="text-xs text-mist-400">
-                                {{ b.listing }}
-                            </span>
-                        </div>
-                    </div>
-                    <div
-                        v-for="b in currentStays"
-                        :key="'payout-' + (b.id || b.bookingId)">
-                        <div class="flex flex-col justify-between space-y-0.5">
-                            <span class="text-sm font-bold text-mist-100">
-                                {{ b.guestName }}
-                            </span>
-                            <span class="text-xs text-mist-400">
-                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                &rarr;
-                                {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                {{ b.nights }} night(s)
-                            </span>
-                            <span class="text-xs text-mist-400">
-                                {{ b.listing }}
-                            </span>
+                        v-for="section in staySections"
+                        :key="section.label">
+                        <span
+                            class="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
+                            {{ section.label }}
+                        </span>
+                        <div
+                            v-for="b in section.items"
+                            :key="'payout-' + (b.id || b.bookingId)"
+                            class="mb-2">
+                            <div class="flex flex-col justify-between space-y-0.5">
+                                <span class="text-sm font-bold text-mist-100">
+                                    {{ b.guestName }}
+                                </span>
+                                <span class="text-xs text-mist-400">
+                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                    &rarr;
+                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
+                                    {{ b.nights }} night(s)
+                                </span>
+                                <span class="text-xs text-mist-400">
+                                    {{ b.listing }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div v-else>
-                    <span class="flex items-center gap-1.5 text-[11px] mb-1.5">
-                        No active or upcoming bookings
+                    <span class="mb-1.5 flex items-center gap-1.5 text-[11px]">
+                        No active or upcoming stays
                     </span>
                 </div>
             </div>
