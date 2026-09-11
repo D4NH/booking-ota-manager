@@ -16,10 +16,6 @@ const props = defineProps<{
     useDailyOps?: boolean;
 }>();
 
-const emit = defineEmits<{
-    (e: 'edit', property: Property): void;
-}>();
-
 const bookingsRef = toRef(props, 'bookings');
 const propertiesRef = toRef(props, 'properties');
 
@@ -46,18 +42,17 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
 </script>
 
 <template>
-    <div
-        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 shadow-md mb-4">
+    <RouterLink
+        :to="{
+            name: 'property-detail',
+            params: { id: property.id },
+        }"
+        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 shadow-md">
         <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
             <div>
-                <div class="flex items-center justify-between gap-2">
-                    <h3 class="text-base font-bold text-mist-100 truncate">
-                        {{ property.name }}
-                    </h3>
-                    <OccupiedTag
-                        :bookings="bookings"
-                        :property="property" />
-                </div>
+                <h3 class="text-base font-bold text-mist-100 truncate">
+                    {{ property.name }}
+                </h3>
                 <p
                     class="text-xs text-mist-400 mt-0.5 truncate"
                     :title="property.address">
@@ -67,7 +62,6 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
                     {{ property.address }}
                 </p>
             </div>
-
             <div v-if="useDailyOps">
                 <div
                     v-if="hasActiveStays"
@@ -168,27 +162,19 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
                         </span>
                         <span class="text-[11px] text-mist-500"> / night</span>
                     </div>
-                    <button
-                        v-if="!useDailyOps"
-                        type="button"
-                        class="cursor-pointer text-xs text-mist-400 hover:text-mist-100"
-                        @click.prevent="emit('edit', property)">
-                        <fa-icon icon="pen-to-square" />
-                    </button>
                 </div>
             </div>
         </div>
-        <RouterLink
-            :to="{
-                name: 'property-detail',
-                params: { id: property.id },
-            }"
-            class="relative w-44 shrink-0 overflow-hidden bg-mist-950">
+        <div class="relative w-44 shrink-0 overflow-hidden bg-mist-950">
             <img
                 :src="`/images/${property.id}.jpg`"
                 :alt="property.name"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy" />
-        </RouterLink>
-    </div>
+        </div>
+        <OccupiedTag
+            class="absolute top-2.5 right-2.5 z-20"
+            :bookings="bookings"
+            :property="property" />
+    </RouterLink>
 </template>
