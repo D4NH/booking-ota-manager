@@ -17,9 +17,11 @@ const { isOccupied } = useDailyOperations(bookingsRef, {
 </script>
 
 <template>
-    <span
-        class="rounded-sm px-2 py-0.5 text-xs text-[11px] tracking-wide shrink-0"
-        :class="[isOccupied ? 'bg-amber-500/20 text-amber-400' : 'bg-lime-500/20 text-lime-400']">
-        {{ isOccupied ? 'Occupied ' : 'Available' }}
-    </span>
+    <div
+        class="flex items-center gap-1 rounded-md bg-mist-950/80 px-2 py-1 text-[11px] font-semibold text-mist-300 shadow-md backdrop-blur-sm transition">
+        <span
+            class="h-2 w-2 rounded-md"
+            :class="[isOccupied ? 'bg-amber-400' : 'bg-lime-400']"></span>
+        <span>{{ isOccupied ? 'Occupied ' : 'Available' }}</span>
+    </div>
 </template>

@@ -1,211 +1,113 @@
+<!-- src/views/PropertiesView.vue -->
 <script setup lang="ts">
-import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useDailyOperations } from '@/composables/useDailyOperations';
-import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
-import {
-    useOccupancy,
-    calculateYearlyOccupancy,
-    getBookedPropertiesCount,
-} from '@/composables/useOccupancy';
-import { PROPERTY_LIST } from '@/config/properties';
+import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { PropertyId } from '@/types/property';
-import { formatIDR } from '@/utils/money';
+import type { PropertyId, Property } from '@/types/property';
 
+import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
+import UnitComparison from '@/components/UnitComparison.vue';
+import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
-import ChannelBreakdown from '@/components/charts/ChannelBreakdown.vue';
-import OccupancyRate from '@/components/charts/OccupancyRate.vue';
-import SalesStatistics from '@/components/charts/SalesStatistics.vue';
 
 const route = useRoute();
 const router = useRouter();
-
 const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { bookings } = storeToRefs(bookingStore);
 const { sortedProperties } = storeToRefs(propertyStore);
-const { calculateMonthlyOccupancy } = useOccupancy();
 
-const activePropertiesCount = computed(() => getBookedPropertiesCount(bookings.value));
-const selectedPropertyId = computed<string>(() => {
+const selectedProperty = computed<string>(() => {
     const id = route.params.id;
 
     return typeof id === 'string' && id ? id : 'all';
 });
-const activePropertyName = computed<string>(() => {
-    if (selectedPropertyId.value === 'all') {
-        return 'Property Management';
-    }
 
-    const property = sortedProperties.value.find((prop) => prop.id === selectedPropertyId.value);
-    return property?.name ?? '';
-});
-const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
-const occupancyStats = computed(() => {
-    const currentDate = new Date();
-    const monthlyStats = calculateMonthlyOccupancy(
-        bookings.value,
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        'all',
-        activePropertiesCount.value
-    );
-    const yearlyStats = calculateYearlyOccupancy(bookings.value, currentDate.getFullYear());
-
-    return { monthlyStats, yearlyStats };
-});
-
-const { todaysTurnover } = useDailyOperations(bookings, { propertyId: selectedPropertyId });
-const {
-    totalPayout,
-    occupiedNights,
-    totalCapacityNights,
-    occupancyPercentage,
-    totalBookingsCount,
-    revenueGrowthPercent,
-    monthlyPropertyData,
-} = useMonthlyMetrics(bookings, sortedProperties, { propertyId: selectedPropertyId });
-
-const handleTabChange = (tabId: string) =>
-    tabId === 'all'
+const navigateToDetail = (propertyId: PropertyId) =>
+    propertyId === 'all'
         ? router.push({ name: 'properties' })
-        : router.push({ name: 'property-detail', params: { id: tabId } });
-const handleEditProperty = (propertyId: PropertyId) => {
-    const property = sortedProperties.value.find((p) => p.id === propertyId);
-    modalStore.openPropertyModal({ property });
+        : router.push({ name: 'property-detail', params: { id: propertyId } });
+
+const handleEditProperty = (prop: Property) => {
+    modalStore.openPropertyModal({ property: prop });
 };
 </script>
 
 <template>
-    <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4">
+    <div class="flex flex-col h-full min-h-0 overflow-y-auto">
+        <!-- Header Bar -->
+        <div class="flex shrink-0 items-center justify-between my-4">
             <div>
-                <h1 class="text-xl font-bold text-mist-100">{{ activePropertyName }}</h1>
-                <p class="mt-1 text-xs text-mist-400">
-                    Select a property to view detailed analytics or manage listing settings
+                <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
+                <p class="text-xs text-mist-400">
+                    Portfolio health, listing settings, and unit comparisons
                 </p>
             </div>
-            <!-- Switcher Tabs -->
+            <!-- Property Filter Tabs -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
-                        selectedPropertyId === 'all'
+                        selectedProperty === 'all'
                             ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
-                    @click="handleTabChange('all')">
+                    @click="navigateToDetail('all')">
                     All
                 </button>
                 <button
-                    v-for="prop in PROPERTY_LIST"
+                    v-for="prop in sortedProperties"
                     :key="prop.id"
                     type="button"
                     class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="[
-                        selectedPropertyId === prop.id
+                        selectedProperty === prop.id
                             ? 'bg-mist-800 text-lime-400 shadow-md'
                             : 'text-mist-400 hover:text-mist-200',
                     ]"
-                    @click="handleTabChange(prop.id)">
+                    @click="navigateToDetail(prop.id)">
                     {{ prop.id }}
                 </button>
             </div>
-            <!-- <button
-                    type="button"
-                    class="ml-5 cursor-pointer rounded-md bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition-colors hover:bg-lime-300"
-                    @click="handleAddProperty">
-                    + Add Property
-                </button> -->
         </div>
 
-        <div
-            v-if="route.meta.isOverview"
-            class="flex flex-col gap-4">
-            <!-- Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <SalesStatistics
-                    class="lg:col-span-2"
-                    :data="monthlyPropertyData"
-                    :total-revenue="totalRevenue" />
-                <ChannelBreakdown :bookings="bookings" />
-                <OccupancyRate :stats="occupancyStats" />
-            </div>
+        <div v-if="route.meta.isOverview">
+            <!-- Portfolio Metric Pills -->
+            <PortfolioMetrics
+                :bookings="bookings"
+                :total-properties="sortedProperties.length" />
 
-            <div class="mt-4">
-                <h1 class="text-xl font-bold text-mist-100">Properties</h1>
-                <p class="text-xs text-mist-400">
-                    Real-time availability and unit operational status
-                </p>
-            </div>
             <!-- Properties -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="flex items-center justify-between">
+                <div class="mt-8 mb-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
+                        Properties
+                    </h2>
+                    <p class="mt-0.5 text-xs text-mist-500">Click to view the full unit details</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
                     :property="property"
                     :properties="sortedProperties"
                     :bookings="bookings"
-                    @edit="handleEditProperty(property.id)" />
+                    @edit="handleEditProperty" />
             </div>
-        </div>
 
-        <!-- Monthly Summary Cards -->
-        <div
-            v-else
-            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Monthly Revenue
-                </h3>
-                <p class="mt-1 font-mono text-lg font-bold text-white">
-                    {{ formatIDR(totalPayout) }}
-                </p>
-                <div class="flex items-center gap-1 text-xs mt-1">
-                    <span
-                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'"
-                        class="font-medium">
-                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
-                    </span>
-                    <span class="text-mist-500">vs last month</span>
-                </div>
-            </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Occupancy Rate
-                </h3>
-                <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
-                <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
-                    <div
-                        class="bg-lime-500 h-full transition-[width] duration-300"
-                        :style="{ width: `${occupancyPercentage}%` }"></div>
-                </div>
-                <p class="text-xs text-mist-500 mt-1">
-                    {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
-                </p>
-            </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Total Month Bookings
-                </h3>
-                <p class="text-lg font-bold text-mist-100 mt-1">
-                    {{ totalBookingsCount }}
-                </p>
-                <p class="text-xs text-mist-500 mt-1">Active bookings</p>
-            </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
-                <div class="text-lg font-bold text-mist-200 mt-1">
-                    <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
-                    <span class="text-amber-400">↑ {{ todaysTurnover.out }} Out</span>
-                </div>
-                <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
+            <!-- Analytics -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <UnitComparison
+                    :bookings="bookings"
+                    :properties="sortedProperties" />
+
+                <ChannelDistribution :bookings="bookings" />
             </div>
         </div>
 
