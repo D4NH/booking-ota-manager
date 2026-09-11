@@ -28,7 +28,8 @@ const recentBookings = computed(() => {
 </script>
 
 <template>
-    <div class="flex-1 overflow-y-auto divide-y divide-mist-800">
+    <div
+        class="overflow-y-auto divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <div
             v-if="recentBookings.length === 0"
             class="flex h-40 flex-col items-center justify-center text-center text-xs text-mist-500">
@@ -41,7 +42,7 @@ const recentBookings = computed(() => {
         <div
             v-for="b in recentBookings"
             :key="b.id || b.bookingId"
-            class="flex items-center justify-between rounded-md border-mist-800 px-2.5 py-3.5 hover:bg-mist-800/40 transition cursor-pointer group"
+            class="flex grow items-center justify-between rounded-md px-2.5 py-3.5 hover:bg-mist-800/40 transition cursor-pointer group"
             @click="emit('select-booking', b)">
             <!-- Guest & Property -->
             <div class="min-w-0 flex items-center gap-3">

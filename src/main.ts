@@ -45,6 +45,9 @@ import {
     faCoins,
     faReceipt,
     faTriangleExclamation,
+    faBath,
+    faArrowUpRightFromSquare,
+    faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -80,7 +83,10 @@ library.add(
     faBookmark,
     faCoins,
     faReceipt,
-    faTriangleExclamation
+    faTriangleExclamation,
+    faBath,
+    faArrowUpRightFromSquare,
+    faArrowLeft
 );
 
 const app = createApp(App);

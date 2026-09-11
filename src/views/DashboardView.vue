@@ -38,17 +38,16 @@ const handleEditBooking = (booking: Booking) => {
 <template>
     <!-- To make page fit viewport: flex flex-col h-full min-h-0 gap-4 -->
     <!-- To make scrollable: h-full min-h-0 overflow-y-auto space-y-4 -->
-    <div class="h-full min-h-0 overflow-y-auto space-y-4">
-        <div class="shrink-0 flex flex-col mt-4">
+    <div class="h-full min-h-0 overflow-y-auto">
+        <div class="shrink-0 my-4">
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <div class="mt-1 text-xs text-mist-400">
+            <div class="mt-0.5 text-xs text-mist-400">
                 Live operational activity for
-                <span class="font-bold">{{
-                    formatDate(getCurrentMonth(), { monthHeader: true })
-                }}</span>
+                <span class="font-bold">
+                    {{ formatDate(getCurrentMonth(), { monthHeader: true }) }}
+                </span>
             </div>
         </div>
-
         <!-- Monthly Summary Cards -->
         <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
@@ -101,10 +100,14 @@ const handleEditBooking = (booking: Booking) => {
         </div>
 
         <!-- Properties -->
-        <div class="flex flex-col shrink-0 mt-4">
-            <h1 class="text-xl font-bold text-mist-100">Properties</h1>
-            <p class="text-xs text-mist-400">Real-time availability and unit operational status</p>
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="flex flex-col shrink-0">
+            <div class="mt-8 mb-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
+                <p class="mt-0.5 text-xs text-mist-500">
+                    Real-time availability and unit operational status
+                </p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
@@ -115,29 +118,23 @@ const handleEditBooking = (booking: Booking) => {
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-0 my-4">
-            <div class="flex flex-col h-full min-h-0">
-                <div class="shrink-0 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-bold text-mist-100">Recent Bookings</h2>
-                        <p class="mt-0.5 text-xs text-mist-400">
-                            Latest reservations across all channels
-                        </p>
-                    </div>
-                    <!-- <RouterLink
-                        :to="{ name: 'bookings' }"
-                        class="text-xs font-semibold text-lime-400 hover:text-lime-300 transition">
-                        View all &rarr;
-                    </RouterLink> -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Recent Bookings -->
+            <div class="flex flex-col shrink-0">
+                <div class="mt-8 mb-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
+                        Recent Bookings
+                    </h2>
+                    <p class="mt-0.5 text-xs text-mist-500">
+                        Latest reservations across all channels
+                    </p>
                 </div>
-                <div
-                    class="mt-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md p-4">
-                    <RecentBookings
-                        :bookings="bookings"
-                        @select-booking="handleEditBooking" />
-                </div>
+                <RecentBookings
+                    :bookings="bookings"
+                    @select-booking="handleEditBooking" />
             </div>
 
+            <!-- Revenue Performance -->
             <MonthOverMonth :bookings="bookings" />
         </div>
     </div>

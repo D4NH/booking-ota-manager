@@ -169,14 +169,15 @@ const chartOptions: ChartOptions<'bar'> = {
 <template>
     <div class="flex flex-col h-full min-h-0 text-mist-100">
         <!-- Header -->
-        <div class="shrink-0">
-            <h2 class="text-xl font-bold tracking-tight text-mist-100">Revenue Performance</h2>
+        <div class="shrink-0 mt-8 mb-4">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
+                Revenue Performance
+            </h2>
             <p class="mt-0.5 text-xs text-mist-400">
                 Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
             </p>
         </div>
-        <div
-            class="mt-4 p-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md">
+        <div class="p-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div class="flex items-start justify-between gap-4">
                 <!-- KPI Summary Cards -->
                 <div class="flex flex-col">
