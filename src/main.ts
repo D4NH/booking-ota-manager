@@ -48,6 +48,8 @@ import {
     faBath,
     faArrowUpRightFromSquare,
     faArrowLeft,
+    faHouseCircleCheck,
+    faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(
@@ -86,7 +88,9 @@ library.add(
     faTriangleExclamation,
     faBath,
     faArrowUpRightFromSquare,
-    faArrowLeft
+    faArrowLeft,
+    faHouseCircleCheck,
+    faSpinner
 );
 
 const app = createApp(App);

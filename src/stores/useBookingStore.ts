@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import { calculateNights } from '@/utils/date';
 
 export const useBookingStore = defineStore('booking', () => {
     const bookings = ref<Booking[]>([]);
@@ -50,8 +51,11 @@ export const useBookingStore = defineStore('booking', () => {
                 ? crypto.randomUUID()
                 : `${payload.propertyId}-${payload.bookingId}-${Date.now()}`;
 
+        const calculatedNights = calculateNights(payload.checkIn, payload.checkOut);
+
         const newBooking: Booking = {
             ...payload,
+            nights: calculatedNights,
             id: newId,
             createdAt: new Date().toISOString(),
         };
@@ -60,8 +64,12 @@ export const useBookingStore = defineStore('booking', () => {
         await loadBookings();
         return newBooking;
     };
+
     const updateBooking = async (updated: Booking): Promise<void> => {
-        const recordToPut = { ...updated };
+        const recordToPut = {
+            ...updated,
+            nights: calculateNights(updated.checkIn, updated.checkOut),
+        };
 
         if (!recordToPut.id) {
             const existing = bookings.value.find(
@@ -80,6 +88,7 @@ export const useBookingStore = defineStore('booking', () => {
         await db.bookings.put(recordToPut);
         await loadBookings();
     };
+
     const deleteBooking = async (idOrBookingId: string): Promise<void> => {
         if (!idOrBookingId) return;
 
@@ -96,6 +105,7 @@ export const useBookingStore = defineStore('booking', () => {
         await db.bookings.delete(targetId);
         await loadBookings();
     };
+
     const clearAllLocalBookings = async (): Promise<void> => {
         await db.bookings.clear();
         await loadBookings();
@@ -114,9 +124,13 @@ export const useBookingStore = defineStore('booking', () => {
             );
         }
 
-        await sheetsApi.appendSheetRow(targetId, formatSheetRow(payload));
-        await addBooking(payload);
+        const nights = calculateNights(payload.checkIn, payload.checkOut);
+        const payloadWithNights = { ...payload, nights };
+
+        await sheetsApi.appendSheetRow(targetId, formatSheetRow(payloadWithNights));
+        await addBooking(payloadWithNights);
     };
+
     const updateBookingWithRemoteSync = async (
         updated: Booking,
         sheetsApi: {
@@ -134,13 +148,17 @@ export const useBookingStore = defineStore('booking', () => {
             );
         }
 
+        const nights = calculateNights(updated.checkIn, updated.checkOut);
+        const updatedWithNights = { ...updated, nights };
+
         await sheetsApi.updateSheetRowByBookingId(
             targetId,
-            updated.bookingId,
-            formatSheetRow(updated)
+            updatedWithNights.bookingId,
+            formatSheetRow(updatedWithNights)
         );
-        await updateBooking(updated);
+        await updateBooking(updatedWithNights);
     };
+
     const updateBookingStatusWithSync = async (
         booking: Booking,
         newStatus: BookingStatus,
@@ -153,12 +171,14 @@ export const useBookingStore = defineStore('booking', () => {
 
         await updateBookingWithRemoteSync(updatedBooking, sheetsApi);
     };
+
     const markBookingComplete = async (
         booking: Booking,
         sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
     ): Promise<void> => {
         await updateBookingStatusWithSync(booking, 'Completed', sheetsApi);
     };
+
     const deleteBookingWithRemoteSync = async (
         booking: Booking,
         sheetsApi: {
@@ -181,6 +201,9 @@ export const useBookingStore = defineStore('booking', () => {
         }
     };
 
+    /**
+     * Imports and synchronizes bookings from Google Sheets rows into local Dexie database.
+     */
     const importBookingsFromGoogleSheets = async (
         propertyId: PropertyId,
         rows: (string | number)[][]
@@ -203,7 +226,15 @@ export const useBookingStore = defineStore('booking', () => {
         let minCheckIn = '9999-12-31';
         let maxCheckIn = '0000-01-01';
 
-        // Process incoming rows from Google Sheets
+        const existingMap = new Map<string, Booking>();
+        bookings.value.forEach((b) => {
+            if (b.propertyId === propertyId) {
+                existingMap.set(b.bookingId, b);
+            }
+        });
+
+        const recordsToPut: Booking[] = [];
+
         for (const row of rows) {
             const rawBookingId = String(row[0] || '').trim();
             const rawListing = String(row[1] || '').trim();
@@ -227,7 +258,6 @@ export const useBookingStore = defineStore('booking', () => {
                   ? 'Unavailable'
                   : 'Whatsapp';
 
-            // Unique deterministic composite key including checkOut to avoid collisions
             const bookingId =
                 rawBookingId ||
                 (isUnavailable
@@ -237,7 +267,9 @@ export const useBookingStore = defineStore('booking', () => {
             processedBookingIds.add(bookingId);
 
             const guestName = rawGuestName || (isUnavailable ? 'Unavailable' : 'Guest');
-            const nights = Number(row[5]) || 1;
+
+            const nights = calculateNights(checkIn, checkOut);
+
             const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
             const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
 
@@ -248,9 +280,7 @@ export const useBookingStore = defineStore('booking', () => {
 
             const notes = String(row[9] || '').trim();
 
-            const existing = bookings.value.find(
-                (b) => b.bookingId === bookingId && b.propertyId === propertyId
-            );
+            const existing = existingMap.get(bookingId);
 
             const payload: Omit<Booking, 'id'> = {
                 propertyId,
@@ -268,7 +298,7 @@ export const useBookingStore = defineStore('booking', () => {
 
             const fallbackId = existing?.id || `${propertyId}-${bookingId}`;
 
-            await db.bookings.put({
+            recordsToPut.push({
                 ...payload,
                 id: fallbackId,
             } as Booking);
@@ -277,13 +307,18 @@ export const useBookingStore = defineStore('booking', () => {
                 importedCount++;
             } else if (
                 payload.status !== existing.status ||
-                payload.guestName !== existing.guestName
+                payload.guestName !== existing.guestName ||
+                payload.payout !== existing.payout ||
+                payload.nights !== existing.nights
             ) {
                 updatedCount++;
             }
         }
 
-        // Query Dexie for records strictly within the imported date range
+        if (recordsToPut.length > 0) {
+            await db.bookings.bulkPut(recordsToPut);
+        }
+
         let deletedCount = 0;
 
         if (processedBookingIds.size > 0) {
@@ -293,7 +328,6 @@ export const useBookingStore = defineStore('booking', () => {
                 .filter((b) => b.checkIn >= minCheckIn && b.checkIn <= maxCheckIn)
                 .toArray();
 
-            // Find records within this year/range that are missing from the sheet payload
             const staleBookings = localDbBookings.filter(
                 (b) => !processedBookingIds.has(b.bookingId)
             );
@@ -302,13 +336,9 @@ export const useBookingStore = defineStore('booking', () => {
                 const staleIds = staleBookings.map((b) => b.id);
                 await db.bookings.bulkDelete(staleIds);
                 deletedCount = staleIds.length;
-                console.log(
-                    `[Sync] Successfully removed ${deletedCount} deleted entries from local database.`
-                );
             }
         }
 
-        // Reload Pinia store from Dexie
         await loadBookings();
 
         return { importedCount, updatedCount, deletedCount };
