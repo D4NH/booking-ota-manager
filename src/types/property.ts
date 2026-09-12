@@ -4,6 +4,10 @@ export interface Property {
     id: PropertyId;
     name: string;
     address: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
     price: number;
     codePrefix: string;
     color: string;
