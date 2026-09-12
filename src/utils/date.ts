@@ -96,14 +96,18 @@ export const formatDate = (
 };
 
 /**
- * Calculate night count between check-in and check-out
+ * Accurately calculates nights between two 'YYYY-MM-DD' dates.
+ * Uses Date.UTC to eliminate timezone or hour-shift discrepancies.
  */
-export const calculateNights = (checkIn: string, checkOut: string): number => {
-    if (!checkIn || !checkOut) return 1;
+export function calculateNights(checkIn: string, checkOut: string): number {
+    const [y1, m1, d1] = checkIn.split('-').map(Number);
+    const [y2, m2, d2] = checkOut.split('-').map(Number);
 
-    const start = new Date(checkIn).getTime();
-    const end = new Date(checkOut).getTime();
-    const diff = Math.ceil((end - start) / (1000 * 3600 * 24));
+    if (!y1 || !m1 || !d1 || !y2 || !m2 || !d2) return 1;
+
+    const start = Date.UTC(y1, m1 - 1, d1);
+    const end = Date.UTC(y2, m2 - 1, d2);
+    const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
 
     return diff > 0 ? diff : 1;
-};
+}
