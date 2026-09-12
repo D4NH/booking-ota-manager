@@ -16,6 +16,10 @@ const defaultForm: Property = {
     id: '' as PropertyId,
     name: '',
     address: '',
+    coordinates: {
+        lat: 0,
+        lng: 0,
+    },
     color: '#016730',
     price: 0,
     codePrefix: '',
@@ -38,6 +42,10 @@ const handleSubmit = () => {
     const payload: Property = {
         ...form.value,
         id: generatedId,
+        coordinates: {
+            lat: form.value.coordinates.lat,
+            lng: form.value.coordinates.lng,
+        },
         price: Number(form.value.price) || 0,
     };
 
@@ -106,6 +114,30 @@ watch(
                             rows="3"
                             placeholder="Enter property address..."
                             class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-mist-300"> Lat </label>
+                            <input
+                                v-model.number="form.coordinates.lat"
+                                type="number"
+                                step="any"
+                                required
+                                placeholder="0"
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-mist-300"> Lang </label>
+                            <input
+                                v-model.number="form.coordinates.lng"
+                                type="number"
+                                step="any"
+                                required
+                                placeholder="0"
+                                class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 outline-none focus:border-lime-400" />
+                        </div>
                     </div>
 
                     <!-- Code Prefix & Theme Color -->

@@ -40,7 +40,7 @@ const annualOccupancy = computed(() => {
 <template>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- 1. Portfolio Revenue -->
-        <div class="rounded-xl border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Portfolio Revenue
             </span>
@@ -51,7 +51,7 @@ const annualOccupancy = computed(() => {
         </div>
 
         <!-- 2. Operational Capacity -->
-        <div class="rounded-xl border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Active Listings
             </span>
@@ -63,7 +63,7 @@ const annualOccupancy = computed(() => {
         </div>
 
         <!-- 3. Portfolio ADR -->
-        <div class="rounded-xl border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Average Daily Rate
             </span>
@@ -76,7 +76,7 @@ const annualOccupancy = computed(() => {
         </div>
 
         <!-- 4. Annual Occupancy -->
-        <div class="rounded-xl border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Annual Occupancy
             </span>
