@@ -4,10 +4,10 @@ import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDateKeys } from '@/composables/useDateKeys';
 import { useDailyOperations } from '@/composables/useDailyOperations';
-import { useBookingStore } from '@/stores/useBookingStore';
-import { useModalStore } from '@/stores/useModalStore';
 import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { bookingStatuses, getStatusStyle } from '@/config/status';
+import { useBookingStore } from '@/stores/useBookingStore';
+import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
@@ -20,8 +20,8 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 
 const { deleteBooking, clearAllLocalBookings } = useBookingSync();
-
 const { currentDay } = useDateKeys();
+
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
@@ -33,7 +33,6 @@ const currentMonthRef = ref<HTMLElement | null>(null);
 
 const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(bookings, {
     propertyId: () => selectedProperty.value,
-
 });
 
 const availableMonths = computed<string[]>(() => {

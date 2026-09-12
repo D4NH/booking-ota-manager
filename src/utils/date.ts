@@ -99,7 +99,7 @@ export const formatDate = (
  * Accurately calculates nights between two 'YYYY-MM-DD' dates.
  * Uses Date.UTC to eliminate timezone or hour-shift discrepancies.
  */
-export function calculateNights(checkIn: string, checkOut: string): number {
+export const calculateNights = (checkIn: string, checkOut: string): number => {
     const [y1, m1, d1] = checkIn.split('-').map(Number);
     const [y2, m2, d2] = checkOut.split('-').map(Number);
 
@@ -110,4 +110,14 @@ export function calculateNights(checkIn: string, checkOut: string): number {
     const diff = Math.round((end - start) / (1000 * 60 * 60 * 24));
 
     return diff > 0 ? diff : 1;
-}
+};
+
+// Date offset helper without timezone issues
+export const getOffsetDate = (dateStr: string, offsetDays: number): string => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(Number(y), Number(m) - 1, Number(d) + offsetDays);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};

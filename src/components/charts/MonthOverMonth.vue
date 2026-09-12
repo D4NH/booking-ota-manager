@@ -81,7 +81,6 @@ const fourMonthSequence = computed(() => {
         };
     });
 });
-
 const summaryStats = computed(() => {
     const data = fourMonthSequence.value;
     const highlightedItem = data.find((item) => item.isHighlighted) ?? data[data.length - 1]!;
@@ -110,7 +109,6 @@ const summaryStats = computed(() => {
         rangeLabel: firstLabel && lastLabel ? `${firstLabel} - ${lastLabel}` : '',
     };
 });
-
 const chartData = computed<ChartData<'bar'>>(() => ({
     labels: fourMonthSequence.value.map((item) => item.monthName),
     datasets: [
@@ -133,7 +131,6 @@ const chartData = computed<ChartData<'bar'>>(() => ({
         },
     ],
 }));
-
 const chartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,

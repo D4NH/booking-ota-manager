@@ -28,42 +28,33 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { deleteBooking } = useBookingSync();
+const { isOccupied, todaysTurnover, staySections } = useDailyOperations(bookings, {
+    propertyId: () => props.id,
+});
 const { currentDay } = useDateKeys();
 
 const hiddenStatuses = ref<Booking['status'][]>([]);
 const collapsedMonths = ref<string[]>([]);
-
 const copiedField = ref<string | null>(null);
-const copyText = async (text: string, field: string) => {
-    await navigator.clipboard.writeText(text);
-    copiedField.value = field;
-    setTimeout(() => (copiedField.value = null), 2000);
-};
 
-const selectedProperty = computed<Property | undefined>(() => {
-    return sortedProperties.value.find((p) => p.id === props.id);
-});
-
-const unitBookings = computed(() => {
-    return bookings.value
+const selectedProperty = computed<Property | undefined>(() =>
+    sortedProperties.value.find((p) => p.id === props.id)
+);
+const unitBookings = computed(() =>
+    bookings.value
         .filter((b) => b.propertyId === props.id && b.status !== 'Unavailable')
-        .sort((a, b) => b.checkIn.localeCompare(a.checkIn));
-});
-
+        .sort((a, b) => b.checkIn.localeCompare(a.checkIn))
+);
 const totalRevenue = computed(() => unitBookings.value.reduce((sum, b) => sum + b.payout, 0));
-
 const totalNights = computed(() =>
     unitBookings.value
         .filter((b) => b.status !== 'Unavailable')
         .reduce((sum, b) => sum + b.nights, 0)
 );
-
 const adr = computed(() =>
     totalNights.value > 0 ? Math.round(totalRevenue.value / totalNights.value) : 0
 );
-
 const annualOccupancy = computed(() => Math.round((totalNights.value / 365) * 100));
-
 const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
 const filteredBookings = computed(() => {
     const prop = props.id;
@@ -100,16 +91,16 @@ const groupedBookings = computed(() => {
         }));
 });
 
-const { isOccupied, todaysTurnover, staySections } = useDailyOperations(bookings, {
-    propertyId: () => props.id,
-});
-
+const copyText = async (text: string, field: string) => {
+    await navigator.clipboard.writeText(text);
+    copiedField.value = field;
+    setTimeout(() => (copiedField.value = null), 2000);
+};
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDay.value >= checkIn &&
     currentDay.value <= checkOut &&
     status !== 'Waiting for payout' &&
     status !== 'Completed';
-
 const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
 

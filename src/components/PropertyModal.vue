@@ -52,6 +52,7 @@ const handleSubmit = () => {
     emit('save', payload);
     emit('close');
 };
+
 watch(
     () => props.propertyToEdit,
     (newVal) => {

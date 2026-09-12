@@ -95,9 +95,8 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
     },
 }));
 
-const getChartInstance = (): ChartJS | null => {
-    return chartRef.value?.chartInstance || chartRef.value?.chart || null;
-};
+const getChartInstance = (): ChartJS | null =>
+    chartRef.value?.chartInstance || chartRef.value?.chart || null;
 const highlightSlice = (index: number) => {
     hoveredIndex.value = index;
     const chart = getChartInstance();

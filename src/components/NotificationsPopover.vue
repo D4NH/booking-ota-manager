@@ -23,7 +23,6 @@ const emit = defineEmits<{
 const totalCount = computed(() => props.pendingPayments.length + props.pendingPayouts.length);
 
 const handleInstantComplete = async (booking: Booking) => {
-    // 1-liner: handles local store, Google Sheets, and Toast notification automatically!
     await markBookingComplete(booking);
 };
 </script>
@@ -101,12 +100,6 @@ const handleInstantComplete = async (booking: Booking) => {
                             @click="emit('edit', b)">
                             <fa-icon icon="pen-to-square" />
                         </button>
-                        <!-- <button
-                            type="button"
-                            class="rounded-md bg-lime-500 px-2.5 py-1 text-[11px] font-bold text-mist-950 hover:bg-lime-400 transition"
-                            @click="emit('mark-paid', b)">
-                            Mark Paid
-                        </button> -->
                     </div>
                 </div>
             </div>

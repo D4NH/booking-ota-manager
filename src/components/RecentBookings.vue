@@ -14,7 +14,6 @@ const emit = defineEmits<{
     (e: 'select-booking', booking: Booking): void;
 }>();
 
-// Sort by creation date (or fallback to check-in date) descending
 const recentBookings = computed(() => {
     return [...props.bookings]
         .filter((b) => b.status !== 'Unavailable')

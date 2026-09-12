@@ -1,7 +1,6 @@
 @@ -1,122 +0,0 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-
 import { PROPERTY_LIST } from '@/config/properties';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 import { formatIDR } from '@/utils/money';

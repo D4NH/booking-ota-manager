@@ -20,7 +20,6 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { todaysTurnover } = useDailyOperations(bookings);
-
 const {
     totalPayout,
     occupiedNights,
@@ -112,7 +111,6 @@ const handleEditBooking = (booking: Booking) => {
                     v-for="property in sortedProperties"
                     :key="property.id"
                     :property="property"
-                    :properties="sortedProperties"
                     :bookings="bookings"
                     :use-daily-ops="true" />
             </div>

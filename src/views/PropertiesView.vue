@@ -7,11 +7,11 @@ import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { PropertyId, Property } from '@/types/property';
 
-import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
-import UnitComparison from '@/components/UnitComparison.vue';
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
+import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 // import PropertiesMap from '@/components/PropertiesMap.vue';
+import UnitComparison from '@/components/UnitComparison.vue';
 
 const route = useRoute();
 const router = useRouter();

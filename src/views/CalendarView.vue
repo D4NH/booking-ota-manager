@@ -11,10 +11,9 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
-import { getCurrentDate } from '@/utils/date';
+import { getCurrentDate, getOffsetDate } from '@/utils/date';
 
 const route = useRoute();
-
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
@@ -104,17 +103,8 @@ const filteredBookings = computed(() =>
     )
 );
 
-// Date offset helper without timezone issues
-const getOffsetDate = (dateStr: string, offsetDays: number): string => {
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const date = new Date(Number(y), Number(m) - 1, Number(d) + offsetDays);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
-const getStaysForDate = (dateStr: string): Booking[] => {
-    return filteredBookings.value
+const getStaysForDate = (dateStr: string): Booking[] =>
+    filteredBookings.value
         .filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut)
         .sort((a, b) => {
             const aIsMulti = a.nights > 1 ? 1 : 0;
@@ -126,9 +116,7 @@ const getStaysForDate = (dateStr: string): Booking[] => {
 
             return (a.id || a.bookingId).localeCompare(b.id || b.bookingId);
         });
-};
-// Multi-day styling
-const getRibbonClasses = (b: Booking, dateStr: string, dayIndex: number) => {
+const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
     const dayOfWeek = dayIndex % 7; // 0 = Mon, 6 = Sun
     const isCheckIn = b.checkIn === dateStr;
     const lastNight = getOffsetDate(b.checkOut, -1);
@@ -196,6 +184,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
     modalStore.openBookingModal({ booking });
 };
+// TODO: make linkable
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };
@@ -363,7 +352,7 @@ watch(
                                 :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
                                 :class="[
                                     'py-1 px-1.5 text-xs transition shadow-sm cursor-pointer',
-                                    getRibbonClasses(b, day.dateStr, dayIndex),
+                                    multiDayStyling(b, day.dateStr, dayIndex),
                                     getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">

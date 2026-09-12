@@ -51,7 +51,6 @@ const createPropertyPin = (prop: Property, isSelected: boolean) => {
         popupAnchor: [0, -18],
     });
 };
-
 const initMap = () => {
     if (!mapContainer.value) return;
 
@@ -74,7 +73,6 @@ const initMap = () => {
 
     renderMarkers();
 };
-
 const renderMarkers = () => {
     if (!map) return;
 
@@ -130,7 +128,6 @@ const renderMarkers = () => {
     }
 };
 
-// Handle property filter switching
 watch(
     () => props.selectedPropertyId,
     (newId) => {
@@ -169,7 +166,6 @@ watch(
 onMounted(() => {
     initMap();
 });
-
 onBeforeUnmount(() => {
     if (map) {
         map.remove();

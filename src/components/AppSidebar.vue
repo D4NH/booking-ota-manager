@@ -10,6 +10,14 @@ import { getCurrentDate } from '@/utils/date';
 
 import NotificationsPopover from '@/components/NotificationsPopover.vue';
 
+const navLinks: NavItem[] = [
+    { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
+    { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
+    { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
+    { name: 'Properties', path: '/properties', icon: 'house' },
+    { name: 'Finance', path: '/finance', icon: 'chart-pie' },
+];
+
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
@@ -42,18 +50,10 @@ const pendingPayments = computed(() => {
         notificationsCount,
     };
 });
+
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
-
-const navLinks: NavItem[] = [
-    { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
-    { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
-    { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
-    { name: 'Properties', path: '/properties', icon: 'house' },
-    { name: 'Finance', path: '/finance', icon: 'chart-pie' },
-];
-
 const isLinkActive = (linkPath?: string): boolean => {
     if (!linkPath) return false;
 

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, type ChartOptions } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
+import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -10,17 +11,6 @@ const props = defineProps<{
     bookings: Booking[];
 }>();
 
-// Brand colors mapped to acquisition channels
-const CHANNEL_COLORS: Record<string, string> = {
-    Airbnb: '#f43f5e', // rose-500
-    'Booking.com': '#2563eb', // blue-600
-    'Tiket.com': '#06b6d4', // cyan-500
-    'Trip.com': '#6366f1', // indigo-500
-    Whatsapp: '#25D366', // lime-400
-    Other: '#71717a', // mist-500
-};
-
-// Aggregate counts and percentages per channel
 const channelStats = computed(() => {
     const counts: Record<string, number> = {};
     let total = 0;
@@ -44,8 +34,6 @@ const channelStats = computed(() => {
 
     return { entries, total };
 });
-
-// Chart.js Data
 const chartData = computed(() => ({
     labels: channelStats.value.entries.map((e) => e.name),
     datasets: [

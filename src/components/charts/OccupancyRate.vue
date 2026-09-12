@@ -1,4 +1,3 @@
-<!-- src/components/OccupancyStatCard.vue -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import type { MonthlyStats, YearlyStats } from '@/composables/useOccupancy';
