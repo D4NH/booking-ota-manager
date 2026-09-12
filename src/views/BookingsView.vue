@@ -32,7 +32,8 @@ const hasAutoCollapsed = ref(false);
 const currentMonthRef = ref<HTMLElement | null>(null);
 
 const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(bookings, {
-    propertyId: selectedProperty.value,
+    propertyId: () => selectedProperty.value,
+
 });
 
 const availableMonths = computed<string[]>(() => {

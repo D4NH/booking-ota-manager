@@ -1,6 +1,5 @@
-<!-- src/views/PropertiesView.vue -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -12,6 +11,7 @@ import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
 import UnitComparison from '@/components/UnitComparison.vue';
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
+// import PropertiesMap from '@/components/PropertiesMap.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -23,11 +23,10 @@ const { sortedProperties } = storeToRefs(propertyStore);
 
 const selectedProperty = computed<string>(() => {
     const id = route.params.id;
-
     return typeof id === 'string' && id ? id : 'all';
 });
 
-const navigateToDetail = (propertyId: PropertyId) =>
+const navigateToDetail = (propertyId: PropertyId | 'all') =>
     propertyId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: propertyId } });
@@ -76,41 +75,39 @@ const handleEditProperty = (prop: Property) => {
             </div>
         </div>
 
-        <div v-if="route.meta.isOverview">
-            <!-- Portfolio Metric Pills -->
-            <PortfolioMetrics
-                :bookings="bookings"
-                :total-properties="sortedProperties.length" />
+        <!-- Portfolio Metric Pills -->
+        <PortfolioMetrics
+            :bookings="bookings"
+            :total-properties="sortedProperties.length" />
 
-            <!-- Properties -->
-            <div class="flex items-center justify-between">
-                <div class="mt-8 mb-4">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                        Properties
-                    </h2>
-                    <p class="mt-0.5 text-xs text-mist-500">Click to view the full unit details</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <PropertyCard
-                    v-for="property in sortedProperties"
-                    :key="property.id"
-                    :property="property"
-                    :properties="sortedProperties"
-                    :bookings="bookings"
-                    @edit="handleEditProperty" />
-            </div>
-
-            <!-- Analytics -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <UnitComparison
-                    :bookings="bookings"
-                    :properties="sortedProperties" />
-
-                <ChannelDistribution :bookings="bookings" />
+        <!-- Properties -->
+        <div class="flex items-center justify-between">
+            <div class="mt-8 mb-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
+                <p class="mt-0.5 text-xs text-mist-500">Click to view the full unit details</p>
             </div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <PropertyCard
+                v-for="property in sortedProperties"
+                :key="property.id"
+                :property="property"
+                :properties="sortedProperties"
+                :bookings="bookings"
+                @edit="handleEditProperty" />
+        </div>
 
-        <RouterView />
+        <!-- Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <UnitComparison
+                :bookings="bookings"
+                :properties="sortedProperties" />
+
+            <ChannelDistribution :bookings="bookings" />
+
+            <!-- <PropertiesMap
+                    :properties="sortedProperties"
+                    class="col-span-2" /> -->
+        </div>
     </div>
 </template>

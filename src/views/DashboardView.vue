@@ -28,7 +28,7 @@ const {
     occupancyPercentage,
     totalBookingsCount,
     revenueGrowthPercent,
-} = useMonthlyMetrics(bookings, sortedProperties);
+} = useMonthlyMetrics(bookings);
 
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });

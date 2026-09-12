@@ -82,8 +82,8 @@ const channelStats = computed<ChannelStat[]>(() => {
         .sort((a, b) => b.revenue - a.revenue);
 });
 
-const { monthlyPropertyData } = useMonthlyMetrics(bookings, sortedProperties, {
-    propertyId: selectedProperty.value,
+const { monthlyPropertyData } = useMonthlyMetrics(bookings, {
+    propertyId: () => selectedProperty.value,
 });
 
 const handleTabChange = (id: string) => {

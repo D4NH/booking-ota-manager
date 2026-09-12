@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { Booking } from '@/types/booking';
@@ -12,33 +11,22 @@ import OccupiedTag from '@/components/OccupiedTag.vue';
 const props = defineProps<{
     bookings: Booking[];
     property: Property;
-    properties: Property[];
     useDailyOps?: boolean;
 }>();
 
-const bookingsRef = toRef(props, 'bookings');
-const propertiesRef = toRef(props, 'properties');
-
 const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(
-    bookingsRef,
-    propertiesRef,
+    () => props.bookings,
     {
-        propertyId: props.property.id,
+        propertyId: () => props.property.id,
     }
 );
-const { todaysArrivals, currentStays, todaysDepartures } = useDailyOperations(bookingsRef, {
-    propertyId: props.property.id,
+const { staySections, isOccupied } = useDailyOperations(() => props.bookings, {
+    propertyId: () => props.property.id,
 });
 
-const staySections = computed(() =>
-    [
-        { label: 'Arriving Today', items: todaysArrivals.value },
-        { label: 'Currently Staying', items: currentStays.value },
-        { label: 'Leaving Today', items: todaysDepartures.value },
-    ].filter((section) => section.items.length > 0)
-);
-
-const hasActiveStays = computed(() => staySections.value.length > 0);
+const handleImageError = (e: Event) => {
+    (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
+};
 </script>
 
 <template>
@@ -47,63 +35,75 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
             name: 'property-detail',
             params: { id: property.id },
         }"
-        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 shadow-md">
+        class="group relative flex overflow-hidden rounded-xl border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-mist-700 hover:shadow-xl shadow-md cursor-pointer">
         <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
+            <!-- Property Name & Location -->
             <div>
                 <h3 class="text-base font-bold text-mist-100 truncate">
                     {{ property.name }}
                 </h3>
                 <p
-                    class="text-xs text-mist-400 mt-0.5 truncate"
+                    class="text-xs text-mist-400 mt-0.5 truncate flex items-center gap-1"
                     :title="property.address">
                     <fa-icon
                         icon="location-dot"
-                        class="text-[10px] text-mist-500 mr-1" />
-                    {{ property.address }}
+                        class="text-[10px] text-mist-500 shrink-0" />
+                    <span class="truncate">{{ property.address }}</span>
                 </p>
             </div>
+
+            <!-- Daily Operations -->
             <div v-if="useDailyOps">
                 <div
-                    v-if="hasActiveStays"
+                    v-if="staySections.length"
                     class="space-y-4">
                     <div
                         v-for="section in staySections"
                         :key="section.label">
                         <span
-                            class="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
+                            class="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold"
+                            :class="[
+                                section.label === 'Arriving Today'
+                                    ? 'text-lime-400'
+                                    : 'text-amber-400',
+                            ]">
                             {{ section.label }}
                         </span>
                         <div
                             v-for="b in section.items"
-                            :key="'payout-' + (b.id || b.bookingId)"
-                            class="mb-2">
-                            <div class="flex flex-col justify-between space-y-0.5">
-                                <span class="text-sm font-bold text-mist-100">
-                                    {{ b.guestName }}
-                                </span>
-                                <span class="text-xs text-mist-400">
+                            :key="b.id || b.bookingId">
+                            <div class="flex flex-col space-y-0.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-mist-100 truncate">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <span
+                                        class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                </div>
+                                <span class="text-[11px] text-mist-400">
                                     {{ formatDate(b.checkIn, { shortMonth: true }) }}
                                     &rarr;
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
                                     {{ b.nights }} night(s)
                                 </span>
-                                <span class="text-xs text-mist-400">
-                                    {{ b.listing }}
+                                <span class="text-[10px] text-mist-500 font-medium">
+                                    via {{ b.listing }}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div v-else>
-                    <span class="mb-1.5 flex items-center gap-1.5 text-[11px]">
-                        No active or upcoming stays
-                    </span>
+                <div
+                    v-else
+                    class="text-mist-500 text-xs">
+                    No active or upcoming stays
                 </div>
             </div>
-            <!-- Metrics -->
             <div
                 v-else
-                class="rounded-md border-mist-800/80 bg-mist-950/50 p-2">
+                class="rounded-lg border border-mist-800/80 bg-mist-950/50 p-2">
                 <div class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
                         <span class="block text-[10px] uppercase font-semibold text-mist-500">
@@ -131,30 +131,32 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
                     </div>
                 </div>
             </div>
-            <!-- House Info -->
+
+            <!-- House Specs & Price Footer -->
             <div class="pt-3 border-t border-mist-800/60 space-y-2">
                 <div class="flex items-center gap-3 text-xs text-mist-400 font-medium">
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1.5">
                         <fa-icon
                             icon="bed"
                             class="text-[11px] text-mist-500" />
                         {{ property.bedrooms }} Beds
                     </span>
                     <span class="text-mist-700">&bull;</span>
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1.5">
                         <fa-icon
                             icon="shower"
                             class="text-[11px] text-mist-500" />
                         {{ property.bathrooms }} Baths
                     </span>
                     <span class="text-mist-700">&bull;</span>
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1.5">
                         <fa-icon
                             icon="ruler-combined"
                             class="text-[11px] text-mist-500" />
                         {{ property.plotSize }} m²
                     </span>
                 </div>
+
                 <div class="flex items-center justify-between">
                     <div>
                         <span class="text-sm font-bold font-mono text-mist-100">
@@ -165,16 +167,20 @@ const hasActiveStays = computed(() => staySections.value.length > 0);
                 </div>
             </div>
         </div>
+
+        <!-- Photo -->
         <div class="relative w-44 shrink-0 overflow-hidden bg-mist-950">
             <img
                 :src="`/images/${property.id}.jpg`"
                 :alt="property.name"
                 class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy" />
+                loading="lazy"
+                @error="handleImageError" />
+            <div class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-mist-800/50" />
         </div>
+
         <OccupiedTag
-            class="absolute top-2.5 right-2.5 z-20"
-            :bookings="bookings"
-            :property="property" />
+            class="absolute top-4 right-4 pointer-events-none"
+            :is-occupied="isOccupied" />
     </RouterLink>
 </template>
