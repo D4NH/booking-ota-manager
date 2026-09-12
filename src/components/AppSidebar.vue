@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { RouterLink } from 'vue-router';
+import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
+import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
 import NotificationsPopover from '@/components/NotificationsPopover.vue';
@@ -12,6 +13,7 @@ import NotificationsPopover from '@/components/NotificationsPopover.vue';
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
+const route = useRoute();
 
 const isCollapsed = ref(false);
 const isNotificationOpen = ref(true);
@@ -43,13 +45,24 @@ const pendingPayments = computed(() => {
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
-const navLinks = [
-    { name: 'Dashboard', to: '/', icon: 'table-cells-large' },
-    { name: 'Bookings', to: { name: 'bookings' }, icon: 'calendar-check' },
-    { name: 'Calendar', to: { name: 'calendar' }, icon: 'calendar-days' },
-    { name: 'Properties', to: { name: 'properties' }, icon: 'house' },
-    { name: 'Finance', to: { name: 'finance' }, icon: 'chart-pie' },
+
+const navLinks: NavItem[] = [
+    { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
+    { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
+    { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
+    { name: 'Properties', path: '/properties', icon: 'house' },
+    { name: 'Finance', path: '/finance', icon: 'chart-pie' },
 ];
+
+const isLinkActive = (linkPath?: string): boolean => {
+    if (!linkPath) return false;
+
+    if (linkPath === '/') {
+        return route.path === '/';
+    }
+
+    return route.path.startsWith(linkPath);
+};
 const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
     isNotificationOpen.value = false;
@@ -84,17 +97,17 @@ const currentYear = new Date().getFullYear();
             <RouterLink
                 v-for="link in navLinks"
                 :key="link.name"
-                :to="link.to"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition text-mist-400 hover:bg-mist-800/60 hover:text-mist-200"
-                active-class="bg-mist-800/70 text-lime-400 font-semibold shadow-sm">
+                :to="link.path"
+                :class="[
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                    isLinkActive(link.path)
+                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                        : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
+                ]">
                 <fa-icon
                     :icon="link.icon"
-                    class="w-4 h-4 shrink-0 text-center" />
-                <span
-                    v-show="!isCollapsed"
-                    class="truncate transition-opacity duration-200">
-                    {{ link.name }}
-                </span>
+                    class="w-4 h-4 shrink-0" />
+                <span>{{ link.name }}</span>
             </RouterLink>
         </nav>
 
