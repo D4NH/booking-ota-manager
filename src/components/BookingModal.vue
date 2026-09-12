@@ -7,6 +7,7 @@ import { PROPERTY_LIST } from '@/config/properties';
 import { CHANNEL_WARNINGS } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import { calculateNights } from '@/utils/date';
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
@@ -102,14 +103,6 @@ const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
         const formatted = dateObj.toISOString().split('T')[0] || '';
         if (field === 'checkIn') checkIn.value = formatted;
         else checkOut.value = formatted;
-    }
-};
-const calculateNights = () => {
-    if (form.value.checkIn && form.value.checkOut) {
-        const start = new Date(form.value.checkIn).getTime();
-        const end = new Date(form.value.checkOut).getTime();
-        const diffDays = Math.ceil((end - start) / (1000 * 3600 * 24));
-        form.value.nights = diffDays > 0 ? diffDays : 1;
     }
 };
 const triggerDatePicker = (event: MouseEvent): void => {
@@ -276,7 +269,7 @@ watch(
                                         max="2028-12-31"
                                         @click="triggerDatePicker"
                                         @blur="sanitizeDate('checkIn')"
-                                        @change="calculateNights" />
+                                        @change="calculateNights(form.checkIn, form.checkOut)" />
                                     <div
                                         class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
                                         <fa-icon
@@ -298,7 +291,7 @@ watch(
                                     max="2028-12-31"
                                     @click="triggerDatePicker"
                                     @blur="sanitizeDate('checkOut')"
-                                    @change="calculateNights" />
+                                    @change="calculateNights(form.checkIn, form.checkOut)" />
                                 <div
                                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
                                     <fa-icon
