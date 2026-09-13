@@ -49,14 +49,14 @@ const handleEditBooking = (booking: Booking) => {
         </div>
         <!-- Monthly Summary Cards -->
         <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
                 </h3>
-                <p class="mt-1 font-mono text-lg font-bold text-white">
+                <p class="font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalPayout) }}
                 </p>
-                <div class="flex items-center gap-1 text-xs mt-1">
+                <div class="flex items-center gap-1 text-xs">
                     <span
                         :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'"
                         class="font-medium">
@@ -65,39 +65,38 @@ const handleEditBooking = (booking: Booking) => {
                     <span class="text-mist-500">vs last month</span>
                 </div>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Occupancy Rate
                 </h3>
-                <p class="text-lg font-bold text-mist-100 mt-1">{{ occupancyPercentage }}%</p>
+                <p class="text-lg font-bold text-mist-100">{{ occupancyPercentage }}%</p>
                 <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
                         :style="{ width: `${occupancyPercentage}%` }"></div>
                 </div>
-                <p class="text-xs text-mist-500 mt-1">
+                <p class="text-xs text-mist-500">
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Month Bookings
                 </h3>
-                <p class="text-lg font-bold text-mist-100 mt-1">
+                <p class="text-lg font-bold text-mist-100">
                     {{ totalBookingsCount }}
                 </p>
-                <p class="text-xs text-mist-500 mt-1">Active bookings</p>
+                <p class="text-xs text-mist-500">Active bookings</p>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
-                <div class="text-lg font-bold text-mist-200 mt-1">
+                <div class="text-lg font-bold text-mist-200">
                     <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
                     <span class="text-amber-400">↑ {{ todaysTurnover.out }} Out</span>
                 </div>
-                <p class="text-xs text-mist-500 mt-1">Scheduled for today</p>
+                <p class="text-xs text-mist-500">Scheduled for today</p>
             </div>
         </div>
-
         <!-- Properties -->
         <div class="flex flex-col shrink-0">
             <div class="mt-8 mb-4">
@@ -106,7 +105,9 @@ const handleEditBooking = (booking: Booking) => {
                     Real-time availability and unit operational status
                 </p>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div
+                class="grid grid-cols-1 gap-4"
+                :class="`lg:grid-cols-${sortedProperties.length}`">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
@@ -115,9 +116,8 @@ const handleEditBooking = (booking: Booking) => {
                     :use-daily-ops="true" />
             </div>
         </div>
-
+        <!-- Recent Bookings -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Recent Bookings -->
             <div class="flex flex-col shrink-0">
                 <div class="mt-8 mb-4">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
