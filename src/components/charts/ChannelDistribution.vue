@@ -73,7 +73,7 @@ const chartOptions: ChartOptions<'doughnut'> = {
 <template>
     <div class="flex flex-col justify-between">
         <!-- Header -->
-        <div class="mt-8 mb-4">
+        <div class="mt-4 mb-4">
             <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                 Channel Distribution
             </h2>
@@ -82,8 +82,8 @@ const chartOptions: ChartOptions<'doughnut'> = {
 
         <!-- Chart -->
         <div class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <div class="flex flex-1 items-center gap-6">
-                <div class="relative h-50 w-50 shrink-0">
+            <div class="flex flex-1 items-center gap-4">
+                <div class="relative h-55 w-55 shrink-0">
                     <Doughnut
                         :data="chartData"
                         :options="chartOptions" />
@@ -104,7 +104,7 @@ const chartOptions: ChartOptions<'doughnut'> = {
                     <div
                         v-for="ch in channelStats.entries"
                         :key="ch.name"
-                        class="space-y-1 text-xs">
+                        class="space-y-2 text-xs">
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-1.5">
                                 <span

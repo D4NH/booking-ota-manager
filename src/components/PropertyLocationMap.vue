@@ -49,7 +49,7 @@ const initMap = async () => {
     map = L.map(mapContainer.value, {
         zoomControl: false,
         maxZoom: 20,
-    }).setView(initialCoords, 14); // 👈 Zoom 14 prevents tile flooding
+    }).setView(initialCoords, 14);
 
     map.invalidateSize();
 
@@ -78,6 +78,16 @@ const initMap = async () => {
     });
 };
 
+watch(
+    () => [props.property.coordinates?.lat, props.property.coordinates?.lng],
+    ([newLat, newLng]) => {
+        if (map && marker && newLat && newLng) {
+            map.flyTo([newLat, newLng], props.targetZoom, { duration: 0.5 });
+            marker.setLatLng([newLat, newLng]);
+        }
+    }
+);
+
 onMounted(() => {
     initMap();
 });
@@ -88,16 +98,6 @@ onBeforeUnmount(() => {
         map = null;
     }
 });
-
-watch(
-    () => [props.property.coordinates?.lat, props.property.coordinates?.lng],
-    ([newLat, newLng]) => {
-        if (map && marker && newLat && newLng) {
-            map.flyTo([newLat, newLng], props.targetZoom, { duration: 0.5 });
-            marker.setLatLng([newLat, newLng]);
-        }
-    }
-);
 </script>
 
 <template>

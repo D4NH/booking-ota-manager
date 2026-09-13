@@ -1,4 +1,4 @@
-export type PropertyId = 'piyungan' | 'wonosari' | 'bantul';
+export type PropertyId = 'piyungan' | 'wonosari' | 'bantul' | 'nusadua';
 
 export interface Property {
     id: PropertyId;
@@ -18,6 +18,7 @@ export interface Property {
         ssid: string;
         pwd: string;
     };
+    available: boolean;
 }
 
 export interface PropertyTheme {
@@ -53,6 +54,7 @@ export interface MonthlyPropertyRevenue {
     piyungan: number;
     wonosari: number;
     bantul: number;
+    nusadua: number;
 }
 
 export interface ListingBreakdown {

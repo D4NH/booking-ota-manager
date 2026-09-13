@@ -84,8 +84,8 @@ export function useDailyOperations(
             if (checkIn === today && hour < 15) {
                 arrivals.push(b);
             }
-            // Departures before 15:00
-            if (checkOut === today && hour < 15) {
+            // Departures before 13:00
+            if (checkOut === today && hour < 13) {
                 departures.push(b);
             }
             // Mid-stay guest

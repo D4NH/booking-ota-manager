@@ -152,7 +152,7 @@ const chartOptions: ChartOptions<'bar'> = {
             grid: { color: '#1e293b' },
             ticks: {
                 color: '#64748b',
-                callback: (value) => `${Number(value) / 1000000}M`,
+                callback: (value) => `${Number(value) / 1000000}jt`,
             },
         },
         x: {

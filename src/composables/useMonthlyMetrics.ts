@@ -19,13 +19,6 @@ export interface UseMonthlyMetricsOptions {
     propertyId?: MaybeRefOrGetter<PropertyId | 'all' | undefined>;
 }
 
-export interface MonthlyMetricMonth {
-    label: string;
-    piyungan: number;
-    wonosari: number;
-    bantul: number;
-}
-
 /**
  * Calculates exact overlapping nights belonging strictly to target month ("YYYY-MM")
  */
@@ -192,18 +185,18 @@ export function useMonthlyMetrics(
         const list = toValue(bookings) || [];
 
         const monthlyPropertyBookings = [
-            { label: 'Jan', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Feb', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Mar', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Apr', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'May', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Jun', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Jul', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Aug', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Sep', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Oct', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Nov', piyungan: 0, wonosari: 0, bantul: 0 },
-            { label: 'Dec', piyungan: 0, wonosari: 0, bantul: 0 },
+            { label: 'Jan', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Feb', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Mar', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Apr', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'May', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Jun', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Jul', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Aug', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Sep', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Oct', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Nov', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+            { label: 'Dec', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
         ];
 
         for (const b of list) {
@@ -216,7 +209,8 @@ export function useMonthlyMetrics(
                 target &&
                 (b.propertyId === 'piyungan' ||
                     b.propertyId === 'wonosari' ||
-                    b.propertyId === 'bantul')
+                    b.propertyId === 'bantul' ||
+                    b.propertyId === 'nusadua')
             ) {
                 target[b.propertyId] += b.payout || 0;
             }

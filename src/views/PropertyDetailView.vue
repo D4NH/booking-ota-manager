@@ -105,10 +105,7 @@ const lockboxInfo = computed(() => {
 const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
-    currentDay.value >= checkIn &&
-    currentDay.value <= checkOut &&
-    status !== 'Waiting for payout' &&
-    status !== 'Completed';
+    currentDay.value >= checkIn && currentDay.value <= checkOut && status !== 'Waiting for payout';
 const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
 
@@ -154,7 +151,7 @@ watch(
             <fa-icon
                 icon="spinner"
                 class="animate-spin text-lime-400" />
-            <span>Loading villa details...</span>
+            <span>Loading details...</span>
         </div>
     </div>
 
@@ -201,26 +198,23 @@ watch(
         <!-- Photo & Property Specs -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div
-                class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12 min-h-80">
+                class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12">
                 <div
-                    class="relative lg:col-span-8 flex flex-col justify-between p-4 overflow-hidden min-h-65">
-                    <!-- Cover Photo -->
+                    class="relative lg:col-span-8 flex flex-col justify-between p-4 overflow-hidden">
+                    <!-- Photo -->
                     <img
                         :src="`/images/${id}.jpg`"
                         :alt="selectedProperty.name"
                         class="mask-b-from-25% mask-b-to-95% absolute inset-0 h-full w-full object-cover pointer-events-none" />
-
                     <!-- Status Badge & Price -->
                     <div class="relative z-10 flex items-center justify-between">
                         <OccupiedTag :is-occupied="isOccupied" />
-
                         <span
                             class="rounded-md bg-mist-950/80 px-3 py-1 font-mono text-sm font-bold text-mist-100 backdrop-blur-md border border-mist-800">
                             {{ formatIDR(selectedProperty.price) }}
                             <span class="text-xs font-normal text-mist-400">/ night</span>
                         </span>
                     </div>
-
                     <!-- Title, Address & Specs -->
                     <div class="relative z-10 space-y-2 mt-12">
                         <div>
@@ -257,7 +251,6 @@ watch(
                         </div>
                     </div>
                 </div>
-
                 <!-- Live Operations -->
                 <div
                     class="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
@@ -275,7 +268,6 @@ watch(
                             <span>Edit Listing</span>
                         </button>
                     </div>
-
                     <!-- In-House Guest / Active Stay Spotlight -->
                     <div class="flex-1 flex flex-col justify-center">
                         <div
@@ -330,13 +322,18 @@ watch(
                                 </div>
                             </div>
                         </div>
-                        <div v-else>
-                            <span class="mb-1.5 flex items-center gap-1.5 text-[11px]">
-                                No active or upcoming stays
+                        <div
+                            v-else
+                            class="text-center text-xs text-mist-500">
+                            <fa-icon
+                                icon="house-circle-check"
+                                class="text-2xl text-mist-700" />
+                            <span class="ml-2 font-medium text-mist-400">
+                                No active in-house guest
                             </span>
+                            <p class="text-[11px] mt-0.5">Unit is vacant and ready for check-in</p>
                         </div>
                     </div>
-
                     <!-- Guest Access & Wi-Fi -->
                     <div
                         class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
@@ -488,7 +485,8 @@ watch(
                             :class="[
                                 'transition',
                                 isCurrentBooking(b.checkIn, b.checkOut, b.status)
-                                    ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
+                                    ? // ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
+                                      'text-lime-400 bg-lime-500/10 '
                                     : 'hover:bg-mist-800/30',
                             ]">
                             <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">

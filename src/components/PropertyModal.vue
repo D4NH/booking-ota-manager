@@ -44,6 +44,7 @@ const createFormData = (source?: Partial<Property> | null): PropertyFormState =>
         ssid: source?.wifi?.ssid || '',
         pwd: source?.wifi?.pwd || '',
     },
+    available: source?.available || false,
 });
 
 const form = ref<PropertyFormState>(createFormData());
@@ -61,7 +62,10 @@ const handleSubmit = () => {
     if (!form.value.name || !form.value.codePrefix) return;
 
     const generatedId = (form.value.id ||
-        form.value.name.toLowerCase().replace(/[^a-z0-9]/g, '')) as PropertyId;
+        form.value.name
+            .toLowerCase()
+            .split('-')[1]
+            ?.replace(/[^a-z0-9]/g, '')) as PropertyId;
 
     const payload: Property = {
         ...form.value,
@@ -119,17 +123,29 @@ watch(
                 class="p-4 space-y-4 max-h-[80vh] overflow-y-auto"
                 @submit.prevent="handleSubmit">
                 <!-- Name & Code Prefix -->
-                <div class="grid grid-cols-1">
-                    <div class="col-span-2">
+                <div class="grid grid-cols-5">
+                    <div class="col-span-4">
                         <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
                             Property Name
                         </label>
                         <input
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. Mai House - Piyungan"
+                            placeholder="Mai House Jogja - Piyungan"
                             required
                             class="w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 focus:border-lime-500 focus:outline-none" />
+                    </div>
+                    <div class="flex flex-col justify-end">
+                        <label class="cursor-pointer text-center">
+                            <span class="block text-xs font-semibold text-mist-400 mb-1">
+                                Available
+                            </span>
+                            <input
+                                v-model="form.available"
+                                class="accent-lime-500"
+                                type="checkbox"
+                                checked />
+                        </label>
                     </div>
                 </div>
 
@@ -142,7 +158,7 @@ watch(
                         <input
                             v-model.trim="form.codePrefix"
                             type="text"
-                            placeholder="e.g. MHJ"
+                            placeholder="MHJ"
                             required
                             class="w-full rounded-md border border-mist-800 bg-mist-950 px-3 py-2 text-sm text-mist-100 uppercase focus:border-lime-500 focus:outline-none" />
                     </div>

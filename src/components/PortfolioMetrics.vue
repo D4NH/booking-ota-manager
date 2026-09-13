@@ -3,16 +3,16 @@ import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
 import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import type { Booking } from '@/types/booking';
+import type { Property } from '@/types/property';
 
 const props = withDefaults(
     defineProps<{
         bookings: Booking[];
-        totalProperties?: number;
+        properties: Property[];
         year?: number;
     }>(),
     {
-        totalProperties: 3,
-        year: 2026,
+        year: new Date().getFullYear(),
     }
 );
 
@@ -30,6 +30,7 @@ const portfolioADR = computed(() => {
     if (totalNights.value === 0) return 0;
     return Math.round(totalRevenue.value / totalNights.value);
 });
+const propertiesCount = computed(() => props.properties.length);
 const activePropertiesCount = computed(() => getBookedPropertiesCount(props.bookings, props.year));
 const annualOccupancy = computed(() => {
     const totalCapacity = 365 * (activePropertiesCount.value || 1);
@@ -39,51 +40,44 @@ const annualOccupancy = computed(() => {
 
 <template>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- 1. Portfolio Revenue -->
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Portfolio Revenue
-            </span>
-            <div class="mt-1 font-mono text-lg font-bold text-mist-100">
+            </h3>
+            <p class="font-mono text-lg font-bold text-white">
                 {{ formatIDR(totalRevenue) }}
-            </div>
-            <span class="text-xs text-mist-500 mt-0.5 block">Full Year {{ year }}</span>
+            </p>
+            <p class="flex items-center gap-1 text-xs text-mist-500">
+                Total earnings in {{ year }}
+            </p>
         </div>
-
-        <!-- 2. Operational Capacity -->
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Active Listings
-            </span>
-            <div class="mt-1 font-mono text-lg font-bold text-mist-100">
+            </h3>
+            <p class="font-mono text-lg font-bold text-mist-100">
                 <span class="text-lime-400">{{ activePropertiesCount }}</span>
-                <span class="text-mist-500 text-lg"> / {{ totalProperties }} Units</span>
-            </div>
-            <span class="text-xs text-mist-500 mt-0.5 block">Generating revenue</span>
+                <span class="text-mist-500 text-lg"> / {{ propertiesCount }} Units</span>
+            </p>
+            <p class="text-xs text-mist-500">Generating revenue</p>
         </div>
-
-        <!-- 3. Portfolio ADR -->
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Average Daily Rate
-            </span>
-            <div class="mt-1 font-mono text-lg font-bold text-mist-100">
+            </h3>
+            <p class="font-mono text-lg font-bold text-white">
                 {{ formatIDR(portfolioADR) }}
-            </div>
-            <span class="text-xs text-mist-500 mt-0.5 block">
-                Across {{ totalNights }} booked nights
-            </span>
+            </p>
+            <p class="text-xs text-mist-500">Across {{ totalNights }} booked nights</p>
         </div>
-
-        <!-- 4. Annual Occupancy -->
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                 Annual Occupancy
-            </span>
-            <div class="mt-1 font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</div>
-            <span class="text-xs text-mist-500 mt-0.5 block">
+            </h3>
+            <p class="font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</p>
+            <p class="text-xs text-mist-500">
                 {{ totalNights }} / {{ 365 * activePropertiesCount }} room nights
-            </span>
+            </p>
         </div>
     </div>
 </template>

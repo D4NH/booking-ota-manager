@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { PROPERTY_LIST } from '@/config/properties';
+import type { MonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
@@ -17,13 +18,14 @@ import {
     type ChartData,
     type ChartOptions,
 } from 'chart.js';
+import { formatDate, getCurrentMonth } from '@/utils/date';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const props = defineProps<{
     data: MonthlyPropertyRevenue[];
+    monthlyMetrics: MonthlyMetrics;
     selectedProperty?: PropertyId | 'all';
-    totalRevenue?: number;
 }>();
 
 const chartData = computed<ChartData<'bar'>>(() => {
@@ -89,15 +91,14 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
-    <div
-        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-        <div class="flex justify-between">
-            <div>
+    <div class="flex flex-col">
+        <div class="flex justify-between items-center">
+            <div class="mt-4">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Total Revenue
+                    {{ formatDate(getCurrentMonth(), { monthHeader: true }) }}
                 </h3>
                 <p class="mt-1 text-xl font-bold font-mono text-mist-100">
-                    {{ formatIDR(totalRevenue ?? 0) }}
+                    {{ formatIDR(monthlyMetrics.totalPayout) }}
                 </p>
             </div>
             <!-- Legend -->
@@ -116,7 +117,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
             </div>
         </div>
 
-        <div class="mt-4 h-60 w-full">
+        <div class="mt-4 h-full w-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <Bar
                 :data="chartData"
                 :options="chartOptions" />

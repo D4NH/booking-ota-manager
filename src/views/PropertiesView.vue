@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
@@ -10,8 +11,8 @@ import type { PropertyId } from '@/types/property';
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
-// import PropertiesMap from '@/components/PropertiesMap.vue';
-import UnitComparison from '@/components/UnitComparison.vue';
+import UnitPerformance from '@/components/UnitPerformance.vue';
+import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -21,9 +22,21 @@ const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const selectedProperty = computed<string>(() => {
+const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
+
+const isPropertiesExpanded = ref(false);
+
+const visibleProperties = computed(() => {
+    const list = Array.isArray(sortedProperties) ? sortedProperties : sortedProperties.value;
+
+    if (isPropertiesExpanded.value) {
+        return list;
+    }
+    return list.slice(0, 2);
+});
+const selectedProperty = computed<PropertyId | 'all'>(() => {
     const id = route.params.id;
-    return typeof id === 'string' && id ? id : 'all';
+    return typeof id === 'string' && id ? (id as PropertyId) : 'all';
 });
 
 const navigateToDetail = (propertyId: PropertyId | 'all') =>
@@ -86,40 +99,64 @@ const handleAddProperty = () => {
                 </div>
             </div>
         </div>
-
-        <!-- Portfolio Metric Pills -->
         <PortfolioMetrics
             :bookings="bookings"
-            :total-properties="sortedProperties.length" />
+            :properties="sortedProperties" />
 
         <!-- Properties -->
-        <div class="flex items-center justify-between">
-            <div class="mt-8 mb-4">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
-                <p class="mt-0.5 text-xs text-mist-500">Click to view the full unit details</p>
+        <div class="flex flex-col shrink-0">
+            <!-- Header with Toggle Button -->
+            <div class="mt-8 mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
+                        Properties
+                    </h2>
+                    <p class="mt-0.5 text-xs text-mist-500">
+                        Real-time availability and unit operational status
+                    </p>
+                </div>
+
+                <!-- Toggle Button (only displays if there are more than 2 properties) -->
+                <button
+                    v-if="sortedProperties.length > 2"
+                    type="button"
+                    class="flex items-center gap-1.5 rounded-lg border border-mist-800 bg-mist-900 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                    @click="isPropertiesExpanded = !isPropertiesExpanded">
+                    <span>{{
+                        isPropertiesExpanded ? 'Show Less' : `Show All (${sortedProperties.length})`
+                    }}</span>
+                    <fa-icon
+                        icon="chevron-down"
+                        class="text-[10px] transition-transform duration-200"
+                        :class="{ 'rotate-180': isPropertiesExpanded }" />
+                </button>
             </div>
-        </div>
-        <div
-            class="grid grid-cols-1 gap-4"
-            :class="`lg:grid-cols-${sortedProperties.length}`">
-            <PropertyCard
-                v-for="property in sortedProperties"
-                :key="property.id"
-                :property="property"
-                :bookings="bookings" />
+
+            <!-- Properties Grid (Loops over visibleProperties) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <PropertyCard
+                    v-for="property in visibleProperties"
+                    :key="property.id"
+                    :property="property"
+                    :bookings="bookings"
+                    :use-daily-ops="true" />
+            </div>
         </div>
 
         <!-- Analytics -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <UnitComparison
-                :bookings="bookings"
-                :properties="sortedProperties" />
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <MonthlyEarnings
+                :weekly-data="getWeeklyComparison(bookings, 'all')"
+                :monthly-data="getMonthlyComparison(bookings, 'all')" />
 
             <ChannelDistribution :bookings="bookings" />
+        </div>
 
-            <!-- <PropertiesMap
-                    :properties="sortedProperties"
-                    class="col-span-2" /> -->
+        <div class="grid grid-cols-1 gap-4 mb-4">
+            <UnitPerformance
+                class="mb-4"
+                :bookings="bookings"
+                :properties="sortedProperties" />
         </div>
     </div>
 </template>

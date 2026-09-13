@@ -22,6 +22,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
             ssid: 'Mai House Jogja',
             pwd: 'maihouse1234',
         },
+        available: true,
     },
     wonosari: {
         id: 'wonosari' as PropertyId,
@@ -41,9 +42,10 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         bathrooms: 1,
         plotSize: 80,
         wifi: {
-            ssid: 'Mai House Jogja',
-            pwd: 'wonsa1234',
+            ssid: '',
+            pwd: '',
         },
+        available: false,
     },
     bantul: {
         id: 'bantul' as PropertyId,
@@ -59,13 +61,37 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         codePrefix: 'MHB',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_BANTUL,
         defaultRange: 'A2:J500',
-        bedrooms: 0,
-        bathrooms: 0,
-        plotSize: 0,
+        bedrooms: 3,
+        bathrooms: 2,
+        plotSize: 110,
         wifi: {
-            ssid: 'Mai House Jogja',
-            pwd: 'bantul1234',
+            ssid: '',
+            pwd: '',
         },
+        available: false,
+    },
+    nusadua: {
+        id: 'nusadua' as PropertyId,
+        name: 'Mai House Bali - Nusa Dua',
+        address:
+            'Jl. Trompong Jl. Nusa Dua, Selatan, Benoa, Kec. Kuta Sel., Kabupaten Badung, Bali 80361',
+        coordinates: {
+            lat: -8.807494847880703,
+            lng: 115.22192033648172,
+        },
+        color: '#F33F5D',
+        price: 1499000,
+        codePrefix: 'MHN',
+        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_NUSADUA,
+        defaultRange: 'A2:J500',
+        bedrooms: 2,
+        bathrooms: 2,
+        plotSize: 105,
+        wifi: {
+            ssid: '',
+            pwd: '',
+        },
+        available: false,
     },
 } as const;
 
@@ -82,6 +108,7 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
         bathrooms,
         plotSize,
         wifi,
+        available,
     }) => ({
         id,
         name,
@@ -94,6 +121,7 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
         bathrooms,
         plotSize,
         wifi,
+        available,
     })
 );
 
@@ -109,6 +137,10 @@ export const PROPERTY_THEMES: Record<PropertyId, PropertyTheme> = {
     bantul: {
         text: 'text-amber-400',
         bg: 'bg-amber-500/10',
+    },
+    nusadua: {
+        text: 'text-rose-400',
+        bg: 'bg-rose-500/10',
     },
 };
 

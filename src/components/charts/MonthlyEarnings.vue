@@ -1,0 +1,240 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+    type ChartOptions,
+} from 'chart.js';
+import { Line } from 'vue-chartjs';
+import { formatIDR } from '@/utils/money';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+);
+
+export interface weeklyData {
+    labels: string[];
+    currentWeek: number[];
+    lastWeek: number[];
+}
+
+export interface monthlyData {
+    labels: string[];
+    currentMonth: number[];
+    lastMonth: number[];
+}
+
+const props = defineProps<{
+    weeklyData: weeklyData;
+    monthlyData: monthlyData;
+}>();
+
+// Toggle between Weekly and Monthly view
+const activeView = ref<'weekly' | 'monthly'>('weekly');
+
+const currentTotal = computed(() => {
+    const list =
+        activeView.value === 'weekly'
+            ? props.weeklyData.currentWeek
+            : props.monthlyData.currentMonth;
+    return list.reduce((a, b) => a + b, 0);
+});
+const previousTotal = computed(() => {
+    const list =
+        activeView.value === 'weekly' ? props.weeklyData.lastWeek : props.monthlyData.lastMonth;
+    return list.reduce((a, b) => a + b, 0);
+});
+const growthPercentage = computed(() => {
+    if (previousTotal.value === 0) return 0;
+    const diff = currentTotal.value - previousTotal.value;
+    return Number(((diff / previousTotal.value) * 100).toFixed(1));
+});
+const chartData = computed(() => {
+    const isWeekly = activeView.value === 'weekly';
+
+    const labels = isWeekly ? props.weeklyData.labels : props.monthlyData.labels;
+    const currentData = isWeekly ? props.weeklyData.currentWeek : props.monthlyData.currentMonth;
+    const previousData = isWeekly ? props.weeklyData.lastWeek : props.monthlyData.lastMonth;
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: isWeekly ? 'This Week' : 'This Month',
+                data: currentData,
+                borderColor: '#a3e635', // lime-400
+                borderWidth: 2.5,
+                tension: 0.35,
+                fill: true,
+                // ... rest of your styling (gradient, etc.)
+            },
+            {
+                label: isWeekly ? 'Last Week' : 'Last Month',
+                data: previousData,
+                borderColor: '#71717a', // mist-500
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.35,
+                fill: false,
+                // ... rest of your styling
+            },
+        ],
+    };
+});
+const chartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+        mode: 'index',
+        intersect: false,
+    },
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            backgroundColor: '#18181b', // mist-900
+            titleColor: '#e4e4e7',
+            borderColor: '#27272a',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+                label: (ctx) => ` ${ctx.dataset.label}: ${formatIDR(ctx.parsed.y ?? 0)}`,
+            },
+        },
+    },
+    scales: {
+        x: {
+            grid: { display: false },
+            ticks: {
+                color: '#71717a',
+                font: { size: 10, family: 'inherit' },
+            },
+            border: { display: false },
+        },
+        y: {
+            beginAtZero: true,
+            ticks: {
+                color: '#71717a',
+                font: { size: 10, family: 'inherit' },
+                callback: (val) => {
+                    const num = Number(val);
+                    if (num === 0) return '0';
+                    return num >= 1000000
+                        ? `${(num / 1000000).toFixed(1)}jt`
+                        : `${(num / 1000).toFixed(0)}rb`;
+                },
+            },
+            grid: {
+                color: 'rgba(39, 39, 42, 0.6)', // mist-800
+            },
+            border: { display: false },
+        },
+    },
+};
+</script>
+
+<template>
+    <div class="flex flex-col h-full min-h-0">
+        <div class="shrink-0 flex items-center justify-between gap-4 mb-4">
+            <div class="mt-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
+                    Earnings Performance
+                </h2>
+                <p class="mt-0.5 text-xs text-mist-500">
+                    {{
+                        activeView === 'weekly'
+                            ? 'Compare against last week'
+                            : 'Compare against last month'
+                    }}
+                </p>
+            </div>
+            <!-- Toggle Buttons -->
+            <div
+                class="flex items-center rounded-lg border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">
+                <button
+                    type="button"
+                    :class="[
+                        'rounded-md px-2.5 py-1 transition',
+                        activeView === 'weekly'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="activeView = 'weekly'">
+                    Weekly
+                </button>
+                <button
+                    type="button"
+                    :class="[
+                        'rounded-md px-2.5 py-1 transition',
+                        activeView === 'monthly'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200',
+                    ]"
+                    @click="activeView = 'monthly'">
+                    Monthly
+                </button>
+            </div>
+        </div>
+        <div
+            class="flex flex-col flex-1 justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md space-y-4">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <!-- Current Total -->
+                <div class="flex items-baseline gap-3">
+                    <span class="text-2xl font-black font-mono text-mist-100">
+                        {{ formatIDR(currentTotal) }}
+                    </span>
+                    <span
+                        :class="[
+                            'flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold border',
+                            growthPercentage >= 0
+                                ? 'border-lime-500/30 bg-lime-500/10 text-lime-400'
+                                : 'border-rose-500/30 bg-rose-500/10 text-rose-400',
+                        ]">
+                        <span>
+                            {{ growthPercentage >= 0 ? '↑' : '↓' }}
+                            {{ Math.abs(growthPercentage) }}%
+                        </span>
+                        <span class="font-normal text-[10px] opacity-80">
+                            vs {{ activeView === 'weekly' ? 'last week' : 'last month' }}
+                        </span>
+                    </span>
+                </div>
+                <!-- Legend -->
+                <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
+                    <div class="flex items-center gap-1.5">
+                        <span class="h-2 w-2 rounded-full bg-lime-400"></span>
+                        <span class="text-mist-200">{{
+                            activeView === 'weekly' ? 'This Week' : 'This Month'
+                        }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span
+                            class="h-0.5 w-3 bg-mist-500 border-t border-dashed border-mist-400"></span>
+                        <span>{{ activeView === 'weekly' ? 'Last Week' : 'Last Month' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex-1 min-h-0 w-full">
+                <Line
+                    :data="chartData"
+                    :options="chartOptions" />
+            </div>
+        </div>
+    </div>
+</template>

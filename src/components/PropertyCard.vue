@@ -4,7 +4,7 @@ import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 import { formatDate } from '@/utils/date';
-import { formatChartCurrency, formatIDR } from '@/utils/money';
+import { formatIDR } from '@/utils/money';
 
 import OccupiedTag from '@/components/OccupiedTag.vue';
 
@@ -35,7 +35,7 @@ const handleImageError = (e: Event) => {
             name: 'property-detail',
             params: { id: property.id },
         }"
-        class="group relative flex overflow-hidden rounded-xl border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-mist-700 hover:shadow-xl shadow-md cursor-pointer">
+        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-lime-700 hover:shadow-xl shadow-md cursor-pointer">
         <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
             <!-- Property Name & Location -->
             <div>
@@ -98,15 +98,29 @@ const handleImageError = (e: Event) => {
                     </div>
                 </div>
                 <div
+                    v-else-if="!property.available"
+                    class="text-center text-xs text-mist-500 my-6">
+                    <fa-icon
+                        icon="person-digging"
+                        class="text-2xl text-mist-700" />
+                    <span class="ml-2 font-medium text-mist-400">Under Construction</span>
+                </div>
+                <div
                     v-else
-                    class="text-mist-500 text-xs">
-                    No active or upcoming stays
+                    class="text-center text-xs text-mist-500 my-6">
+                    <fa-icon
+                        icon="house-circle-check"
+                        class="text-2xl text-mist-700" />
+                    <span class="ml-2 font-medium text-mist-400">No active in-house guest</span>
+                    <p class="text-[11px] mt-0.5">Unit is vacant and ready for check-in</p>
                 </div>
             </div>
             <div
                 v-else
-                class="rounded-lg border border-mist-800/80 bg-mist-950/50 p-2 my-4">
-                <div class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
+                class="mt-2 mb-4">
+                <div
+                    v-if="property.available"
+                    class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
                         <span class="block text-[10px] uppercase font-semibold text-mist-500">
                             Occupancy
@@ -120,7 +134,7 @@ const handleImageError = (e: Event) => {
                             Revenue
                         </span>
                         <span class="font-mono text-xs font-bold text-mist-100">
-                            {{ formatChartCurrency(totalPayout) }}
+                            {{ formatIDR(totalPayout) }}
                         </span>
                     </div>
                     <div class="px-1">
@@ -131,6 +145,14 @@ const handleImageError = (e: Event) => {
                             {{ totalBookingsCount }}
                         </span>
                     </div>
+                </div>
+                <div
+                    v-else
+                    class="text-center text-xs text-mist-500 my-6">
+                    <fa-icon
+                        icon="person-digging"
+                        class="text-2xl text-mist-700" />
+                    <span class="ml-2 font-medium text-mist-400">Under Construction</span>
                 </div>
             </div>
 
@@ -180,6 +202,7 @@ const handleImageError = (e: Event) => {
         </div>
 
         <OccupiedTag
+            v-if="property.available"
             class="absolute top-4 right-4 pointer-events-none"
             :is-occupied="isOccupied" />
     </RouterLink>
