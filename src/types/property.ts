@@ -4,7 +4,7 @@ export interface Property {
     id: PropertyId;
     name: string;
     address: string;
-    coordinates: {
+    coordinates?: {
         lat: number;
         lng: number;
     };
@@ -14,6 +14,10 @@ export interface Property {
     bedrooms: number;
     bathrooms: number;
     plotSize: number;
+    wifi?: {
+        ssid: string;
+        pwd: string;
+    };
 }
 
 export interface PropertyTheme {

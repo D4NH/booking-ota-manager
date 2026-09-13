@@ -18,6 +18,10 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         bedrooms: 2,
         bathrooms: 3,
         plotSize: 123,
+        wifi: {
+            ssid: 'Mai House Jogja',
+            pwd: 'maihouse1234',
+        },
     },
     wonosari: {
         id: 'wonosari' as PropertyId,
@@ -36,6 +40,10 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         bedrooms: 2,
         bathrooms: 1,
         plotSize: 80,
+        wifi: {
+            ssid: 'Mai House Jogja',
+            pwd: 'wonsa1234',
+        },
     },
     bantul: {
         id: 'bantul' as PropertyId,
@@ -54,6 +62,10 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         bedrooms: 0,
         bathrooms: 0,
         plotSize: 0,
+        wifi: {
+            ssid: 'Mai House Jogja',
+            pwd: 'bantul1234',
+        },
     },
 } as const;
 
@@ -69,6 +81,7 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
         bedrooms,
         bathrooms,
         plotSize,
+        wifi,
     }) => ({
         id,
         name,
@@ -80,6 +93,7 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
         bedrooms,
         bathrooms,
         plotSize,
+        wifi,
     })
 );
 

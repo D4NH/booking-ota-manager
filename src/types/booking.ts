@@ -6,7 +6,7 @@ export type BookingChannel =
 export type BookingStatus =
     | 'Booked'
     | 'Checked-in'
-    | 'Checked-out'
+    | 'Checking-out'
     | 'Waiting for payment'
     | 'Waiting for payout'
     | 'Completed'

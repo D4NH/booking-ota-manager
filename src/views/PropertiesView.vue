@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { PropertyId, Property } from '@/types/property';
+import type { PropertyId } from '@/types/property';
 
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
@@ -31,8 +31,8 @@ const navigateToDetail = (propertyId: PropertyId | 'all') =>
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: propertyId } });
 
-const handleEditProperty = (prop: Property) => {
-    modalStore.openPropertyModal({ property: prop });
+const handleAddProperty = () => {
+    modalStore.openPropertyModal();
 };
 </script>
 
@@ -43,35 +43,47 @@ const handleEditProperty = (prop: Property) => {
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Property Management</h1>
                 <p class="text-xs text-mist-400">
-                    Portfolio health, listing settings, and unit comparisons
+                    Portfolio health, listing settings and unit comparisons
                 </p>
             </div>
-            <!-- Property Filter Tabs -->
-            <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
+            <div class="flex items-center">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        selectedProperty === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="navigateToDetail('all')">
-                    All
+                    class="mr-4 cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
+                    @click="handleAddProperty">
+                    <fa-icon
+                        class="text-xs"
+                        icon="plus" />
+                    Add Property
                 </button>
-                <button
-                    v-for="prop in sortedProperties"
-                    :key="prop.id"
-                    type="button"
-                    class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        selectedProperty === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="navigateToDetail(prop.id)">
-                    {{ prop.id }}
-                </button>
+                <!-- Property Filter Tabs -->
+                <div
+                    class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                        :class="[
+                            selectedProperty === 'all'
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="navigateToDetail('all')">
+                        All
+                    </button>
+                    <button
+                        v-for="prop in sortedProperties"
+                        :key="prop.id"
+                        type="button"
+                        class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                        :class="[
+                            selectedProperty === prop.id
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="navigateToDetail(prop.id)">
+                        {{ prop.id }}
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -87,14 +99,14 @@ const handleEditProperty = (prop: Property) => {
                 <p class="mt-0.5 text-xs text-mist-500">Click to view the full unit details</p>
             </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div
+            class="grid grid-cols-1 gap-4"
+            :class="`lg:grid-cols-${sortedProperties.length}`">
             <PropertyCard
                 v-for="property in sortedProperties"
                 :key="property.id"
                 :property="property"
-                :properties="sortedProperties"
-                :bookings="bookings"
-                @edit="handleEditProperty" />
+                :bookings="bookings" />
         </div>
 
         <!-- Analytics -->

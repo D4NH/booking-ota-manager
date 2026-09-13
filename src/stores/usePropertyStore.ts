@@ -40,25 +40,27 @@ export const usePropertyStore = defineStore('property', () => {
         });
     });
 
+    const addProperty = async (property: Property): Promise<void> => {
+        const plainRecord = JSON.parse(JSON.stringify(property));
+
+        await db.properties.add(plainRecord);
+        await loadProperties();
+    };
+
     const saveProperty = async (propertyData: Property): Promise<void> => {
         await toast.loading(async () => {
-            const existing = await db.properties.get(propertyData.id);
-            if (existing) {
-                await db.properties.put({ ...existing, ...propertyData });
-            } else {
-                await db.properties.add(propertyData);
-            }
+            const cleanProperty = JSON.parse(JSON.stringify(propertyData));
+
+            await db.properties.put(cleanProperty);
             await loadProperties();
         }, toastConfig);
     };
 
-    // Delete single property
     const deleteProperty = async (id: PropertyId): Promise<void> => {
         await db.properties.delete(id);
         await loadProperties();
     };
 
-    // Clear all local properties
     const clearAllProperties = async (): Promise<void> => {
         await db.properties.clear();
         await loadProperties();
@@ -68,6 +70,7 @@ export const usePropertyStore = defineStore('property', () => {
         properties,
         sortedProperties,
         loadProperties,
+        addProperty,
         saveProperty,
         deleteProperty,
         clearAllProperties,

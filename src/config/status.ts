@@ -2,8 +2,11 @@ import type { BookingStatus } from '@/types/booking';
 
 export const bookingStatuses: BookingStatus[] = [
     'Booked',
+    'Checked-in',
+    'Checking-out',
     'Waiting for payment',
     'Waiting for payout',
+    'Unavailable',
     'No show',
     'Completed',
 ];
