@@ -5,16 +5,19 @@ import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useDateKeys } from '@/composables/useDateKeys';
+import { getStatusStyle } from '@/config/status';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
 import { formatDate, getCurrentMonth } from '@/utils/date';
+import { getActiveLockboxBooking, generatePinForBooking } from '@/utils/lockbox';
+import { getCurrentYear } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import OccupiedTag from '@/components/OccupiedTag.vue';
-// import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
+import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
 
 const props = defineProps<{
     id: PropertyId | 'all';
@@ -28,14 +31,14 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { deleteBooking } = useBookingSync();
-const { isOccupied, todaysTurnover, staySections } = useDailyOperations(bookings, {
-    propertyId: () => props.id,
-});
-const { currentDay } = useDateKeys();
+const { currentStays, todaysArrivals, todaysDepartures, isOccupied, staySections } =
+    useDailyOperations(bookings, {
+        propertyId: () => props.id,
+    });
+const { currentDay, currentHour } = useDateKeys();
 
 const hiddenStatuses = ref<Booking['status'][]>([]);
 const collapsedMonths = ref<string[]>([]);
-const copiedField = ref<string | null>(null);
 
 const selectedProperty = computed<Property | undefined>(() =>
     sortedProperties.value.find((p) => p.id === props.id)
@@ -90,12 +93,17 @@ const groupedBookings = computed(() => {
             bookings: groups[key],
         }));
 });
+const lockboxInfo = computed(() => {
+    return getActiveLockboxBooking({
+        today: currentDay.value,
+        currentHour: currentHour.value,
+        currentStays: currentStays.value,
+        todaysArrivals: todaysArrivals.value,
+        todaysDepartures: todaysDepartures.value,
+    });
+});
+const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
 
-const copyText = async (text: string, field: string) => {
-    await navigator.clipboard.writeText(text);
-    copiedField.value = field;
-    setTimeout(() => (copiedField.value = null), 2000);
-};
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDay.value >= checkIn &&
     currentDay.value <= checkOut &&
@@ -189,20 +197,18 @@ watch(
                 </button>
             </div>
         </div>
-        <!-- Essential Access Info Grid -->
+
+        <!-- Photo & Property Specs -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div
                 class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12 min-h-80">
-                <!-- Photo & Property Specs -->
                 <div
-                    class="relative lg:col-span-7 flex flex-col justify-between p-4 overflow-hidden min-h-65">
+                    class="relative lg:col-span-8 flex flex-col justify-between p-4 overflow-hidden min-h-65">
                     <!-- Cover Photo -->
                     <img
                         :src="`/images/${id}.jpg`"
-                        alt="alttag"
-                        class="absolute inset-0 h-full w-full object-cover pointer-events-none" />
-                    <div
-                        class="absolute inset-0 bg-linear-to-t from-mist-950 via-mist-950/60 to-mist-950/20 pointer-events-none" />
+                        :alt="selectedProperty.name"
+                        class="mask-b-from-25% mask-b-to-95% absolute inset-0 h-full w-full object-cover pointer-events-none" />
 
                     <!-- Status Badge & Price -->
                     <div class="relative z-10 flex items-center justify-between">
@@ -218,7 +224,7 @@ watch(
                     <!-- Title, Address & Specs -->
                     <div class="relative z-10 space-y-2 mt-12">
                         <div>
-                            <h1 class="text-2xl font-black text-mist-100 leading-tight">
+                            <h1 class="text-xl font-bold text-mist-100">
                                 {{ selectedProperty.name }}
                             </h1>
                             <p class="text-xs text-mist-300 mt-0.5 max-w-md truncate">
@@ -254,8 +260,7 @@ watch(
 
                 <!-- Live Operations -->
                 <div
-                    class="lg:col-span-5 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
-                    <!-- Desk Header -->
+                    class="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
                     <div class="flex items-center justify-between border-b border-mist-800 pb-3">
                         <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
                             Daily Operations
@@ -292,15 +297,19 @@ watch(
                                     v-for="b in section.items"
                                     :key="b.id || b.bookingId"
                                     class="mb-2">
-                                    <div class="flex flex-col justify-between space-y-0.5">
+                                    <div class="flex flex-col space-y-0.5">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm font-bold text-mist-100 truncate">
                                                 {{ b.guestName }}
                                             </span>
-                                            <span
-                                                class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
-                                                {{ formatIDR(b.payout) }}
-                                            </span>
+                                            <button
+                                                type="button"
+                                                class="ml-1 cursor-pointer text-sm text-mist-400 hover:text-mist-100 transition"
+                                                @click="console.log('hello')">
+                                                <fa-icon
+                                                    icon="pen-to-square"
+                                                    class="text-[10px]" />
+                                            </button>
                                         </div>
                                         <span class="text-xs text-mist-400">
                                             {{ formatDate(b.checkIn, { shortMonth: true }) }}
@@ -308,9 +317,15 @@ watch(
                                             {{ formatDate(b.checkOut, { shortMonth: true }) }}
                                             &bull; {{ b.nights }} night(s)
                                         </span>
-                                        <span class="text-[10px] text-mist-500 font-medium">
-                                            via {{ b.listing }}
-                                        </span>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[10px] text-mist-500 font-medium">
+                                                via {{ b.listing }}
+                                            </span>
+                                            <span
+                                                class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
+                                                {{ formatIDR(b.payout) }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -322,143 +337,81 @@ watch(
                         </div>
                     </div>
 
-                    <!-- Compact Turnover Strip -->
+                    <!-- Guest Access & Wi-Fi -->
                     <div
-                        class="rounded-md bg-mist-950/80 p-2.5 border border-mist-800/60 flex items-center justify-between text-xs">
-                        <span class="text-mist-400 font-medium">Today's Turnover:</span>
-
-                        <div class="flex items-center gap-3 font-mono">
-                            <span
-                                :class="
-                                    todaysTurnover.in ? 'text-lime-400 font-bold' : 'text-mist-500'
-                                ">
-                                &darr; {{ todaysTurnover.in }}
-                            </span>
-                            <span class="text-mist-700">|</span>
-                            <span
-                                :class="
-                                    todaysTurnover.out
-                                        ? 'text-amber-400 font-bold'
-                                        : 'text-mist-500'
-                                ">
-                                &uarr; {{ todaysTurnover.out }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Host Essentials -->
-            <div
-                class="rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md flex flex-col justify-between space-y-4">
-                <div>
-                    <h3 class="text-sm font-bold text-mist-100 uppercase tracking-wider">
-                        Guest Access & Essentials
-                    </h3>
-                    <p class="text-xs text-mist-400 mt-0.5">
-                        Quick reference for guest communication
-                    </p>
-                </div>
-
-                <div class="space-y-3 text-xs">
-                    <!-- Smart Lock / PIN -->
-                    <div
-                        class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-950/60 p-2.5">
-                        <div>
-                            <span class="text-[10px] uppercase font-semibold text-mist-500 block">
-                                Smart Lock PIN
-                            </span>
-                            <span class="font-mono text-sm font-bold text-mist-100">8492#</span>
-                        </div>
-                        <button
-                            type="button"
-                            class="text-mist-400 hover:text-lime-400 transition text-xs font-semibold"
-                            @click="copyText('8492#', 'pin')">
-                            {{ copiedField === 'pin' ? 'Copied!' : 'Copy' }}
-                        </button>
-                    </div>
-
-                    <!-- Wi-Fi Network & Password -->
-                    <div
-                        class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-950/60 p-2.5">
-                        <div>
-                            <span class="text-[10px] uppercase font-semibold text-mist-500 block">
-                                Wi-Fi: MaiHouse_Fast
+                        class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
+                        <div class="px-1">
+                            <span class="text-xs font-semibold text-mist-500 block">
+                                Lockbox Code
                             </span>
                             <span class="font-mono text-sm font-bold text-mist-100">
-                                jogjaistimewa
+                                {{ lockboxPin ? `${lockboxPin}` : '----' }}
                             </span>
                         </div>
-                        <button
-                            type="button"
-                            class="text-mist-400 hover:text-lime-400 transition text-xs font-semibold"
-                            @click="copyText('jogjaistimewa', 'wifi')">
-                            {{ copiedField === 'wifi' ? 'Copied!' : 'Copy' }}
-                        </button>
+                        <div class="px-1">
+                            <span class="text-xs font-semibold text-mist-500 block">
+                                SSID:
+                                {{ selectedProperty.wifi?.ssid }}
+                            </span>
+                            <span class="font-mono text-sm font-bold text-mist-100">
+                                {{
+                                    selectedProperty.wifi?.pwd
+                                        ? `${selectedProperty.wifi?.pwd}`
+                                        : '----'
+                                }}
+                            </span>
+                        </div>
                     </div>
-
-                    <!-- Google Maps Pin Link -->
-                    <a
-                        href="https://maps.google.com"
-                        target="_blank"
-                        class="flex items-center justify-between rounded-lg border border-mist-800 bg-mist-950/60 p-2.5 text-mist-300 hover:text-lime-400 transition">
-                        <span class="font-medium">Google Maps Location</span>
-                        <fa-icon
-                            icon="arrow-up-right-from-square"
-                            class="text-xs" />
-                    </a>
-                </div>
-
-                <div class="pt-2 border-t border-mist-800/80 text-[11px] text-mist-500 italic">
-                    Cleaner: Ibu Sari (+62 812-3456-7890)
                 </div>
             </div>
 
-            <!-- <PropertyLocationMap :property="property" /> -->
+            <PropertyLocationMap
+                class="col-span-1"
+                :property="selectedProperty" />
         </div>
 
         <!-- Unit Performance Stat Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Unit Revenue
-                </span>
-                <div class="mt-1 font-mono text-lg font-bold text-white">
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalRevenue) }}
-                </div>
-                <span class="text-xs text-mist-500 mt-0.5 block">2026 Earnings</span>
+                </p>
+                <p class="flex items-center gap-1 text-xs text-mist-500">
+                    Total earnings in {{ getCurrentYear() }}
+                </p>
             </div>
 
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Average Daily Rate
-                </span>
-                <div class="mt-1 font-mono text-lg font-bold text-white">
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">
                     {{ formatIDR(adr) }}
-                </div>
-                <span class="text-xs text-mist-500 mt-0.5 block">Per booked night</span>
+                </p>
+                <p class="flex items-center gap-1 text-xs text-mist-500">Per booked night</p>
             </div>
 
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Occupancy Rate
-                </span>
-                <div class="mt-1 font-mono text-lg font-bold text-white">
-                    {{ annualOccupancy }}%
-                </div>
-                <span class="text-xs text-mist-500 mt-0.5 block">
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">{{ annualOccupancy }}%</p>
+                <p class="flex items-center gap-1 text-xs text-mist-500">
                     {{ totalNights }} / 365 nights
-                </span>
+                </p>
             </div>
 
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Bookings
-                </span>
-                <div class="mt-1 font-mono text-lg font-bold text-white">
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">
                     {{ unitBookings.length }}
-                </div>
-                <span class="text-xs text-mist-500 mt-0.5 block">Completed & upcoming</span>
+                </p>
+                <p class="flex items-center gap-1 text-xs text-mist-500">Completed & upcoming</p>
             </div>
         </div>
 
@@ -567,10 +520,10 @@ watch(
                                     <div
                                         class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between">
-                                            <span class="font-bold text-mist-200">
+                                            <span class="font-bold text-mist-400">
                                                 Payout 15%
                                             </span>
-                                            <span class="font-semibold text-mist-400">
+                                            <span class="font-semibold text-mist-200">
                                                 {{ formatIDR(b.payout * 0.15) }}
                                             </span>
                                         </div>
@@ -578,21 +531,7 @@ watch(
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-center text-nowrap">
-                                <span
-                                    :class="[
-                                        'rounded-md px-2 py-0.5 text-xs text-nowrap',
-                                        b.status === 'Booked'
-                                            ? 'bg-lime-500/20 text-lime-400'
-                                            : b.status === 'Checked-in'
-                                              ? 'bg-blue-500/20 text-blue-400'
-                                              : b.status === 'Waiting for payout'
-                                                ? 'bg-sky-500/20 text-sky-400'
-                                                : b.status === 'Waiting for payment'
-                                                  ? 'bg-amber-500/20 text-amber-400'
-                                                  : b.status === 'Unavailable'
-                                                    ? 'bg-rose-500/20 text-rose-400'
-                                                    : 'bg-mist-800 text-mist-400',
-                                    ]">
+                                <span :class="getStatusStyle(b.status)">
                                     {{ b.status }}
                                 </span>
                             </td>
