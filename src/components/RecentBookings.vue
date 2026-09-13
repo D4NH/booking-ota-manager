@@ -4,7 +4,7 @@ import { getPropertyTheme } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
-import { formatDate } from '@/utils/date';
+import { formatDate, getCurrentDate } from '@/utils/date';
 
 const props = defineProps<{
     bookings: Booking[];
@@ -17,6 +17,7 @@ const emit = defineEmits<{
 const recentBookings = computed(() => {
     return [...props.bookings]
         .filter((b) => b.status !== 'Unavailable')
+        .filter((b) => b.checkIn !== getCurrentDate())
         .sort((a, b) => {
             const dateA = a.createdAt || a.checkIn;
             const dateB = b.createdAt || b.checkIn;

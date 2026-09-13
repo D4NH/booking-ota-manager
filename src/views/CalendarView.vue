@@ -184,7 +184,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
     modalStore.openBookingModal({ booking });
 };
-// TODO: make linkable
+// TODO: make linkable via URL
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
 };

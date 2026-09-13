@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useDateKeys } from '@/composables/useDateKeys';
-import { PROPERTY_LIST } from '@/config/properties';
 import { CHANNEL_WARNINGS } from '@/config/constants';
+import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights } from '@/utils/date';
+
+const propertyStore = usePropertyStore();
+const { sortedProperties } = storeToRefs(propertyStore);
 
 const props = defineProps<{
     bookingToEdit?: Booking | null;
@@ -190,7 +194,7 @@ watch(
                                 --
                             </option>
                             <option
-                                v-for="prop in PROPERTY_LIST"
+                                v-for="prop in sortedProperties"
                                 :key="prop.id"
                                 :value="prop.id">
                                 {{ prop.name }}

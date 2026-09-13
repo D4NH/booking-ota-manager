@@ -2,7 +2,8 @@
 import { ref } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { PROPERTY_CONFIGS, PROPERTY_LIST } from '@/config/properties';
+import { usePropertyStore } from '@/stores/usePropertyStore';
+import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 
 import { toast } from 'vue-toastflow';
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>();
 
 const bookingStore = useBookingStore();
+const propertyStore = usePropertyStore();
 const { isAuthenticated, initAuth, fetchSheetRows } = useGoogleSheets();
 
 const isSyncing = ref<boolean>(false);
@@ -42,7 +44,7 @@ const handleSync = async (): Promise<void> => {
                     totalUpdated += updatedCount;
                     totalDeleted += deletedCount;
                 } else {
-                    for (const prop of PROPERTY_LIST) {
+                    for (const prop of propertyStore.sortedProperties) {
                         const spreadsheetId =
                             PROPERTY_CONFIGS[prop.id as PropertyId]?.spreadsheetId;
 
