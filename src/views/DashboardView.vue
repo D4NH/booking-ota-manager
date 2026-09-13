@@ -53,28 +53,28 @@ const handleEditBooking = (booking: Booking) => {
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">
+                <p class="font-mono text-lg font-bold text-mist-100">
                     {{ formatIDR(totalPayout) }}
                 </p>
-                <div class="flex items-center gap-1 text-xs">
+                <p class="flex items-center gap-1 text-xs">
                     <span
-                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'"
-                        class="font-medium">
+                        class="font-medium"
+                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
                         {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
                     </span>
                     <span class="text-mist-500">vs last month</span>
-                </div>
+                </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Occupancy Rate
                 </h3>
-                <p class="text-lg font-bold text-mist-100">{{ occupancyPercentage }}%</p>
-                <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
+                <p class="font-mono text-lg font-bold text-mist-100">{{ occupancyPercentage }}%</p>
+                <!-- <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
                         :style="{ width: `${occupancyPercentage}%` }"></div>
-                </div>
+                </div> -->
                 <p class="text-xs text-mist-500">
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
@@ -83,37 +83,24 @@ const handleEditBooking = (booking: Booking) => {
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Month Bookings
                 </h3>
-                <p class="text-lg font-bold text-mist-100">
+                <p class="font-mono text-lg font-bold text-mist-100">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500">Active bookings</p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <p class="text-xs uppercase font-bold text-mist-400">Today's Turnover</p>
-                <div class="text-lg font-bold text-mist-200">
-                    <span class="text-lime-400 mr-3">↓ {{ todaysTurnover.in }} In</span>
-                    <span class="text-amber-400">↑ {{ todaysTurnover.out }} Out</span>
-                </div>
-                <p class="text-xs text-mist-500">Scheduled for today</p>
-            </div>
-        </div>
-        <!-- Properties -->
-        <div class="flex flex-col shrink-0">
-            <div class="mt-8 mb-4">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
-                <p class="mt-0.5 text-xs text-mist-500">
-                    Real-time availability and unit operational status
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Today's Turnover
+                </h3>
+                <p class="text-lg font-bold text-mist-100">
+                    <span class="text-lime-400 mr-3">
+                        ↓ <span class="font-mono">{{ todaysTurnover.in }}</span> In
+                    </span>
+                    <span class="text-amber-400">
+                        ↑ <span class="font-mono">{{ todaysTurnover.out }}</span> Out
+                    </span>
                 </p>
-            </div>
-            <div
-                class="grid grid-cols-1 gap-4"
-                :class="`lg:grid-cols-${sortedProperties.length}`">
-                <PropertyCard
-                    v-for="property in sortedProperties"
-                    :key="property.id"
-                    :property="property"
-                    :bookings="bookings"
-                    :use-daily-ops="true" />
+                <p class="text-xs text-mist-500">Scheduled for today</p>
             </div>
         </div>
         <!-- Recent Bookings -->
@@ -134,6 +121,23 @@ const handleEditBooking = (booking: Booking) => {
 
             <!-- Revenue Performance -->
             <MonthOverMonth :bookings="bookings" />
+        </div>
+        <!-- Properties -->
+        <div class="flex flex-col shrink-0">
+            <div class="mt-8 mb-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
+                <p class="mt-0.5 text-xs text-mist-500">
+                    Real-time availability and unit operational status
+                </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <PropertyCard
+                    v-for="property in sortedProperties"
+                    :key="property.id"
+                    :property="property"
+                    :bookings="bookings"
+                    :use-daily-ops="true" />
+            </div>
         </div>
     </div>
 </template>
