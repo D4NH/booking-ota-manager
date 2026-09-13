@@ -3,13 +3,10 @@ import { useDateKeys } from '@/composables/useDateKeys';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 
-/**
- * Configuration options for the `useDailyOperations` composable.
- */
 export interface UseDailyOperationsOptions {
     /**
-     * Target property ID filter. Supports a static string, a `Ref`, or a getter function.
-     * When omitted or set to `'all'`, metrics represent the entire portfolio.
+     * Target property ID filter. Supports a static ID, a `Ref`, or a getter function.
+     * When omitted or set to `'all'`, aggregates operations across all properties.
      *
      * @example () => props.id
      */
@@ -24,32 +21,23 @@ export interface StaySection {
 /**
  * Computes real-time daily operational metrics for rental properties.
  *
- * Tracks today's scheduled arrivals, active in-house guests, departures,
- * turnover counts, and occupancy state based on the current date, time of day,
- * and reservation status.
+ * Enforces strict operational time windows:
+ * - Arrivals: Visible before 15:00 (and not yet checked in). Empty after 15:00.
+ * - Stays: Mid-stay guests, checked-in arrivals, and same-day departures (before 12:00).
+ * - Departures: Visible only during the turnover cleaning window (12:00 to 15:00).
+ * - Turnover: Total day's scheduled check-ins (in) and check-outs (out).
  *
- * @param bookings - A reactive reference to the bookings list (from `useBookingStore`).
+ * @param bookings - A reactive reference, getter function, or raw array of bookings.
  * @param options - Configuration options for scoping operational data.
- * @param options.propertyId - Property filter. Accepts a static ID, a reactive `Ref`,
- * or a getter function (e.g. `() => props.id`). Defaults to `'all'`.
+ * @param options.propertyId - Property filter (supports 'all', static string, Ref, or getter).
  *
  * @returns An object containing:
- * - `todaysArrivals`: Reactive list of guests arriving today.
- * - `currentStays`: Reactive list of guests currently in-house.
- * - `todaysDepartures`: Reactive list of guests departing today.
+ * - `todaysArrivals`: Computed list of guests arriving today.
+ * - `currentStays`: Computed list of guests currently in-house.
+ * - `todaysDepartures`: Computed list of guests departing today (12:00–15:00).
  * - `todaysTurnover`: Total scheduled check-in (`in`) and check-out (`out`) counts.
- * - `isOccupied`: Boolean indicating if unit(s) are occupied right now.
- * - `staySections`: Deduplicated sections ready for direct `v-for` template rendering.
- *
- * @example
- * // 1. Global Portfolio / Dashboard usage:
- * const { todaysTurnover, staySections } = useDailyOperations(bookings);
- *
- * @example
- * // 2. Single Property View with reactive route prop:
- * const { isOccupied, currentStays } = useDailyOperations(bookings, {
- *   propertyId: () => props.id,
- * });
+ * - `isOccupied`: Boolean indicating if unit(s) have active guests right now.
+ * - `staySections`: Deduplicated sections ready for direct template rendering.
  */
 export function useDailyOperations(
     bookings: MaybeRefOrGetter<Booking[]>,
@@ -57,14 +45,20 @@ export function useDailyOperations(
 ) {
     const { currentDay, currentHour } = useDateKeys();
 
+    /**
+     * Resolves property ID filter using `toValue` to support getters, refs, and strings.
+     */
     const getActivePropertyId = (): PropertyId | null => {
         const rawId = toValue(options.propertyId);
         return rawId && rawId !== 'all' ? (rawId as PropertyId) : null;
     };
 
+    /**
+     * All daily operations based on date, time of day, and status.
+     */
     const dailyOperationsData = computed(() => {
         const today = currentDay.value;
-        const hour = currentHour.value;
+        const hour = currentHour.value; // 0 to 23
         const activePropertyId = getActivePropertyId();
         const list = toValue(bookings) || [];
 
@@ -78,7 +72,6 @@ export function useDailyOperations(
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
             if (!b || b.status === 'Unavailable') continue;
-
             if (activePropertyId && b.propertyId !== activePropertyId) continue;
 
             const checkIn = b.checkIn || '';
@@ -87,26 +80,18 @@ export function useDailyOperations(
             if (checkIn === today) totalScheduledArrivals++;
             if (checkOut === today) totalScheduledDepartures++;
 
-            // Arrivals
-            if (checkIn === today && b.status !== 'Checked-out') {
-                if (b.status !== 'Checked-in' || hour < 15) {
-                    arrivals.push(b);
-                }
+            // Arrivals before 15:00
+            if (checkIn === today && hour < 15) {
+                arrivals.push(b);
             }
-
-            // Departures
-            if (checkOut === today) {
-                if (hour < 15 || b.status === 'Checked-in') {
-                    departures.push(b);
-                }
+            // Departures before 15:00
+            if (checkOut === today && hour < 15) {
+                departures.push(b);
             }
-
-            // Currently Staying
+            // Mid-stay guest
             if (checkIn < today && checkOut > today) {
                 stays.push(b);
-            } else if (checkIn === today && (b.status === 'Checked-in' || hour >= 15)) {
-                stays.push(b);
-            } else if (checkOut === today && hour < 12 && b.status !== 'Checked-out') {
+            } else if (checkIn === today && checkOut > today && hour >= 15) {
                 stays.push(b);
             }
         }
@@ -128,34 +113,34 @@ export function useDailyOperations(
     const todaysTurnover = computed(() => dailyOperationsData.value.turnover);
 
     const isOccupied = computed<boolean>(() => {
-        return currentStays.value.length > 0;
-    });
-
-    const staySections = computed<StaySection[]>(() => {
-        const activePropertyId = getActivePropertyId();
-
-        const arrivals = [...todaysArrivals.value];
-        let stays = [...currentStays.value];
-        let departures = [...todaysDepartures.value];
-
-        if (activePropertyId) {
-            const inHouseNames = new Set(stays.map((s) => s.guestName.trim().toLowerCase()));
-
-            // Only show "Leaving Today" if guest matches someone in-house
-            departures = departures.filter((dep) =>
-                inHouseNames.has(dep.guestName.trim().toLowerCase())
-            );
-
-            const departingNames = new Set(departures.map((d) => d.guestName.trim().toLowerCase()));
-            stays = stays.filter((s) => !departingNames.has(s.guestName.trim().toLowerCase()));
+        // 1. In-house or in the arrivals queue
+        if (currentStays.value.length > 0 || todaysArrivals.value.length > 0) {
+            return true;
         }
 
-        return [
-            { label: 'Arriving Today', items: arrivals },
-            { label: 'Currently Staying', items: stays },
-            { label: 'Leaving Today', items: departures },
-        ].filter((section) => section.items.length > 0);
+        // 2. Fallback: Anyone already 'Checked-in' today (even if before 15:00)
+        const activePropertyId = getActivePropertyId();
+        const list = toValue(bookings) || [];
+        const today = currentDay.value;
+
+        return list.some((b) => {
+            if (!b || b.status === 'Unavailable') return false;
+            if (activePropertyId && b.propertyId !== activePropertyId) return false;
+            return b.checkIn === today && b.status === 'Checked-in';
+        });
     });
+
+    /**
+     * Formatted operational sections ready for direct template rendering.
+     * Automatically omits empty sections.
+     */
+    const staySections = computed<StaySection[]>(() =>
+        [
+            { label: 'Arriving Today', items: todaysArrivals.value },
+            { label: 'Currently Staying', items: currentStays.value },
+            { label: 'Leaving Today', items: todaysDepartures.value },
+        ].filter((section) => section.items.length > 0)
+    );
 
     return {
         todaysArrivals,

@@ -53,7 +53,9 @@ const handleImageError = (e: Event) => {
             </div>
 
             <!-- Daily Operations -->
-            <div v-if="useDailyOps">
+            <div
+                v-if="useDailyOps"
+                class="mt-2">
                 <div
                     v-if="staySections.length"
                     class="space-y-4">
@@ -72,7 +74,7 @@ const handleImageError = (e: Event) => {
                         <div
                             v-for="b in section.items"
                             :key="b.id || b.bookingId">
-                            <div class="flex flex-col space-y-0.5">
+                            <div class="flex flex-col space-y-1">
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm font-bold text-mist-100 truncate">
                                         {{ b.guestName }}
@@ -88,7 +90,7 @@ const handleImageError = (e: Event) => {
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
                                     {{ b.nights }} night(s)
                                 </span>
-                                <span class="text-[10px] text-mist-500 font-medium">
+                                <span class="text-[11px] text-mist-500 font-medium">
                                     via {{ b.listing }}
                                 </span>
                             </div>
@@ -103,7 +105,7 @@ const handleImageError = (e: Event) => {
             </div>
             <div
                 v-else
-                class="rounded-lg border border-mist-800/80 bg-mist-950/50 p-2">
+                class="rounded-lg border border-mist-800/80 bg-mist-950/50 p-2 my-4">
                 <div class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
                         <span class="block text-[10px] uppercase font-semibold text-mist-500">
@@ -133,31 +135,30 @@ const handleImageError = (e: Event) => {
             </div>
 
             <!-- House Specs & Price Footer -->
-            <div class="pt-3 border-t border-mist-800/60 space-y-2">
-                <div class="flex items-center gap-3 text-xs text-mist-400 font-medium">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="bed"
-                            class="text-[11px] text-mist-500" />
-                        {{ property.bedrooms }} Beds
-                    </span>
-                    <span class="text-mist-700">&bull;</span>
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="shower"
-                            class="text-[11px] text-mist-500" />
-                        {{ property.bathrooms }} Baths
-                    </span>
-                    <span class="text-mist-700">&bull;</span>
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="ruler-combined"
-                            class="text-[11px] text-mist-500" />
-                        {{ property.plotSize }} m²
-                    </span>
-                </div>
-
+            <div class="pt-2 mt-2 border-t border-mist-800/60">
                 <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 text-xs text-mist-400 font-medium">
+                        <span class="flex items-center gap-1.5">
+                            <fa-icon
+                                icon="bed"
+                                class="text-[11px] text-mist-500" />
+                            {{ property.bedrooms }} Beds
+                        </span>
+                        <span class="text-mist-700">&bull;</span>
+                        <span class="flex items-center gap-1.5">
+                            <fa-icon
+                                icon="shower"
+                                class="text-[11px] text-mist-500" />
+                            {{ property.bathrooms }} Baths
+                        </span>
+                        <span class="text-mist-700">&bull;</span>
+                        <span class="flex items-center gap-1.5">
+                            <fa-icon
+                                icon="ruler-combined"
+                                class="text-[11px] text-mist-500" />
+                            {{ property.plotSize }} m²
+                        </span>
+                    </div>
                     <div>
                         <span class="text-sm font-bold font-mono text-mist-100">
                             {{ formatIDR(property.price) }}
@@ -169,14 +170,13 @@ const handleImageError = (e: Event) => {
         </div>
 
         <!-- Photo -->
-        <div class="relative w-44 shrink-0 overflow-hidden bg-mist-950">
+        <div class="relative shrink-0 self-stretch w-50 lg:w-65 overflow-hidden bg-mist-950">
             <img
                 :src="`/images/${property.id}.jpg`"
                 :alt="property.name"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
                 @error="handleImageError" />
-            <div class="pointer-events-none absolute inset-0 ring-1 ring-inset ring-mist-800/50" />
         </div>
 
         <OccupiedTag
