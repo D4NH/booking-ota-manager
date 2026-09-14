@@ -424,7 +424,7 @@ watch(
                                         v-if="b.notes"
                                         class="text-mist-300 text-[11px]">
                                         <span class="font-semibold text-mist-400">Notes:</span>
-                                        <p class="mt-0.5 whitespace-pre-wrap italic">
+                                        <p class="mt-1 whitespace-pre-wrap italic">
                                             {{ b.notes }}
                                         </p>
                                     </div>

@@ -54,7 +54,7 @@ const propertyStats = computed(() => {
             <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                 Unit Performance
             </h2>
-            <p class="mt-0.5 text-xs text-mist-400">Revenue contribution & occupancy by villa</p>
+            <p class="mt-1 text-xs text-mist-400">Revenue contribution & occupancy by villa</p>
         </div>
 
         <!-- Leaderboard Rows -->

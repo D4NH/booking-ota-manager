@@ -35,7 +35,7 @@ const recentBookings = computed(() => {
             class="flex h-40 flex-col items-center justify-center text-center text-xs text-mist-500">
             <fa-icon
                 icon="receipt"
-                class="text-2xl text-mist-700 mb-2" />
+                class="text-xl text-mist-700 mb-2" />
             <p>No recent bookings found.</p>
         </div>
 
@@ -65,7 +65,7 @@ const recentBookings = computed(() => {
                             {{ b.propertyId }}
                         </span>
                     </div>
-                    <p class="text-[11px] text-mist-400 mt-0.5">
+                    <p class="text-[11px] text-mist-400 mt-1">
                         {{ formatDate(b.checkIn, { shortMonth: true }) }} &bull;
                         {{ b.nights }} night(s) via
                         <span class="text-mist-300">{{ b.listing }}</span>
@@ -78,7 +78,7 @@ const recentBookings = computed(() => {
                     {{ formatIDR(b.payout) }}
                 </span>
                 <span
-                    class="text-[10px] inline-block mt-0.5"
+                    class="text-[10px] inline-block mt-1"
                     :class="getStatusStyle(b.status)">
                     {{ b.status }}
                 </span>

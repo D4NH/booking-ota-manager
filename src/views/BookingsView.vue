@@ -231,7 +231,7 @@ onActivated(() => {
             <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                 Upcoming Bookings
             </h2>
-            <p class="mt-0.5 text-xs text-mist-500">
+            <p class="mt-1 text-xs text-mist-500">
                 Real-time availability and unit operational status
             </p>
         </div>

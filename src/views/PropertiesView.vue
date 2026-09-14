@@ -111,7 +111,7 @@ const handleAddProperty = () => {
                     <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                         Properties
                     </h2>
-                    <p class="mt-0.5 text-xs text-mist-500">
+                    <p class="mt-1 text-xs text-mist-500">
                         Real-time availability and unit operational status
                     </p>
                 </div>
@@ -120,7 +120,7 @@ const handleAddProperty = () => {
                 <button
                     v-if="sortedProperties.length > 2"
                     type="button"
-                    class="flex items-center gap-1.5 rounded-lg border border-mist-800 bg-mist-900 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                    class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
                     @click="isPropertiesExpanded = !isPropertiesExpanded">
                     <span>{{
                         isPropertiesExpanded ? 'Show Less' : `Show All (${sortedProperties.length})`

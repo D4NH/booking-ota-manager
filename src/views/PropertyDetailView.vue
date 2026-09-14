@@ -221,7 +221,7 @@ watch(
                             <h1 class="text-xl font-bold text-mist-100">
                                 {{ selectedProperty.name }}
                             </h1>
-                            <p class="text-xs text-mist-300 mt-0.5 max-w-md truncate">
+                            <p class="text-xs text-mist-300 mt-1 max-w-md truncate">
                                 {{ selectedProperty.address }}
                             </p>
                         </div>
@@ -327,11 +327,11 @@ watch(
                             class="text-center text-xs text-mist-500">
                             <fa-icon
                                 icon="house-circle-check"
-                                class="text-2xl text-mist-700" />
+                                class="text-xl text-mist-700" />
                             <span class="ml-2 font-medium text-mist-400">
                                 No active in-house guest
                             </span>
-                            <p class="text-[11px] mt-0.5">Unit is vacant and ready for check-in</p>
+                            <p class="text-[11px] mt-1">Unit is vacant and ready for check-in</p>
                         </div>
                     </div>
                     <!-- Guest Access & Wi-Fi -->
@@ -418,7 +418,7 @@ watch(
                 <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                     Upcoming Bookings
                 </h2>
-                <p class="mt-0.5 text-xs text-mist-400">Starting from {{ currentMonth }}</p>
+                <p class="mt-1 text-xs text-mist-400">Starting from {{ currentMonth }}</p>
             </div>
 
             <button

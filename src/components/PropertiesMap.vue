@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
     <div class="flex flex-col mb-4">
         <div class="mt-4 mb-4">
             <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">All Properties</h2>
-            <p class="mt-0.5 text-xs text-mist-400">Across Indonsia</p>
+            <p class="mt-1 text-xs text-mist-400">Across Indonsia</p>
         </div>
         <div
             class="relative h-full min-h-64 w-full overflow-hidden rounded-md border border-mist-800 bg-mist-950 shadow-md">
@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
 
             <!-- Top Left: Map Legend / Info Badge -->
             <div
-                class="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-lg border border-mist-700/80 bg-mist-900/90 px-3 py-1.5 text-xs text-mist-200 backdrop-blur-sm shadow-lg">
+                class="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-md border border-mist-700/80 bg-mist-900/90 px-3 py-1.5 text-xs text-mist-200 backdrop-blur-sm shadow-lg">
                 <span class="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
                 <span class="font-semibold">
                     {{ properties.length }} Locations Across Indonesia

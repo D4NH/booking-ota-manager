@@ -155,7 +155,7 @@ const chartOptions: ChartOptions<'line'> = {
                 <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                     Earnings Performance
                 </h2>
-                <p class="mt-0.5 text-xs text-mist-500">
+                <p class="mt-1 text-xs text-mist-500">
                     {{
                         activeView === 'weekly'
                             ? 'Compare against last week'
@@ -165,7 +165,7 @@ const chartOptions: ChartOptions<'line'> = {
             </div>
             <!-- Toggle Buttons -->
             <div
-                class="flex items-center rounded-lg border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">
                 <button
                     type="button"
                     :class="[
@@ -195,7 +195,7 @@ const chartOptions: ChartOptions<'line'> = {
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <!-- Current Total -->
                 <div class="flex items-baseline gap-3">
-                    <span class="text-2xl font-black font-mono text-mist-100">
+                    <span class="text-xl font-black font-mono text-mist-100">
                         {{ formatIDR(currentTotal) }}
                     </span>
                     <span

@@ -2,10 +2,7 @@
 import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
 import { getPropertyTheme } from '@/config/properties';
-import { useBookingSync } from '@/composables/useBookingSync';
 import type { Booking } from '@/types/booking';
-
-const { markBookingComplete } = useBookingSync();
 
 const props = defineProps<{
     isOpen: boolean;
@@ -15,16 +12,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'mark-paid', booking: Booking): void;
-    (e: 'mark-payout-received', booking: Booking): void;
+    (e: 'mark-complete', booking: Booking): void;
     (e: 'edit', booking: Booking): void;
 }>();
 
 const totalCount = computed(() => props.pendingPayments.length + props.pendingPayouts.length);
-
-const handleInstantComplete = async (booking: Booking) => {
-    await markBookingComplete(booking);
-};
 </script>
 <template>
     <div class="bg-mist-900 border-t border-mist-800 overflow-hidden">
@@ -53,7 +45,7 @@ const handleInstantComplete = async (booking: Booking) => {
                 class="py-10 text-center text-xs text-mist-500 space-y-1">
                 <fa-icon
                     icon="circle-check"
-                    class="text-2xl text-lime-500/40 mb-1" />
+                    class="text-xl text-lime-500/40 mb-1" />
                 <p class="font-medium text-mist-400">All caught up!</p>
                 <p>No pending payments or unsettled payouts.</p>
             </div>
@@ -150,7 +142,7 @@ const handleInstantComplete = async (booking: Booking) => {
                         <button
                             type="button"
                             class="cursor-pointer text-mist-400 hover:text-mist-100"
-                            @click="handleInstantComplete(b)">
+                            @click="emit('mark-complete', b)">
                             <fa-icon icon="clipboard-check" />
                         </button>
                     </div>

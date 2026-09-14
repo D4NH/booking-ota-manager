@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useBookingSync } from '@/composables/useBookingSync';
+import { PROPERTY_LIST, getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
@@ -14,7 +16,6 @@ const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
     { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
     { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
-    { name: 'Properties', path: '/properties', icon: 'house' },
     { name: 'Finance', path: '/finance', icon: 'chart-pie' },
 ];
 
@@ -22,9 +23,11 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
+const { markBookingComplete } = useBookingSync();
 
 const isCollapsed = ref(false);
 const isNotificationOpen = ref(true);
+const isPropertiesOpen = ref(true);
 
 const pendingPayments = computed(() => {
     const isWithinWindow = (checkIn: string): boolean => {
@@ -54,23 +57,34 @@ const pendingPayments = computed(() => {
 const handleEditBooking = (booking: Booking) => {
     modalStore.openBookingModal({ booking });
 };
-const isLinkActive = (linkPath?: string): boolean => {
-    if (!linkPath) return false;
-
-    if (linkPath === '/') {
-        return route.path === '/';
-    }
-
-    return route.path.startsWith(linkPath);
+const handleInstantComplete = async (booking: Booking) => {
+    await markBookingComplete(booking);
+};
+const isLinkActive = (path: string) => {
+    if (path === '/') return route.path === '/';
+    return route.path.startsWith(path);
 };
 const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
     isNotificationOpen.value = false;
+    isPropertiesOpen.value = false;
 };
 const toggleNotifications = () => {
     isNotificationOpen.value = !isNotificationOpen.value;
 };
 const currentYear = new Date().getFullYear();
+
+watch(
+    () => route.path,
+    (newPath) => {
+        if (newPath.startsWith('/properties')) {
+            isPropertiesOpen.value = true;
+        } else {
+            isPropertiesOpen.value = false;
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
@@ -81,10 +95,10 @@ const currentYear = new Date().getFullYear();
         ]">
         <div class="flex h-14 items-center border-b border-mist-800 px-4 overflow-hidden">
             <div class="flex items-center gap-3">
-                <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-lime-500 font-black text-mist-950">
-                    M
-                </div>
+                <img
+                    class="h-8 w-8 shrink-0 rounded-md"
+                    src="/images/maihouse_logo.jpg"
+                    alt="Mai House Jogja" />
                 <span
                     v-show="!isCollapsed"
                     class="font-bold text-mist-100 text-nowrap transition-opacity duration-200">
@@ -93,22 +107,85 @@ const currentYear = new Date().getFullYear();
             </div>
         </div>
 
-        <nav class="flex-1 space-y-1.5 p-3 overflow-hidden">
+        <nav class="flex-1 space-y-1.5 p-3 overflow-y-auto overflow-x-hidden">
             <RouterLink
                 v-for="link in navLinks"
                 :key="link.name"
                 :to="link.path"
                 :class="[
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                    'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                     isLinkActive(link.path)
                         ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
                     :icon="link.icon"
-                    class="w-4 h-4 shrink-0" />
-                <span>{{ link.name }}</span>
+                    class="w-4 h-4 shrink-0 text-center py-2" />
+                <span
+                    v-show="!isCollapsed"
+                    class="truncate">
+                    {{ link.name }}
+                </span>
             </RouterLink>
+
+            <!-- Properties -->
+            <div class="space-y-1 pt-0.5">
+                <div
+                    :class="[
+                        'flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition group',
+                        isLinkActive('/properties')
+                            ? 'bg-mist-800/80 text-mist-100'
+                            : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
+                    ]">
+                    <RouterLink
+                        to="/properties"
+                        class="flex items-center gap-3 flex-1 min-w-0"
+                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/properties') }">
+                        <fa-icon
+                            icon="house"
+                            class="w-4 h-4 shrink-0 text-center py-2" />
+                        <span
+                            v-show="!isCollapsed"
+                            class="truncate">
+                            Properties
+                        </span>
+                    </RouterLink>
+
+                    <button
+                        v-show="!isCollapsed"
+                        type="button"
+                        class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
+                        @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
+                        <fa-icon
+                            icon="chevron-down"
+                            class="text-[10px] transition-transform duration-200"
+                            :class="{ 'rotate-180': isPropertiesOpen }" />
+                    </button>
+                </div>
+
+                <!-- Properties Subitems -->
+                <div
+                    v-show="!isCollapsed && isPropertiesOpen"
+                    class="ml-4 pl-3.5 border-l border-mist-800/80 space-y-1 my-1 animate-in fade-in duration-150">
+                    <RouterLink
+                        v-for="prop in PROPERTY_LIST"
+                        :key="prop.id"
+                        :to="{ name: 'property-detail', params: { id: prop.id } }"
+                        class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        :class="[
+                            route.path === `/properties/${prop.id}`
+                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                : 'text-mist-400',
+                        ]">
+                        <span
+                            class="h-1.5 w-1.5 rounded-full shrink-0"
+                            :class="getPropertyTheme(prop.id).color || 'bg-lime-400'" />
+                        <span class="truncate capitalize">
+                            {{ prop.id }}
+                        </span>
+                    </RouterLink>
+                </div>
+            </div>
         </nav>
 
         <NotificationsPopover
@@ -116,7 +193,8 @@ const currentYear = new Date().getFullYear();
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
             @close="toggleNotifications"
-            @edit="handleEditBooking" />
+            @edit="handleEditBooking"
+            @mark-complete="handleInstantComplete" />
 
         <div class="border-t border-mist-800 p-3 overflow-hidden">
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">

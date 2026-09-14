@@ -128,18 +128,22 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
 export const PROPERTY_THEMES: Record<PropertyId, PropertyTheme> = {
     wonosari: {
         text: 'text-blue-400',
+        color: 'bg-blue-400',
         bg: 'bg-blue-500/10',
     },
     piyungan: {
         text: 'text-emerald-400',
+        color: 'bg-emerald-400',
         bg: 'bg-emerald-500/10',
     },
     bantul: {
         text: 'text-amber-400',
+        color: 'bg-amber-400',
         bg: 'bg-amber-500/10',
     },
     nusadua: {
         text: 'text-rose-400',
+        color: 'bg-rose-400',
         bg: 'bg-rose-500/10',
     },
 };

@@ -40,7 +40,7 @@ const handleEditBooking = (booking: Booking) => {
     <div class="h-full min-h-0 overflow-y-auto">
         <div class="shrink-0 my-4">
             <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <div class="mt-0.5 text-xs text-mist-400">
+            <div class="mt-1 text-xs text-mist-400">
                 Live operational activity for
                 <span class="font-bold">
                     {{ formatDate(getCurrentMonth(), { monthHeader: true }) }}
@@ -110,7 +110,7 @@ const handleEditBooking = (booking: Booking) => {
                     <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                         Recent Bookings
                     </h2>
-                    <p class="mt-0.5 text-xs text-mist-500">
+                    <p class="mt-1 text-xs text-mist-500">
                         Latest reservations across all channels
                     </p>
                 </div>
@@ -126,7 +126,7 @@ const handleEditBooking = (booking: Booking) => {
         <div class="flex flex-col shrink-0">
             <div class="mt-8 mb-4">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
-                <p class="mt-0.5 text-xs text-mist-500">
+                <p class="mt-1 text-xs text-mist-500">
                     Real-time availability and unit operational status
                 </p>
             </div>

@@ -12,8 +12,8 @@ import type { Property } from '@/types/property';
 import { ToastContainer } from 'vue-toastflow';
 
 import AppSidebar from '@/components/AppSidebar.vue';
-import BookingModal from '@/components/BookingModal.vue';
-import PropertyModal from '@/components/PropertyModal.vue';
+import BookingModal from '@/components/modal/BookingModal.vue';
+import PropertyModal from '@/components/modal/PropertyModal.vue';
 
 useHead({
     title: 'Mai House Jogja',

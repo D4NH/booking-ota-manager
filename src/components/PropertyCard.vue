@@ -43,7 +43,7 @@ const handleImageError = (e: Event) => {
                     {{ property.name }}
                 </h3>
                 <p
-                    class="text-xs text-mist-400 mt-0.5 truncate flex items-center gap-1"
+                    class="text-xs text-mist-400 mt-1 truncate flex items-center gap-1"
                     :title="property.address">
                     <fa-icon
                         icon="location-dot"
@@ -102,7 +102,7 @@ const handleImageError = (e: Event) => {
                     class="text-center text-xs text-mist-500 my-6">
                     <fa-icon
                         icon="person-digging"
-                        class="text-2xl text-mist-700" />
+                        class="text-xl text-mist-700" />
                     <span class="ml-2 font-medium text-mist-400">Under Construction</span>
                 </div>
                 <div
@@ -110,9 +110,9 @@ const handleImageError = (e: Event) => {
                     class="text-center text-xs text-mist-500 my-6">
                     <fa-icon
                         icon="house-circle-check"
-                        class="text-2xl text-mist-700" />
+                        class="text-xl text-mist-700" />
                     <span class="ml-2 font-medium text-mist-400">No active in-house guest</span>
-                    <p class="text-[11px] mt-0.5">Unit is vacant and ready for check-in</p>
+                    <p class="text-[11px] mt-1">Unit is vacant and ready for check-in</p>
                 </div>
             </div>
             <div
@@ -151,7 +151,7 @@ const handleImageError = (e: Event) => {
                     class="text-center text-xs text-mist-500 my-6">
                     <fa-icon
                         icon="person-digging"
-                        class="text-2xl text-mist-700" />
+                        class="text-xl text-mist-700" />
                     <span class="ml-2 font-medium text-mist-400">Under Construction</span>
                 </div>
             </div>

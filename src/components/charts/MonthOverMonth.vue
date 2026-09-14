@@ -170,7 +170,7 @@ const chartOptions: ChartOptions<'bar'> = {
             <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
                 Revenue Performance
             </h2>
-            <p class="mt-0.5 text-xs text-mist-400">
+            <p class="mt-1 text-xs text-mist-400">
                 Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
             </p>
         </div>

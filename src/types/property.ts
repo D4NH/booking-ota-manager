@@ -23,6 +23,7 @@ export interface Property {
 
 export interface PropertyTheme {
     text: string;
+    color: string;
     bg: string;
 }
 
