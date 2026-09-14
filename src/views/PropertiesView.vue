@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -13,8 +14,9 @@ import PageTitle from '@/components/PageTitle.vue';
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
-import UnitPerformance from '@/components/UnitPerformance.vue';
+import PropertyPerformance from '@/components/PropertyPerformance.vue';
 import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
+import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -25,6 +27,7 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
+const { metrics, monthlyPropertyData } = useMonthlyMetrics(bookings);
 
 const isPropertiesExpanded = ref(false);
 
@@ -40,6 +43,7 @@ const selectedProperty = computed<PropertyId | 'all'>(() => {
     const id = route.params.id;
     return typeof id === 'string' && id ? (id as PropertyId) : 'all';
 });
+const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
 
 const navigateToDetail = (propertyId: PropertyId | 'all') =>
     propertyId === 'all'
@@ -145,9 +149,16 @@ const handleAddProperty = () => {
             <ChannelDistribution :bookings="bookings" />
         </div>
 
-        <UnitPerformance
-            class="mb-4"
-            :bookings="bookings"
-            :properties="sortedProperties" />
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <AnnualRevenue
+                :monthly-metrics="metrics"
+                :data="monthlyPropertyData"
+                :total-revenue="totalRevenue" />
+
+            <PropertyPerformance
+                class="mb-4"
+                :bookings="bookings"
+                :properties="sortedProperties" />
+        </div>
     </div>
 </template>
