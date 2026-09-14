@@ -52,8 +52,8 @@ const propertyStats = computed(() => {
 <template>
     <div class="flex flex-col">
         <CardTitle>
-            <template #title>Unit Performance</template>
-            <template #subtitle>Revenue contribution & occupancy by villa</template>
+            <template #title>Property Performance</template>
+            <template #subtitle>Revenue contribution & occupancy rate per unit</template>
         </CardTitle>
         <!-- Leaderboard Rows -->
         <div
