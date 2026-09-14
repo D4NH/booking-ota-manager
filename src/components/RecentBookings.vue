@@ -17,12 +17,8 @@ const emit = defineEmits<{
 const recentBookings = computed(() => {
     return [...props.bookings]
         .filter((b) => b.status !== 'Unavailable')
-        .filter((b) => b.checkIn !== getCurrentDate())
-        .sort((a, b) => {
-            const dateA = a.createdAt || a.checkIn;
-            const dateB = b.createdAt || b.checkIn;
-            return dateB.localeCompare(dateA);
-        })
+        .filter((b) => b.checkIn > getCurrentDate())
+        .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
         .slice(0, 5);
 });
 </script>

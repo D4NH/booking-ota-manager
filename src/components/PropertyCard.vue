@@ -3,10 +3,11 @@ import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
-import { formatDate } from '@/utils/date';
+import { formatDate, getCurrentDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import OccupiedTag from '@/components/OccupiedTag.vue';
+import { computed } from 'vue';
 
 const props = defineProps<{
     bookings: Booking[];
@@ -23,6 +24,13 @@ const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetri
 const { staySections, isOccupied } = useDailyOperations(() => props.bookings, {
     propertyId: () => props.property.id,
 });
+
+const nextUpcoming = computed(
+    () =>
+        props.bookings
+            .filter((b) => b.checkIn > getCurrentDate())
+            .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0]
+);
 
 const handleImageError = (e: Event) => {
     (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
@@ -112,7 +120,16 @@ const handleImageError = (e: Event) => {
                         icon="house-circle-check"
                         class="text-xl text-mist-700" />
                     <span class="ml-2 font-medium text-mist-400">No active in-house guest</span>
-                    <p class="text-[11px] mt-1">Unit is vacant and ready for check-in</p>
+                    <p
+                        v-if="nextUpcoming"
+                        class="text-[11px] mt-1">
+                        Next: {{ formatDate(nextUpcoming.checkIn) }} - {{ nextUpcoming.guestName }}
+                    </p>
+                    <p
+                        v-else
+                        class="text-[11px] mt-1">
+                        Unit is vacant and ready for check-in
+                    </p>
                 </div>
             </div>
             <div

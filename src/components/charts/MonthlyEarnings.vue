@@ -43,8 +43,7 @@ const props = defineProps<{
     monthlyData: monthlyData;
 }>();
 
-// Toggle between Weekly and Monthly view
-const activeView = ref<'weekly' | 'monthly'>('weekly');
+const activeView = ref<'weekly' | 'monthly'>('monthly');
 
 const currentTotal = computed(() => {
     const list =
@@ -80,7 +79,6 @@ const chartData = computed(() => {
                 borderWidth: 2.5,
                 tension: 0.35,
                 fill: true,
-                // ... rest of your styling (gradient, etc.)
             },
             {
                 label: isWeekly ? 'Last Week' : 'Last Month',
@@ -90,7 +88,6 @@ const chartData = computed(() => {
                 borderDash: [5, 5],
                 tension: 0.35,
                 fill: false,
-                // ... rest of your styling
             },
         ],
     };
@@ -194,25 +191,21 @@ const chartOptions: ChartOptions<'line'> = {
             class="flex flex-col flex-1 justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md space-y-4">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <!-- Current Total -->
-                <div class="flex items-baseline gap-3">
-                    <span class="text-xl font-black font-mono text-mist-100">
+                <div class="flex flex-col items-baseline gap-1">
+                    <p class="text-xl font-black font-mono text-mist-100">
                         {{ formatIDR(currentTotal) }}
-                    </span>
-                    <span
-                        :class="[
-                            'flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold border',
-                            growthPercentage >= 0
-                                ? 'border-lime-500/30 bg-lime-500/10 text-lime-400'
-                                : 'border-rose-500/30 bg-rose-500/10 text-rose-400',
-                        ]">
-                        <span>
+                    </p>
+                    <p class="flex items-center gap-1 text-xs">
+                        <span
+                            class="font-medium"
+                            :class="growthPercentage >= 0 ? 'text-lime-400' : 'text-rose-400'">
                             {{ growthPercentage >= 0 ? '↑' : '↓' }}
                             {{ Math.abs(growthPercentage) }}%
                         </span>
-                        <span class="font-normal text-[10px] opacity-80">
+                        <span class="text-mist-500">
                             vs {{ activeView === 'weekly' ? 'last week' : 'last month' }}
                         </span>
-                    </span>
+                    </p>
                 </div>
                 <!-- Legend -->
                 <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
