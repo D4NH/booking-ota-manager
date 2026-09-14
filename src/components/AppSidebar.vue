@@ -16,7 +16,6 @@ const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
     { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
     { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
-    { name: 'Finance', path: '/finance', icon: 'chart-pie' },
 ];
 
 const bookingStore = useBookingStore();
@@ -196,7 +195,7 @@ watch(
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
-                    icon="triangle-exclamation"
+                    icon="gear"
                     class="w-4 h-4 shrink-0 text-center py-2" />
                 <span
                     v-show="!isCollapsed"
