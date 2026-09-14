@@ -105,7 +105,7 @@ const handleEditBooking = (booking: Booking) => {
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <!-- Recent Bookings -->
             <RecentBookings
                 :bookings="bookings"
@@ -116,12 +116,12 @@ const handleEditBooking = (booking: Booking) => {
         </div>
 
         <!-- Properties -->
-        <div class="flex flex-col shrink-0">
+        <div class="flex flex-col shrink-0 mb-4">
             <CardTitle>
                 <template #title>Properties</template>
                 <template #subtitle> Real-time availability and unit operational status </template>
             </CardTitle>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"

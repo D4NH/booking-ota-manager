@@ -200,7 +200,7 @@ watch(
             </div>
         </PageTitle>
         <!-- Photo & Property Specs -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-4 space-y-4 lg:space-y-0 lg:gap-4">
             <div
                 class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12">
                 <div
@@ -378,9 +378,7 @@ watch(
                 </div>
             </div>
 
-            <PropertyLocationMap
-                class="col-span-1"
-                :property="selectedProperty" />
+            <PropertyLocationMap :property="selectedProperty" />
         </div>
 
         <!-- Unit Performance Stat Cards -->
