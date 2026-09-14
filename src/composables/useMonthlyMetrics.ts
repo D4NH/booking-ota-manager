@@ -1,8 +1,9 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import { PROPERTY_LIST } from '@/config/properties';
 import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import { getCurrentMonth, getPreviousMonth, getDaysInMonth, parseISODate } from '@/utils/date';
 import type { Booking } from '@/types/booking';
-import type { PropertyId } from '@/types/property';
+import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 
 export interface MonthlyMetrics {
     totalPayout: number;
@@ -29,24 +30,23 @@ const getOverlappingNights = (
 ): number => {
     if (!checkInStr || !checkOutStr || !targetMonthStr) return 0;
 
-    const [yearStr, monthStr] = targetMonthStr.split('-');
-    const year = Number(yearStr);
-    const month = Number(monthStr);
+    const parts = targetMonthStr.split('-');
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
 
-    if (isNaN(year) || isNaN(month)) return 0;
+    if (!year || !month) return 0;
 
-    const checkInDate = parseISODate(checkInStr);
-    const checkOutDate = parseISODate(checkOutStr);
-    const monthStart = new Date(year, month - 1, 1);
-    const monthEnd = new Date(year, month, 1);
+    const checkInTime = parseISODate(checkInStr).getTime();
+    const checkOutTime = parseISODate(checkOutStr).getTime();
+    const monthStartTime = new Date(year, month - 1, 1).getTime();
+    const monthEndTime = new Date(year, month, 1).getTime();
 
-    const start = checkInDate < monthStart ? monthStart : checkInDate;
-    const end = checkOutDate > monthEnd ? monthEnd : checkOutDate;
+    const start = Math.max(checkInTime, monthStartTime);
+    const end = Math.min(checkOutTime, monthEndTime);
 
     if (start >= end) return 0;
 
-    const diffMs = end.getTime() - start.getTime();
-    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    return Math.round((end - start) / 86400000);
 };
 
 /**
@@ -118,10 +118,8 @@ export function useMonthlyMetrics(
             rawPropertyId && rawPropertyId !== 'all' ? (rawPropertyId as PropertyId) : null;
         const isSingleProperty = !!activePropertyId;
 
-        // If single property, capacity is 1 unit. If 'all', count active properties.
         const daysInCurrentMonth = getDaysInMonth(currentMonth);
         const activeUnitsCount = isSingleProperty ? 1 : Math.max(1, getBookedPropertiesCount(list));
-
         const totalCapacityNights = activeUnitsCount * daysInCurrentMonth;
 
         const monthStartStr = `${currentMonth}-01`;
@@ -180,39 +178,51 @@ export function useMonthlyMetrics(
         };
     });
 
-    const monthlyPropertyData = computed(() => {
+    const monthlyPropertyData = computed<MonthlyPropertyRevenue[]>(() => {
         const currentYear = new Date().getFullYear().toString();
         const list = toValue(bookings) || [];
 
-        const monthlyPropertyBookings = [
-            { label: 'Jan', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Feb', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Mar', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Apr', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'May', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Jun', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Jul', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Aug', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Sep', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Oct', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Nov', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
-            { label: 'Dec', piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+        const labels = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
         ];
 
-        for (const b of list) {
-            if (!b.checkIn.startsWith(currentYear) || b.status === 'Unavailable') continue;
+        // Initialize complete row objects upfront with default zero balances
+        const monthlyPropertyBookings: MonthlyPropertyRevenue[] = labels.map((label) => {
+            const row = { label } as MonthlyPropertyRevenue;
+            for (let i = 0; i < PROPERTY_LIST.length; i++) {
+                const prop = PROPERTY_LIST[i];
+                if (prop) {
+                    row[prop.id] = 0;
+                }
+            }
+            return row;
+        });
+
+        for (let i = 0; i < list.length; i++) {
+            const b = list[i];
+            if (!b || !b.checkIn?.startsWith(currentYear) || b.status === 'Unavailable') {
+                continue;
+            }
 
             const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
             const target = monthlyPropertyBookings[monthIndex];
 
-            if (
-                target &&
-                (b.propertyId === 'piyungan' ||
-                    b.propertyId === 'wonosari' ||
-                    b.propertyId === 'bantul' ||
-                    b.propertyId === 'nusadua')
-            ) {
-                target[b.propertyId] += b.payout || 0;
+            if (target && b.propertyId in target) {
+                const currentVal = target[b.propertyId];
+                if (typeof currentVal === 'number') {
+                    target[b.propertyId] = currentVal + (b.payout || 0);
+                }
             }
         }
 

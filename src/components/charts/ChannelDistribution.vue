@@ -75,8 +75,8 @@ const chartOptions: ChartOptions<'doughnut'> = {
 <template>
     <div class="flex flex-col">
         <CardTitle>
-            <template #title>Channel Distribution</template>
-            <template #subtitle> Total bookings split by acquisition source </template>
+            <template #title>Booking Channels</template>
+            <template #subtitle> Reservation share by acquisition platform </template>
         </CardTitle>
         <!-- Chart -->
         <div class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
