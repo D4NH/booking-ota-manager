@@ -1,10 +1,23 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
+import { useBookingStore } from '@/stores/useBookingStore';
 import type { PropertyId } from '@/types/property';
+
+import { useRevenueComparison } from '@/composables/useRevenueData';
+import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
+
+import ActiveStays from '@/components/ActiveStays.vue';
+import LivePropertyRack from '@/components/LivePropertyRack.vue';
+import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
+import UpcomingActivity from '@/components/UpcomingActivity.vue';
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
+
+const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
 
 const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void> => {
     if (window.confirm(`Delete property ${name}?`)) {
@@ -14,7 +27,21 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="h-full min-h-0 overflow-y-auto space-y-6 mt-6">
+        <LivePropertyRack :bookings="bookings" />
+
+        <div class="grid grid-cols-2 gap-4">
+            <MonthlyEarnings
+                :weekly-data="getWeeklyComparison(bookings, 'piyungan')"
+                :monthly-data="getMonthlyComparison(bookings, 'piyungan')" />
+            <MonthlyRevenuePacing :current-revenue="1234567" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <ActiveStays :bookings="bookings" />
+            <UpcomingActivity :bookings="bookings" />
+        </div>
+
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-bold text-mist-100">Properties</h1>
