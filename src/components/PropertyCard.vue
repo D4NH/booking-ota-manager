@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { Booking } from '@/types/booking';
@@ -7,7 +8,6 @@ import { formatDate, getCurrentDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import OccupiedTag from '@/components/OccupiedTag.vue';
-import { computed } from 'vue';
 
 const props = defineProps<{
     bookings: Booking[];

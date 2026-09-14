@@ -13,6 +13,8 @@ import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { formatDate, getCurrentMonth } from '@/utils/date';
 
+import CardTitle from '@/components/CardTitle.vue';
+import PageTitle from '@/components/PageTitle.vue';
 import CurrentWeekView from '@/components/CurrentWeekView.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
@@ -182,18 +184,13 @@ onActivated(() => {
 
 <template>
     <div class="flex flex-col h-full min-h-0 gap-4">
-        <!-- Header -->
-        <div class="flex shrink-0 items-center justify-between mt-4">
-            <div>
-                <h1 class="text-xl font-bold text-mist-100">Bookings</h1>
-                <p class="mt-1 text-xs text-mist-400">
-                    Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
-                </p>
-            </div>
-
-            <div class="flex items-center gap-3">
+        <PageTitle>
+            <template #title> Bookings </template>
+            <template #subtitle>
+                Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
+            </template>
+            <div class="flex items-center gap-4">
                 <GoogleSyncButton :property-id="selectedProperty" />
-
                 <!-- Property Selector -->
                 <div
                     class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
@@ -223,98 +220,95 @@ onActivated(() => {
                     </button>
                 </div>
             </div>
-        </div>
+        </PageTitle>
 
         <CurrentWeekView :selected-property="selectedProperty" />
 
-        <div class="mt-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                Upcoming Bookings
-            </h2>
-            <p class="mt-1 text-xs text-mist-500">
-                Real-time availability and unit operational status
-            </p>
-        </div>
-
-        <!-- Filter Bar -->
-        <div
-            class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <div class="flex items-center gap-2">
-                <div class="w-50">
-                    <div class="relative w-full max-w-xs">
-                        <div
-                            class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
-                            <fa-icon
-                                icon="magnifying-glass"
-                                class="w-4 h-4" />
+        <div>
+            <CardTitle>
+                <template #title>Upcoming Bookings</template>
+                <template #subtitle> Real-time availability and unit operational status </template>
+            </CardTitle>
+            <!-- Filter Bar -->
+            <div
+                class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <div class="flex items-center gap-2">
+                    <div class="w-50">
+                        <div class="relative w-full max-w-xs">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    icon="magnifying-glass"
+                                    class="w-4 h-4" />
+                            </div>
+                            <input
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Search..."
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            placeholder="Search..."
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
-                </div>
-                <div class="relative w-50">
-                    <select
-                        v-model="selectedMonth"
-                        class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
-                        <option value="all">All Months</option>
-                        <option
-                            v-for="mKey in availableMonths"
-                            :key="mKey"
-                            :value="mKey">
-                            {{ formatDate(mKey, { monthOnly: true }) }}
-                        </option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                    <div class="relative w-50">
+                        <select
+                            v-model="selectedMonth"
+                            class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-1 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
+                            <option value="all">All Months</option>
+                            <option
+                                v-for="mKey in availableMonths"
+                                :key="mKey"
+                                :value="mKey">
+                                {{ formatDate(mKey, { monthOnly: true }) }}
+                            </option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
+                        @click="toggleFilters = !toggleFilters">
                         <fa-icon
                             class="text-xs"
-                            icon="angle-down" />
+                            icon="filter" />
+                    </button>
+                    <div
+                        v-if="toggleFilters"
+                        class="flex flex-wrap items-center gap-2">
+                        <button
+                            v-for="status in bookingStatuses"
+                            :key="status"
+                            type="button"
+                            :class="[
+                                'rounded-md px-2.5 py-1 text-xs border transition',
+                                hiddenStatuses.includes(status)
+                                    ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
+                                    : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
+                            ]"
+                            @click="toggleStatusVisibility(status)">
+                            {{ status }}
+                        </button>
                     </div>
                 </div>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
-                    @click="toggleFilters = !toggleFilters">
+                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
+                    @click="handleAddBooking">
                     <fa-icon
                         class="text-xs"
-                        icon="filter" />
+                        icon="plus" />
+                    Add Booking
                 </button>
-                <div
-                    v-if="toggleFilters"
-                    class="flex flex-wrap items-center gap-2">
-                    <button
-                        v-for="status in bookingStatuses"
-                        :key="status"
-                        type="button"
-                        :class="[
-                            'rounded-md px-2.5 py-1 text-xs border transition',
-                            hiddenStatuses.includes(status)
-                                ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
-                                : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
-                        ]"
-                        @click="toggleStatusVisibility(status)">
-                        {{ status }}
-                    </button>
-                </div>
             </div>
-            <button
-                type="button"
-                class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
-                @click="handleAddBooking">
-                <fa-icon
-                    class="text-xs"
-                    icon="plus" />
-                Add Booking
-            </button>
         </div>
 
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="flex-1 rounded-md border border-dashed border-mist-800 p-12 text-center shadow-md">
+            class="flex-1 rounded-md border border-dashed border-mist-800 p-12 text-center shadow-md mb-4">
             <p class="text-sm text-mist-400">No reservations matching current filters</p>
         </div>
         <div
@@ -335,7 +329,6 @@ onActivated(() => {
                         <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
-
                 <template
                     v-for="group in groupedBookings"
                     :key="group.key">

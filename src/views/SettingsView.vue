@@ -3,10 +3,10 @@ import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { PropertyId } from '@/types/property';
-
 import { useRevenueComparison } from '@/composables/useRevenueData';
-import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
 
+import PageTitle from '@/components/PageTitle.vue';
+import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
 import ActiveStays from '@/components/ActiveStays.vue';
 import LivePropertyRack from '@/components/LivePropertyRack.vue';
 import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
@@ -27,7 +27,12 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
 </script>
 
 <template>
-    <div class="h-full min-h-0 overflow-y-auto space-y-6 mt-6">
+    <div class="flex flex-col h-full min-h-0 overflow-y-auto gap-4">
+        <PageTitle>
+            <template #title> Settings </template>
+            <template #subtitle> Listing settings and dangerous stuff </template>
+        </PageTitle>
+
         <LivePropertyRack :bookings="bookings" />
 
         <div class="grid grid-cols-2 gap-4">

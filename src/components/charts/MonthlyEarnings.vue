@@ -15,6 +15,8 @@ import {
 import { Line } from 'vue-chartjs';
 import { formatIDR } from '@/utils/money';
 
+import CardTitle from '@/components/CardTitle.vue';
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -147,19 +149,17 @@ const chartOptions: ChartOptions<'line'> = {
 
 <template>
     <div class="flex flex-col h-full min-h-0">
-        <div class="shrink-0 flex items-center justify-between gap-4 mb-4">
-            <div class="mt-4">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                    Earnings Performance
-                </h2>
-                <p class="mt-1 text-xs text-mist-500">
+        <div class="flex items-center justify-between">
+            <CardTitle>
+                <template #title>Montly Performance</template>
+                <template #subtitle>
                     {{
                         activeView === 'weekly'
                             ? 'Compare against last week'
                             : 'Compare against last month'
                     }}
-                </p>
-            </div>
+                </template>
+            </CardTitle>
             <!-- Toggle Buttons -->
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">

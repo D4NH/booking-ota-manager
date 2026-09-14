@@ -6,6 +6,8 @@ import { formatIDR } from '@/utils/money';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 
+import CardTitle from '@/components/CardTitle.vue';
+
 const props = defineProps<{
     bookings: Booking[];
     properties: Property[];
@@ -49,14 +51,10 @@ const propertyStats = computed(() => {
 
 <template>
     <div class="flex flex-col">
-        <!-- Header -->
-        <div class="mt-4 mb-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                Unit Performance
-            </h2>
-            <p class="mt-1 text-xs text-mist-400">Revenue contribution & occupancy by villa</p>
-        </div>
-
+        <CardTitle>
+            <template #title>Unit Performance</template>
+            <template #subtitle>Revenue contribution & occupancy by villa</template>
+        </CardTitle>
         <!-- Leaderboard Rows -->
         <div
             class="divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">

@@ -13,6 +13,8 @@ import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
 import { getCurrentDate, getOffsetDate } from '@/utils/date';
 
+import PageTitle from '@/components/PageTitle.vue';
+
 const route = useRoute();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -207,12 +209,9 @@ watch(
 
 <template>
     <div class="flex flex-col h-full min-h-0 gap-4">
-        <!-- Header Bar -->
-        <div class="flex shrink-0 flex-wrap items-center justify-between mt-4">
-            <div>
-                <h1 class="text-xl font-bold text-mist-100">Calendar</h1>
-                <p class="mt-1 text-xs text-mist-400">Monthly schedule and room availability</p>
-            </div>
+        <PageTitle>
+            <template #title> Calendar </template>
+            <template #subtitle> Monthly schedule and room availability </template>
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -240,7 +239,7 @@ watch(
                     <span class="capitalize">{{ prop.id }}</span>
                 </button>
             </div>
-        </div>
+        </PageTitle>
 
         <!-- Month Navigation Controls -->
         <div

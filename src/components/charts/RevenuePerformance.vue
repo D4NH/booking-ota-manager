@@ -4,6 +4,8 @@ import { MONTH_NAMES as monthsList } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 
+import CardTitle from '@/components/CardTitle.vue';
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -165,15 +167,12 @@ const chartOptions: ChartOptions<'bar'> = {
 
 <template>
     <div class="flex flex-col h-full min-h-0 text-mist-100">
-        <!-- Header -->
-        <div class="shrink-0 mt-8 mb-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                Revenue Performance
-            </h2>
-            <p class="mt-1 text-xs text-mist-400">
+        <CardTitle>
+            <template #title>Revenue Performance</template>
+            <template #subtitle>
                 Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
-            </p>
-        </div>
+            </template>
+        </CardTitle>
         <div class="p-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div class="flex items-start justify-between gap-4">
                 <!-- KPI Summary Cards -->

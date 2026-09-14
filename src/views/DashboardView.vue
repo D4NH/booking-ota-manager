@@ -9,8 +9,10 @@ import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 import { getCurrentMonth, formatDate } from '@/utils/date';
 
+import CardTitle from '@/components/CardTitle.vue';
+import PageTitle from '@/components/PageTitle.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
-import MonthOverMonth from '@/components/charts/MonthOverMonth.vue';
+import RevenuePerformance from '@/components/charts/RevenuePerformance.vue';
 import RecentBookings from '@/components/RecentBookings.vue';
 
 const bookingStore = useBookingStore();
@@ -35,18 +37,17 @@ const handleEditBooking = (booking: Booking) => {
 </script>
 
 <template>
-    <!-- To make page fit viewport: flex flex-col h-full min-h-0 gap-4 -->
-    <!-- To make scrollable: h-full min-h-0 overflow-y-auto space-y-4 -->
-    <div class="h-full min-h-0 overflow-y-auto">
-        <div class="shrink-0 my-4">
-            <h1 class="text-xl font-bold text-mist-100">Dashboard</h1>
-            <div class="mt-1 text-xs text-mist-400">
+    <div class="flex flex-col h-full min-h-0 overflow-y-auto gap-4">
+        <PageTitle>
+            <template #title> Dashboard </template>
+            <template #subtitle>
                 Live operational activity for
                 <span class="font-bold">
                     {{ formatDate(getCurrentMonth(), { monthHeader: true }) }}
                 </span>
-            </div>
-        </div>
+            </template>
+        </PageTitle>
+
         <!-- Monthly Summary Cards -->
         <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
@@ -103,34 +104,24 @@ const handleEditBooking = (booking: Booking) => {
                 <p class="text-xs text-mist-500">Scheduled for today</p>
             </div>
         </div>
-        <!-- Recent Bookings -->
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex flex-col shrink-0">
-                <div class="mt-8 mb-4">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                        Recent Bookings
-                    </h2>
-                    <p class="mt-1 text-xs text-mist-500">
-                        Latest reservations across all channels
-                    </p>
-                </div>
-                <RecentBookings
-                    :bookings="bookings"
-                    @select-booking="handleEditBooking" />
-            </div>
+            <!-- Recent Bookings -->
+            <RecentBookings
+                :bookings="bookings"
+                @select-booking="handleEditBooking" />
 
             <!-- Revenue Performance -->
-            <MonthOverMonth :bookings="bookings" />
+            <RevenuePerformance :bookings="bookings" />
         </div>
+
         <!-- Properties -->
         <div class="flex flex-col shrink-0">
-            <div class="mt-8 mb-4">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">Properties</h2>
-                <p class="mt-1 text-xs text-mist-500">
-                    Real-time availability and unit operational status
-                </p>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <CardTitle>
+                <template #title>Properties</template>
+                <template #subtitle> Real-time availability and unit operational status </template>
+            </CardTitle>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"

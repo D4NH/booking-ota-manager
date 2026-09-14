@@ -5,6 +5,8 @@ import { Doughnut } from 'vue-chartjs';
 import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 
+import CardTitle from '@/components/CardTitle.vue';
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const props = defineProps<{
@@ -71,15 +73,11 @@ const chartOptions: ChartOptions<'doughnut'> = {
 </script>
 
 <template>
-    <div class="flex flex-col justify-between">
-        <!-- Header -->
-        <div class="mt-4 mb-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">
-                Channel Distribution
-            </h2>
-            <p class="mt-1 text-xs text-mist-400">Total bookings split by acquisition source</p>
-        </div>
-
+    <div class="flex flex-col">
+        <CardTitle>
+            <template #title>Channel Distribution</template>
+            <template #subtitle> Total bookings split by acquisition source </template>
+        </CardTitle>
         <!-- Chart -->
         <div class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex flex-1 items-center gap-4">
