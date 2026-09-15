@@ -32,6 +32,7 @@ import {
     faCoins,
     faCommentDots,
     faCopyright,
+    faDownload,
     faFilter,
     faGear,
     faHashtag,
@@ -53,6 +54,7 @@ import {
     faTableCellsLarge,
     faTrashCan,
     faTriangleExclamation,
+    faUpload,
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -77,6 +79,7 @@ library.add(
     faCoins,
     faCommentDots,
     faCopyright,
+    faDownload,
     faFilter,
     faGear,
     faHashtag,
@@ -98,6 +101,7 @@ library.add(
     faTableCellsLarge,
     faTrashCan,
     faTriangleExclamation,
+    faUpload,
     faXmark
 );
 
