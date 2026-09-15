@@ -59,7 +59,7 @@ const upcomingEvents = computed(() => {
 <template>
     <div
         class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
-        <div class="flex items-center justify-between border-b border-mist-800/80 pb-3">
+        <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
                 <h3 class="text-base font-bold text-mist-100">Upcoming Activity</h3>
                 <p class="text-xs text-mist-400">Scheduled arrivals & departures (Next 7 days)</p>

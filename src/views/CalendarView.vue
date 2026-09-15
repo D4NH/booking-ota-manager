@@ -76,19 +76,19 @@ watch(
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-700 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
@@ -224,7 +224,7 @@ watch(
                                 v-if="day.isCurrentMonth"
                                 class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
-                                    class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="border-b border-mist-800 pb-1.5 mb-1.5">
                                         <span class="font-bold text-mist-200">{{
                                             b.guestName

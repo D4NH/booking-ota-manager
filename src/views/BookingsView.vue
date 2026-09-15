@@ -30,14 +30,11 @@ const { currentDay, unitBookings: propertyBookings } = usePropertyDetails(select
     includeUnavailable: true,
 });
 
-// Search and filter pass
 const filteredBookings = computed<Booking[]>(() => {
     const query = searchQuery.value.trim().toLowerCase();
-    const month = selectedMonth.value;
     const hidden = hiddenStatuses.value;
 
     return propertyBookings.value.filter((b) => {
-        if (month !== 'all' && !b.checkIn.startsWith(month)) return false;
         if (hidden.includes(b.status)) return false;
         if (query) {
             return (
@@ -58,6 +55,7 @@ const {
     collapsePastMonths,
     expandAll,
 } = useGroupedBookings(filteredBookings, {
+    selectedMonth,
     autoCollapsePast: true,
 });
 
@@ -152,7 +150,7 @@ onActivated(() => {
                                 v-model="searchQuery"
                                 type="text"
                                 placeholder="Search guest, ID, notes..."
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-1.5 pl-9 pr-3 text-xs text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 py-1.5 pl-9 pr-3 text-xs text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
 
@@ -160,7 +158,7 @@ onActivated(() => {
                     <div class="relative w-44">
                         <select
                             v-model="selectedMonth"
-                            class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="all">All Months</option>
                             <option
                                 v-for="mKey in availableMonths"
@@ -180,7 +178,7 @@ onActivated(() => {
                     <!-- Status Filters Toggle -->
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
+                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
                         <fa-icon
@@ -200,7 +198,7 @@ onActivated(() => {
                                 'cursor-pointer rounded-md px-2.5 py-1 text-xs border transition',
                                 hiddenStatuses.includes(status)
                                     ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
-                                    : 'border-mist-700 bg-mist-800 text-mist-300 hover:border-mist-600',
+                                    : 'border-mist-800 bg-mist-800 text-mist-300 hover:border-mist-600',
                             ]"
                             @click="toggleStatusVisibility(status)">
                             {{ status }}

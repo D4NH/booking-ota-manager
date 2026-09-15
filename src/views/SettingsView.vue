@@ -69,7 +69,7 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
 
                 <p class="text-xs text-mist-500 line-clamp-2">{{ prop.address }}</p>
 
-                <div class="flex justify-end pt-2 border-t border-mist-800/60">
+                <div class="flex justify-end pt-2 border-t border-mist-800">
                     <button
                         type="button"
                         class="text-xs text-rose-400 hover:text-rose-300"

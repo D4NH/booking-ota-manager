@@ -175,7 +175,7 @@ const handleImageError = (e: Event) => {
             </div>
 
             <!-- House Specs & Price Footer -->
-            <div class="pt-2 mt-2 border-t border-mist-800/60">
+            <div class="pt-2 mt-2 border-t border-mist-800">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3 text-xs text-mist-400 font-medium">
                         <span class="flex items-center gap-1.5">

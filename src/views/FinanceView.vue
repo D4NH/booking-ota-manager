@@ -104,7 +104,7 @@ const handleTabChange = (id: string) => (selectedProperty.value = id as Property
                 <!-- Year Selector -->
                 <select
                     v-model="selectedYear"
-                    class="rounded-md border border-mist-700 bg-mist-900 px-3 py-2 text-xs text-mist-200 focus:border-lime-500 focus:outline-none">
+                    class="appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                     <option
                         v-for="yr in availableYears"
                         :key="yr"

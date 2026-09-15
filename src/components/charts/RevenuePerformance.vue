@@ -182,7 +182,7 @@ const chartOptions: ChartOptions<'bar'> = {
             <div class="relative w-23">
                 <select
                     v-model.number="activeQuarterIndex"
-                    class="w-full appearance-none rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                     <option
                         v-for="q in quartersList"
                         :key="q.id"

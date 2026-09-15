@@ -125,7 +125,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
                         <div class="flex items-center justify-between">
                             <div
-                                class="flex items-center gap-4 text-xs font-semibold text-mist-200 pt-2 border-t border-mist-700/40">
+                                class="flex items-center gap-4 text-xs font-semibold text-mist-200 pt-2 border-t border-mist-800/40">
                                 <span>
                                     <fa-icon
                                         icon="bed"
@@ -245,11 +245,11 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
                     <!-- Lockbox & Wi-Fi Access -->
                     <div
-                        class="grid grid-cols-2 divide-x border-t border-mist-800 pt-3 text-center">
+                        class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
                         <div class="px-1">
-                            <span class="text-xs font-semibold text-mist-500 block"
-                                >Lockbox Code</span
-                            >
+                            <span class="text-xs font-semibold text-mist-500 block">
+                                Lockbox Code
+                            </span>
                             <span class="font-mono text-sm font-bold text-mist-100">
                                 {{ lockboxPin || '----' }}
                             </span>
@@ -322,7 +322,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 v-if="groupedBookings.length === 0"
                 class="flex flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-6">
                 <fa-icon
-                    icon="house"
+                    icon="receipt"
                     class="text-xl" />
                 <p class="mt-2">No upcoming bookings found</p>
             </div>

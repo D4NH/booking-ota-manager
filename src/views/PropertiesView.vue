@@ -74,7 +74,7 @@ const handleAddProperty = () => modalStore.openPropertyModal();
                     <button
                         v-if="sortedProperties.length > 2"
                         type="button"
-                        class="flex items-center gap-1.5 rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                        class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:text-mist-100 focus:border-mist-800 focus:outline-none transition shadow-sm cursor-pointer"
                         @click="isPropertiesExpanded = !isPropertiesExpanded">
                         <span>
                             {{

@@ -79,8 +79,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                         {{ b.listing }}
                     </p>
                 </div>
-                <div
-                    class="mt-2.5 flex items-center justify-between border-t border-mist-800/60 pt-2">
+                <div class="mt-2.5 flex items-center justify-between border-t border-mist-800 pt-2">
                     <span class="text-xs font-mono font-bold shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>

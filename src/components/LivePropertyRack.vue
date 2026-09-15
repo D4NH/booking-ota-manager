@@ -32,7 +32,7 @@ const propertyRack = computed(() =>
         // Determine Operational State
         let state: 'occupied' | 'turnover' | 'arriving' | 'vacant' = 'vacant';
         let statusLabel = 'Vacant';
-        let statusBadgeClass = 'border-mist-700 bg-mist-800 text-mist-300';
+        let statusBadgeClass = 'border-mist-800 bg-mist-800 text-mist-300';
         let housekeeping = { label: 'Ready', class: 'text-mist-400 bg-mist-950' };
 
         if (arrivingToday && departingToday) {
@@ -69,7 +69,7 @@ const propertyRack = computed(() =>
 
 <template>
     <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-        <div class="flex items-center justify-between mb-4 border-b border-mist-800/80 pb-2.5">
+        <div class="flex items-center justify-between mb-4 border-b border-mist-800 pb-2.5">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-bold text-mist-100 uppercase tracking-wider">
                     Live Unit Rack
@@ -85,7 +85,7 @@ const propertyRack = computed(() =>
             <div
                 v-for="item in propertyRack"
                 :key="item.property.id"
-                class="flex flex-col justify-between rounded-md border border-mist-800/80 bg-mist-950/50 p-3.5 hover:border-mist-700 transition">
+                class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-950/50 p-3.5 hover:border-mist-800 transition">
                 <!-- Unit Name & Status Badge -->
                 <div>
                     <div class="flex items-center justify-between gap-2">
@@ -163,7 +163,7 @@ const propertyRack = computed(() =>
 
                 <!-- Housekeeping -->
                 <div
-                    class="mt-3 flex items-center justify-between border-t border-mist-800/60 pt-2 text-[11px]">
+                    class="mt-3 flex items-center justify-between border-t border-mist-800 pt-2 text-[11px]">
                     <span class="text-mist-500">Status:</span>
                     <span :class="['rounded px-1.5 py-0.5 font-medium', item.housekeeping.class]">
                         {{ item.housekeeping.label }}

@@ -169,7 +169,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                                 v-if="b.payout !== 0"
                                 class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-48 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
-                                    class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="flex items-center justify-between">
                                         <span class="font-bold text-mist-400">Payout 15%</span>
                                         <span class="font-semibold text-mist-200">

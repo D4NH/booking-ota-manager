@@ -82,7 +82,7 @@ const departedGuests = computed(() =>
             <div
                 v-for="b in inHouseGuests"
                 :key="b.id || b.bookingId"
-                class="rounded-md border border-mist-800 bg-mist-950/60 p-3 flex items-center justify-between hover:border-mist-700 transition">
+                class="rounded-md border border-mist-800 bg-mist-950/60 p-3 flex items-center justify-between hover:border-mist-800 transition">
                 <!-- Guest Info -->
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
@@ -144,7 +144,7 @@ const departedGuests = computed(() =>
             <div
                 v-for="b in departedGuests"
                 :key="'departed-' + (b.id || b.bookingId)"
-                class="rounded-md border border-mist-800/60 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
+                class="rounded-md border border-mist-800 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
                 <div class="text-xs">
                     <span class="font-semibold text-mist-300 line-through mr-2">
                         {{ b.guestName }}

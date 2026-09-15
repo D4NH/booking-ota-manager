@@ -108,7 +108,7 @@ const dailyRunRateNeeded = computed(() => {
         </div>
 
         <!-- Operational Breakdown Row -->
-        <div class="mt-4 grid grid-cols-2 gap-2 border-t border-mist-800/70 pt-3 text-xs">
+        <div class="mt-4 grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs">
             <div class="rounded-md bg-mist-950/60 p-2.5">
                 <span class="block text-[10px] uppercase font-semibold text-mist-500">
                     Gap to Target

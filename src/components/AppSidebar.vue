@@ -160,7 +160,7 @@ watch(
                 <!-- Properties Subitems -->
                 <div
                     v-show="!isCollapsed && isPropertiesOpen"
-                    class="ml-4 pl-3.5 border-l border-mist-800/80 space-y-1 my-1 animate-in fade-in duration-150">
+                    class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
                     <RouterLink
                         v-for="prop in PROPERTY_CONFIGS"
                         :key="prop.id"
@@ -219,7 +219,7 @@ watch(
 
         <button
             type="button"
-            class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-mist-700 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
+            class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-mist-800 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
             :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
             @click="toggleSidebar">
             <fa-icon

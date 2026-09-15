@@ -167,7 +167,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                         <div
                             class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                             <div
-                                class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                 <div class="border-b border-mist-800 pb-1.5 mb-1.5">
                                     <span class="font-bold text-mist-200 block">
                                         {{ b.guestName }}
