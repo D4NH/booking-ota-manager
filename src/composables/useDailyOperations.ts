@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { useDateKeys } from '@/composables/useDateKeys';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import { getCurrentDate, getCurrentHour } from '@/utils/date';
 
 export interface UseDailyOperationsOptions {
     /**
@@ -43,8 +43,6 @@ export function useDailyOperations(
     bookings: MaybeRefOrGetter<Booking[]>,
     options: UseDailyOperationsOptions = {}
 ) {
-    const { currentDay, currentHour } = useDateKeys();
-
     /**
      * Resolves property ID filter using `toValue` to support getters, refs, and strings.
      */
@@ -57,8 +55,8 @@ export function useDailyOperations(
      * All daily operations based on date, time of day, and status.
      */
     const dailyOperationsData = computed(() => {
-        const today = currentDay.value;
-        const hour = currentHour.value; // 0 to 23
+        const today = getCurrentDate();
+        const hour = getCurrentHour(); // 0 to 23
         const activePropertyId = getActivePropertyId();
         const list = toValue(bookings) || [];
 
@@ -121,7 +119,7 @@ export function useDailyOperations(
         // 2. Fallback: Anyone already 'Checked-in' today (even if before 15:00)
         const activePropertyId = getActivePropertyId();
         const list = toValue(bookings) || [];
-        const today = currentDay.value;
+        const today = getCurrentDate();
 
         return list.some((b) => {
             if (!b || b.status === 'Unavailable') return false;

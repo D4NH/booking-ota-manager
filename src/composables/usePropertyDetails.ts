@@ -1,18 +1,38 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useDailyOperations } from '@/composables/useDailyOperations';
-import { useDateKeys } from '@/composables/useDateKeys';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
-import { getCurrentDate } from '@/utils/date';
+import { getCurrentDate, getCurrentHour } from '@/utils/date';
 import { getActiveLockboxBooking, generatePinForBooking } from '@/utils/lockbox';
 
 interface Options {
     includeUnavailable?: boolean;
 }
 
+/**
+ * Resolves property details, aggregates single-pass annual financial metrics,
+ * and manages live daily operations and lockbox access for a specific property or the entire portfolio.
+ *
+ * @param propertyIdSource - The target PropertyId, 'all' for portfolio-wide aggregation, or a reactive ref/getter.
+ * @param options - Optional configuration parameters.
+ * @param options.includeUnavailable - Whether to retain 'Unavailable' block entries in `unitBookings` (defaults to `false`).
+ *
+ * @returns An object containing:
+ * - `selectedProperty`: Computed Property model matching `propertyIdSource` (undefined if 'all').
+ * - `unitBookings`: Chronologically sorted (newest first) bookings scoped to the target property.
+ * - `totalRevenue`: Gross revenue for the current calendar year.
+ * - `totalNights`: Total nights booked for the current calendar year.
+ * - `adr`: Average Daily Rate across booked nights for the current calendar year.
+ * - `annualOccupancy`: Occupancy percentage (capped at 100%) based on 365 calendar days.
+ * - `nextUpcoming`: First upcoming confirmed reservation after today's date.
+ * - `lockboxPin`: Generated access pin for the current active lockbox reservation.
+ * - `isOccupied`: Top-level reactive boolean indicating current unit occupancy.
+ * - `staySections`: Array of active operational stay buckets (Arriving Today, In-House, etc.).
+ * - `currentDay`: Current formatted date key (YYYY-MM-DD).
+ */
 export function usePropertyDetails(
     propertyIdSource: MaybeRefOrGetter<PropertyId | 'all'>,
     options: Options = {}
@@ -22,9 +42,7 @@ export function usePropertyDetails(
     const { bookings } = storeToRefs(bookingStore);
     const { properties } = storeToRefs(propertyStore);
 
-    const { currentDay, currentHour } = useDateKeys();
     const id = computed(() => toValue(propertyIdSource));
-
     const selectedProperty = computed<Property | undefined>(() =>
         id.value === 'all' ? undefined : properties.value.find((p) => p.id === id.value)
     );
@@ -35,16 +53,14 @@ export function usePropertyDetails(
 
     const lockboxInfo = computed(() =>
         getActiveLockboxBooking({
-            today: currentDay.value,
-            currentHour: currentHour.value,
+            today: getCurrentDate(),
+            currentHour: getCurrentHour(),
             currentStays: dailyOps.currentStays.value,
             todaysArrivals: dailyOps.todaysArrivals.value,
             todaysDepartures: dailyOps.todaysDepartures.value,
         })
     );
-
     const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
-
     const unitData = computed(() => {
         const propId = id.value;
         const currentYearStr = String(new Date().getFullYear());
@@ -82,13 +98,13 @@ export function usePropertyDetails(
             occupancy,
         };
     });
-
     const nextUpcoming = computed(() => {
         const today = getCurrentDate();
         return unitData.value.bookings
             .filter((b) => b.checkIn > today)
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0];
     });
+    const currentDay = computed(() => getCurrentDate());
 
     return {
         selectedProperty,
