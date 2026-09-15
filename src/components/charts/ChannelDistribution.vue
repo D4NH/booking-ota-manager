@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, type ChartOptions } from 'chart.js';
+import { ref, computed, watch } from 'vue';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    type ChartOptions,
+    type ChartData,
+} from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
 import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
@@ -9,44 +16,71 @@ import CardTitle from '@/components/CardTitle.vue';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const { bookings } = defineProps<{
+interface DoughnutChartRef {
+    chart: ChartJS<'doughnut'> | null;
+}
+interface Props {
     bookings: Booking[];
-}>();
+}
 
-const chartRef = ref<InstanceType<typeof Doughnut> | null>(null);
+const { bookings } = defineProps<Props>();
+
+const chartRef = ref<DoughnutChartRef | null>(null);
 const hoveredIndex = ref<number | null>(null);
 
+const yearOptions = computed<number[]>(() => {
+    const years = new Set<number>();
+
+    for (const b of bookings) {
+        if (b.checkIn && b.checkIn.length >= 4) {
+            const year = Number(b.checkIn.slice(0, 4));
+            if (!Number.isNaN(year)) years.add(year);
+        }
+    }
+
+    if (years.size === 0) {
+        years.add(new Date().getFullYear());
+    }
+
+    return Array.from(years).sort((a, b) => b - a);
+});
+
+const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
+
 const channelStats = computed(() => {
-    const counts: Record<string, number> = {};
+    const targetYearStr = String(selectedYear.value);
+    const counts = new Map<string, number>();
     let total = 0;
 
-    bookings.forEach((b) => {
-        if (b.status === 'Unavailable') return;
-        const ch = b.listing || 'Other';
-        counts[ch] = (counts[ch] || 0) + 1;
-        total += 1;
-    });
+    for (const b of bookings) {
+        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (!b.checkIn || b.checkIn.slice(0, 4) !== targetYearStr) continue;
 
-    const entries = Object.entries(counts).map(([name, count]) => ({
+        const channel = b.listing || 'Other';
+        counts.set(channel, (counts.get(channel) ?? 0) + 1);
+        total += 1;
+    }
+
+    const entries = Array.from(counts.entries()).map(([name, count]) => ({
         name,
         count,
         percentage: total > 0 ? Math.round((count / total) * 100) : 0,
-        color: CHANNEL_COLORS[name] || CHANNEL_COLORS.Other,
+        color: CHANNEL_COLORS[name] ?? CHANNEL_COLORS.Other,
     }));
 
     entries.sort((a, b) => b.count - a.count);
 
     return { entries, total };
 });
-const chartData = computed(() => ({
+const chartData = computed<ChartData<'doughnut'>>(() => ({
     labels: channelStats.value.entries.map((e) => e.name),
     datasets: [
         {
             data: channelStats.value.entries.map((e) => e.count),
             backgroundColor: channelStats.value.entries.map((e) => e.color),
-            borderColor: '#18181b', // mist-900 border between segments
+            borderColor: '#18181b', // mist-900 border
             borderWidth: 2,
-            hoverOffset: 25,
+            hoverOffset: 20,
         },
     ],
 }));
@@ -59,12 +93,7 @@ const chartOptions: ChartOptions<'doughnut'> = {
         padding: 5,
     },
     onHover: (_event, activeElements) => {
-        const activeItem = activeElements[0];
-        if (activeItem) {
-            hoveredIndex.value = activeItem.index;
-        } else {
-            hoveredIndex.value = null;
-        }
+        hoveredIndex.value = activeElements[0]?.index ?? null;
     },
     plugins: {
         legend: { display: false },
@@ -75,48 +104,78 @@ const chartOptions: ChartOptions<'doughnut'> = {
             borderWidth: 1,
             padding: 8,
             callbacks: {
-                label: (ctx) => ` ${ctx.label}: ${ctx.raw}`,
+                label: (ctx) => ` ${ctx.label}: ${ctx.raw} bookings`,
             },
         },
     },
 };
 
-const getChartInstance = (): ChartJS | null =>
-    chartRef.value?.chartInstance || chartRef.value?.chart || null;
-const clearHighlight = () => {
+const clearHighlight = (): void => {
     hoveredIndex.value = null;
-    const chart = getChartInstance();
+    const chartInstance = chartRef.value?.chart;
+    if (!chartInstance) return;
 
-    if (!chart) return;
-
-    chart.setActiveElements([]);
-    chart.update();
+    chartInstance.setActiveElements([]);
+    chartInstance.update();
 };
+
+watch(yearOptions, (available) => {
+    if (!available.includes(selectedYear.value) && available.length > 0) {
+        selectedYear.value = available[0]!;
+    }
+});
 </script>
 
 <template>
     <div class="flex flex-col">
-        <CardTitle>
-            <template #title>Channel Distribution</template>
-            <template #subtitle> Reservation share by acquisition platform </template>
-        </CardTitle>
-        <!-- Chart -->
-        <div class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+        <div class="flex justify-between items-center">
+            <CardTitle>
+                <template #title>Channel Distribution</template>
+                <template #subtitle>Reservation share by acquisition platform</template>
+            </CardTitle>
+            <!-- Year Selector -->
+            <div class="relative w-18">
+                <select
+                    v-model.number="selectedYear"
+                    class="w-full appearance-none rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer">
+                    <option
+                        v-for="year in yearOptions"
+                        :key="year"
+                        :value="year"
+                        class="bg-mist-900">
+                        {{ year }}
+                    </option>
+                </select>
+                <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                    <fa-icon
+                        class="text-xs"
+                        icon="angle-down" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Body -->
+        <div
+            class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md min-h-60">
             <div
                 v-if="channelStats.total === 0"
-                class="flex flex-1 flex-col items-center justify-center text-xs text-mist-300">
+                class="flex flex-1 flex-col items-center justify-center text-xs text-mist-400">
                 <fa-icon
                     icon="receipt"
                     class="text-xl" />
-                <p class="mt-2">No bookings found</p>
+                <p class="mt-2">No bookings found for {{ selectedYear }}</p>
             </div>
+
             <div
                 v-else
                 class="flex flex-1 items-center gap-4">
+                <!-- Donut Canvas -->
                 <div
-                    class="relative h-55 w-55 shrink-0"
+                    class="relative h-52 w-52 shrink-0"
                     @mouseleave="clearHighlight">
                     <Doughnut
+                        ref="chartRef"
                         :data="chartData"
                         :options="chartOptions" />
                     <div
@@ -126,17 +185,17 @@ const clearHighlight = () => {
                         </span>
                         <span
                             class="text-[9px] uppercase tracking-wider text-mist-500 font-semibold">
-                            Total bookings
+                            Total stays
                         </span>
                     </div>
                 </div>
 
                 <!-- Channel Breakdown List -->
-                <div class="flex-1 overflow-y-auto">
+                <div class="flex-1 overflow-y-auto space-y-1">
                     <div
                         v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
-                        class="text-xs p-2"
+                        class="text-xs p-2 rounded-md transition"
                         :class="{ 'bg-mist-800/60': hoveredIndex === index }">
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-1.5">
@@ -146,15 +205,14 @@ const clearHighlight = () => {
                                 <span class="font-medium text-mist-200">{{ ch.name }}</span>
                                 &bull;
                                 <span class="text-xs text-mist-500">
-                                    <strong class="text-mist-400"> {{ ch.count }}</strong>
-                                    bookings
+                                    <strong class="text-mist-300">{{ ch.count }}</strong> stays
                                 </span>
                             </span>
-                            <span class="font-mono text-mist-400"> {{ ch.percentage }}% </span>
+                            <span class="font-mono text-mist-400">{{ ch.percentage }}%</span>
                         </div>
 
-                        <!-- Progress Bar -->
-                        <div class="mt-2 h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                        <!-- Share Bar -->
+                        <div class="mt-1.5 h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
                             <div
                                 class="h-full rounded-full transition-all duration-500"
                                 :style="{

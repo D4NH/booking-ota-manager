@@ -171,12 +171,34 @@ const chartOptions: ChartOptions<'bar'> = {
 
 <template>
     <div class="flex flex-col h-full min-h-0 text-mist-100">
-        <CardTitle>
-            <template #title>Revenue Performance</template>
-            <template #subtitle>
-                Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
-            </template>
-        </CardTitle>
+        <div class="flex justify-between items-center">
+            <CardTitle>
+                <template #title>Revenue Performance</template>
+                <template #subtitle>
+                    Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
+                </template>
+            </CardTitle>
+            <!-- Quarter Selector -->
+            <div class="relative w-23">
+                <select
+                    v-model.number="activeQuarterIndex"
+                    class="w-full appearance-none rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer">
+                    <option
+                        v-for="q in quartersList"
+                        :key="q.id"
+                        :value="q.id">
+                        {{ q.label }}
+                    </option>
+                </select>
+                <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                    <fa-icon
+                        class="text-xs"
+                        icon="angle-down" />
+                </div>
+            </div>
+        </div>
+
         <div class="p-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div class="flex items-start justify-between gap-4">
                 <!-- KPI Summary Cards -->
@@ -197,25 +219,6 @@ const chartOptions: ChartOptions<'bar'> = {
                             }}{{ summaryStats.momChange }}%
                         </span>
                         <span class="text-mist-500">vs {{ summaryStats.prevMonthLabel }}</span>
-                    </div>
-                </div>
-                <!-- Quarter Selector -->
-                <div class="relative w-25">
-                    <select
-                        v-model.number="activeQuarterIndex"
-                        class="w-full appearance-none rounded-md border border-mist-700 bg-mist-950/50 px-3 py-1 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors">
-                        <option
-                            v-for="q in quartersList"
-                            :key="q.id"
-                            :value="q.id">
-                            {{ q.label }}
-                        </option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
-                        <fa-icon
-                            class="text-xs"
-                            icon="angle-down" />
                     </div>
                 </div>
             </div>

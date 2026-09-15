@@ -1,47 +1,91 @@
-<!-- src/components/properties/UnitComparisonLeaderboard.vue -->
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getPropertyTheme } from '@/config/properties';
 import { formatIDR } from '@/utils/money';
 import type { Booking } from '@/types/booking';
-import type { Property } from '@/types/property';
+import type { Property, PropertyId } from '@/types/property';
 
 import CardTitle from '@/components/CardTitle.vue';
 
-const { bookings, properties } = defineProps<{
+interface Props {
     bookings: Booking[];
     properties: Property[];
-}>();
+}
+
+const { bookings, properties } = defineProps<Props>();
+
+const yearOptions = computed<number[]>(() => {
+    const years = new Set<number>();
+
+    for (const b of bookings) {
+        if (b.checkIn && b.checkIn.length >= 4) {
+            const year = Number(b.checkIn.slice(0, 4));
+            if (!Number.isNaN(year)) years.add(year);
+        }
+    }
+
+    if (years.size === 0) {
+        years.add(new Date().getFullYear());
+    }
+
+    return Array.from(years).sort((a, b) => b - a);
+});
+
+const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
+
+watch(yearOptions, (available) => {
+    if (!available.includes(selectedYear.value) && available.length > 0) {
+        selectedYear.value = available[0]!;
+    }
+});
 
 const propertyStats = computed(() => {
-    const totalPortfolioRevenue = bookings
-        .filter((b) => b.status !== 'Unavailable')
-        .reduce((sum, b) => sum + b.payout, 0);
+    const targetYearStr = String(selectedYear.value);
+    const isLeapYear =
+        (selectedYear.value % 4 === 0 && selectedYear.value % 100 !== 0) ||
+        selectedYear.value % 400 === 0;
+    const daysInYear = isLeapYear ? 366 : 365;
+
+    let totalPortfolioRevenue = 0;
+    const propAggregates = new Map<
+        PropertyId,
+        { revenue: number; nights: number; count: number }
+    >();
+
+    for (const p of properties) {
+        propAggregates.set(p.id, { revenue: 0, nights: 0, count: 0 });
+    }
+
+    for (const b of bookings) {
+        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (!b.checkIn || b.checkIn.slice(0, 4) !== targetYearStr) continue;
+
+        totalPortfolioRevenue += b.payout || 0;
+
+        const current = propAggregates.get(b.propertyId);
+        if (current) {
+            current.revenue += b.payout || 0;
+            current.nights += b.nights || 0;
+            current.count += 1;
+        }
+    }
 
     return properties.map((property) => {
-        const propBookings = bookings.filter(
-            (b) => b.propertyId === property.id && b.status !== 'Unavailable'
-        );
-
-        const revenue = propBookings.reduce((sum, b) => sum + b.payout, 0);
-        const nights = propBookings
-            .filter((b) => b.status !== 'Unavailable')
-            .reduce((sum, b) => sum + b.nights, 0);
-
-        const occupancy = Math.round((nights / 365) * 100);
+        const stat = propAggregates.get(property.id) ?? { revenue: 0, nights: 0, count: 0 };
+        const occupancy = Math.min(100, Math.round((stat.nights / daysInYear) * 100));
         const revenueShare =
             totalPortfolioRevenue > 0
-                ? Number(((revenue / totalPortfolioRevenue) * 100).toFixed(1))
+                ? Number(((stat.revenue / totalPortfolioRevenue) * 100).toFixed(1))
                 : 0;
 
         return {
             property,
-            revenue,
-            nights,
+            revenue: stat.revenue,
+            nights: stat.nights,
             propertyStats: {
                 occupancy,
                 revenueShare,
-                bookingsCount: propBookings.length,
+                bookingsCount: stat.count,
             },
         };
     });
@@ -50,11 +94,32 @@ const propertyStats = computed(() => {
 
 <template>
     <div class="flex flex-col">
-        <CardTitle>
-            <template #title>Property Performance</template>
-            <template #subtitle>Revenue contribution & occupancy rate per unit</template>
-        </CardTitle>
-        <!-- Leaderboard Rows -->
+        <div class="flex justify-between items-center">
+            <CardTitle>
+                <template #title>Property Performance</template>
+                <template #subtitle>Revenue contribution & occupancy rate per unit</template>
+            </CardTitle>
+            <div class="relative w-18">
+                <select
+                    v-model.number="selectedYear"
+                    class="w-full appearance-none rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer">
+                    <option
+                        v-for="year in yearOptions"
+                        :key="year"
+                        :value="year"
+                        class="bg-mist-900">
+                        {{ year }}
+                    </option>
+                </select>
+                <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                    <fa-icon
+                        class="text-xs"
+                        icon="angle-down" />
+                </div>
+            </div>
+        </div>
+
         <div
             class="divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div

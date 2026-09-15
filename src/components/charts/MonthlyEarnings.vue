@@ -150,8 +150,8 @@ const chartOptions: ChartOptions<'line'> = {
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">
                 <button
                     type="button"
+                    class="cursor-pointer rounded-md px-2.5 py-1 transition"
                     :class="[
-                        'rounded-md px-2.5 py-1 transition',
                         activeView === 'weekly'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
@@ -161,8 +161,8 @@ const chartOptions: ChartOptions<'line'> = {
                 </button>
                 <button
                     type="button"
+                    class="cursor-pointer rounded-md px-2.5 py-1 transition"
                     :class="[
-                        'rounded-md px-2.5 py-1 transition',
                         activeView === 'monthly'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200',
