@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const { isOccupied } = defineProps<{
     isOccupied: boolean;
 }>();
 </script>

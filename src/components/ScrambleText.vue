@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-const props = withDefaults(
-    defineProps<{
-        text: string | undefined;
-        characters?: string;
-    }>(),
-    {
-        characters: '!@#$%^&*()_+-=~0123456789',
-    }
-);
+const { text, characters = '!@#$%^&*()_+-=~0123456789' } = defineProps<{
+    text: string | undefined;
+    characters?: string;
+}>();
 
 const isHovered = ref(false);
 
 // Generate scrambled string preserving spaces
 const scrambledText = computed(() => {
-    const chars = props.characters;
-    if (!props.text) return '';
-    return props.text
+    const chars = characters;
+    if (!text) return '';
+    return text
         .split('')
         .map((char) => (char === ' ' ? ' ' : chars[Math.floor(Math.random() * chars.length)]))
         .join('');

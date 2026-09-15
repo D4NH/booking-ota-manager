@@ -73,7 +73,6 @@ onMounted(async () => {
         <PropertyModal
             v-if="isPropertyModalOpen"
             :property-to-edit="propertyToEdit"
-            :current-property="currentProperty"
             @close="modalStore.closePropertyModal"
             @save="handleSaveProperty" />
         <ToastContainer />

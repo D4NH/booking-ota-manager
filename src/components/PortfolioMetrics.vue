@@ -5,33 +5,32 @@ import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 
-const props = withDefaults(
-    defineProps<{
-        bookings: Booking[];
-        properties: Property[];
-        year?: number;
-    }>(),
-    {
-        year: new Date().getFullYear(),
-    }
-);
+const {
+    bookings,
+    properties,
+    year = new Date().getFullYear(),
+} = defineProps<{
+    bookings: Booking[];
+    properties: Property[];
+    year?: number;
+}>();
 
 const totalRevenue = computed(() =>
-    props.bookings
-        .filter((b) => b.status !== 'Unavailable' && b.checkIn.startsWith(`${props.year}`))
+    bookings
+        .filter((b) => b.status !== 'Unavailable' && b.checkIn.startsWith(`${year}`))
         .reduce((sum, b) => sum + b.payout, 0)
 );
 const totalNights = computed(() =>
-    props.bookings
-        .filter((b) => b.status !== 'Unavailable' && b.checkIn.startsWith(`${props.year}`))
+    bookings
+        .filter((b) => b.status !== 'Unavailable' && b.checkIn.startsWith(`${year}`))
         .reduce((sum, b) => sum + b.nights, 0)
 );
 const portfolioADR = computed(() => {
     if (totalNights.value === 0) return 0;
     return Math.round(totalRevenue.value / totalNights.value);
 });
-const propertiesCount = computed(() => props.properties.length);
-const activePropertiesCount = computed(() => getBookedPropertiesCount(props.bookings, props.year));
+const propertiesCount = computed(() => properties.length);
+const activePropertiesCount = computed(() => getBookedPropertiesCount(bookings, year));
 const annualOccupancy = computed(() => {
     const totalCapacity = 365 * (activePropertiesCount.value || 1);
     return Math.round((totalNights.value / totalCapacity) * 100);

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { PROPERTY_LIST } from '@/config/properties';
-import type { MonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
@@ -25,9 +24,12 @@ import CardTitle from '@/components/CardTitle.vue';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const props = defineProps<{
+const {
+    data,
+    selectedProperty = 'all',
+    totalRevenue,
+} = defineProps<{
     data: MonthlyPropertyRevenue[];
-    monthlyMetrics: MonthlyMetrics;
     selectedProperty?: PropertyId | 'all';
     totalRevenue: number;
 }>();
@@ -38,12 +40,12 @@ const hoveredIndex = ref<number | null>(null);
 const activeConfigs = computed(() => {
     return PROPERTY_LIST.filter((config) => {
         // Filter by property scope if provided
-        if (props.selectedProperty && props.selectedProperty !== 'all') {
-            return config.id === props.selectedProperty;
+        if (selectedProperty && selectedProperty !== 'all') {
+            return config.id === selectedProperty;
         }
 
         // Sum earnings across all 12 months for this property
-        const totalEarned = props.data.reduce((sum, row) => {
+        const totalEarned = data.reduce((sum, row) => {
             const val = row[config.id];
             return sum + (typeof val === 'number' ? val : 0);
         }, 0);
@@ -54,15 +56,15 @@ const activeConfigs = computed(() => {
 
 const displayHeaderMonth = computed(() => {
     if (hoveredIndex.value !== null) {
-        const item = props.data[hoveredIndex.value];
+        const item = data[hoveredIndex.value];
         if (item?.label) return `${item.label} 2026`;
     }
     return formatDate(getCurrentMonth(), { monthHeader: true });
 });
 
 const displayHeaderValue = computed(() => {
-    if (hoveredIndex.value !== null && props.data.length > 0) {
-        const item = props.data[hoveredIndex.value];
+    if (hoveredIndex.value !== null && data.length > 0) {
+        const item = data[hoveredIndex.value];
         if (!item) return 0;
 
         return activeConfigs.value.reduce((sum, config) => {
@@ -71,20 +73,20 @@ const displayHeaderValue = computed(() => {
         }, 0);
     }
 
-    return props.totalRevenue;
+    return totalRevenue;
 });
 
 const chartData = computed<ChartData<'bar'>>(() => {
     const datasets = activeConfigs.value.map((config) => ({
         label: `${config.id.charAt(0).toUpperCase()}${config.id.slice(1)}`,
-        data: props.data.map((d) => d[config.id] || 0),
+        data: data.map((d) => d[config.id] || 0),
         backgroundColor: config.color,
         borderRadius: 4,
         maxBarThickness: 24,
     }));
 
     return {
-        labels: props.data.map((d) => d.label),
+        labels: data.map((d) => d.label),
         datasets,
     };
 });

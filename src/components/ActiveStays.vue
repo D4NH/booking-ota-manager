@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getPropertyTheme } from '@/config/properties';
-import { formatIDR } from '@/utils/money';
-import type { Booking } from '@/types/booking';
 import { useDateKeys } from '@/composables/useDateKeys';
+import { getPropertyTheme } from '@/config/properties';
+import type { Booking } from '@/types/booking';
+import { getCurrentDate } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
 const { currentDay, currentHour } = useDateKeys();
 
-const props = defineProps<{
+const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
-    today?: string; // e.g. '2026-09-12'
+    today?: string;
 }>();
 
 const emit = defineEmits<{
@@ -22,7 +23,7 @@ const emit = defineEmits<{
 // - Departures who have NOT yet checked out and it is still morning (< 12:00)
 // - Arrivals who have already arrived (checked-in or after 15:00)
 const inHouseGuests = computed(() => {
-    return props.bookings.filter((b) => {
+    return bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
 
         // Mid-stay
@@ -45,7 +46,7 @@ const inHouseGuests = computed(() => {
 // GUESTS WHO HAVE LEFT TODAY
 // - Check-out date is today AND (past 12:00 OR already marked Checked-out)
 const departedGuests = computed(() => {
-    return props.bookings.filter((b) => {
+    return bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
 
         if (b.checkOut === currentDay.value) {

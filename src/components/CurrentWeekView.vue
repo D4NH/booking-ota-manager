@@ -9,16 +9,10 @@ import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { getCurrentDate, getOffsetDate, formatDate } from '@/utils/date';
 
-const props = withDefaults(
-    defineProps<{
-        selectedProperty?: PropertyId | 'all';
-        showHeader?: boolean;
-    }>(),
-    {
-        selectedProperty: 'all',
-        showHeader: false,
-    }
-);
+const { selectedProperty = 'all', showHeader = true } = defineProps<{
+    selectedProperty?: PropertyId | 'all';
+    showHeader?: boolean;
+}>();
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -57,9 +51,7 @@ const weekRangeLabel = computed(() => {
 
 const filteredBookings = computed(() =>
     bookings.value.filter((b) =>
-        props.selectedProperty !== 'all' && b.propertyId !== props.selectedProperty
-            ? false
-            : b.status
+        selectedProperty !== 'all' && b.propertyId !== selectedProperty ? false : b.status
     )
 );
 
@@ -110,7 +102,7 @@ const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
 const handleCellClick = (dateStr: string) => {
     modalStore.openBookingModal({
         checkInDate: dateStr,
-        propertyId: props.selectedProperty !== 'all' ? props.selectedProperty : undefined,
+        propertyId: selectedProperty !== 'all' ? selectedProperty : undefined,
     });
 };
 

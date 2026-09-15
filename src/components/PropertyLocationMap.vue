@@ -4,15 +4,10 @@ import type { Property } from '@/types/property';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const props = withDefaults(
-    defineProps<{
-        property: Property;
-        targetZoom?: number;
-    }>(),
-    {
-        targetZoom: 17,
-    }
-);
+const { property, targetZoom = 17 } = defineProps<{
+    property: Property;
+    targetZoom?: number;
+}>();
 
 const mapContainer = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;
@@ -35,14 +30,11 @@ const customMarkerIcon = L.divIcon({
 });
 
 const initMap = async () => {
-    if (!mapContainer.value || !props.property.coordinates) return;
+    if (!mapContainer.value || !property.coordinates) return;
 
     await nextTick();
 
-    const targetCoords: [number, number] = [
-        props.property.coordinates.lat,
-        props.property.coordinates.lng,
-    ];
+    const targetCoords: [number, number] = [property.coordinates.lat, property.coordinates.lng];
 
     const initialCoords: [number, number] = [targetCoords[0] - 0.012, targetCoords[1] - 0.012];
 
@@ -70,7 +62,7 @@ const initMap = async () => {
     tileLayer.once('load', () => {
         requestAnimationFrame(() => {
             if (!map) return;
-            map.flyTo(targetCoords, props.targetZoom, {
+            map.flyTo(targetCoords, targetZoom, {
                 duration: 0.5,
                 easeLinearity: 0.25,
             });
@@ -79,10 +71,10 @@ const initMap = async () => {
 };
 
 watch(
-    () => [props.property.coordinates?.lat, props.property.coordinates?.lng],
+    () => [property.coordinates?.lat, property.coordinates?.lng],
     ([newLat, newLng]) => {
         if (map && marker && newLat && newLng) {
-            map.flyTo([newLat, newLng], props.targetZoom, { duration: 0.5 });
+            map.flyTo([newLat, newLng], targetZoom, { duration: 0.5 });
             marker.setLatLng([newLat, newLng]);
         }
     }

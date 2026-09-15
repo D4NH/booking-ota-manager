@@ -8,7 +8,7 @@ export interface UseDailyOperationsOptions {
      * Target property ID filter. Supports a static ID, a `Ref`, or a getter function.
      * When omitted or set to `'all'`, aggregates operations across all properties.
      *
-     * @example () => props.id
+     * @example () => id
      */
     propertyId?: MaybeRefOrGetter<PropertyId | 'all' | undefined>;
 }

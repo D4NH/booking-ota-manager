@@ -59,7 +59,7 @@ const getOverlappingNights = (
  * @param bookings - A reactive reference, getter function, or array of bookings.
  * @param options - Configuration options for scoping the calculation.
  * @param options.targetMonth - Target month in 'YYYY-MM' format (e.g., '2026-09'). Defaults to the current month.
- * @param options.propertyId - Property filter. Accepts a static ID, a `Ref`, or a getter function (e.g., `() => props.property.id`).
+ * @param options.propertyId - Property filter. Accepts a static ID, a `Ref`, or a getter function (e.g., `() => property.id`).
  *                             Defaults to 'all' (aggregates across all active units).
  *
  * @returns An object containing reactive computed values:
@@ -80,9 +80,9 @@ const getOverlappingNights = (
  * @example
  * // 2. Single property metrics inside a card with reactive getter:
  * const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(
- *   () => props.bookings,
+ *   () => bookings,
  *   {
- *     propertyId: () => props.property.id,
+ *     propertyId: () => property.id,
  *   }
  * );
  *

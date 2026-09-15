@@ -8,19 +8,18 @@ import type { Property } from '@/types/property';
 
 import CardTitle from '@/components/CardTitle.vue';
 
-const props = defineProps<{
+const { bookings, properties } = defineProps<{
     bookings: Booking[];
     properties: Property[];
-    year?: number;
 }>();
 
 const propertyStats = computed(() => {
-    const totalPortfolioRevenue = props.bookings
+    const totalPortfolioRevenue = bookings
         .filter((b) => b.status !== 'Unavailable')
         .reduce((sum, b) => sum + b.payout, 0);
 
-    return props.properties.map((property) => {
-        const propBookings = props.bookings.filter(
+    return properties.map((property) => {
+        const propBookings = bookings.filter(
             (b) => b.propertyId === property.id && b.status !== 'Unavailable'
         );
 

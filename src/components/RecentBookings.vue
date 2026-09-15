@@ -8,8 +8,9 @@ import { formatDate, getCurrentDate } from '@/utils/date';
 
 import CardTitle from '@/components/CardTitle.vue';
 
-const props = defineProps<{
+const { bookings, limit = 5 } = defineProps<{
     bookings: Booking[];
+    limit?: number;
 }>();
 
 const emit = defineEmits<{
@@ -17,11 +18,11 @@ const emit = defineEmits<{
 }>();
 
 const recentBookings = computed(() => {
-    return [...props.bookings]
+    return [...bookings]
         .filter((b) => b.status !== 'Unavailable')
         .filter((b) => b.checkIn > getCurrentDate())
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
-        .slice(0, 5);
+        .slice(0, limit);
 });
 </script>
 

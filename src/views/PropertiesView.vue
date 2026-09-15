@@ -27,7 +27,7 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
-const { metrics, monthlyPropertyData } = useMonthlyMetrics(bookings);
+const { monthlyPropertyData } = useMonthlyMetrics(bookings);
 
 const isPropertiesExpanded = ref(false);
 
@@ -159,7 +159,6 @@ const handleAddProperty = () => {
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AnnualRevenue
-                :monthly-metrics="metrics"
                 :data="monthlyPropertyData"
                 :total-revenue="totalRevenue" />
 

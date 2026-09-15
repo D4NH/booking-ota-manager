@@ -9,7 +9,7 @@ import CardTitle from '@/components/CardTitle.vue';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const props = defineProps<{
+const { bookings } = defineProps<{
     bookings: Booking[];
 }>();
 
@@ -17,7 +17,7 @@ const channelStats = computed(() => {
     const counts: Record<string, number> = {};
     let total = 0;
 
-    props.bookings.forEach((b) => {
+    bookings.forEach((b) => {
         if (b.status === 'Unavailable') return;
         const ch = b.listing || 'Other';
         counts[ch] = (counts[ch] || 0) + 1;

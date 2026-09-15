@@ -14,6 +14,7 @@ import {
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
 import { formatIDR } from '@/utils/money';
+import type { WeeklyData, MonthlyData } from '@/composables/useRevenueData';
 
 import CardTitle from '@/components/CardTitle.vue';
 
@@ -28,35 +29,19 @@ ChartJS.register(
     Filler
 );
 
-export interface weeklyData {
-    labels: string[];
-    currentWeek: number[];
-    lastWeek: number[];
-}
-
-export interface monthlyData {
-    labels: string[];
-    currentMonth: number[];
-    lastMonth: number[];
-}
-
-const props = defineProps<{
-    weeklyData: weeklyData;
-    monthlyData: monthlyData;
+const { weeklyData, monthlyData } = defineProps<{
+    weeklyData: WeeklyData;
+    monthlyData: MonthlyData;
 }>();
 
 const activeView = ref<'weekly' | 'monthly'>('monthly');
 
 const currentTotal = computed(() => {
-    const list =
-        activeView.value === 'weekly'
-            ? props.weeklyData.currentWeek
-            : props.monthlyData.currentMonth;
+    const list = activeView.value === 'weekly' ? weeklyData.currentWeek : monthlyData.currentMonth;
     return list.reduce((a, b) => a + b, 0);
 });
 const previousTotal = computed(() => {
-    const list =
-        activeView.value === 'weekly' ? props.weeklyData.lastWeek : props.monthlyData.lastMonth;
+    const list = activeView.value === 'weekly' ? weeklyData.lastWeek : monthlyData.lastMonth;
     return list.reduce((a, b) => a + b, 0);
 });
 const growthPercentage = computed(() => {
@@ -67,9 +52,9 @@ const growthPercentage = computed(() => {
 const chartData = computed(() => {
     const isWeekly = activeView.value === 'weekly';
 
-    const labels = isWeekly ? props.weeklyData.labels : props.monthlyData.labels;
-    const currentData = isWeekly ? props.weeklyData.currentWeek : props.monthlyData.currentMonth;
-    const previousData = isWeekly ? props.weeklyData.lastWeek : props.monthlyData.lastMonth;
+    const labels = isWeekly ? weeklyData.labels : monthlyData.labels;
+    const currentData = isWeekly ? weeklyData.currentWeek : monthlyData.currentMonth;
+    const previousData = isWeekly ? weeklyData.lastWeek : monthlyData.lastMonth;
 
     return {
         labels,

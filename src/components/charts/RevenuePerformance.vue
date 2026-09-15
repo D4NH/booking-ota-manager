@@ -21,7 +21,7 @@ import { Bar } from 'vue-chartjs';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const props = defineProps<{
+const { bookings } = defineProps<{
     bookings: Booking[];
 }>();
 
@@ -62,7 +62,7 @@ const fourMonthSequence = computed(() => {
 
     return sequence.map(({ monthIdx, year }) => {
         const monthName = monthsList[monthIdx] ?? '';
-        const revenue = props.bookings
+        const revenue = bookings
             .filter((b) => {
                 if (b.status === 'Unavailable') return false;
                 const date = new Date(b.checkIn);

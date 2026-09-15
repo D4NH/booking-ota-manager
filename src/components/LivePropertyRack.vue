@@ -4,35 +4,29 @@ import { PROPERTY_LIST } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import { getCurrentDate } from '@/utils/date';
 
-interface Props {
+const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
-    today?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    today: getCurrentDate(),
-});
+    today?: number;
+}>();
 
 const propertyRack = computed(() => {
     return PROPERTY_LIST.map((property) => {
-        const propBookings = props.bookings.filter(
+        const propBookings = bookings.filter(
             (b) => b.propertyId === property.id && b.status !== 'Unavailable'
         );
 
         // 1. In-house guest today (checkIn <= today < checkOut)
-        const currentStay = propBookings.find(
-            (b) => props.today >= b.checkIn && props.today < b.checkOut
-        );
+        const currentStay = propBookings.find((b) => today >= b.checkIn && today < b.checkOut);
 
         // 2. Arriving today (checkIn === today)
-        const arrivingToday = propBookings.find((b) => b.checkIn === props.today);
+        const arrivingToday = propBookings.find((b) => b.checkIn === today);
 
         // 3. Departing today (checkOut === today)
-        const departingToday = propBookings.find((b) => b.checkOut === props.today);
+        const departingToday = propBookings.find((b) => b.checkOut === today);
 
         // 4. Next upcoming booking (if currently vacant)
         const nextUpcoming = propBookings
-            .filter((b) => b.checkIn > props.today)
+            .filter((b) => b.checkIn > today)
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0];
 
         // Determine Operational State

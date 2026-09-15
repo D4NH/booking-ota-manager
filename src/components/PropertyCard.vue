@@ -9,25 +9,26 @@ import { formatIDR } from '@/utils/money';
 
 import OccupiedTag from '@/components/OccupiedTag.vue';
 
-const props = defineProps<{
+const {
+    bookings,
+    property,
+    useDailyOps = false,
+} = defineProps<{
     bookings: Booking[];
     property: Property;
     useDailyOps?: boolean;
 }>();
 
-const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(
-    () => props.bookings,
-    {
-        propertyId: () => props.property.id,
-    }
-);
-const { staySections, isOccupied } = useDailyOperations(() => props.bookings, {
-    propertyId: () => props.property.id,
+const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(() => bookings, {
+    propertyId: () => property.id,
+});
+const { staySections, isOccupied } = useDailyOperations(() => bookings, {
+    propertyId: () => property.id,
 });
 
 const nextUpcoming = computed(
     () =>
-        props.bookings
+        bookings
             .filter((b) => b.checkIn > getCurrentDate())
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0]
 );

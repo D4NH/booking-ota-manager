@@ -2,13 +2,13 @@ import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { getCurrentDate } from '@/utils/date';
 
-export interface weeklyData {
+export interface WeeklyData {
     labels: string[];
     currentWeek: number[];
     lastWeek: number[];
 }
 
-export interface monthlyData {
+export interface MonthlyData {
     labels: string[];
     currentMonth: number[];
     lastMonth: number[];

@@ -21,7 +21,7 @@ import PageTitle from '@/components/PageTitle.vue';
 import OccupiedTag from '@/components/OccupiedTag.vue';
 import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
 
-const props = defineProps<{
+const { id } = defineProps<{
     id: PropertyId | 'all';
 }>();
 
@@ -35,7 +35,7 @@ const { properties, sortedProperties } = storeToRefs(propertyStore);
 const { deleteBooking } = useBookingSync();
 const { currentStays, todaysArrivals, todaysDepartures, isOccupied, staySections } =
     useDailyOperations(bookings, {
-        propertyId: () => props.id,
+        propertyId: () => id,
     });
 const { currentDay, currentHour } = useDateKeys();
 
@@ -43,12 +43,12 @@ const hiddenStatuses = ref<Booking['status'][]>([]);
 const collapsedMonths = ref<string[]>([]);
 
 const selectedProperty = computed<Property | undefined>(() =>
-    properties.value.find((p) => p.id === props.id)
+    properties.value.find((p) => p.id === id)
 );
 
 const unitBookings = computed(() =>
     bookings.value
-        .filter((b) => b.propertyId === props.id && b.status !== 'Unavailable')
+        .filter((b) => b.propertyId === id && b.status !== 'Unavailable')
         .sort((a, b) => b.checkIn.localeCompare(a.checkIn))
 );
 const totalRevenue = computed(() => unitBookings.value.reduce((sum, b) => sum + b.payout, 0));
@@ -63,7 +63,7 @@ const adr = computed(() =>
 const annualOccupancy = computed(() => Math.round((totalNights.value / 365) * 100));
 const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
 const filteredBookings = computed(() => {
-    const prop = props.id;
+    const prop = id;
     const hidden = hiddenStatuses.value;
 
     return bookings.value
@@ -141,9 +141,9 @@ watch(
     () => sortedProperties.value,
     (loadedProperties) => {
         if (loadedProperties.length > 0) {
-            const exists = loadedProperties.some((p) => p.id === props.id);
+            const exists = loadedProperties.some((p) => p.id === id);
             if (!exists) {
-                console.warn(`Property ${props.id} does not exist. Redirecting...`);
+                console.warn(`Property ${id} does not exist. Redirecting...`);
                 router.replace({ name: 'properties' });
             }
         }

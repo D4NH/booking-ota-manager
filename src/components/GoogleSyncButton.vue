@@ -8,7 +8,7 @@ import type { PropertyId } from '@/types/property';
 
 import { toast } from 'vue-toastflow';
 
-const props = defineProps<{
+const { propertyId = 'all' } = defineProps<{
     propertyId?: PropertyId | 'all';
 }>();
 
@@ -30,15 +30,15 @@ const handleSync = async (): Promise<void> => {
                 let totalUpdated = 0;
                 let totalDeleted = 0;
 
-                if (props.propertyId && props.propertyId !== 'all') {
-                    const spreadsheetId = PROPERTY_CONFIGS[props.propertyId]?.spreadsheetId;
+                if (propertyId && propertyId !== 'all') {
+                    const spreadsheetId = PROPERTY_CONFIGS[propertyId]?.spreadsheetId;
 
                     if (!spreadsheetId)
                         throw new Error('Spreadsheet ID missing for selected property');
 
                     const rows = await fetchSheetRows(spreadsheetId);
                     const { importedCount, updatedCount, deletedCount } =
-                        await bookingStore.importBookingsFromGoogleSheets(props.propertyId, rows);
+                        await bookingStore.importBookingsFromGoogleSheets(propertyId, rows);
 
                     totalImported += importedCount;
                     totalUpdated += updatedCount;

@@ -6,7 +6,7 @@ import { getPropertyTheme } from '@/config/properties';
 import { formatIDR } from '@/utils/money';
 import type { Property, PropertyId } from '@/types/property';
 
-const props = defineProps<{
+const { properties } = defineProps<{
     properties: Property[];
 }>();
 
@@ -108,7 +108,7 @@ const renderMarkers = () => {
 
     markersMap.clear();
 
-    props.properties.forEach((prop) => {
+    properties.forEach((prop) => {
         if (!prop.coordinates?.lat || !prop.coordinates?.lng) return;
 
         const marker = L.marker([prop.coordinates.lat, prop.coordinates.lng], {

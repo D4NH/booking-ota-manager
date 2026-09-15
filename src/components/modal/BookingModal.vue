@@ -8,12 +8,12 @@ import { CHANNEL_WARNINGS } from '@/config/constants';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { calculateNights } from '@/utils/date';
+import { calculateNights, getCurrentDate } from '@/utils/date';
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const props = defineProps<{
+const { bookingToEdit = null, initialCheckInDate = getCurrentDate(), currentProperty = 'all'} = defineProps<{
     bookingToEdit?: Booking | null;
     initialCheckInDate?: string;
     currentProperty?: PropertyId | 'all';
@@ -29,22 +29,22 @@ const { deleteBooking } = useBookingSync();
 const { currentDay } = useDateKeys();
 
 const resolveInitialProperty = (): PropertyId | '' => {
-    if (props.bookingToEdit?.propertyId) return props.bookingToEdit.propertyId as PropertyId;
-    if (props.currentProperty && props.currentProperty !== 'all') return props.currentProperty;
+    if (bookingToEdit?.propertyId) return bookingToEdit.propertyId as PropertyId;
+    if (currentProperty && currentProperty !== 'all') return currentProperty;
     return '';
 };
 
 const form = ref({
     propertyId: resolveInitialProperty(),
-    bookingId: props.bookingToEdit?.bookingId || '',
-    guestName: props.bookingToEdit?.guestName || '',
-    checkIn: props.bookingToEdit?.checkIn || props.initialCheckInDate || currentDay,
-    checkOut: props.bookingToEdit?.checkOut || '',
-    nights: props.bookingToEdit?.nights || 1,
-    payout: props.bookingToEdit?.payout || '',
-    listing: props.bookingToEdit?.listing || '',
-    status: props.bookingToEdit?.status || 'Booked',
-    notes: props.bookingToEdit?.notes || '',
+    bookingId: bookingToEdit?.bookingId || '',
+    guestName: bookingToEdit?.guestName || '',
+    checkIn: bookingToEdit?.checkIn || initialCheckInDate || currentDay,
+    checkOut: bookingToEdit?.checkOut || '',
+    nights: bookingToEdit?.nights || 1,
+    payout: bookingToEdit?.payout || '',
+    listing: bookingToEdit?.listing || '',
+    status: bookingToEdit?.status || 'Booked',
+    notes: bookingToEdit?.notes || '',
 });
 const checkIn = ref<string>('');
 const checkOut = ref<string>('');
@@ -60,7 +60,7 @@ const validationError = computed<string | null>(() => {
         form.value.propertyId,
         form.value.checkIn,
         form.value.checkOut,
-        props.bookingToEdit?.bookingId
+        bookingToEdit?.bookingId
     );
 
     if (conflictingBooking) {
@@ -70,11 +70,11 @@ const validationError = computed<string | null>(() => {
     return null;
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
-const checkInMinDate = computed(() => (props.bookingToEdit ? '' : currentDay.value));
+const checkInMinDate = computed(() => (bookingToEdit ? '' : currentDay.value));
 
 const handleDeleteBooking = async (): Promise<void> => {
-    if (!props.bookingToEdit) return;
-    await deleteBooking(props.bookingToEdit);
+    if (!bookingToEdit) return;
+    await deleteBooking(bookingToEdit);
     emit('close');
 };
 const handleSubmit = () => {

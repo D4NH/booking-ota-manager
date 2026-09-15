@@ -14,9 +14,8 @@ interface PropertyFormState extends Omit<Property, 'coordinates' | 'wifi'> {
     };
 }
 
-const props = defineProps<{
+const { propertyToEdit = null } = defineProps<{
     propertyToEdit?: Property | null;
-    currentProperty?: PropertyId | 'all';
 }>();
 
 const emit = defineEmits<{
@@ -49,12 +48,12 @@ const createFormData = (source?: Partial<Property> | null): PropertyFormState =>
 
 const form = ref<PropertyFormState>(createFormData());
 
-const isEditing = computed(() => Boolean(props.propertyToEdit?.id));
+const isEditing = computed(() => Boolean(propertyToEdit?.id));
 
 const handleDeleteProperty = async (): Promise<void> => {
-    if (!props.propertyToEdit) return;
-    if (window.confirm(`Delete property ${props.propertyToEdit}?`)) {
-        await propertyStore.deleteProperty(props.propertyToEdit?.id);
+    if (!propertyToEdit) return;
+    if (window.confirm(`Delete property ${propertyToEdit}?`)) {
+        await propertyStore.deleteProperty(propertyToEdit?.id);
         emit('close');
     }
 };
@@ -77,7 +76,7 @@ const handleSubmit = () => {
 };
 
 watch(
-    () => props.propertyToEdit,
+    () => propertyToEdit,
     (newVal) => {
         form.value = createFormData(newVal);
     },

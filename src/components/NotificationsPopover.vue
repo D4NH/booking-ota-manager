@@ -4,7 +4,7 @@ import { formatIDR } from '@/utils/money';
 import { getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 
-const props = defineProps<{
+const { isOpen, pendingPayments, pendingPayouts } = defineProps<{
     isOpen: boolean;
     pendingPayments: Booking[];
     pendingPayouts: Booking[];
@@ -16,7 +16,7 @@ const emit = defineEmits<{
     (e: 'edit', booking: Booking): void;
 }>();
 
-const totalCount = computed(() => props.pendingPayments.length + props.pendingPayouts.length);
+const totalCount = computed(() => pendingPayments.length + pendingPayouts.length);
 </script>
 <template>
     <div class="bg-mist-900 border-t border-mist-800 overflow-hidden">

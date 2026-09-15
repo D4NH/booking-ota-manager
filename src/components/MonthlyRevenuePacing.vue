@@ -3,20 +3,18 @@ import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
 import { getCurrentDate } from '@/utils/date';
 
-const props = withDefaults(
-    defineProps<{
-        currentRevenue: number; // e.g. 9031506
-        monthlyTarget?: number; // e.g. 15000000 (Target for September)
-        today?: string; // e.g. '2026-09-10'
-    }>(),
-    {
-        monthlyTarget: 15_000_000,
-        today: getCurrentDate(),
-    }
-);
+const {
+    currentRevenue,
+    monthlyTarget = 15000000,
+    today = getCurrentDate(),
+} = defineProps<{
+    currentRevenue: number; // e.g. 9031506
+    monthlyTarget?: number; // e.g. 15000000 (Target for September)
+    today?: string; // e.g. '2026-09-10'
+}>();
 
 // Date & Days calculations
-const dateObj = computed(() => new Date(props.today));
+const dateObj = computed(() => new Date(today));
 const dayNumber = computed(() => dateObj.value.getDate()); // e.g. 10
 const totalDaysInMonth = computed(() => {
     const y = dateObj.value.getFullYear();
@@ -28,8 +26,8 @@ const daysRemaining = computed(() => Math.max(0, totalDaysInMonth.value - dayNum
 
 // Percentages
 const targetPercentage = computed(() => {
-    if (props.monthlyTarget === 0) return 0;
-    return Math.min(100, Math.round((props.currentRevenue / props.monthlyTarget) * 100));
+    if (monthlyTarget === 0) return 0;
+    return Math.min(100, Math.round((currentRevenue / monthlyTarget) * 100));
 });
 
 // % of month that has passed (e.g. Day 10 of 30 = 33.3%)
@@ -42,7 +40,7 @@ const isAheadOfPace = computed(() => targetPercentage.value >= monthTimeElapsed.
 const pacingDiff = computed(() => targetPercentage.value - monthTimeElapsed.value);
 
 // Financial Gaps
-const remainingRevenue = computed(() => Math.max(0, props.monthlyTarget - props.currentRevenue));
+const remainingRevenue = computed(() => Math.max(0, monthlyTarget - currentRevenue));
 const dailyRunRateNeeded = computed(() => {
     if (daysRemaining.value === 0) return remainingRevenue.value;
     return Math.round(remainingRevenue.value / daysRemaining.value);

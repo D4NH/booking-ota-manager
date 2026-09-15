@@ -3,10 +3,11 @@ import { ref, computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, type ChartData, type ChartOptions } from 'chart.js';
 import type { Booking } from '@/types/booking';
+import { getCurrentMonth } from '@/utils/date';
 
 ChartJS.register(ArcElement, Tooltip);
 
-const props = defineProps<{
+const { bookings, targetMonth = getCurrentMonth() } = defineProps<{
     bookings: Booking[];
     targetMonth?: string;
 }>();
@@ -23,7 +24,7 @@ const channelColors = [
 ];
 
 const channelStats = computed(() => {
-    const currentMonth = props.targetMonth || '';
+    const currentMonth = targetMonth || '';
     const counts: Record<string, number> = {
         Airbnb: 0,
         'Booking.com': 0,
@@ -32,7 +33,7 @@ const channelStats = computed(() => {
         Whatsapp: 0,
     };
 
-    const list = props.bookings || [];
+    const list = bookings || [];
     for (let i = 0; i < list.length; i++) {
         const b = list[i];
         if (!b || b.status === 'Unavailable') continue;

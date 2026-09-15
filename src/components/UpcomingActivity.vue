@@ -4,14 +4,10 @@ import { getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import { getCurrentDate } from '@/utils/date';
 
-interface Props {
+const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
     today?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    today: getCurrentDate(),
-});
+}>();
 
 const emit = defineEmits<{
     (e: 'select-booking', booking: Booking): void;
@@ -19,8 +15,6 @@ const emit = defineEmits<{
 
 // Get upcoming arrivals & departures in the next 7 days
 const upcomingEvents = computed(() => {
-    const today = props.today;
-
     // 7 days window
     const maxDate = new Date(today);
     maxDate.setDate(maxDate.getDate() + 7);
@@ -33,7 +27,7 @@ const upcomingEvents = computed(() => {
         isToday: boolean;
     }> = [];
 
-    props.bookings.forEach((b) => {
+    bookings.forEach((b) => {
         if (b.status === 'Unavailable') return;
 
         // Check-ins (Arrivals)

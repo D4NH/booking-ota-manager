@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { SHORT_MONTH_NAMES } from '@/config/constants';
 import { PROPERTY_LIST } from '@/config/properties';
 import type { Booking } from '@/types/booking';
+import type { PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 
 import { Bar } from 'vue-chartjs';
@@ -20,9 +21,9 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const props = defineProps<{
+const { data, selectedProperty = 'all' } = defineProps<{
     data: Booking[];
-    selectedProperty?: string | 'all';
+    selectedProperty?: PropertyId | 'all';
 }>();
 
 const monthlyPropertyData = computed(() => {
@@ -36,7 +37,7 @@ const monthlyPropertyData = computed(() => {
         bantul: 0,
     }));
 
-    for (const b of props.data) {
+    for (const b of data) {
         if (!b.checkIn.startsWith(yearPrefix) || b.status === 'Unavailable') continue;
 
         const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
@@ -82,11 +83,11 @@ const quarterlyData = computed(() => {
 
     return quarters;
 });
-const totalRevenue = computed(() => props.data.reduce((acc, b) => acc + (b.payout || 0), 0));
+const totalRevenue = computed(() => data.reduce((acc, b) => acc + (b.payout || 0), 0));
 const chartData = computed<ChartData<'bar'>>(() => {
     const activeConfigs = PROPERTY_LIST.filter((config) => {
-        if (!props.selectedProperty || props.selectedProperty === 'all') return true;
-        return config.id === props.selectedProperty;
+        if (!selectedProperty || selectedProperty === 'all') return true;
+        return config.id === selectedProperty;
     });
 
     const datasets = activeConfigs.map((config) => ({
