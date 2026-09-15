@@ -1,4 +1,3 @@
-<!-- src/components/PortfolioMetrics.vue -->
 <script setup lang="ts">
 import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
@@ -32,17 +31,20 @@ const metrics = computed(() => {
     }
 
     const activeUnits = activePropertyIds.size;
+    const totalCapacity = daysInYear * (activeUnits || properties.length || 1);
     const adr = nights > 0 ? Math.round(revenue / nights) : 0;
-    const maxCapacity = daysInYear * (activeUnits || properties.length || 1);
-    const occupancy = maxCapacity > 0 ? Math.min(100, Math.round((nights / maxCapacity) * 100)) : 0;
+    const revPar = totalCapacity > 0 ? Math.round(revenue / totalCapacity) : 0;
+    const occupancy =
+        totalCapacity > 0 ? Math.min(100, Math.round((nights / totalCapacity) * 100)) : 0;
 
     return {
         revenue,
         nights,
         adr,
-        activeUnits,
+        revPar,
         occupancy,
-        totalCapacity: daysInYear * activeUnits,
+        activeUnits,
+        totalCapacity,
     };
 });
 </script>

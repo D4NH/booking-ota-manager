@@ -106,6 +106,19 @@ export function usePropertyDetails(
     });
     const currentDay = computed(() => getCurrentDate());
 
+    const todayTurnover = computed(() => {
+        const departures = dailyOps.todaysDepartures.value;
+        const arrivals = dailyOps.todaysArrivals.value;
+
+        if (departures.length > 0 && arrivals.length > 0) {
+            return {
+                departing: departures[0]?.guestName ?? 'Guest',
+                arriving: arrivals[0]?.guestName ?? 'Guest',
+            };
+        }
+        return null;
+    });
+
     return {
         selectedProperty,
         unitBookings: computed(() => unitData.value.bookings),
@@ -117,6 +130,10 @@ export function usePropertyDetails(
         lockboxPin,
         isOccupied: dailyOps.isOccupied,
         staySections: dailyOps.staySections,
+        todaysArrivals: dailyOps.todaysArrivals,
+        todaysDepartures: dailyOps.todaysDepartures,
+        todayTurnover,
+        dailyOps,
         currentDay,
     };
 }

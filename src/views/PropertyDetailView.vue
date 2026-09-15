@@ -38,13 +38,14 @@ const {
     selectedProperty,
     unitBookings,
     totalRevenue,
-    totalNights,
     adr,
+    totalNights,
     annualOccupancy,
     nextUpcoming,
     lockboxPin,
     isOccupied,
     staySections,
+    todayTurnover,
     currentDay,
 } = usePropertyDetails(() => id);
 
@@ -67,10 +68,11 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
 const handleDeleteBooking = async (booking: Booking): Promise<void> =>
     void (await deleteBooking(booking));
 const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
-const handleNavigate = (target: PropertyId | 'all'): void => {
+
+function handleNavigate(target: PropertyId | 'all'): void {
     if (target === 'all') router.push({ name: 'properties' });
     else router.push({ name: 'property-detail', params: { id: target } });
-};
+}
 </script>
 
 <template>
@@ -84,6 +86,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
             <span>Loading details...</span>
         </div>
     </div>
+
     <div
         v-else
         class="h-full overflow-y-auto space-y-4 p-4">
@@ -91,7 +94,8 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
             <template #title>
                 <span class="capitalize">{{ selectedProperty.id }}</span>
             </template>
-            <template #subtitle> Portfolio health, listing settings and unit comparisons </template>
+            <template #subtitle>Portfolio health, listing settings and unit operations</template>
+
             <PropertySelector
                 :model-value="id"
                 @change="handleNavigate" />
@@ -165,7 +169,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     </div>
                 </div>
 
-                <!-- Live Daily Operations -->
+                <!-- Live Operations Sidebar -->
                 <div
                     class="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
                     <div class="flex items-center justify-between border-b border-mist-800 pb-3">
@@ -173,6 +177,22 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                             Daily Operations
                         </span>
                     </div>
+
+                    <!-- Same-Day Turnover Alert Badge -->
+                    <div
+                        v-if="todayTurnover"
+                        class="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs space-y-0.5">
+                        <div
+                            class="flex items-center gap-1.5 font-bold text-amber-400 text-[11px] uppercase">
+                            <fa-icon icon="bolt" />
+                            <span>Same-Day Turnover Today</span>
+                        </div>
+                        <p class="text-mist-300 text-[11px]">
+                            {{ todayTurnover.departing }} (Out 11 AM) &rarr;
+                            {{ todayTurnover.arriving }} (In 2 PM)
+                        </p>
+                    </div>
+
                     <div class="flex-1 flex flex-col justify-center">
                         <div
                             v-if="staySections.length"
@@ -189,6 +209,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                     ]">
                                     {{ section.label }}
                                 </span>
+
                                 <div
                                     v-for="b in section.items"
                                     :key="b.id || b.bookingId"
@@ -280,7 +301,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Unit Revenue
+                    Annual Revenue
                 </h3>
                 <p class="font-mono text-lg font-bold text-white">{{ formatIDR(totalRevenue) }}</p>
                 <p class="text-xs text-mist-500">Total earnings in {{ getCurrentYear() }}</p>
@@ -305,18 +326,18 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Occupancy Rate
+                    Average Daily Rate (ADR)
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">{{ annualOccupancy }}%</p>
-                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights</p>
+                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
+                <p class="text-xs text-mist-500">Per booked night</p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Total Bookings
+                    Annual Occupancy
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">{{ unitBookings.length }}</p>
-                <p class="text-xs text-mist-500">Completed & upcoming</p>
+                <p class="font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</p>
+                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights booked</p>
             </div>
         </div>
 
@@ -329,19 +350,21 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 </CardTitle>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                    class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
                     @click="handleAddBooking(id)">
                     <fa-icon icon="plus" /> Add Booking
                 </button>
             </div>
+
             <div
                 v-if="groupedBookings.length === 0"
                 class="flex flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-6">
                 <fa-icon
-                    icon="receipt"
+                    icon="house"
                     class="text-xl" />
-                <p class="mt-2">No upcoming bookings found</p>
+                <p class="mt-2">No upcoming reservations found</p>
             </div>
+
             <BookingsTable
                 v-else
                 v-model:collapsed-months="collapsedMonths"

@@ -11,87 +11,102 @@ import {
 import { Doughnut } from 'vue-chartjs';
 import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
+import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-interface DoughnutChartRef {
-    chart: ChartJS<'doughnut'> | null;
-}
 interface Props {
     bookings: Booking[];
+}
+
+interface DoughnutChartRef {
+    chart: ChartJS<'doughnut'> | null;
 }
 
 const { bookings } = defineProps<Props>();
 
 const chartRef = ref<DoughnutChartRef | null>(null);
 const hoveredIndex = ref<number | null>(null);
+const viewMode = ref<'count' | 'revenue'>('count');
 
 const yearOptions = computed<number[]>(() => {
     const years = new Set<number>();
-
     for (const b of bookings) {
         if (b.checkIn && b.checkIn.length >= 4) {
             const year = Number(b.checkIn.slice(0, 4));
             if (!Number.isNaN(year)) years.add(year);
         }
     }
-
-    if (years.size === 0) {
-        years.add(new Date().getFullYear());
-    }
-
+    if (years.size === 0) years.add(new Date().getFullYear());
     return Array.from(years).sort((a, b) => b - a);
 });
 
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
+watch(yearOptions, (available) => {
+    if (!available.includes(selectedYear.value) && available.length > 0) {
+        selectedYear.value = available[0]!;
+    }
+});
+
 const channelStats = computed(() => {
     const targetYearStr = String(selectedYear.value);
     const counts = new Map<string, number>();
-    let total = 0;
+    const revenues = new Map<string, number>();
+    let totalCount = 0;
+    let totalRevenue = 0;
 
     for (const b of bookings) {
         if (b.status === 'Unavailable' || b.status === 'No show') continue;
         if (!b.checkIn || b.checkIn.slice(0, 4) !== targetYearStr) continue;
 
         const channel = b.listing || 'Other';
+        const payout = b.payout || 0;
+
         counts.set(channel, (counts.get(channel) ?? 0) + 1);
-        total += 1;
+        revenues.set(channel, (revenues.get(channel) ?? 0) + payout);
+
+        totalCount += 1;
+        totalRevenue += payout;
     }
 
-    const entries = Array.from(counts.entries()).map(([name, count]) => ({
+    const isRev = viewMode.value === 'revenue';
+    const sourceMap = isRev ? revenues : counts;
+    const total = isRev ? totalRevenue : totalCount;
+
+    const entries = Array.from(sourceMap.entries()).map(([name, value]) => ({
         name,
-        count,
-        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+        count: counts.get(name) ?? 0,
+        revenue: revenues.get(name) ?? 0,
+        value,
+        percentage: total > 0 ? Math.round((value / total) * 100) : 0,
         color: CHANNEL_COLORS[name] ?? CHANNEL_COLORS.Other,
     }));
 
-    entries.sort((a, b) => b.count - a.count);
-
-    return { entries, total };
+    entries.sort((a, b) => b.value - a.value);
+    return { entries, totalCount, totalRevenue, total };
 });
+
 const chartData = computed<ChartData<'doughnut'>>(() => ({
     labels: channelStats.value.entries.map((e) => e.name),
     datasets: [
         {
-            data: channelStats.value.entries.map((e) => e.count),
+            data: channelStats.value.entries.map((e) => e.value),
             backgroundColor: channelStats.value.entries.map((e) => e.color),
-            borderColor: '#18181b', // mist-900 border
+            borderColor: '#18181b',
             borderWidth: 2,
             hoverOffset: 20,
         },
     ],
 }));
 
-const chartOptions: ChartOptions<'doughnut'> = {
+const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
     cutout: '75%',
-    layout: {
-        padding: 5,
-    },
+    layout: { padding: 5 },
     onHover: (_event, activeElements) => {
         hoveredIndex.value = activeElements[0]?.index ?? null;
     },
@@ -104,26 +119,22 @@ const chartOptions: ChartOptions<'doughnut'> = {
             borderWidth: 1,
             padding: 8,
             callbacks: {
-                label: (ctx) => ` ${ctx.label}: ${ctx.raw} bookings`,
+                label: (ctx) => {
+                    const val = Number(ctx.raw) || 0;
+                    return viewMode.value === 'revenue'
+                        ? ` ${ctx.label}: ${formatIDR(val)}`
+                        : ` ${ctx.label}: ${val} stays`;
+                },
             },
         },
     },
-};
+}));
 
 const clearHighlight = (): void => {
     hoveredIndex.value = null;
-    const chartInstance = chartRef.value?.chart;
-    if (!chartInstance) return;
-
-    chartInstance.setActiveElements([]);
-    chartInstance.update();
+    chartRef.value?.chart?.setActiveElements([]);
+    chartRef.value?.chart?.update();
 };
-
-watch(yearOptions, (available) => {
-    if (!available.includes(selectedYear.value) && available.length > 0) {
-        selectedYear.value = available[0]!;
-    }
-});
 </script>
 
 <template>
@@ -131,26 +142,56 @@ watch(yearOptions, (available) => {
         <div class="flex justify-between items-center">
             <CardTitle>
                 <template #title>Channel Distribution</template>
-                <template #subtitle>Reservation share by acquisition platform</template>
+                <template #subtitle>Share breakdown by volume and gross revenue</template>
             </CardTitle>
-            <!-- Year Selector -->
-            <div class="relative w-18">
-                <select
-                    v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                    <option
-                        v-for="year in yearOptions"
-                        :key="year"
-                        :value="year"
-                        class="bg-mist-900">
-                        {{ year }}
-                    </option>
-                </select>
+
+            <div class="flex items-center gap-2">
+                <!-- Count / Revenue Toggle -->
                 <div
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
-                    <fa-icon
-                        class="text-xs"
-                        icon="angle-down" />
+                    class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs">
+                    <button
+                        type="button"
+                        class="rounded px-2 py-1 transition"
+                        :class="
+                            viewMode === 'count'
+                                ? 'bg-mist-800 text-lime-400'
+                                : 'text-mist-400 hover:text-mist-200'
+                        "
+                        @click="viewMode = 'count'">
+                        Volume
+                    </button>
+                    <button
+                        type="button"
+                        class="rounded px-2 py-1 transition"
+                        :class="
+                            viewMode === 'revenue'
+                                ? 'bg-mist-800 text-lime-400'
+                                : 'text-mist-400 hover:text-mist-200'
+                        "
+                        @click="viewMode = 'revenue'">
+                        Payout
+                    </button>
+                </div>
+
+                <!-- Year Selector -->
+                <div class="relative w-18">
+                    <select
+                        v-model.number="selectedYear"
+                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                        <option
+                            v-for="year in yearOptions"
+                            :key="year"
+                            :value="year"
+                            class="bg-mist-900">
+                            {{ year }}
+                        </option>
+                    </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,13 +205,12 @@ watch(yearOptions, (available) => {
                 <fa-icon
                     icon="receipt"
                     class="text-xl" />
-                <p class="mt-2">No bookings found for {{ selectedYear }}</p>
+                <p class="mt-2">No data recorded for {{ selectedYear }}</p>
             </div>
 
             <div
                 v-else
                 class="flex flex-1 items-center gap-4">
-                <!-- Donut Canvas -->
                 <div
                     class="relative h-52 w-52 shrink-0"
                     @mouseleave="clearHighlight">
@@ -179,18 +219,22 @@ watch(yearOptions, (available) => {
                         :data="chartData"
                         :options="chartOptions" />
                     <div
-                        class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-xl font-bold font-mono text-mist-100 leading-tight">
-                            {{ channelStats.total }}
+                        class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
+                        <span class="text-base font-bold font-mono text-mist-100 leading-tight">
+                            {{
+                                viewMode === 'revenue'
+                                    ? formatIDR(channelStats.totalRevenue)
+                                    : channelStats.totalCount
+                            }}
                         </span>
                         <span
-                            class="mt-1 text-[10px] uppercase tracking-wider text-mist-500 font-semibold">
-                            Total bookings
+                            class="text-[10px] uppercase tracking-wider text-mist-500 font-semibold">
+                            {{ viewMode === 'revenue' ? 'Total Payout' : 'Total Stays' }}
                         </span>
                     </div>
                 </div>
 
-                <!-- Channel Breakdown List -->
+                <!-- Breakdown List -->
                 <div class="flex-1 overflow-y-auto space-y-1">
                     <div
                         v-for="(ch, index) in channelStats.entries"
@@ -204,14 +248,19 @@ watch(yearOptions, (available) => {
                                     :style="{ backgroundColor: ch.color }" />
                                 <span class="font-medium text-mist-200">{{ ch.name }}</span>
                                 &bull;
-                                <span class="text-xs text-mist-500">
-                                    <strong class="text-mist-300">{{ ch.count }}</strong> bookings
+                                <span class="text-xs text-mist-400">
+                                    {{
+                                        viewMode === 'revenue'
+                                            ? formatIDR(ch.revenue)
+                                            : `${ch.count} stays`
+                                    }}
                                 </span>
                             </span>
-                            <span class="font-mono text-mist-400">{{ ch.percentage }}%</span>
+                            <span class="font-mono text-mist-400 font-semibold">
+                                {{ ch.percentage }}%
+                            </span>
                         </div>
 
-                        <!-- Share Bar -->
                         <div class="mt-1.5 h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
                             <div
                                 class="h-full rounded-full transition-all duration-500"

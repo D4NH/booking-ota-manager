@@ -147,7 +147,7 @@ const chartOptions: ChartOptions<'line'> = {
             </CardTitle>
             <!-- Toggle Buttons -->
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs font-medium">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-2.5 py-1 transition"
