@@ -183,52 +183,58 @@ onActivated(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 gap-4">
+    <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <PageTitle>
             <template #title> Bookings </template>
             <template #subtitle>
                 Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
             </template>
-            <div class="flex items-center gap-4">
-                <GoogleSyncButton :property-id="selectedProperty" />
-                <!-- Property Selector -->
-                <div
-                    class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
-                    <button
-                        type="button"
-                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                        :class="[
-                            selectedProperty === 'all'
-                                ? 'bg-mist-800 text-lime-400 shadow-md'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="selectedProperty = 'all'">
-                        All
-                    </button>
-                    <button
-                        v-for="prop in sortedProperties"
-                        :key="prop.id"
-                        type="button"
-                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                        :class="[
-                            selectedProperty === prop.id
-                                ? 'bg-mist-800 text-lime-400 shadow-md'
-                                : 'text-mist-400 hover:text-mist-200',
-                        ]"
-                        @click="selectProperty(prop.id)">
-                        <span class="capitalize">{{ prop.id }}</span>
-                    </button>
-                </div>
-            </div>
         </PageTitle>
 
-        <CurrentWeekView :selected-property="selectedProperty" />
+        <CurrentWeekView
+            class="shrink-0"
+            :selected-property="selectedProperty" />
 
-        <div>
-            <CardTitle>
-                <template #title>Upcoming Bookings</template>
-                <template #subtitle> Real-time availability and unit operational status </template>
-            </CardTitle>
+        <div class="shrink-0">
+            <div class="flex justify-between gap-4">
+                <CardTitle>
+                    <template #title>Upcoming Bookings</template>
+                    <template #subtitle>
+                        Real-time availability and unit operational status
+                    </template>
+                </CardTitle>
+                <div class="flex items-center gap-4">
+                    <GoogleSyncButton :property-id="selectedProperty" />
+                    <!-- Property Selector -->
+                    <div
+                        class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
+                        <button
+                            type="button"
+                            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                            :class="[
+                                selectedProperty === 'all'
+                                    ? 'bg-mist-800 text-lime-400 shadow-md'
+                                    : 'text-mist-400 hover:text-mist-200',
+                            ]"
+                            @click="selectedProperty = 'all'">
+                            All
+                        </button>
+                        <button
+                            v-for="prop in sortedProperties"
+                            :key="prop.id"
+                            type="button"
+                            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                            :class="[
+                                selectedProperty === prop.id
+                                    ? 'bg-mist-800 text-lime-400 shadow-md'
+                                    : 'text-mist-400 hover:text-mist-200',
+                            ]"
+                            @click="selectProperty(prop.id)">
+                            <span class="capitalize">{{ prop.id }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
             <!-- Filter Bar -->
             <div
                 class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
@@ -308,12 +314,15 @@ onActivated(() => {
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="flex-1 rounded-md border border-dashed border-mist-800 p-12 text-center shadow-md mb-4">
-            <p class="text-sm text-mist-400">No reservations matching current filters</p>
+            class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400">
+            <fa-icon
+                icon="receipt"
+                class="text-xl" />
+            <p class="mt-2">No bookings found</p>
         </div>
         <div
             v-else
-            class="flex-1 min-h-0 overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
                     class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
@@ -457,7 +466,7 @@ onActivated(() => {
             </table>
         </div>
 
-        <div class="flex shrink-0 justify-end mb-4">
+        <div class="flex shrink-0 justify-end">
             <button
                 type="button"
                 class="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20"

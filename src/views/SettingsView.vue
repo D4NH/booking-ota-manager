@@ -34,7 +34,7 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 overflow-y-auto gap-4">
+    <div class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
             <template #title> Settings </template>
             <template #subtitle> Listing settings and dangerous stuff </template>

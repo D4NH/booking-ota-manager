@@ -140,7 +140,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 <template>
     <div class="flex flex-col">
         <CardTitle>
-            <template #title>Annual Revenue Breakdown</template>
+            <template #title>Annual Revenue</template>
             <template #subtitle>Monthly gross earnings across properties</template>
         </CardTitle>
         <div

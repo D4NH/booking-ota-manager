@@ -75,12 +75,22 @@ const chartOptions: ChartOptions<'doughnut'> = {
 <template>
     <div class="flex flex-col">
         <CardTitle>
-            <template #title>Booking Channels</template>
+            <template #title>Channel Distribution</template>
             <template #subtitle> Reservation share by acquisition platform </template>
         </CardTitle>
         <!-- Chart -->
         <div class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-            <div class="flex flex-1 items-center gap-4">
+            <div
+                v-if="channelStats.total === 0"
+                class="flex flex-1 flex-col items-center justify-center text-xs text-mist-300">
+                <fa-icon
+                    icon="receipt"
+                    class="text-xl" />
+                <p class="mt-2">No bookings found</p>
+            </div>
+            <div
+                v-else
+                class="flex flex-1 items-center gap-4">
                 <div class="relative h-55 w-55 shrink-0">
                     <Doughnut
                         :data="chartData"

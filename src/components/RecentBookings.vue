@@ -32,14 +32,14 @@ const recentBookings = computed(() => {
             <template #subtitle>Latest reservations across all channels</template>
         </CardTitle>
         <div
-            class="overflow-y-auto divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            class="h-full overflow-y-auto flex flex-col items-stretch divide-y divide-mist-800 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div
                 v-if="recentBookings.length === 0"
-                class="flex h-40 flex-col items-center justify-center text-center text-xs text-mist-500">
+                class="flex flex-1 flex-col items-center justify-center rounded-md shadow-md text-xs text-mist-400">
                 <fa-icon
                     icon="receipt"
-                    class="text-xl text-mist-700 mb-2" />
-                <p>No recent bookings found.</p>
+                    class="text-xl" />
+                <p class="mt-2">No bookings found</p>
             </div>
             <div
                 v-for="b in recentBookings"

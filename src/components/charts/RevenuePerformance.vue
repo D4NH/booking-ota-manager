@@ -154,7 +154,11 @@ const chartOptions: ChartOptions<'bar'> = {
             grid: { color: '#1e293b' },
             ticks: {
                 color: '#64748b',
-                callback: (value) => `${Number(value) / 1000000}jt`,
+                callback: (val) => {
+                    const num = Number(val);
+                    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}jt`;
+                    return `${num}`;
+                },
             },
         },
         x: {

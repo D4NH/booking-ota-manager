@@ -209,7 +209,7 @@ const handleImageError = (e: Event) => {
         </div>
 
         <!-- Photo -->
-        <div class="relative shrink-0 self-stretch w-50 lg:w-65 overflow-hidden bg-mist-950">
+        <div class="relative shrink-0 self-stretch w-50 overflow-hidden bg-mist-950">
             <img
                 :src="`/images/${property.id}.jpg`"
                 :alt="property.name"

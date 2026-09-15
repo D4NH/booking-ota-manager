@@ -155,7 +155,7 @@ watch(
 <template>
     <div
         v-if="!selectedProperty"
-        class="flex h-full items-center justify-center">
+        class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <div class="flex items-center gap-2 text-mist-400 text-sm font-medium">
             <fa-icon
                 icon="spinner"
@@ -165,7 +165,7 @@ watch(
     </div>
     <div
         v-else
-        class="flex flex-col h-full min-h-0 gap-4">
+        class="flex flex-col h-full overflow-hidden space-y-4 p-4">
         <PageTitle>
             <template #title>
                 <span class="capitalize">{{ selectedProperty.id }}</span>
@@ -427,8 +427,8 @@ watch(
         </div>
 
         <!-- Upcoming Bookings -->
-        <div>
-            <div class="flex items-center justify-between">
+        <div class="flex flex-col h-full overflow-hidden">
+            <div class="flex items-center justify-between shrink-0">
                 <CardTitle>
                     <template #title>Upcoming Bookings</template>
                     <template #subtitle> Starting from {{ currentMonth }} </template>
@@ -440,16 +440,18 @@ watch(
                     <fa-icon icon="plus" /> Add Booking
                 </button>
             </div>
-
             <!-- Bookings Table -->
             <div
                 v-if="groupedBookings.length === 0"
-                class="h-full rounded-md border border-dashed border-mist-800 p-12 text-center mb-4">
-                <p class="text-sm text-mist-400">No reservations</p>
+                class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-4">
+                <fa-icon
+                    icon="house"
+                    class="text-xl" />
+                <p class="mt-2">No bookings found</p>
             </div>
             <div
                 v-else
-                class="flex-1 min-h-0 overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md mb-4">
+                class="min-h-0 overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
                         class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">

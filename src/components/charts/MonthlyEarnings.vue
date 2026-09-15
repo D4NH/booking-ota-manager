@@ -151,7 +151,7 @@ const chartOptions: ChartOptions<'line'> = {
     <div class="flex flex-col h-full min-h-0">
         <div class="flex items-center justify-between">
             <CardTitle>
-                <template #title>Monthly Revenue Trajectory</template>
+                <template #title>Monthly Earnings</template>
                 <template #subtitle>
                     {{
                         activeView === 'weekly'

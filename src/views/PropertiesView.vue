@@ -55,7 +55,7 @@ const handleAddProperty = () => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 overflow-y-auto gap-4">
+    <div class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
             <template #title> Property Management </template>
             <template #subtitle> Portfolio health, listing settings and unit comparisons </template>
@@ -131,6 +131,14 @@ const handleAddProperty = () => {
                 </div>
             </div>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div
+                    v-if="sortedProperties.length === 0"
+                    class="flex flex-1 flex-col col-span-2 items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-4">
+                    <fa-icon
+                        icon="house"
+                        class="text-xl" />
+                    <p class="mt-2">No properties found</p>
+                </div>
                 <PropertyCard
                     v-for="property in visibleProperties"
                     :key="property.id"
@@ -156,7 +164,6 @@ const handleAddProperty = () => {
                 :total-revenue="totalRevenue" />
 
             <PropertyPerformance
-                class="mb-4"
                 :bookings="bookings"
                 :properties="sortedProperties" />
         </div>

@@ -16,7 +16,7 @@ import BookingModal from '@/components/modal/BookingModal.vue';
 import PropertyModal from '@/components/modal/PropertyModal.vue';
 
 useHead({
-    title: 'Mai House Jogja',
+    title: 'Mai House - Booking OTA Manager',
     meta: [
         {
             name: 'viewport',
@@ -54,14 +54,14 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col h-screen overflow-hidden">
-        <div class="flex flex-1 min-h-0">
-            <AppSidebar class="shrink-0" />
+    <div class="flex h-screen w-screen overflow-hidden">
+        <AppSidebar class="shrink-0" />
 
-            <main class="flex-1 min-w-0 min-h-0 mx-4">
-                <RouterView />
-            </main>
-        </div>
+        <main class="flex flex-1 flex-col min-w-0 min-h-0">
+            <!-- Scrollable views: h-full overflow-y-auto to the root element -->
+            <!-- Fixed views: h-full overflow-hidden flex flex-col to lock the page -->
+            <RouterView />
+        </main>
 
         <BookingModal
             v-if="isBookingModalOpen"

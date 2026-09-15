@@ -46,7 +46,8 @@ const monthlyPropertyData = computed(() => {
             targetMonth &&
             (b.propertyId === 'piyungan' ||
                 b.propertyId === 'wonosari' ||
-                b.propertyId === 'bantul')
+                b.propertyId === 'bantul' ||
+                b.propertyId === 'nusadua')
         ) {
             targetMonth[b.propertyId] += b.payout || 0;
         }
@@ -56,10 +57,10 @@ const monthlyPropertyData = computed(() => {
 });
 const quarterlyData = computed(() => {
     const quarters = [
-        { piyungan: 0, wonosari: 0, bantul: 0 },
-        { piyungan: 0, wonosari: 0, bantul: 0 },
-        { piyungan: 0, wonosari: 0, bantul: 0 },
-        { piyungan: 0, wonosari: 0, bantul: 0 },
+        { piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+        { piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+        { piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
+        { piyungan: 0, wonosari: 0, bantul: 0, nusadua: 0 },
     ];
 
     const monthlyList = monthlyPropertyData.value || [];
@@ -75,6 +76,7 @@ const quarterlyData = computed(() => {
             targetQ.piyungan += item.piyungan || 0;
             targetQ.wonosari += item.wonosari || 0;
             targetQ.bantul += item.bantul || 0;
+            targetQ.bantul += item.nusadua || 0;
         }
     }
 

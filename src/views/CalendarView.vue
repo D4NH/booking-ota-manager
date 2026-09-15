@@ -208,7 +208,7 @@ watch(
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 gap-4">
+    <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <PageTitle>
             <template #title> Calendar </template>
             <template #subtitle> Monthly schedule and room availability </template>
@@ -305,7 +305,7 @@ watch(
 
         <!-- Calendar Grid -->
         <div
-            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden mb-4">
+            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <div
                 class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="py-2.5">Mon</div>

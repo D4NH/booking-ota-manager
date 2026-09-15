@@ -59,6 +59,14 @@ const propertyStats = computed(() => {
         <div
             class="divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div
+                v-if="propertyStats.length === 0"
+                class="flex flex-1 flex-col items-center justify-center text-xs text-mist-400 p-4">
+                <fa-icon
+                    icon="house"
+                    class="text-xl" />
+                <p class="mt-2">No properties found</p>
+            </div>
+            <div
                 v-for="stat in propertyStats"
                 :key="stat.property.id"
                 class="flex grow flex-col justify-center p-4 hover:bg-mist-800/40">

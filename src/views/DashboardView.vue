@@ -37,7 +37,7 @@ const handleEditBooking = (booking: Booking) => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 overflow-y-auto gap-4">
+    <div class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
             <template #title> Dashboard </template>
             <template #subtitle>
@@ -48,8 +48,8 @@ const handleEditBooking = (booking: Booking) => {
             </template>
         </PageTitle>
 
-        <!-- Monthly Summary Cards -->
-        <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Monthly Summary -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
@@ -105,23 +105,30 @@ const handleEditBooking = (booking: Booking) => {
             </div>
         </div>
 
+        <!-- Recent Bookings & Revenue Performance-->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Recent Bookings -->
             <RecentBookings
                 :bookings="bookings"
                 @select-booking="handleEditBooking" />
 
-            <!-- Revenue Performance -->
             <RevenuePerformance :bookings="bookings" />
         </div>
 
         <!-- Properties -->
-        <div class="flex flex-col shrink-0 mb-4">
+        <div class="flex flex-col">
             <CardTitle>
                 <template #title>Properties</template>
                 <template #subtitle> Real-time availability and unit operational status </template>
             </CardTitle>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div
+                    v-if="sortedProperties.length === 0"
+                    class="col-span-2 flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-4">
+                    <fa-icon
+                        icon="house"
+                        class="text-xl" />
+                    <p class="mt-2">No properties found</p>
+                </div>
                 <PropertyCard
                     v-for="property in sortedProperties"
                     :key="property.id"
