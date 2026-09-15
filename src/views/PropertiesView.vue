@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
+import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -20,43 +21,41 @@ import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
 
 const route = useRoute();
 const router = useRouter();
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
 const { monthlyPropertyData } = useMonthlyMetrics(bookings);
 
+const { totalRevenue } = usePropertyDetails(() => 'all');
+
 const isPropertiesExpanded = ref(false);
 
 const visibleProperties = computed(() => {
     const list = Array.isArray(sortedProperties) ? sortedProperties : sortedProperties.value;
-
-    if (isPropertiesExpanded.value) {
-        return list;
-    }
-    return list.slice(0, 2);
+    return isPropertiesExpanded.value ? list : list.slice(0, 2);
 });
 const selectedProperty = computed<PropertyId | 'all'>(() => {
     const id = route.params.id;
     return typeof id === 'string' && id ? (id as PropertyId) : 'all';
 });
-const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
 
-const navigateToDetail = (propertyId: PropertyId | 'all') =>
-    propertyId === 'all'
-        ? router.push({ name: 'properties' })
-        : router.push({ name: 'property-detail', params: { id: propertyId } });
+const navigateToDetail = (propertyId: PropertyId | 'all') => {
+    if (propertyId === 'all') router.push({ name: 'properties' });
+    else router.push({ name: 'property-detail', params: { id: propertyId } });
+};
 const handleAddProperty = () => modalStore.openPropertyModal();
 </script>
 
 <template>
     <div class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
-            <template #title> Property Management </template>
-            <template #subtitle> Portfolio health, listing settings and unit comparisons </template>
+            <template #title>Property Management</template>
+            <template #subtitle>Portfolio health, listing settings and unit comparisons</template>
+
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -90,20 +89,21 @@ const handleAddProperty = () => modalStore.openPropertyModal();
             :bookings="bookings"
             :properties="sortedProperties" />
 
-        <!-- Properties -->
+        <!-- Properties Cards List -->
         <div class="flex flex-col shrink-0">
             <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Properties</template>
-                    <template #subtitle>
-                        Real-time availability and unit operational status
-                    </template>
+                    <template #subtitle
+                        >Real-time availability and unit operational status</template
+                    >
                 </CardTitle>
+
                 <div class="flex gap-4">
                     <button
                         v-if="sortedProperties.length > 2"
                         type="button"
-                        class="flex items-center gap-1.5 rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                        class="flex items-center gap-1.5 rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:border-mist-700 hover:text-mist-100 transition shadow-sm cursor-pointer"
                         @click="isPropertiesExpanded = !isPropertiesExpanded">
                         <span>
                             {{
@@ -128,6 +128,7 @@ const handleAddProperty = () => modalStore.openPropertyModal();
                     </button>
                 </div>
             </div>
+
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div
                     v-if="sortedProperties.length === 0"
@@ -146,12 +147,11 @@ const handleAddProperty = () => modalStore.openPropertyModal();
             </div>
         </div>
 
-        <!-- Analytics -->
+        <!-- Analytics Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <MonthlyEarnings
                 :weekly-data="getWeeklyComparison(bookings, 'all')"
                 :monthly-data="getMonthlyComparison(bookings, 'all')" />
-
             <ChannelDistribution :bookings="bookings" />
         </div>
 
@@ -159,7 +159,6 @@ const handleAddProperty = () => modalStore.openPropertyModal();
             <AnnualRevenue
                 :data="monthlyPropertyData"
                 :total-revenue="totalRevenue" />
-
             <PropertyPerformance
                 :bookings="bookings"
                 :properties="sortedProperties" />

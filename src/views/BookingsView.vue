@@ -2,10 +2,9 @@
 import { ref, computed, watch, nextTick, onMounted, onActivated } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { useDateKeys } from '@/composables/useDateKeys';
+import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { getPropertyTheme } from '@/config/properties';
 import { bookingStatuses, getStatusStyle } from '@/config/status';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -18,16 +17,17 @@ import PageTitle from '@/components/PageTitle.vue';
 import CurrentWeekView from '@/components/CurrentWeekView.vue';
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
-
 const { deleteBooking, clearAllLocalBookings } = useBookingSync();
-const { currentDay } = useDateKeys();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
+
+const { currentDay, unitBookings: propertyBookings } = usePropertyDetails(selectedProperty, {
+    includeUnavailable: true,
+});
+
 const selectedMonth = ref<string>('all');
 const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>([]);
@@ -37,47 +37,37 @@ const hasAutoCollapsed = ref(false);
 const currentMonthRef = ref<HTMLElement | null>(null);
 
 const availableMonths = computed<string[]>(() => {
-    const months = bookings.value.map((b) => b.checkIn.substring(0, 7));
-    const uniqueMonths = months.filter((month, index) => months.indexOf(month) === index);
-    return uniqueMonths.sort((a, b) => a.localeCompare(b));
+    const months = propertyBookings.value.map((b) => b.checkIn.substring(0, 7));
+
+    return Array.from(new Set(months)).sort((a, b) => a.localeCompare(b));
 });
+
 const filteredBookings = computed<Booking[]>(() => {
     const query = searchQuery.value.trim().toLowerCase();
-    const prop = selectedProperty.value;
     const month = selectedMonth.value;
     const hidden = hiddenStatuses.value;
 
-    return bookings.value
+    return propertyBookings.value
         .filter((b) => {
-            if (prop !== 'all' && b.propertyId !== prop) return false;
             if (month !== 'all' && !b.checkIn.startsWith(month)) return false;
             if (hidden.includes(b.status)) return false;
             if (query) {
-                const nameMatch = b.guestName.toLowerCase().includes(query);
-
-                if (nameMatch) return true;
-
-                const idMatch = b.bookingId.toLowerCase().includes(query);
-
-                if (idMatch) return true;
-
-                const notesMatch = b.notes ? b.notes.toLowerCase().includes(query) : false;
-
-                if (notesMatch) return true;
-
-                return false;
+                return (
+                    b.guestName.toLowerCase().includes(query) ||
+                    b.bookingId.toLowerCase().includes(query) ||
+                    (b.notes ? b.notes.toLowerCase().includes(query) : false)
+                );
             }
-
             return true;
         })
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 });
+
 const groupedBookings = computed(() => {
     const groups: Record<string, Booking[]> = {};
 
     filteredBookings.value.forEach((b) => {
         const monthKey = b.checkIn.substring(0, 7);
-
         if (!groups[monthKey]) groups[monthKey] = [];
         groups[monthKey].push(b);
     });
@@ -91,11 +81,10 @@ const groupedBookings = computed(() => {
             bookings: groups[key],
         }));
 });
-const currentMonthKey = computed<string>(() => {
-    if (currentDay.value) return currentDay.value.substring(0, 7);
 
-    return getCurrentMonth();
-});
+const currentMonthKey = computed<string>(() =>
+    currentDay.value ? currentDay.value.substring(0, 7) : getCurrentMonth()
+);
 
 const toggleStatusVisibility = (status: Booking['status']): void => {
     if (hiddenStatuses.value.includes(status)) {
@@ -106,35 +95,25 @@ const toggleStatusVisibility = (status: Booking['status']): void => {
 };
 const collapsePastMonths = () => {
     const pastMonths = availableMonths.value.filter((mKey) => mKey < currentMonthKey.value);
-
     collapsedMonths.value = Array.from(new Set([...collapsedMonths.value, ...pastMonths]));
 };
 const toggleMonth = (monthKey: string) => {
     const index = collapsedMonths.value.indexOf(monthKey);
-
-    if (index > -1) {
-        collapsedMonths.value.splice(index, 1);
-    } else {
-        collapsedMonths.value.push(monthKey);
-    }
+    if (index > -1) collapsedMonths.value.splice(index, 1);
+    else collapsedMonths.value.push(monthKey);
 };
 const scrollToCurrentMonth = async () => {
     await nextTick();
-
     requestAnimationFrame(() => {
-        if (currentMonthRef.value) {
-            currentMonthRef.value.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
-        }
+        currentMonthRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 };
-const handleAddBooking = () =>
+const handleAddBooking = () => {
     modalStore.openBookingModal({
         propertyId: selectedProperty.value,
         checkInDate: currentDay.value,
     });
+};
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> =>
     void (await deleteBooking(booking));
@@ -152,15 +131,11 @@ watch(
             collapsePastMonths();
             hasAutoCollapsed.value = true;
         }
-
-        // Handle month selection collapse
         if (newMonth !== 'all') {
             collapsedMonths.value = [];
         } else {
             collapsePastMonths();
         }
-
-        // Scroll to current month when data loads or becomes visible
         scrollToCurrentMonth();
     },
     { immediate: true }
@@ -178,13 +153,14 @@ onActivated(() => {
 <template>
     <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <PageTitle>
-            <template #title> Bookings </template>
+            <template #title>Bookings</template>
             <template #subtitle>
-                Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
+                Showing {{ filteredBookings.length }} of {{ propertyBookings.length }} bookings
             </template>
+
             <div class="flex items-center gap-4">
                 <GoogleSyncButton :property-id="selectedProperty" />
-                <!-- Property Selector -->
+
                 <div
                     class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                     <button
@@ -221,10 +197,10 @@ onActivated(() => {
 
         <div class="shrink-0">
             <CardTitle>
-                <template #title>Upcoming Bookings</template>
-                <template #subtitle> Real-time availability and unit operational status </template>
+                <template #title>All Bookings</template>
+                <template #subtitle>Real-time availability and unit operational status</template>
             </CardTitle>
-            <!-- Filter Bar -->
+
             <div
                 class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <div class="flex items-center gap-2">
@@ -243,6 +219,7 @@ onActivated(() => {
                                 class="w-full rounded-md bg-mist-950/50 border border-mist-700 py-1 pl-10 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
+
                     <div class="relative w-50">
                         <select
                             v-model="selectedMonth"
@@ -262,6 +239,7 @@ onActivated(() => {
                                 icon="angle-down" />
                         </div>
                     </div>
+
                     <button
                         type="button"
                         class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700"
@@ -270,6 +248,7 @@ onActivated(() => {
                             class="text-xs"
                             icon="filter" />
                     </button>
+
                     <div
                         v-if="toggleFilters"
                         class="flex flex-wrap items-center gap-2">
@@ -288,6 +267,7 @@ onActivated(() => {
                         </button>
                     </div>
                 </div>
+
                 <button
                     type="button"
                     class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950"
@@ -309,6 +289,7 @@ onActivated(() => {
                 class="text-xl" />
             <p class="mt-2">No bookings found</p>
         </div>
+
         <div
             v-else
             class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
@@ -347,9 +328,9 @@ onActivated(() => {
                                     class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
                                     @click="toggleMonth(group.key)">
                                     <span class="flex items-center gap-2">
-                                        <span class="text-xs text-mist-400">
-                                            {{ collapsedMonths.includes(group.key) ? '▶' : '▼' }}
-                                        </span>
+                                        <span class="text-xs text-mist-400">{{
+                                            collapsedMonths.includes(group.key) ? '▶' : '▼'
+                                        }}</span>
                                         {{ group.label }}
                                         <span
                                             v-if="group.key === currentMonthKey"
@@ -402,8 +383,7 @@ onActivated(() => {
                                 {{ b.guestName }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                &rarr;
+                                {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
                                 {{ formatDate(b.checkOut, { shortMonth: true }) }}
                             </td>
                             <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
@@ -417,20 +397,16 @@ onActivated(() => {
                                     <div
                                         class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between">
-                                            <span class="font-bold text-mist-200">
-                                                Payout 15%
-                                            </span>
-                                            <span class="font-semibold text-mist-400">
-                                                {{ formatIDR(b.payout * 0.15) }}
-                                            </span>
+                                            <span class="font-bold text-mist-200">Payout 15%</span>
+                                            <span class="font-semibold text-mist-400">{{
+                                                formatIDR(b.payout * 0.15)
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span :class="getStatusStyle(b.status)">
-                                    {{ b.status }}
-                                </span>
+                                <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">

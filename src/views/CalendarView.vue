@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { MONTH_NAMES } from '@/config/constants';
 import { getPropertyTheme } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
-import { useBookingStore } from '@/stores/useBookingStore';
+import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -16,14 +16,15 @@ import { getCurrentDate, getOffsetDate } from '@/utils/date';
 import PageTitle from '@/components/PageTitle.vue';
 
 const route = useRoute();
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const selectedCheckInDate = ref<string>('');
+
+const { unitBookings: filteredBookings } = usePropertyDetails(selectedProperty);
+
 const currentDate = ref<Date>(new Date());
 const selectedMonth = ref<number>(currentDate.value.getMonth());
 const selectedYear = ref<number>(currentDate.value.getFullYear());
@@ -37,22 +38,16 @@ const calendarDays = computed<CalendarDay[]>(() => {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    // Shift day index
-    const rawDayIndex = firstDayOfMonth.getDay();
-    const startingDayOfWeek = (rawDayIndex + 6) % 7; // Mon = 0, Sun = 6
+    const startingDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
     const totalDaysInMonth = lastDayOfMonth.getDate();
 
-    const now = new Date();
     const days: CalendarDay[] = [];
-    const today = getCurrentDate(now);
-
+    const today = getCurrentDate(new Date());
     const prevMonthLastDay = new Date(year, month, 0).getDate();
 
-    // Previous month padding days
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
         const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
         const dateStr = getCurrentDate(prevDate);
-
         days.push({
             dateStr,
             dayNumber: prevMonthLastDay - i,
@@ -61,10 +56,8 @@ const calendarDays = computed<CalendarDay[]>(() => {
         });
     }
 
-    // Current month days
     for (let day = 1; day <= totalDaysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
         days.push({
             dateStr,
             dayNumber: day,
@@ -73,13 +66,10 @@ const calendarDays = computed<CalendarDay[]>(() => {
         });
     }
 
-    // Next month padding days
     const remainingCells = 42 - days.length;
-
     for (let day = 1; day <= remainingCells; day++) {
         const nextDate = new Date(year, month + 1, day);
         const dateStr = getCurrentDate(nextDate);
-
         days.push({
             dateStr,
             dayNumber: day,
@@ -90,23 +80,28 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     return days;
 });
-const yearOptions = computed(() => {
-    const currentYear = new Date().getFullYear();
-    const years: number[] = [];
+const yearOptions = computed<number[]>(() => {
+    const years = new Set<number>();
 
-    for (let y = currentYear - 2; y <= currentYear + 3; y++) {
-        years.push(y);
+    for (const b of filteredBookings.value) {
+        if (b.checkIn && b.checkIn.length >= 4) {
+            const inYear = Number(b.checkIn.slice(0, 4));
+            if (!Number.isNaN(inYear)) years.add(inYear);
+        }
+        if (b.checkOut && b.checkOut.length >= 4) {
+            const outYear = Number(b.checkOut.slice(0, 4));
+            if (!Number.isNaN(outYear)) years.add(outYear);
+        }
     }
 
-    return years;
+    if (years.size === 0) {
+        years.add(new Date().getFullYear());
+    } else if (!years.has(selectedYear.value)) {
+        years.add(selectedYear.value);
+    }
+
+    return Array.from(years).sort((a, b) => a - b);
 });
-const filteredBookings = computed(() =>
-    bookings.value.filter((b) =>
-        selectedProperty.value !== 'all' && b.propertyId !== selectedProperty.value
-            ? false
-            : b.status
-    )
-);
 
 const getStaysForDate = (dateStr: string): Booking[] =>
     filteredBookings.value
@@ -114,34 +109,27 @@ const getStaysForDate = (dateStr: string): Booking[] =>
         .sort((a, b) => {
             const aIsMulti = a.nights > 1 ? 1 : 0;
             const bIsMulti = b.nights > 1 ? 1 : 0;
-
             if (aIsMulti !== bIsMulti) return bIsMulti - aIsMulti;
             if (a.checkIn !== b.checkIn) return a.checkIn.localeCompare(b.checkIn);
             if (a.nights !== b.nights) return b.nights - a.nights;
-
             return (a.id || a.bookingId).localeCompare(b.id || b.bookingId);
         });
-const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
-    const dayOfWeek = dayIndex % 7; // 0 = Mon, 6 = Sun
+const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number): string => {
+    const dayOfWeek = dayIndex % 7;
     const isCheckIn = b.checkIn === dateStr;
     const lastNight = getOffsetDate(b.checkOut, -1);
     const isLastNight = lastNight === dateStr;
     const isSingleNight = b.nights === 1 || (isCheckIn && isLastNight);
 
-    if (isSingleNight) {
-        return 'rounded-md mx-0 border';
-    }
+    if (isSingleNight) return 'rounded-md mx-0 border';
 
     const classes: string[] = ['border-y'];
-
-    // Left edge
     if (isCheckIn || dayOfWeek === 0) {
         classes.push('rounded-l-md ml-0 border-l');
     } else {
         classes.push('rounded-l-none -ml-2 border-l-0 pl-3');
     }
 
-    // Right edge
     if (isLastNight || dayOfWeek === 6) {
         classes.push('rounded-r-md mr-0 border-r');
     } else {
@@ -150,18 +138,20 @@ const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
 
     return classes.join(' ');
 };
-const prevMonth = () =>
-    (currentDate.value = new Date(
+const prevMonth = () => {
+    currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() - 1,
         1
-    ));
-const nextMonth = () =>
-    (currentDate.value = new Date(
+    );
+};
+const nextMonth = () => {
+    currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() + 1,
         1
-    ));
+    );
+};
 const handleMonthChange = (e: Event): void => {
     const newMonth = Number((e.target as HTMLSelectElement).value);
     currentDate.value = new Date(currentDate.value.getFullYear(), newMonth, 1);
@@ -183,7 +173,6 @@ const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
     modalStore.openBookingModal({ booking });
 };
-// TODO: make linkable via URL
 const selectProperty = (id: string) => (selectedProperty.value = id as PropertyId);
 
 watch(
@@ -192,6 +181,7 @@ watch(
         selectedProperty.value = (newId as PropertyId) || 'all';
     }
 );
+
 watch(
     currentDate,
     (newDate) => {
@@ -205,8 +195,9 @@ watch(
 <template>
     <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <PageTitle>
-            <template #title> Calendar </template>
-            <template #subtitle> Monthly schedule and room availability </template>
+            <template #title>Calendar</template>
+            <template #subtitle>Monthly schedule and room availability</template>
+
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
@@ -323,7 +314,6 @@ watch(
                         day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
                     ]"
                     @click="handleCellClick(day)">
-                    <!-- Day Number Header -->
                     <div class="flex items-center justify-between mb-1">
                         <span
                             :class="[
@@ -336,7 +326,6 @@ watch(
                         </span>
                     </div>
 
-                    <!-- Bookings Area -->
                     <div class="space-y-1.5 flex-1 flex flex-col justify-start">
                         <div
                             v-for="b in getStaysForDate(day.dateStr)"
@@ -350,7 +339,6 @@ watch(
                                     getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">
-                                <!-- Start of multi-day stay -->
                                 <div
                                     v-if="
                                         b.checkIn === day.dateStr ||
@@ -382,7 +370,6 @@ watch(
                                     </div>
                                 </div>
 
-                                <!-- Continuation bar label -->
                                 <div
                                     v-else
                                     class="text-xs text-mist-400 font-medium truncate flex items-start gap-1 opacity-75 h-10">
@@ -390,19 +377,19 @@ watch(
                                 </div>
                             </div>
 
-                            <!-- Popover for Stay Details -->
+                            <!-- Popover details -->
                             <div
                                 v-if="day.isCurrentMonth"
                                 class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
                                     class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="border-b border-mist-800 pb-1.5 mb-1.5">
-                                        <span class="font-bold text-mist-200">
-                                            {{ b.guestName }}
-                                        </span>
-                                        <span class="block mt-1 text-[10px] text-mist-400">
-                                            {{ b.checkIn }} → {{ b.checkOut }}
-                                        </span>
+                                        <span class="font-bold text-mist-200">{{
+                                            b.guestName
+                                        }}</span>
+                                        <span class="block mt-1 text-[10px] text-mist-400"
+                                            >{{ b.checkIn }} → {{ b.checkOut }}</span
+                                        >
                                     </div>
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
@@ -418,9 +405,7 @@ watch(
                                         v-if="b.notes"
                                         class="text-mist-300 text-[11px]">
                                         <span class="font-semibold text-mist-400">Notes:</span>
-                                        <p class="mt-1 whitespace-pre-wrap italic">
-                                            {{ b.notes }}
-                                        </p>
+                                        <p class="mt-1 whitespace-pre-wrap italic">{{ b.notes }}</p>
                                     </div>
                                     <div
                                         v-else

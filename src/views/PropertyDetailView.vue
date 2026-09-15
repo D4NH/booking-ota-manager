@@ -3,17 +3,13 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { useDailyOperations } from '@/composables/useDailyOperations';
-import { useDateKeys } from '@/composables/useDateKeys';
+import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { getStatusStyle } from '@/config/status';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
-import type { Property, PropertyId } from '@/types/property';
-import { formatDate, getCurrentMonth } from '@/utils/date';
-import { getActiveLockboxBooking, generatePinForBooking } from '@/utils/lockbox';
-import { getCurrentYear, getCurrentDate } from '@/utils/date';
+import type { PropertyId } from '@/types/property';
+import { formatDate, getCurrentMonth, getCurrentYear } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -21,129 +17,83 @@ import PageTitle from '@/components/PageTitle.vue';
 import OccupiedTag from '@/components/OccupiedTag.vue';
 import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
 
-const { id } = defineProps<{
-    id: PropertyId | 'all';
-}>();
+interface Props {
+    id: PropertyId;
+}
+
+const { id } = defineProps<Props>();
 
 const router = useRouter();
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const { properties, sortedProperties } = storeToRefs(propertyStore);
-
+const { sortedProperties } = storeToRefs(propertyStore);
 const { deleteBooking } = useBookingSync();
-const { currentStays, todaysArrivals, todaysDepartures, isOccupied, staySections } =
-    useDailyOperations(bookings, {
-        propertyId: () => id,
-    });
-const { currentDay, currentHour } = useDateKeys();
 
-const hiddenStatuses = ref<Booking['status'][]>([]);
+const {
+    selectedProperty,
+    unitBookings,
+    totalRevenue,
+    totalNights,
+    adr,
+    annualOccupancy,
+    nextUpcoming,
+    lockboxPin,
+    isOccupied,
+    staySections,
+    currentDay,
+} = usePropertyDetails(() => id);
+
 const collapsedMonths = ref<string[]>([]);
 
-const selectedProperty = computed<Property | undefined>(() =>
-    properties.value.find((p) => p.id === id)
-);
-const unitBookings = computed(() =>
-    bookings.value
-        .filter((b) => b.propertyId === id && b.status !== 'Unavailable')
-        .sort((a, b) => b.checkIn.localeCompare(a.checkIn))
-);
-const totalRevenue = computed(() => unitBookings.value.reduce((sum, b) => sum + b.payout, 0));
-const totalNights = computed(() =>
-    unitBookings.value
-        .filter((b) => b.status !== 'Unavailable')
-        .reduce((sum, b) => sum + b.nights, 0)
-);
-const adr = computed(() =>
-    totalNights.value > 0 ? Math.round(totalRevenue.value / totalNights.value) : 0
-);
-const annualOccupancy = computed(() => Math.round((totalNights.value / 365) * 100));
-const currentMonth = computed(() => formatDate(getCurrentMonth(new Date()), { monthHeader: true }));
-const filteredBookings = computed(() => {
-    const prop = id;
-    const hidden = hiddenStatuses.value;
-
-    return bookings.value
-        .filter((b) => {
-            if (prop !== 'all' && b.propertyId !== prop) return false;
-            if (hidden.includes(b.status)) return false;
-            // Only include bookings with checkIn >= current month start
-            if (b.checkIn < getCurrentMonth()) return false;
-
-            return true;
-        })
-        .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
-});
+const currentMonthLabel = computed(() => formatDate(getCurrentMonth(), { monthHeader: true }));
+// Groups bookings starting from or active in current month
 const groupedBookings = computed(() => {
-    const groups: Record<string, Booking[]> = {};
+    const currentMonth = getCurrentMonth();
+    const groups = new Map<string, Booking[]>();
 
-    filteredBookings.value.forEach((b) => {
+    for (const b of unitBookings.value) {
+        // Include if check-in is this month or later, OR if still active in current month
+        if (b.checkOut < currentMonth) continue;
+
         const monthKey = b.checkIn.substring(0, 7);
+        const existing = groups.get(monthKey) ?? [];
+        existing.push(b);
+        groups.set(monthKey, existing);
+    }
 
-        if (!groups[monthKey]) groups[monthKey] = [];
-        groups[monthKey].push(b);
-    });
-
-    return Object.keys(groups)
-        .sort((a, b) => a.localeCompare(b))
-        .map((key) => ({
+    return Array.from(groups.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, list]) => ({
             key,
             label: formatDate(key, { monthHeader: true }),
-            count: groups[key]?.length,
-            bookings: groups[key],
+            count: list.length,
+            bookings: list.sort((a, b) => a.checkIn.localeCompare(b.checkIn)),
         }));
 });
-const lockboxInfo = computed(() =>
-    getActiveLockboxBooking({
-        today: currentDay.value,
-        currentHour: currentHour.value,
-        currentStays: currentStays.value,
-        todaysArrivals: todaysArrivals.value,
-        todaysDepartures: todaysDepartures.value,
-    })
-);
-
-const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
-const nextUpcoming = computed(
-    () =>
-        unitBookings.value
-            .filter((b) => b.checkIn > getCurrentDate())
-            .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0]
-);
 
 const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
     currentDay.value >= checkIn && currentDay.value <= checkOut && status !== 'Waiting for payout';
-const toggleMonth = (monthKey: string) => {
-    const index = collapsedMonths.value.indexOf(monthKey);
-
-    if (index > -1) {
-        collapsedMonths.value.splice(index, 1);
-    } else {
-        collapsedMonths.value.push(monthKey);
-    }
+const toggleMonth = (monthKey: string): void => {
+    const idx = collapsedMonths.value.indexOf(monthKey);
+    if (idx > -1) collapsedMonths.value.splice(idx, 1);
+    else collapsedMonths.value.push(monthKey);
 };
 const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> =>
     void (await deleteBooking(booking));
 const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
-
-const navigateToDetail = (propertyId: PropertyId | 'all') =>
-    propertyId === 'all'
-        ? router.push({ name: 'properties' })
-        : router.push({ name: 'property-detail', params: { id: propertyId } });
+const navigateToDetail = (propertyId: PropertyId | 'all') => {
+    if (propertyId === 'all') router.push({ name: 'properties' });
+    else router.push({ name: 'property-detail', params: { id: propertyId } });
+};
 
 watch(
-    () => sortedProperties.value,
-    (loadedProperties) => {
-        if (loadedProperties.length > 0) {
-            const exists = loadedProperties.some((p) => p.id === id);
-            if (!exists) {
-                console.warn(`Property ${id} does not exist. Redirecting...`);
-                router.replace({ name: 'properties' });
-            }
+    sortedProperties,
+    (loaded) => {
+        if (loaded.length > 0 && !loaded.some((p) => p.id === id)) {
+            console.warn(`Property ${id} not found. Redirecting...`);
+            router.replace({ name: 'properties' });
         }
     },
     { immediate: true }
@@ -153,7 +103,7 @@ watch(
 <template>
     <div
         v-if="!selectedProperty"
-        class="h-full overflow-hidden flex flex-col justify-center items-center space-y-4 p-4">
+        class="h-full flex flex-col justify-center items-center space-y-4 p-4">
         <div class="flex items-center gap-2 text-mist-400 text-sm font-medium">
             <fa-icon
                 icon="spinner"
@@ -161,24 +111,22 @@ watch(
             <span>Loading details...</span>
         </div>
     </div>
+
+    <!-- Made container scrollable (h-full overflow-y-auto) -->
     <div
         v-else
-        class="flex flex-col h-full overflow-hidden space-y-4 p-4">
+        class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
             <template #title>
                 <span class="capitalize">{{ selectedProperty.id }}</span>
             </template>
-            <template #subtitle> Portfolio health, listing settings and unit comparisons </template>
+            <template #subtitle>Portfolio health, listing settings and unit comparisons</template>
+
             <!-- Property Selector -->
             <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        id === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold text-mist-400 hover:text-mist-200 transition-colors"
                     @click="navigateToDetail('all')">
                     All
                 </button>
@@ -197,22 +145,22 @@ watch(
                 </button>
             </div>
         </PageTitle>
+
         <!-- Photo & Property Specs -->
         <div class="grid grid-cols-1 lg:grid-cols-4 space-y-4 lg:space-y-0 lg:gap-4">
             <div
                 class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12">
                 <div
                     class="relative lg:col-span-8 flex flex-col justify-between p-4 overflow-hidden">
-                    <!-- Photo -->
                     <img
                         :src="`/images/${id}.jpg`"
                         :alt="selectedProperty.name"
                         class="mask-b-from-25% mask-b-to-95% absolute inset-0 h-full w-full object-cover pointer-events-none" />
-                    <!-- Status Badge & Price -->
+
                     <div class="relative z-10 flex items-center justify-end">
                         <OccupiedTag :is-occupied="isOccupied" />
                     </div>
-                    <!-- Title, Address & Specs -->
+
                     <div class="relative z-10 space-y-2 mt-12">
                         <div>
                             <div class="flex gap-2">
@@ -255,6 +203,7 @@ watch(
                                     {{ selectedProperty.plotSize }} m²
                                 </span>
                             </div>
+
                             <div>
                                 <span class="text-sm font-bold font-mono text-mist-100">
                                     {{ formatIDR(selectedProperty.price) }}
@@ -264,7 +213,8 @@ watch(
                         </div>
                     </div>
                 </div>
-                <!-- Live Operations -->
+
+                <!-- Live Daily Operations -->
                 <div
                     class="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
                     <div class="flex items-center justify-between border-b border-mist-800 pb-3">
@@ -272,7 +222,7 @@ watch(
                             Daily Operations
                         </span>
                     </div>
-                    <!-- In-House Guest / Active Stay Spotlight -->
+
                     <div class="flex-1 flex flex-col justify-center">
                         <div
                             v-if="staySections.length"
@@ -289,6 +239,7 @@ watch(
                                     ]">
                                     {{ section.label }}
                                 </span>
+
                                 <div
                                     v-for="b in section.items"
                                     :key="b.id || b.bookingId"
@@ -315,8 +266,7 @@ watch(
                                             </span>
                                         </div>
                                         <span class="text-xs text-mist-400">
-                                            {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                            &rarr;
+                                            {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
                                             {{ formatDate(b.checkOut, { shortMonth: true }) }}
                                             &bull; {{ b.nights }} night(s)
                                         </span>
@@ -327,15 +277,16 @@ watch(
                                 </div>
                             </div>
                         </div>
+
                         <div
                             v-else
                             class="text-center text-xs text-mist-500">
                             <fa-icon
                                 icon="house-circle-check"
                                 class="text-xl text-mist-700" />
-                            <span class="ml-2 font-medium text-mist-400">
-                                No active in-house guest
-                            </span>
+                            <span class="ml-2 font-medium text-mist-400"
+                                >No active in-house guest</span
+                            >
                             <p
                                 v-if="nextUpcoming"
                                 class="text-[11px] mt-1">
@@ -349,28 +300,24 @@ watch(
                             </p>
                         </div>
                     </div>
-                    <!-- Guest Access & Wi-Fi -->
+
+                    <!-- Lockbox & Wi-Fi Access -->
                     <div
-                        class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
+                        class="grid grid-cols-2 divide-x border-t border-mist-800 pt-3 text-center">
                         <div class="px-1">
-                            <span class="text-xs font-semibold text-mist-500 block">
-                                Lockbox Code
-                            </span>
+                            <span class="text-xs font-semibold text-mist-500 block"
+                                >Lockbox Code</span
+                            >
                             <span class="font-mono text-sm font-bold text-mist-100">
-                                {{ lockboxPin ? `${lockboxPin}` : '----' }}
+                                {{ lockboxPin || '----' }}
                             </span>
                         </div>
                         <div class="px-1">
                             <span class="text-xs font-semibold text-mist-500 block">
-                                SSID:
-                                {{ selectedProperty.wifi?.ssid }}
+                                SSID: {{ selectedProperty.wifi?.ssid }}
                             </span>
                             <span class="font-mono text-sm font-bold text-mist-100">
-                                {{
-                                    selectedProperty.wifi?.pwd
-                                        ? `${selectedProperty.wifi?.pwd}`
-                                        : '----'
-                                }}
+                                {{ selectedProperty.wifi?.pwd || '----' }}
                             </span>
                         </div>
                     </div>
@@ -380,28 +327,22 @@ watch(
             <PropertyLocationMap :property="selectedProperty" />
         </div>
 
-        <!-- Unit Performance Stat Cards -->
+        <!-- Metric Stat Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Unit Revenue
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">
-                    {{ formatIDR(totalRevenue) }}
-                </p>
-                <p class="flex items-center gap-1 text-xs text-mist-500">
-                    Total earnings in {{ getCurrentYear() }}
-                </p>
+                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(totalRevenue) }}</p>
+                <p class="text-xs text-mist-500">Total earnings in {{ getCurrentYear() }}</p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Average Daily Rate
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">
-                    {{ formatIDR(adr) }}
-                </p>
-                <p class="flex items-center gap-1 text-xs text-mist-500">Per booked night</p>
+                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
+                <p class="text-xs text-mist-500">Per booked night</p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
@@ -409,48 +350,45 @@ watch(
                     Occupancy Rate
                 </h3>
                 <p class="font-mono text-lg font-bold text-white">{{ annualOccupancy }}%</p>
-                <p class="flex items-center gap-1 text-xs text-mist-500">
-                    {{ totalNights }} / 365 nights
-                </p>
+                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights</p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Bookings
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">
-                    {{ unitBookings.length }}
-                </p>
-                <p class="flex items-center gap-1 text-xs text-mist-500">Completed & upcoming</p>
+                <p class="font-mono text-lg font-bold text-white">{{ unitBookings.length }}</p>
+                <p class="text-xs text-mist-500">Completed & upcoming</p>
             </div>
         </div>
 
-        <!-- Upcoming Bookings -->
-        <div class="flex flex-col h-full overflow-hidden">
-            <div class="flex items-center justify-between shrink-0">
+        <!-- Bookings Table Section -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Upcoming Bookings</template>
-                    <template #subtitle> Starting from {{ currentMonth }} </template>
+                    <template #subtitle>Starting from {{ currentMonthLabel }}</template>
                 </CardTitle>
                 <button
                     type="button"
-                    class="rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
-                    @click="handleAddBooking(id as PropertyId)">
+                    class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400"
+                    @click="handleAddBooking(id)">
                     <fa-icon icon="plus" /> Add Booking
                 </button>
             </div>
-            <!-- Bookings Table -->
+
             <div
                 v-if="groupedBookings.length === 0"
-                class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-4">
+                class="flex flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-6">
                 <fa-icon
                     icon="house"
                     class="text-xl" />
-                <p class="mt-2">No bookings found</p>
+                <p class="mt-2">No upcoming bookings found</p>
             </div>
+
             <div
                 v-else
-                class="min-h-0 overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
+                class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
                 <table class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
                         class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
@@ -475,7 +413,7 @@ watch(
                                     class="p-0">
                                     <button
                                         type="button"
-                                        class="flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
+                                        class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
                                         @click="toggleMonth(group.key)">
                                         <span class="flex items-center gap-2">
                                             <span class="text-xs text-mist-400">
@@ -493,6 +431,7 @@ watch(
                                 </td>
                             </tr>
                         </tbody>
+
                         <tbody
                             v-show="!collapsedMonths.includes(group.key)"
                             class="divide-y divide-mist-800/60">
@@ -502,8 +441,7 @@ watch(
                                 :class="[
                                     'transition',
                                     isCurrentBooking(b.checkIn, b.checkOut, b.status)
-                                        ? // ? 'bg-mist-800 font-medium ring-1 ring-inset ring-mist-500/40 hover:bg-mist-900/30'
-                                          'text-lime-400 bg-lime-500/10 '
+                                        ? 'text-lime-400 bg-lime-500/10'
                                         : 'hover:bg-mist-800/30',
                                 ]">
                                 <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
@@ -519,12 +457,10 @@ watch(
                                     {{ b.guestName }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
-                                    &rarr;
+                                    {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
                                     {{ formatDate(b.checkOut, { shortMonth: true }) }}
                                 </td>
                                 <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
-
                                 <td
                                     class="px-4 py-3 font-mono text-right text-nowrap group relative"
                                     :class="{ 'cursor-zoom-in': b.payout !== 0 }">
@@ -535,20 +471,18 @@ watch(
                                         <div
                                             class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                             <div class="flex items-center justify-between">
-                                                <span class="font-bold text-mist-400">
-                                                    Payout 15%
-                                                </span>
-                                                <span class="font-semibold text-mist-200">
-                                                    {{ formatIDR(b.payout * 0.15) }}
-                                                </span>
+                                                <span class="font-bold text-mist-400"
+                                                    >Payout 15%</span
+                                                >
+                                                <span class="font-semibold text-mist-200">{{
+                                                    formatIDR(b.payout * 0.15)
+                                                }}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 text-center text-nowrap">
-                                    <span :class="getStatusStyle(b.status)">
-                                        {{ b.status }}
-                                    </span>
+                                    <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex items-center justify-end gap-2">
