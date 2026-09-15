@@ -43,7 +43,6 @@ const createPropertyPin = (prop: Property) => {
         popupAnchor: [0, -18],
     });
 };
-
 const initMap = async () => {
     if (!mapContainer.value) return;
 
@@ -102,7 +101,6 @@ const initMap = async () => {
 
     renderMarkers();
 };
-
 const renderMarkers = () => {
     if (!map) return;
 
@@ -140,9 +138,7 @@ const renderMarkers = () => {
     });
 };
 
-onMounted(() => {
-    initMap();
-});
+onMounted(() => initMap());
 
 onBeforeUnmount(() => {
     if (map) {

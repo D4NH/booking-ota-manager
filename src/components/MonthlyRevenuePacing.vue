@@ -21,24 +21,19 @@ const totalDaysInMonth = computed(() => {
     const m = dateObj.value.getMonth() + 1;
     return new Date(y, m, 0).getDate(); // e.g. 30 for Sept
 });
-
 const daysRemaining = computed(() => Math.max(0, totalDaysInMonth.value - dayNumber.value));
-
 // Percentages
 const targetPercentage = computed(() => {
     if (monthlyTarget === 0) return 0;
     return Math.min(100, Math.round((currentRevenue / monthlyTarget) * 100));
 });
-
 // % of month that has passed (e.g. Day 10 of 30 = 33.3%)
-const monthTimeElapsed = computed(() => {
-    return Math.round((dayNumber.value / totalDaysInMonth.value) * 100);
-});
-
+const monthTimeElapsed = computed(() =>
+    Math.round((dayNumber.value / totalDaysInMonth.value) * 100)
+);
 // Pacing Health: Are we ahead or behind the time curve?
 const isAheadOfPace = computed(() => targetPercentage.value >= monthTimeElapsed.value);
 const pacingDiff = computed(() => targetPercentage.value - monthTimeElapsed.value);
-
 // Financial Gaps
 const remainingRevenue = computed(() => Math.max(0, monthlyTarget - currentRevenue));
 const dailyRunRateNeeded = computed(() => {

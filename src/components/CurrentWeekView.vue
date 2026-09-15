@@ -40,7 +40,6 @@ const weekDays = computed(() => {
 
     return days;
 });
-
 // Date range label for header (e.g. "10 Sep → 16 Sep 2026")
 const weekRangeLabel = computed(() => {
     if (weekDays.value.length === 0) return '';
@@ -48,7 +47,6 @@ const weekRangeLabel = computed(() => {
     const last = weekDays.value[weekDays.value.length - 1]!;
     return `${formatDate(first.dateStr, { shortMonth: true })} → ${formatDate(last.dateStr, { shortMonth: true })}`;
 });
-
 const filteredBookings = computed(() =>
     bookings.value.filter((b) =>
         selectedProperty !== 'all' && b.propertyId !== selectedProperty ? false : b.status
@@ -69,7 +67,6 @@ const getStaysForDate = (dateStr: string): Booking[] =>
 
             return (a.id || a.bookingId).localeCompare(b.id || b.bookingId);
         });
-
 const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
     const isCheckIn = b.checkIn === dateStr;
     const lastNight = getOffsetDate(b.checkOut, -1);
@@ -98,14 +95,11 @@ const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
 
     return classes.join(' ');
 };
-
-const handleCellClick = (dateStr: string) => {
+const handleCellClick = (dateStr: string) =>
     modalStore.openBookingModal({
         checkInDate: dateStr,
         propertyId: selectedProperty !== 'all' ? selectedProperty : undefined,
     });
-};
-
 const handleBookingClick = (booking: Booking, event: Event) => {
     event.stopPropagation();
     modalStore.openBookingModal({ booking });
@@ -138,7 +132,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
             <div
                 v-for="day in weekDays"
                 :key="day.dateStr"
-                class="py-2"
+                class="py-2.5"
                 :class="day.isToday ? 'text-lime-400 font-bold' : 'text-mist-400'">
                 {{ day.weekdayName }}
             </div>

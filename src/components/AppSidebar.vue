@@ -3,10 +3,9 @@ import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { getPropertyTheme } from '@/config/properties';
+import { PROPERTY_CONFIGS, getPropertyTheme } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
-import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
@@ -22,8 +21,6 @@ const navLinks: NavItem[] = [
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
-const propertyStore = usePropertyStore();
-const { sortedProperties } = storeToRefs(propertyStore);
 const route = useRoute();
 const { markBookingComplete } = useBookingSync();
 
@@ -56,12 +53,8 @@ const pendingPayments = computed(() => {
     };
 });
 
-const handleEditBooking = (booking: Booking) => {
-    modalStore.openBookingModal({ booking });
-};
-const handleInstantComplete = async (booking: Booking) => {
-    await markBookingComplete(booking);
-};
+const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
+const handleInstantComplete = async (booking: Booking) => await markBookingComplete(booking);
 const isLinkActive = (path: string) => {
     if (path === '/') return route.path === '/';
     return route.path.startsWith(path);
@@ -71,9 +64,8 @@ const toggleSidebar = () => {
     isNotificationOpen.value = false;
     isPropertiesOpen.value = false;
 };
-const toggleNotifications = () => {
-    isNotificationOpen.value = !isNotificationOpen.value;
-};
+const toggleNotifications = () => (isNotificationOpen.value = !isNotificationOpen.value);
+
 const currentYear = new Date().getFullYear();
 
 watch(
@@ -170,7 +162,7 @@ watch(
                     v-show="!isCollapsed && isPropertiesOpen"
                     class="ml-4 pl-3.5 border-l border-mist-800/80 space-y-1 my-1 animate-in fade-in duration-150">
                     <RouterLink
-                        v-for="prop in sortedProperties"
+                        v-for="prop in PROPERTY_CONFIGS"
                         :key="prop.id"
                         :to="{ name: 'property-detail', params: { id: prop.id } }"
                         class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"

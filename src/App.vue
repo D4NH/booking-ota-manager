@@ -2,14 +2,13 @@
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useHead } from '@unhead/vue';
+import { ToastContainer } from 'vue-toastflow';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
-
-import { ToastContainer } from 'vue-toastflow';
 
 import AppSidebar from '@/components/AppSidebar.vue';
 import BookingModal from '@/components/modal/BookingModal.vue';
@@ -48,9 +47,9 @@ const handleSaveProperty = async (propertyData: Property): Promise<void> => {
     modalStore.closePropertyModal();
 };
 
-onMounted(async () => {
-    await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()]);
-});
+onMounted(
+    async () => await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()])
+);
 </script>
 
 <template>

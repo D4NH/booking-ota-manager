@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, type ChartOptions } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
 import { CHANNEL_COLORS } from '@/config/channel';
@@ -12,6 +12,9 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const { bookings } = defineProps<{
     bookings: Booking[];
 }>();
+
+const chartRef = ref<InstanceType<typeof Doughnut> | null>(null);
+const hoveredIndex = ref<number | null>(null);
 
 const channelStats = computed(() => {
     const counts: Record<string, number> = {};
@@ -31,7 +34,6 @@ const channelStats = computed(() => {
         color: CHANNEL_COLORS[name] || CHANNEL_COLORS.Other,
     }));
 
-    // Sort descending by bookings count
     entries.sort((a, b) => b.count - a.count);
 
     return { entries, total };
@@ -52,9 +54,17 @@ const chartData = computed(() => ({
 const chartOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '72%',
+    cutout: '75%',
     layout: {
         padding: 5,
+    },
+    onHover: (_event, activeElements) => {
+        const activeItem = activeElements[0];
+        if (activeItem) {
+            hoveredIndex.value = activeItem.index;
+        } else {
+            hoveredIndex.value = null;
+        }
     },
     plugins: {
         legend: { display: false },
@@ -65,10 +75,22 @@ const chartOptions: ChartOptions<'doughnut'> = {
             borderWidth: 1,
             padding: 8,
             callbacks: {
-                label: (ctx) => ` ${ctx.label}: ${ctx.raw} bookings`,
+                label: (ctx) => ` ${ctx.label}: ${ctx.raw}`,
             },
         },
     },
+};
+
+const getChartInstance = (): ChartJS | null =>
+    chartRef.value?.chartInstance || chartRef.value?.chart || null;
+const clearHighlight = () => {
+    hoveredIndex.value = null;
+    const chart = getChartInstance();
+
+    if (!chart) return;
+
+    chart.setActiveElements([]);
+    chart.update();
 };
 </script>
 
@@ -91,7 +113,9 @@ const chartOptions: ChartOptions<'doughnut'> = {
             <div
                 v-else
                 class="flex flex-1 items-center gap-4">
-                <div class="relative h-55 w-55 shrink-0">
+                <div
+                    class="relative h-55 w-55 shrink-0"
+                    @mouseleave="clearHighlight">
                     <Doughnut
                         :data="chartData"
                         :options="chartOptions" />
@@ -108,11 +132,12 @@ const chartOptions: ChartOptions<'doughnut'> = {
                 </div>
 
                 <!-- Channel Breakdown List -->
-                <div class="flex-1 space-y-4 overflow-y-auto pr-1">
+                <div class="flex-1 overflow-y-auto">
                     <div
-                        v-for="ch in channelStats.entries"
+                        v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
-                        class="space-y-2 text-xs">
+                        class="text-xs p-2"
+                        :class="{ 'bg-mist-800/60': hoveredIndex === index }">
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-1.5">
                                 <span
@@ -129,7 +154,7 @@ const chartOptions: ChartOptions<'doughnut'> = {
                         </div>
 
                         <!-- Progress Bar -->
-                        <div class="h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                        <div class="mt-2 h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
                             <div
                                 class="h-full rounded-full transition-all duration-500"
                                 :style="{

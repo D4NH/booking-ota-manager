@@ -182,6 +182,37 @@ onActivated(() => {
             <template #subtitle>
                 Showing {{ filteredBookings.length }} of {{ bookings.length }} total bookings
             </template>
+            <div class="flex items-center gap-4">
+                <GoogleSyncButton :property-id="selectedProperty" />
+                <!-- Property Selector -->
+                <div
+                    class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                        :class="[
+                            selectedProperty === 'all'
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectedProperty = 'all'">
+                        All
+                    </button>
+                    <button
+                        v-for="prop in sortedProperties"
+                        :key="prop.id"
+                        type="button"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
+                        :class="[
+                            selectedProperty === prop.id
+                                ? 'bg-mist-800 text-lime-400 shadow-md'
+                                : 'text-mist-400 hover:text-mist-200',
+                        ]"
+                        @click="selectProperty(prop.id)">
+                        <span class="capitalize">{{ prop.id }}</span>
+                    </button>
+                </div>
+            </div>
         </PageTitle>
 
         <CurrentWeekView
@@ -189,45 +220,10 @@ onActivated(() => {
             :selected-property="selectedProperty" />
 
         <div class="shrink-0">
-            <div class="flex justify-between gap-4">
-                <CardTitle>
-                    <template #title>Upcoming Bookings</template>
-                    <template #subtitle>
-                        Real-time availability and unit operational status
-                    </template>
-                </CardTitle>
-                <div class="flex items-center gap-4">
-                    <GoogleSyncButton :property-id="selectedProperty" />
-                    <!-- Property Selector -->
-                    <div
-                        class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
-                        <button
-                            type="button"
-                            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                            :class="[
-                                selectedProperty === 'all'
-                                    ? 'bg-mist-800 text-lime-400 shadow-md'
-                                    : 'text-mist-400 hover:text-mist-200',
-                            ]"
-                            @click="selectedProperty = 'all'">
-                            All
-                        </button>
-                        <button
-                            v-for="prop in sortedProperties"
-                            :key="prop.id"
-                            type="button"
-                            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                            :class="[
-                                selectedProperty === prop.id
-                                    ? 'bg-mist-800 text-lime-400 shadow-md'
-                                    : 'text-mist-400 hover:text-mist-200',
-                            ]"
-                            @click="selectProperty(prop.id)">
-                            <span class="capitalize">{{ prop.id }}</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <CardTitle>
+                <template #title>Upcoming Bookings</template>
+                <template #subtitle> Real-time availability and unit operational status </template>
+            </CardTitle>
             <!-- Filter Bar -->
             <div
                 class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">

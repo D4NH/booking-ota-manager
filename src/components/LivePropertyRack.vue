@@ -9,8 +9,8 @@ const { bookings, today = getCurrentDate() } = defineProps<{
     today?: number;
 }>();
 
-const propertyRack = computed(() => {
-    return PROPERTY_LIST.map((property) => {
+const propertyRack = computed(() =>
+    PROPERTY_LIST.map((property) => {
         const propBookings = bookings.filter(
             (b) => b.propertyId === property.id && b.status !== 'Unavailable'
         );
@@ -63,8 +63,8 @@ const propertyRack = computed(() => {
             departingToday,
             nextUpcoming,
         };
-    });
-});
+    })
+);
 </script>
 
 <template>

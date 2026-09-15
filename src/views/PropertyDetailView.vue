@@ -45,7 +45,6 @@ const collapsedMonths = ref<string[]>([]);
 const selectedProperty = computed<Property | undefined>(() =>
     properties.value.find((p) => p.id === id)
 );
-
 const unitBookings = computed(() =>
     bookings.value
         .filter((b) => b.propertyId === id && b.status !== 'Unavailable')
@@ -96,15 +95,16 @@ const groupedBookings = computed(() => {
             bookings: groups[key],
         }));
 });
-const lockboxInfo = computed(() => {
-    return getActiveLockboxBooking({
+const lockboxInfo = computed(() =>
+    getActiveLockboxBooking({
         today: currentDay.value,
         currentHour: currentHour.value,
         currentStays: currentStays.value,
         todaysArrivals: todaysArrivals.value,
         todaysDepartures: todaysDepartures.value,
-    });
-});
+    })
+);
+
 const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
 const nextUpcoming = computed(
     () =>
@@ -126,12 +126,10 @@ const toggleMonth = (monthKey: string) => {
 };
 const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
-const handleDeleteBooking = async (booking: Booking): Promise<void> => {
-    await deleteBooking(booking);
-};
-const handleEditProperty = () => {
-    modalStore.openPropertyModal({ property: selectedProperty.value });
-};
+const handleDeleteBooking = async (booking: Booking): Promise<void> =>
+    void (await deleteBooking(booking));
+const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
+
 const navigateToDetail = (propertyId: PropertyId | 'all') =>
     propertyId === 'all'
         ? router.push({ name: 'properties' })

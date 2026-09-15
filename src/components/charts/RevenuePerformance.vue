@@ -182,7 +182,7 @@ const chartOptions: ChartOptions<'bar'> = {
                 <!-- KPI Summary Cards -->
                 <div class="flex flex-col">
                     <span class="text-xs font-medium uppercase tracking-wider text-mist-400">
-                        {{ summaryStats.highlightedMonthLabel }} Revenue
+                        {{ summaryStats.highlightedMonthLabel }}
                     </span>
                     <div class="mt-1 text-lg font-mono font-extrabold text-lime-400">
                         {{ formatIDR(summaryStats.highlightedMonthRevenue) }}

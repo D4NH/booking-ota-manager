@@ -22,8 +22,8 @@ const emit = defineEmits<{
 // - Mid-stay guests (checkIn < today && checkOut > today)
 // - Departures who have NOT yet checked out and it is still morning (< 12:00)
 // - Arrivals who have already arrived (checked-in or after 15:00)
-const inHouseGuests = computed(() => {
-    return bookings.filter((b) => {
+const inHouseGuests = computed(() =>
+    bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
 
         // Mid-stay
@@ -40,13 +40,12 @@ const inHouseGuests = computed(() => {
         }
 
         return false;
-    });
-});
-
+    })
+);
 // GUESTS WHO HAVE LEFT TODAY
 // - Check-out date is today AND (past 12:00 OR already marked Checked-out)
-const departedGuests = computed(() => {
-    return bookings.filter((b) => {
+const departedGuests = computed(() =>
+    bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
 
         if (b.checkOut === currentDay.value) {
@@ -54,8 +53,8 @@ const departedGuests = computed(() => {
             return currentHour.value >= 12 || b.status === 'Checking-out';
         }
         return false;
-    });
-});
+    })
+);
 </script>
 
 <template>

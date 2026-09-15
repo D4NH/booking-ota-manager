@@ -106,7 +106,7 @@ const chartOptions: ChartOptions<'line'> = {
             grid: { display: false },
             ticks: {
                 color: '#71717a',
-                font: { size: 10, family: 'inherit' },
+                font: { size: 12, weight: 'bold' },
             },
             border: { display: false },
         },
@@ -114,7 +114,7 @@ const chartOptions: ChartOptions<'line'> = {
             beginAtZero: true,
             ticks: {
                 color: '#71717a',
-                font: { size: 10, family: 'inherit' },
+                font: { size: 12 },
                 callback: (val) => {
                     const num = Number(val);
                     if (num === 0) return '0';

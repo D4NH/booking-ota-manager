@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { PropertyId } from '@/types/property';
-import { useRevenueComparison } from '@/composables/useRevenueData';
-import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 
 import PageTitle from '@/components/PageTitle.vue';
 
@@ -14,19 +11,10 @@ import LivePropertyRack from '@/components/LivePropertyRack.vue';
 import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
 import UpcomingActivity from '@/components/UpcomingActivity.vue';
 
-import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
-import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
-import QuarterlyRevenue from '@/components/charts/QuarterlyRevenue.vue';
-
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-
-const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
-const { metrics, monthlyPropertyData } = useMonthlyMetrics(bookings);
-
-const totalRevenue = computed(() => bookings.value.reduce((acc, b) => acc + (b.payout || 0), 0));
 
 const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void> => {
     if (window.confirm(`Delete property ${name}?`)) {
@@ -42,18 +30,9 @@ const handleDeleteProperty = async (id: PropertyId, name: string): Promise<void>
             <template #subtitle> Listing settings and dangerous stuff </template>
         </PageTitle>
 
-        <QuarterlyRevenue :data="bookings" />
-        <AnnualRevenue
-            :total-revenue="totalRevenue"
-            :monthly-metrics="metrics"
-            :data="monthlyPropertyData" />
-
         <LivePropertyRack :bookings="bookings" />
 
         <div class="grid grid-cols-2 gap-4">
-            <MonthlyEarnings
-                :weekly-data="getWeeklyComparison(bookings, 'piyungan')"
-                :monthly-data="getMonthlyComparison(bookings, 'piyungan')" />
             <MonthlyRevenuePacing :current-revenue="1234567" />
         </div>
 

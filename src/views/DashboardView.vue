@@ -31,9 +31,7 @@ const {
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings);
 
-const handleEditBooking = (booking: Booking) => {
-    modalStore.openBookingModal({ booking });
-};
+const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 </script>
 
 <template>

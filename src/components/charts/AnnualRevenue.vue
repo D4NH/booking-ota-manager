@@ -36,17 +36,13 @@ const {
 
 const hoveredIndex = ref<number | null>(null);
 
-// Computes properties with > 0 revenue across the entire dataset for legend & chart rendering
 const activeConfigs = computed(() => {
     return PROPERTY_LIST.filter((config) => {
-        // Filter by property scope if provided
-        if (selectedProperty && selectedProperty !== 'all') {
-            return config.id === selectedProperty;
-        }
+        if (selectedProperty && selectedProperty !== 'all') return config.id === selectedProperty;
 
-        // Sum earnings across all 12 months for this property
         const totalEarned = data.reduce((sum, row) => {
             const val = row[config.id];
+
             return sum + (typeof val === 'number' ? val : 0);
         }, 0);
 
@@ -57,18 +53,21 @@ const activeConfigs = computed(() => {
 const displayHeaderMonth = computed(() => {
     if (hoveredIndex.value !== null) {
         const item = data[hoveredIndex.value];
+
         if (item?.label) return `${item.label} 2026`;
     }
-    return formatDate(getCurrentMonth(), { monthHeader: true });
+    return formatDate(getCurrentMonth(), { shortMonth: true, monthHeader: true });
 });
 
 const displayHeaderValue = computed(() => {
     if (hoveredIndex.value !== null && data.length > 0) {
         const item = data[hoveredIndex.value];
+
         if (!item) return 0;
 
         return activeConfigs.value.reduce((sum, config) => {
             const val = item[config.id];
+
             return sum + (typeof val === 'number' ? val : 0);
         }, 0);
     }
@@ -120,13 +119,13 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
         x: {
             stacked: true,
             grid: { display: false },
-            ticks: { color: '#8b9bb0', font: { size: 12 } },
+            ticks: { color: '#71717a', font: { size: 12, weight: 'bold' } },
         },
         y: {
             stacked: true,
             grid: { color: '#1e2632' },
             ticks: {
-                color: '#8b9bb0',
+                color: '#71717a',
                 font: { size: 12 },
                 callback: (val) => {
                     const num = Number(val);

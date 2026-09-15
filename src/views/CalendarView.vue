@@ -302,14 +302,14 @@ watch(
         <div
             class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <div
-                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/60 text-center text-xs font-semibold uppercase text-mist-400">
-                <div class="py-2.5">Mon</div>
-                <div class="py-2.5">Tue</div>
-                <div class="py-2.5">Wed</div>
-                <div class="py-2.5">Thu</div>
-                <div class="py-2.5">Fri</div>
-                <div class="py-2.5">Sat</div>
-                <div class="py-2.5">Sun</div>
+                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
+                <div class="px-4 py-2.5">Mon</div>
+                <div class="px-4 py-2.5">Tue</div>
+                <div class="px-4 py-2.5">Wed</div>
+                <div class="px-4 py-2.5">Thu</div>
+                <div class="px-4 py-2.5">Fri</div>
+                <div class="px-4 py-2.5">Sat</div>
+                <div class="px-4 py-2.5">Sun</div>
             </div>
 
             <div
