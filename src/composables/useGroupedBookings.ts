@@ -4,6 +4,7 @@ import type { BookingGroup } from '@/components/BookingsTable.vue';
 import { formatDate, getCurrentMonth } from '@/utils/date';
 
 interface UseGroupedBookingsOptions {
+    selectedMonth?: MaybeRefOrGetter<string>;
     autoCollapsePast?: boolean;
 }
 
@@ -11,12 +12,12 @@ export function useGroupedBookings(
     bookingsSource: MaybeRefOrGetter<Booking[]>,
     options: UseGroupedBookingsOptions = {}
 ) {
-    const { autoCollapsePast = true } = options;
+    const { autoCollapsePast = true, selectedMonth } = options;
 
     const collapsedMonths = ref<string[]>([]);
-    const currentMonthKey = computed(() => getCurrentMonth());
 
-    const groupedBookings = computed<BookingGroup[]>(() => {
+    const currentMonthKey = computed(() => getCurrentMonth());
+    const allGroupedBookings = computed<BookingGroup[]>(() => {
         const list = toValue(bookingsSource);
         const groups = new Map<string, Booking[]>();
 
@@ -37,19 +38,31 @@ export function useGroupedBookings(
                 bookings: bookings.sort((a, b) => a.checkIn.localeCompare(b.checkIn)),
             }));
     });
+    const availableMonths = computed<string[]>(() => allGroupedBookings.value.map((g) => g.key));
+    const groupedBookings = computed<BookingGroup[]>(() => {
+        const targetMonth = selectedMonth ? toValue(selectedMonth) : 'all';
+        if (!targetMonth || targetMonth === 'all') {
+            return allGroupedBookings.value;
+        }
+        return allGroupedBookings.value.filter((g) => g.key === targetMonth);
+    });
 
-    const availableMonths = computed<string[]>(() => groupedBookings.value.map((g) => g.key));
-
-    function collapsePastMonths(): void {
+    const toggleMonth = (monthKey: string): void => {
+        const idx = collapsedMonths.value.indexOf(monthKey);
+        if (idx > -1) {
+            collapsedMonths.value.splice(idx, 1);
+        } else {
+            collapsedMonths.value.push(monthKey);
+        }
+    };
+    const collapsePastMonths = (): void => {
         const past = availableMonths.value.filter((key) => key < currentMonthKey.value);
         collapsedMonths.value = Array.from(new Set([...collapsedMonths.value, ...past]));
-    }
-
-    function expandAll(): void {
+    };
+    const expandAll = (): void => {
         collapsedMonths.value = [];
-    }
+    };
 
-    // Reactively auto-collapse past months when bookings arrive or month filter resets
     if (autoCollapsePast) {
         watch(
             availableMonths,
@@ -69,5 +82,6 @@ export function useGroupedBookings(
         currentMonthKey,
         collapsePastMonths,
         expandAll,
+        toggleMonth,
     };
 }
