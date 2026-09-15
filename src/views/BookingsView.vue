@@ -25,7 +25,6 @@ const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>([]);
 const toggleFilters = ref<boolean>(false);
 
-// Scoped bookings and current local date from composable
 const { currentDay, unitBookings: propertyBookings } = usePropertyDetails(selectedProperty, {
     includeUnavailable: true,
 });
@@ -108,7 +107,6 @@ onActivated(() => {
 
 <template>
     <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
-        <!-- View Header -->
         <PageTitle>
             <template #title>Bookings</template>
             <template #subtitle>
@@ -154,7 +152,7 @@ onActivated(() => {
                         </div>
                     </div>
 
-                    <!-- Month Dropdown Filter -->
+                    <!-- Month Dropdown -->
                     <div class="relative w-44">
                         <select
                             v-model="selectedMonth"
@@ -175,7 +173,7 @@ onActivated(() => {
                         </div>
                     </div>
 
-                    <!-- Status Filters Toggle -->
+                    <!-- Status Filters -->
                     <button
                         type="button"
                         class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
@@ -185,8 +183,6 @@ onActivated(() => {
                             class="text-xs"
                             icon="filter" />
                     </button>
-
-                    <!-- Toggleable Status Badges -->
                     <div
                         v-if="toggleFilters"
                         class="flex flex-wrap items-center gap-1.5 ml-1">
@@ -218,7 +214,7 @@ onActivated(() => {
             </div>
         </div>
 
-        <!-- Empty State -->
+        <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
             class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-8">
@@ -227,8 +223,6 @@ onActivated(() => {
                 class="text-2xl text-mist-600" />
             <p class="mt-2 text-sm">No bookings match the selected criteria</p>
         </div>
-
-        <!-- Modular Collapsible Table -->
         <BookingsTable
             v-else
             v-model:collapsed-months="collapsedMonths"

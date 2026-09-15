@@ -122,7 +122,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                         :class="[
                             'transition',
                             isCurrentBooking(b)
-                                ? 'text-lime-400 bg-lime-500/10 hover:bg-lime-500/15'
+                                ? 'text-lime-400 bg-lime-500/5 hover:bg-lime-500/15 ring-1 ring-lime-500/30'
                                 : 'hover:bg-mist-800/40',
                         ]">
                         <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
