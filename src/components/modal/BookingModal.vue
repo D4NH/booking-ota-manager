@@ -3,7 +3,6 @@ import { ref, watch, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useDateKeys } from '@/composables/useDateKeys';
 import { CHANNEL_WARNINGS } from '@/config/constants';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -13,7 +12,11 @@ import { calculateNights, getCurrentDate } from '@/utils/date';
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const { bookingToEdit = null, initialCheckInDate = getCurrentDate(), currentProperty = 'all'} = defineProps<{
+const {
+    bookingToEdit = null,
+    initialCheckInDate = getCurrentDate(),
+    currentProperty = 'all',
+} = defineProps<{
     bookingToEdit?: Booking | null;
     initialCheckInDate?: string;
     currentProperty?: PropertyId | 'all';
@@ -26,7 +29,6 @@ const emit = defineEmits<{
 
 const bookingStore = useBookingStore();
 const { deleteBooking } = useBookingSync();
-const { currentDay } = useDateKeys();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (bookingToEdit?.propertyId) return bookingToEdit.propertyId as PropertyId;
@@ -38,7 +40,7 @@ const form = ref({
     propertyId: resolveInitialProperty(),
     bookingId: bookingToEdit?.bookingId || '',
     guestName: bookingToEdit?.guestName || '',
-    checkIn: bookingToEdit?.checkIn || initialCheckInDate || currentDay,
+    checkIn: bookingToEdit?.checkIn || initialCheckInDate || getCurrentDate(),
     checkOut: bookingToEdit?.checkOut || '',
     nights: bookingToEdit?.nights || 1,
     payout: bookingToEdit?.payout || '',
@@ -70,7 +72,7 @@ const validationError = computed<string | null>(() => {
     return null;
 });
 const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
-const checkInMinDate = computed(() => (bookingToEdit ? '' : currentDay.value));
+const checkInMinDate = computed(() => (bookingToEdit ? '' : getCurrentDate()));
 
 const handleDeleteBooking = async (): Promise<void> => {
     if (!bookingToEdit) return;

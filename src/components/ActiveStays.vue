@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useDateKeys } from '@/composables/useDateKeys';
 import { getPropertyTheme } from '@/config/properties';
 import type { Booking } from '@/types/booking';
-import { getCurrentDate } from '@/utils/date';
+import { getCurrentDate, getCurrentHour } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
-
-const { currentDay, currentHour } = useDateKeys();
 
 const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
@@ -27,16 +24,16 @@ const inHouseGuests = computed(() =>
         if (b.status === 'Unavailable') return false;
 
         // Mid-stay
-        if (b.checkIn < currentDay.value && b.checkOut > currentDay.value) return true;
+        if (b.checkIn < getCurrentDate() && b.checkOut > getCurrentDate()) return true;
 
         // Today's departure: STAYS in-house ONLY if before 12:00 and not marked checked-out
-        if (b.checkOut === currentDay.value) {
-            return currentHour.value < 12 && b.status !== 'Checking-out';
+        if (b.checkOut === getCurrentDate()) {
+            return getCurrentHour() < 12 && b.status !== 'Checking-out';
         }
 
         // Today's arrival: MOVES to in-house after 15:00 or if already checked-in
-        if (b.checkIn === currentDay.value) {
-            return currentHour.value >= 15 || b.status === 'Checked-in';
+        if (b.checkIn === getCurrentDate()) {
+            return getCurrentHour() >= 15 || b.status === 'Checked-in';
         }
 
         return false;
@@ -48,9 +45,9 @@ const departedGuests = computed(() =>
     bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
 
-        if (b.checkOut === currentDay.value) {
+        if (b.checkOut === getCurrentDate()) {
             // Moves here if past noon OR if manually checked-out
-            return currentHour.value >= 12 || b.status === 'Checking-out';
+            return getCurrentHour() >= 12 || b.status === 'Checking-out';
         }
         return false;
     })
@@ -117,9 +114,9 @@ const departedGuests = computed(() =>
 
                 <!-- Quick Checkout button if leaving today -->
                 <div class="flex items-center gap-3 shrink-0">
-                    <span class="font-mono text-xs font-bold text-mist-200">{{
-                        formatIDR(b.payout)
-                    }}</span>
+                    <span class="font-mono text-xs font-bold text-mist-200">
+                        {{ formatIDR(b.payout) }}
+                    </span>
 
                     <button
                         v-if="b.checkOut === today"
@@ -149,9 +146,9 @@ const departedGuests = computed(() =>
                 :key="'departed-' + (b.id || b.bookingId)"
                 class="rounded-md border border-mist-800/60 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
                 <div class="text-xs">
-                    <span class="font-semibold text-mist-300 line-through mr-2">{{
-                        b.guestName
-                    }}</span>
+                    <span class="font-semibold text-mist-300 line-through mr-2">
+                        {{ b.guestName }}
+                    </span>
                     <span class="text-mist-500">
                         {{ b.propertyId }} &bull; Room ready for turnover
                     </span>

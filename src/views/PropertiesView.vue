@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
@@ -12,6 +12,7 @@ import type { PropertyId } from '@/types/property';
 
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
+import PropertySelector from '@/components/PropertySelector.vue';
 import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
 import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
@@ -19,7 +20,6 @@ import PropertyPerformance from '@/components/PropertyPerformance.vue';
 import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
 import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
 
-const route = useRoute();
 const router = useRouter();
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
@@ -38,14 +38,10 @@ const visibleProperties = computed(() => {
     const list = Array.isArray(sortedProperties) ? sortedProperties : sortedProperties.value;
     return isPropertiesExpanded.value ? list : list.slice(0, 2);
 });
-const selectedProperty = computed<PropertyId | 'all'>(() => {
-    const id = route.params.id;
-    return typeof id === 'string' && id ? (id as PropertyId) : 'all';
-});
 
-const navigateToDetail = (propertyId: PropertyId | 'all') => {
-    if (propertyId === 'all') router.push({ name: 'properties' });
-    else router.push({ name: 'property-detail', params: { id: propertyId } });
+const handleNavigate = (target: PropertyId | 'all'): void => {
+    if (target === 'all') return;
+    router.push({ name: 'property-detail', params: { id: target } });
 };
 const handleAddProperty = () => modalStore.openPropertyModal();
 </script>
@@ -55,48 +51,23 @@ const handleAddProperty = () => modalStore.openPropertyModal();
         <PageTitle>
             <template #title>Property Management</template>
             <template #subtitle>Portfolio health, listing settings and unit comparisons</template>
-
-            <!-- Property Selector -->
-            <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
-                <button
-                    type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        selectedProperty === 'all'
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="navigateToDetail('all')">
-                    All
-                </button>
-                <button
-                    v-for="prop in sortedProperties"
-                    :key="prop.id"
-                    type="button"
-                    class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        selectedProperty === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="navigateToDetail(prop.id)">
-                    {{ prop.id }}
-                </button>
-            </div>
+            <PropertySelector
+                model-value="all"
+                @change="handleNavigate" />
         </PageTitle>
 
         <PortfolioMetrics
             :bookings="bookings"
             :properties="sortedProperties" />
 
-        <!-- Properties Cards List -->
+        <!-- Properties -->
         <div class="flex flex-col shrink-0">
             <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Properties</template>
-                    <template #subtitle
-                        >Real-time availability and unit operational status</template
-                    >
+                    <template #subtitle>
+                        Real-time availability and unit operational status
+                    </template>
                 </CardTitle>
 
                 <div class="flex gap-4">

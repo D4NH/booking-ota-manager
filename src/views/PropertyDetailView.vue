@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
+import { useGroupedBookings } from '@/composables/useGroupedBookings';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { getStatusStyle } from '@/config/status';
 import { useModalStore } from '@/stores/useModalStore';
-import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatDate, getCurrentMonth, getCurrentYear } from '@/utils/date';
@@ -16,6 +14,8 @@ import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import OccupiedTag from '@/components/OccupiedTag.vue';
 import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
+import PropertySelector from '@/components/PropertySelector.vue';
+import BookingsTable from '@/components/BookingsTable.vue';
 
 interface Props {
     id: PropertyId;
@@ -25,8 +25,6 @@ const { id } = defineProps<Props>();
 
 const router = useRouter();
 const modalStore = useModalStore();
-const propertyStore = usePropertyStore();
-const { sortedProperties } = storeToRefs(propertyStore);
 const { deleteBooking } = useBookingSync();
 
 const {
@@ -43,61 +41,29 @@ const {
     currentDay,
 } = usePropertyDetails(() => id);
 
-const collapsedMonths = ref<string[]>([]);
-
-const currentMonthLabel = computed(() => formatDate(getCurrentMonth(), { monthHeader: true }));
-// Groups bookings starting from or active in current month
-const groupedBookings = computed(() => {
-    const currentMonth = getCurrentMonth();
-    const groups = new Map<string, Booking[]>();
-
-    for (const b of unitBookings.value) {
-        // Include if check-in is this month or later, OR if still active in current month
-        if (b.checkOut < currentMonth) continue;
-
-        const monthKey = b.checkIn.substring(0, 7);
-        const existing = groups.get(monthKey) ?? [];
-        existing.push(b);
-        groups.set(monthKey, existing);
-    }
-
-    return Array.from(groups.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, list]) => ({
-            key,
-            label: formatDate(key, { monthHeader: true }),
-            count: list.length,
-            bookings: list.sort((a, b) => a.checkIn.localeCompare(b.checkIn)),
-        }));
+const upcomingUnitBookings = computed(() => {
+    const currentMonth = getCurrentMonth(); // "2026-09"
+    return unitBookings.value.filter((b) => b.checkIn >= currentMonth);
 });
 
-const isCurrentBooking = (checkIn: string, checkOut: string, status: string): boolean =>
-    currentDay.value >= checkIn && currentDay.value <= checkOut && status !== 'Waiting for payout';
-const toggleMonth = (monthKey: string): void => {
-    const idx = collapsedMonths.value.indexOf(monthKey);
-    if (idx > -1) collapsedMonths.value.splice(idx, 1);
-    else collapsedMonths.value.push(monthKey);
-};
+const { groupedBookings, collapsedMonths, currentMonthKey } = useGroupedBookings(
+    upcomingUnitBookings,
+    {
+        autoCollapsePast: false,
+    }
+);
+
+const currentMonthLabel = computed(() => formatDate(currentMonthKey.value, { monthHeader: true }));
+
 const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> =>
     void (await deleteBooking(booking));
 const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
-const navigateToDetail = (propertyId: PropertyId | 'all') => {
-    if (propertyId === 'all') router.push({ name: 'properties' });
-    else router.push({ name: 'property-detail', params: { id: propertyId } });
+const handleNavigate = (target: PropertyId | 'all'): void => {
+    if (target === 'all') router.push({ name: 'properties' });
+    else router.push({ name: 'property-detail', params: { id: target } });
 };
-
-watch(
-    sortedProperties,
-    (loaded) => {
-        if (loaded.length > 0 && !loaded.some((p) => p.id === id)) {
-            console.warn(`Property ${id} not found. Redirecting...`);
-            router.replace({ name: 'properties' });
-        }
-    },
-    { immediate: true }
-);
 </script>
 
 <template>
@@ -111,8 +77,6 @@ watch(
             <span>Loading details...</span>
         </div>
     </div>
-
-    <!-- Made container scrollable (h-full overflow-y-auto) -->
     <div
         v-else
         class="h-full overflow-y-auto space-y-4 p-4">
@@ -120,30 +84,10 @@ watch(
             <template #title>
                 <span class="capitalize">{{ selectedProperty.id }}</span>
             </template>
-            <template #subtitle>Portfolio health, listing settings and unit comparisons</template>
-
-            <!-- Property Selector -->
-            <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1">
-                <button
-                    type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold text-mist-400 hover:text-mist-200 transition-colors"
-                    @click="navigateToDetail('all')">
-                    All
-                </button>
-                <button
-                    v-for="prop in sortedProperties"
-                    :key="prop.id"
-                    type="button"
-                    class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
-                    :class="[
-                        id === prop.id
-                            ? 'bg-mist-800 text-lime-400 shadow-md'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
-                    @click="navigateToDetail(prop.id)">
-                    {{ prop.id }}
-                </button>
-            </div>
+            <template #subtitle> Portfolio health, listing settings and unit comparisons </template>
+            <PropertySelector
+                :model-value="id"
+                @change="handleNavigate" />
         </PageTitle>
 
         <!-- Photo & Property Specs -->
@@ -222,7 +166,6 @@ watch(
                             Daily Operations
                         </span>
                     </div>
-
                     <div class="flex-1 flex flex-col justify-center">
                         <div
                             v-if="staySections.length"
@@ -239,7 +182,6 @@ watch(
                                     ]">
                                     {{ section.label }}
                                 </span>
-
                                 <div
                                     v-for="b in section.items"
                                     :key="b.id || b.bookingId"
@@ -284,9 +226,9 @@ watch(
                             <fa-icon
                                 icon="house-circle-check"
                                 class="text-xl text-mist-700" />
-                            <span class="ml-2 font-medium text-mist-400"
-                                >No active in-house guest</span
-                            >
+                            <span class="ml-2 font-medium text-mist-400">
+                                No active in-house guest
+                            </span>
                             <p
                                 v-if="nextUpcoming"
                                 class="text-[11px] mt-1">
@@ -362,8 +304,8 @@ watch(
             </div>
         </div>
 
-        <!-- Bookings Table Section -->
-        <div class="space-y-4">
+        <!-- Bookings Table -->
+        <div class="grid grid-cols-1">
             <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Upcoming Bookings</template>
@@ -376,7 +318,6 @@ watch(
                     <fa-icon icon="plus" /> Add Booking
                 </button>
             </div>
-
             <div
                 v-if="groupedBookings.length === 0"
                 class="flex flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-6">
@@ -385,127 +326,14 @@ watch(
                     class="text-xl" />
                 <p class="mt-2">No upcoming bookings found</p>
             </div>
-
-            <div
+            <BookingsTable
                 v-else
-                class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-                <table class="w-full text-left text-sm text-mist-300 table-fixed">
-                    <thead
-                        class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
-                        <tr>
-                            <th class="w-40 px-4 py-2.5">ID</th>
-                            <th class="w-32 px-4 py-2.5 text-center">Channel</th>
-                            <th class="px-4 py-2.5">Guest</th>
-                            <th class="w-50 px-4 py-2.5 text-center">Stay Date</th>
-                            <th class="w-28 px-4 py-2.5 text-center">Nights</th>
-                            <th class="w-38 px-4 py-2.5 text-right">Payout</th>
-                            <th class="w-40 px-4 py-2.5 text-center">Status</th>
-                            <th class="w-28 px-4 py-2.5 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <template
-                        v-for="group in groupedBookings"
-                        :key="group.key">
-                        <tbody class="border-t border-mist-800 bg-mist-950/40">
-                            <tr>
-                                <td
-                                    colspan="8"
-                                    class="p-0">
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
-                                        @click="toggleMonth(group.key)">
-                                        <span class="flex items-center gap-2">
-                                            <span class="text-xs text-mist-400">
-                                                {{
-                                                    collapsedMonths.includes(group.key) ? '▶' : '▼'
-                                                }}
-                                            </span>
-                                            {{ group.label }}
-                                        </span>
-                                        <span
-                                            class="rounded-md bg-mist-800 px-2.5 py-0.5 text-xs font-normal text-mist-400">
-                                            {{ group.count }}
-                                        </span>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-
-                        <tbody
-                            v-show="!collapsedMonths.includes(group.key)"
-                            class="divide-y divide-mist-800/60">
-                            <tr
-                                v-for="b in group.bookings"
-                                :key="b.id || b.bookingId"
-                                :class="[
-                                    'transition',
-                                    isCurrentBooking(b.checkIn, b.checkOut, b.status)
-                                        ? 'text-lime-400 bg-lime-500/10'
-                                        : 'hover:bg-mist-800/30',
-                                ]">
-                                <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
-                                    {{ b.status === 'Unavailable' ? '-' : b.bookingId }}
-                                </td>
-                                <td class="px-4 py-3 text-center text-nowrap">
-                                    <span
-                                        class="rounded-md bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
-                                        {{ b.listing }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 font-medium text-mist-100 truncate">
-                                    {{ b.guestName }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }}
-                                </td>
-                                <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
-                                <td
-                                    class="px-4 py-3 font-mono text-right text-nowrap group relative"
-                                    :class="{ 'cursor-zoom-in': b.payout !== 0 }">
-                                    {{ formatIDR(b.payout) }}
-                                    <div
-                                        v-if="b.payout !== 0"
-                                        class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-50 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
-                                        <div
-                                            class="rounded-md border border-mist-700 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                            <div class="flex items-center justify-between">
-                                                <span class="font-bold text-mist-400"
-                                                    >Payout 15%</span
-                                                >
-                                                <span class="font-semibold text-mist-200">{{
-                                                    formatIDR(b.payout * 0.15)
-                                                }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-center text-nowrap">
-                                    <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-mist-400 hover:text-mist-100"
-                                            @click="handleEditBooking(b)">
-                                            <fa-icon icon="pen-to-square" />
-                                        </button>
-                                        <span class="text-mist-700">|</span>
-                                        <button
-                                            type="button"
-                                            class="cursor-pointer text-rose-400 hover:text-rose-300"
-                                            @click="handleDeleteBooking(b)">
-                                            <fa-icon icon="trash-can" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </template>
-                </table>
-            </div>
+                v-model:collapsed-months="collapsedMonths"
+                :groups="groupedBookings"
+                :current-month-key="currentMonthKey"
+                :current-date-key="currentDay"
+                @edit="handleEditBooking"
+                @delete="handleDeleteBooking" />
         </div>
     </div>
 </template>
