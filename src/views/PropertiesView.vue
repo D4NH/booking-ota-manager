@@ -49,9 +49,7 @@ const navigateToDetail = (propertyId: PropertyId | 'all') =>
     propertyId === 'all'
         ? router.push({ name: 'properties' })
         : router.push({ name: 'property-detail', params: { id: propertyId } });
-const handleAddProperty = () => {
-    modalStore.openPropertyModal();
-};
+const handleAddProperty = () => modalStore.openPropertyModal();
 </script>
 
 <template>

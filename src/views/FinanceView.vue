@@ -86,9 +86,7 @@ const { monthlyPropertyData } = useMonthlyMetrics(bookings, {
     propertyId: () => selectedProperty.value,
 });
 
-const handleTabChange = (id: string) => {
-    selectedProperty.value = id as PropertyId;
-};
+const handleTabChange = (id: string) => (selectedProperty.value = id as PropertyId);
 </script>
 
 <template>

@@ -75,6 +75,7 @@ const calendarDays = computed<CalendarDay[]>(() => {
 
     // Next month padding days
     const remainingCells = 42 - days.length;
+
     for (let day = 1; day <= remainingCells; day++) {
         const nextDate = new Date(year, month + 1, day);
         const dateStr = getCurrentDate(nextDate);
@@ -92,9 +93,11 @@ const calendarDays = computed<CalendarDay[]>(() => {
 const yearOptions = computed(() => {
     const currentYear = new Date().getFullYear();
     const years: number[] = [];
+
     for (let y = currentYear - 2; y <= currentYear + 3; y++) {
         years.push(y);
     }
+
     return years;
 });
 const filteredBookings = computed(() =>
@@ -147,20 +150,18 @@ const multiDayStyling = (b: Booking, dateStr: string, dayIndex: number) => {
 
     return classes.join(' ');
 };
-const prevMonth = (): void => {
-    currentDate.value = new Date(
+const prevMonth = () =>
+    (currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() - 1,
         1
-    );
-};
-const nextMonth = (): void => {
-    currentDate.value = new Date(
+    ));
+const nextMonth = () =>
+    (currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() + 1,
         1
-    );
-};
+    ));
 const handleMonthChange = (e: Event): void => {
     const newMonth = Number((e.target as HTMLSelectElement).value);
     currentDate.value = new Date(currentDate.value.getFullYear(), newMonth, 1);
@@ -169,12 +170,8 @@ const handleYearChange = (e: Event): void => {
     const newYear = Number((e.target as HTMLSelectElement).value);
     currentDate.value = new Date(newYear, currentDate.value.getMonth(), 1);
 };
-const goToToday = (): void => {
-    currentDate.value = new Date();
-};
-const handleAddBooking = () => {
-    modalStore.openBookingModal();
-};
+const goToToday = () => (currentDate.value = new Date());
+const handleAddBooking = () => modalStore.openBookingModal();
 const handleCellClick = (day: CalendarDay) => {
     selectedCheckInDate.value = day.dateStr;
     modalStore.openBookingModal({
@@ -187,9 +184,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
     modalStore.openBookingModal({ booking });
 };
 // TODO: make linkable via URL
-const selectProperty = (id: string) => {
-    selectedProperty.value = id as PropertyId;
-};
+const selectProperty = (id: string) => (selectedProperty.value = id as PropertyId);
 
 watch(
     () => route.params.id,

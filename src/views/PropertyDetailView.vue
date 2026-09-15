@@ -297,17 +297,24 @@ watch(
                                     class="mb-2">
                                     <div class="flex flex-col space-y-0.5">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-sm font-bold text-mist-100 truncate">
-                                                {{ b.guestName }}
+                                            <div>
+                                                <span
+                                                    class="text-sm font-bold text-mist-100 truncate">
+                                                    {{ b.guestName }}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    class="ml-1 cursor-pointer text-sm text-mist-400 hover:text-mist-100 transition"
+                                                    @click="handleEditBooking(b)">
+                                                    <fa-icon
+                                                        icon="pen-to-square"
+                                                        class="text-xs" />
+                                                </button>
+                                            </div>
+                                            <span
+                                                class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
+                                                {{ formatIDR(b.payout) }}
                                             </span>
-                                            <button
-                                                type="button"
-                                                class="ml-1 cursor-pointer text-sm text-mist-400 hover:text-mist-100 transition"
-                                                @click="console.log('hello')">
-                                                <fa-icon
-                                                    icon="pen-to-square"
-                                                    class="text-[10px]" />
-                                            </button>
                                         </div>
                                         <span class="text-xs text-mist-400">
                                             {{ formatDate(b.checkIn, { shortMonth: true }) }}
@@ -315,15 +322,9 @@ watch(
                                             {{ formatDate(b.checkOut, { shortMonth: true }) }}
                                             &bull; {{ b.nights }} night(s)
                                         </span>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-[10px] text-mist-500 font-medium">
-                                                via {{ b.listing }}
-                                            </span>
-                                            <span
-                                                class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
-                                                {{ formatIDR(b.payout) }}
-                                            </span>
-                                        </div>
+                                        <span class="text-[10px] text-mist-500 font-medium">
+                                            via {{ b.listing }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

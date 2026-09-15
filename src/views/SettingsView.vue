@@ -8,13 +8,15 @@ import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 
 import PageTitle from '@/components/PageTitle.vue';
-import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
+
 import ActiveStays from '@/components/ActiveStays.vue';
 import LivePropertyRack from '@/components/LivePropertyRack.vue';
 import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
 import UpcomingActivity from '@/components/UpcomingActivity.vue';
-import QuarterlyRevenue from '@/components/charts/QuarterlyRevenue.vue';
+
 import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
+import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
+import QuarterlyRevenue from '@/components/charts/QuarterlyRevenue.vue';
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);

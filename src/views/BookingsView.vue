@@ -54,12 +54,15 @@ const filteredBookings = computed<Booking[]>(() => {
             if (hidden.includes(b.status)) return false;
             if (query) {
                 const nameMatch = b.guestName.toLowerCase().includes(query);
+
                 if (nameMatch) return true;
 
                 const idMatch = b.bookingId.toLowerCase().includes(query);
+
                 if (idMatch) return true;
 
                 const notesMatch = b.notes ? b.notes.toLowerCase().includes(query) : false;
+
                 if (notesMatch) return true;
 
                 return false;
@@ -127,21 +130,15 @@ const scrollToCurrentMonth = async () => {
         }
     });
 };
-const handleAddBooking = () => {
+const handleAddBooking = () =>
     modalStore.openBookingModal({
         propertyId: selectedProperty.value,
         checkInDate: currentDay.value,
     });
-};
-const handleEditBooking = (booking: Booking) => {
-    modalStore.openBookingModal({ booking });
-};
-const handleDeleteBooking = async (booking: Booking): Promise<void> => {
-    await deleteBooking(booking);
-};
-const handleClearAllLocal = async (): Promise<void> => {
-    await clearAllLocalBookings();
-};
+const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
+const handleDeleteBooking = async (booking: Booking): Promise<void> =>
+    void (await deleteBooking(booking));
+const handleClearAllLocal = async (): Promise<void> => await clearAllLocalBookings();
 const isCurrentBooking = (checkIn: string): boolean => currentDay.value === checkIn;
 const selectProperty = (id: string) => {
     selectedProperty.value = id as PropertyId;
@@ -170,15 +167,11 @@ watch(
 );
 
 onMounted(() => {
-    if (availableMonths.value.length > 0) {
-        scrollToCurrentMonth();
-    }
+    if (availableMonths.value.length > 0) scrollToCurrentMonth();
 });
 
 onActivated(() => {
-    if (availableMonths.value.length > 0) {
-        scrollToCurrentMonth();
-    }
+    if (availableMonths.value.length > 0) scrollToCurrentMonth();
 });
 </script>
 
