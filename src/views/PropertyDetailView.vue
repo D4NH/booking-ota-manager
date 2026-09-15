@@ -153,7 +153,7 @@ watch(
 <template>
     <div
         v-if="!selectedProperty"
-        class="h-full overflow-hidden flex flex-col space-y-4 p-4">
+        class="h-full overflow-hidden flex flex-col justify-center items-center space-y-4 p-4">
         <div class="flex items-center gap-2 text-mist-400 text-sm font-medium">
             <fa-icon
                 icon="spinner"

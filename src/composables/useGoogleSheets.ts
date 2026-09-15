@@ -71,7 +71,7 @@ export function useGoogleSheets() {
 
     const fetchSheetRows = async (
         spreadsheetId: string,
-        range: string = 'A2:J500'
+        range: string = 'A2:J'
     ): Promise<(string | number)[][]> => {
         const res = await fetchWithAuth(
             `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`
@@ -96,12 +96,13 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
+    // Scan entire column A to locate row indices
     const updateSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string,
         values: (string | number)[]
     ): Promise<void> => {
-        const rows = await fetchSheetRows(spreadsheetId, 'A2:A500');
+        const rows = await fetchSheetRows(spreadsheetId, 'A2:A');
         const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
 
         if (rowIndex === -1) {
@@ -122,11 +123,12 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
+    // Scan entire column A for deletions
     const deleteSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string
     ): Promise<void> => {
-        const rows = await fetchSheetRows(spreadsheetId, 'A2:A500');
+        const rows = await fetchSheetRows(spreadsheetId, 'A2:A');
         const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
 
         if (rowIndex === -1) return;

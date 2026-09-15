@@ -18,7 +18,7 @@ import {
     type ActiveElement,
     type ChartEvent,
 } from 'chart.js';
-import { formatDate, getCurrentMonth } from '@/utils/date';
+import { getCurrentYear } from '@/utils/date';
 
 import CardTitle from '@/components/CardTitle.vue';
 
@@ -56,7 +56,7 @@ const displayHeaderMonth = computed(() => {
 
         if (item?.label) return `${item.label} 2026`;
     }
-    return formatDate(getCurrentMonth(), { shortMonth: true, monthHeader: true });
+    return `YTD ${getCurrentYear()}`;
 });
 
 const displayHeaderValue = computed(() => {

@@ -27,36 +27,7 @@ export interface PropertyTheme {
     bg: string;
 }
 
-export interface PropertyConfig extends Property {
-    spreadsheetId: string;
-    defaultRange: string;
-}
-
 export type LiveStatus = 'Occupied' | 'Checking-in' | 'Checking-out' | 'Vacant';
-
-export interface PropertyPerformance {
-    id: PropertyId;
-    name: string;
-    monthlyRevenue: number;
-    totalBookingsCount: number;
-    occupancyRate: number;
-    liveStatus: LiveStatus;
-    currentGuestName?: string;
-}
-
-export interface PortfolioSummary {
-    totalPropertiesCount: number;
-    totalActiveListings: number;
-    totalMonthlyPayout: number;
-}
-
-export interface MonthlyPropertyRevenue {
-    label: string;
-    piyungan: number;
-    wonosari: number;
-    bantul: number;
-    nusadua: number;
-}
 
 export interface ListingBreakdown {
     listing: string;
@@ -72,8 +43,18 @@ export interface PropertyPerformance {
     occupancyRate: number;
     liveStatus: LiveStatus;
     currentGuestName?: string;
-    listings: ListingBreakdown[]; // Expanded listing details
+    listings: ListingBreakdown[];
 }
+
+export interface PortfolioSummary {
+    totalPropertiesCount: number;
+    totalActiveListings: number;
+    totalMonthlyPayout: number;
+}
+
+export type MonthlyPropertyRevenue = {
+    label: string;
+} & Record<PropertyId, number>;
 
 export interface PropertyForm {
     id: PropertyId | '';

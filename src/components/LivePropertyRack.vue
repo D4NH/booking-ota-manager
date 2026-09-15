@@ -6,7 +6,7 @@ import { getCurrentDate } from '@/utils/date';
 
 const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
-    today?: number;
+    today?: string;
 }>();
 
 const propertyRack = computed(() =>
