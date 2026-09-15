@@ -1,19 +1,38 @@
 import { ref } from 'vue';
 
-const accessToken = ref<string | null>(localStorage.getItem('gdrive_token'));
-const isAuthenticated = ref<boolean>(Boolean(localStorage.getItem('gdrive_token')));
+const TOKEN_KEY = 'gdrive_token';
+const EXPIRY_KEY = 'gdrive_token_expires_at';
+
+const isTokenValid = (): boolean => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expiresAt = Number(localStorage.getItem(EXPIRY_KEY)) || 0;
+    // Expire 60 seconds early to avoid mid-flight API dropouts
+    return Boolean(token && Date.now() < expiresAt - 60_000);
+};
+
+const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
+const isAuthenticated = ref<boolean>(isTokenValid());
 
 export function useGoogleSheets() {
     const logout = (): void => {
         accessToken.value = null;
         isAuthenticated.value = false;
-        localStorage.removeItem('gdrive_token');
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(EXPIRY_KEY);
+    };
+
+    const refreshAuthStatus = (): boolean => {
+        const valid = isTokenValid();
+        if (!valid && isAuthenticated.value) {
+            logout();
+        }
+        return valid;
     };
 
     const initAuth = async (): Promise<string> => {
         return new Promise((resolve, reject) => {
             if (typeof google === 'undefined' || !google.accounts?.oauth2) {
-                reject(new Error('Google Accounts Identity Services SDK not loaded.'));
+                reject(new Error('Google Identity Services SDK not loaded.'));
                 return;
             }
 
@@ -27,18 +46,27 @@ export function useGoogleSheets() {
                         reject(new Error(response.error_description || response.error));
                         return;
                     }
+
+                    const expiresInSec = Number(response.expires_in) || 3599;
+                    const expiresAt = Date.now() + expiresInSec * 1000;
+
                     accessToken.value = response.access_token;
                     isAuthenticated.value = true;
-                    localStorage.setItem('gdrive_token', response.access_token);
+                    localStorage.setItem(TOKEN_KEY, response.access_token);
+                    localStorage.setItem(EXPIRY_KEY, String(expiresAt));
+
                     resolve(response.access_token);
                 },
             });
-            client.requestAccessToken({ prompt: 'consent' });
+
+            client.requestAccessToken({ prompt: '' });
         });
     };
 
     const ensureAuth = async (): Promise<string> => {
-        if (accessToken.value) return accessToken.value;
+        if (refreshAuthStatus() && accessToken.value) {
+            return accessToken.value;
+        }
         return await initAuth();
     };
 
@@ -147,6 +175,7 @@ export function useGoogleSheets() {
 
     return {
         isAuthenticated,
+        refreshAuthStatus,
         initAuth,
         ensureAuth,
         logout,

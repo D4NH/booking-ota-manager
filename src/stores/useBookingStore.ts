@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { calculateNights } from '@/utils/date';
 
 export const useBookingStore = defineStore('booking', () => {
@@ -207,9 +208,11 @@ export const useBookingStore = defineStore('booking', () => {
     const importBookingsFromGoogleSheets = async (
         propertyId: PropertyId,
         rows: (string | number)[][]
-    ): Promise<{ importedCount: number; updatedCount: number; deletedCount: number }> => {
+    ): Promise<SyncResult> => {
         let importedCount = 0;
         let updatedCount = 0;
+        let deletedCount = 0;
+        const logs: SyncLogEntry[] = [];
         const processedBookingIds = new Set<string>();
 
         const VALID_LISTINGS = [
@@ -220,7 +223,6 @@ export const useBookingStore = defineStore('booking', () => {
             'Whatsapp',
             'Unavailable',
         ] as const;
-
         type ListingType = (typeof VALID_LISTINGS)[number];
 
         let minCheckIn = '9999-12-31';
@@ -228,9 +230,7 @@ export const useBookingStore = defineStore('booking', () => {
 
         const existingMap = new Map<string, Booking>();
         bookings.value.forEach((b) => {
-            if (b.propertyId === propertyId) {
-                existingMap.set(b.bookingId, b);
-            }
+            if (b.propertyId === propertyId) existingMap.set(b.bookingId, b);
         });
 
         const recordsToPut: Booking[] = [];
@@ -242,9 +242,7 @@ export const useBookingStore = defineStore('booking', () => {
             const checkIn = String(row[3] || '').trim();
             const checkOut = String(row[4] || '').trim();
 
-            if (!checkIn || !checkOut || checkIn.length < 10 || checkOut.length < 10) {
-                continue;
-            }
+            if (!checkIn || !checkOut || checkIn.length < 10 || checkOut.length < 10) continue;
 
             if (checkIn < minCheckIn) minCheckIn = checkIn;
             if (checkIn > maxCheckIn) maxCheckIn = checkIn;
@@ -267,12 +265,9 @@ export const useBookingStore = defineStore('booking', () => {
             processedBookingIds.add(bookingId);
 
             const guestName = rawGuestName || (isUnavailable ? 'Unavailable' : 'Guest');
-
             const nights = calculateNights(checkIn, checkOut);
-
             const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
             const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
-
             const rawStatus = String(row[8] || '').trim();
             const status: Booking['status'] = isUnavailable
                 ? 'Unavailable'
@@ -281,8 +276,8 @@ export const useBookingStore = defineStore('booking', () => {
             const notes = String(row[9] || '').trim();
 
             const existing = existingMap.get(bookingId);
-
-            const payload: Omit<Booking, 'id'> = {
+            const payload: Booking = {
+                id: existing?.id || `${propertyId}-${bookingId}`,
                 propertyId,
                 bookingId,
                 listing,
@@ -292,26 +287,91 @@ export const useBookingStore = defineStore('booking', () => {
                 nights,
                 payout,
                 status,
-                notes,
+                notes: notes || undefined,
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 
-            const fallbackId = existing?.id || `${propertyId}-${bookingId}`;
-
-            recordsToPut.push({
-                ...payload,
-                id: fallbackId,
-            } as Booking);
+            recordsToPut.push(payload);
 
             if (!existing) {
                 importedCount++;
-            } else if (
-                payload.status !== existing.status ||
-                payload.guestName !== existing.guestName ||
-                payload.payout !== existing.payout ||
-                payload.nights !== existing.nights
-            ) {
-                updatedCount++;
+                logs.push({
+                    type: 'imported',
+                    bookingId,
+                    guestName,
+                    propertyId,
+                });
+            } else {
+                // Normalized field-by-field diff comparison
+                const diffs: BookingChangeDiff[] = [];
+
+                if (payload.guestName !== existing.guestName) {
+                    diffs.push({
+                        field: 'guestName',
+                        oldValue: existing.guestName,
+                        newValue: payload.guestName,
+                    });
+                }
+                if (payload.checkIn !== existing.checkIn) {
+                    diffs.push({
+                        field: 'checkIn',
+                        oldValue: existing.checkIn,
+                        newValue: payload.checkIn,
+                    });
+                }
+                if (payload.checkOut !== existing.checkOut) {
+                    diffs.push({
+                        field: 'checkOut',
+                        oldValue: existing.checkOut,
+                        newValue: payload.checkOut,
+                    });
+                }
+                if (payload.listing !== existing.listing) {
+                    diffs.push({
+                        field: 'listing',
+                        oldValue: existing.listing,
+                        newValue: payload.listing,
+                    });
+                }
+                if (Number(payload.payout) !== Number(existing.payout)) {
+                    diffs.push({
+                        field: 'payout',
+                        oldValue: existing.payout,
+                        newValue: payload.payout,
+                    });
+                }
+                if (Number(payload.nights) !== Number(existing.nights)) {
+                    diffs.push({
+                        field: 'nights',
+                        oldValue: existing.nights,
+                        newValue: payload.nights,
+                    });
+                }
+                if (payload.status !== existing.status) {
+                    diffs.push({
+                        field: 'status',
+                        oldValue: existing.status,
+                        newValue: payload.status,
+                    });
+                }
+                if ((payload.notes || '') !== (existing.notes || '')) {
+                    diffs.push({
+                        field: 'notes',
+                        oldValue: existing.notes || '',
+                        newValue: payload.notes || '',
+                    });
+                }
+
+                if (diffs.length > 0) {
+                    updatedCount++;
+                    logs.push({
+                        type: 'updated',
+                        bookingId,
+                        guestName: payload.guestName,
+                        propertyId,
+                        diffs,
+                    });
+                }
             }
         }
 
@@ -319,9 +379,7 @@ export const useBookingStore = defineStore('booking', () => {
             await db.bookings.bulkPut(recordsToPut);
         }
 
-        let deletedCount = 0;
-
-        if (processedBookingIds.size > 0) {
+        if (processedBookingIds.size > 0 && minCheckIn <= maxCheckIn) {
             const localDbBookings = await db.bookings
                 .where('propertyId')
                 .equals(propertyId)
@@ -331,17 +389,24 @@ export const useBookingStore = defineStore('booking', () => {
             const staleBookings = localDbBookings.filter(
                 (b) => !processedBookingIds.has(b.bookingId)
             );
-
             if (staleBookings.length > 0) {
                 const staleIds = staleBookings.map((b) => b.id);
                 await db.bookings.bulkDelete(staleIds);
                 deletedCount = staleIds.length;
+
+                staleBookings.forEach((b) => {
+                    logs.push({
+                        type: 'deleted',
+                        bookingId: b.bookingId,
+                        guestName: b.guestName,
+                        propertyId,
+                    });
+                });
             }
         }
 
         await loadBookings();
-
-        return { importedCount, updatedCount, deletedCount };
+        return { importedCount, updatedCount, deletedCount, logs };
     };
 
     return {
