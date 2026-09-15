@@ -1,17 +1,61 @@
+// src/composables/useGoogleSheets.ts
 import { ref } from 'vue';
+
+// Ambient declaration for Google Identity Services global
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare const google: any;
 
 const TOKEN_KEY = 'gdrive_token';
 const EXPIRY_KEY = 'gdrive_token_expires_at';
 
-const isTokenValid = (): boolean => {
+/**
+ * Dynamically injects and verifies the Google Identity Services SDK.
+ */
+function loadGoogleSdk(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (typeof google !== 'undefined' && google?.accounts?.oauth2) {
+            resolve();
+            return;
+        }
+
+        const scriptUrl = 'https://accounts.google.com/gsi/client';
+        const existing = document.querySelector<HTMLScriptElement>(`script[src="${scriptUrl}"]`);
+
+        if (existing) {
+            existing.addEventListener('load', () => resolve());
+            existing.addEventListener('error', () =>
+                reject(new Error('Google SDK blocked by tracking protection or ad-blocker.'))
+            );
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = scriptUrl;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () =>
+            reject(new Error('Google SDK blocked by tracking protection or ad-blocker.'));
+
+        document.head.appendChild(script);
+    });
+}
+
+function isTokenValid(): boolean {
     const token = localStorage.getItem(TOKEN_KEY);
     const expiresAt = Number(localStorage.getItem(EXPIRY_KEY)) || 0;
-    // Expire 60 seconds early to avoid mid-flight API dropouts
+    // Expire 60s early as safety margin
     return Boolean(token && Date.now() < expiresAt - 60_000);
-};
+}
 
+// Module-level reactive state
 const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
 const isAuthenticated = ref<boolean>(isTokenValid());
+
+// Eagerly pre-load SDK on browser initialization
+if (typeof window !== 'undefined') {
+    loadGoogleSdk().catch(() => {});
+}
 
 export function useGoogleSheets() {
     const logout = (): void => {
@@ -30,9 +74,11 @@ export function useGoogleSheets() {
     };
 
     const initAuth = async (): Promise<string> => {
+        await loadGoogleSdk();
+
         return new Promise((resolve, reject) => {
-            if (typeof google === 'undefined' || !google.accounts?.oauth2) {
-                reject(new Error('Google Identity Services SDK not loaded.'));
+            if (typeof google === 'undefined' || !google?.accounts?.oauth2) {
+                reject(new Error('Google Accounts Identity Services SDK not available.'));
                 return;
             }
 
@@ -59,7 +105,8 @@ export function useGoogleSheets() {
                 },
             });
 
-            client.requestAccessToken({ prompt: '' });
+            // Forces Google's account selection modal to remain visible
+            client.requestAccessToken({ prompt: 'select_account' });
         });
     };
 
@@ -70,7 +117,6 @@ export function useGoogleSheets() {
         return await initAuth();
     };
 
-    // Universal API Wrapper: Auto-handles 401, clears invalid tokens, and retries auth
     const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
         let token = await ensureAuth();
 
@@ -124,7 +170,6 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
-    // Scan entire column A to locate row indices
     const updateSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string,
@@ -151,7 +196,6 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
 
-    // Scan entire column A for deletions
     const deleteSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string

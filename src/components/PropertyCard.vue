@@ -89,7 +89,7 @@ const handleImageError = (e: Event) => {
                                         {{ b.guestName }}
                                     </span>
                                     <span
-                                        class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
+                                        class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                 </div>

@@ -1,3 +1,4 @@
+// src/composables/useMonthlyMetrics.ts
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { PROPERTY_LIST } from '@/config/properties';
 import { getBookedPropertiesCount } from '@/composables/useOccupancy';
@@ -20,74 +21,64 @@ export interface UseMonthlyMetricsOptions {
     propertyId?: MaybeRefOrGetter<PropertyId | 'all' | undefined>;
 }
 
+const MS_PER_DAY = 86_400_000;
+
 /**
- * Calculates exact overlapping nights belonging strictly to target month ("YYYY-MM")
+ * Fast UTC night overlap without per-iteration Date allocations
  */
-const getOverlappingNights = (
+function calculateOverlappingNights(
     checkInStr: string,
     checkOutStr: string,
-    targetMonthStr: string
-): number => {
-    if (!checkInStr || !checkOutStr || !targetMonthStr) return 0;
+    monthStartMs: number,
+    monthEndMs: number
+): number {
+    const checkInMs = parseISODate(checkInStr).getTime();
+    const checkOutMs = parseISODate(checkOutStr).getTime();
 
-    const parts = targetMonthStr.split('-');
-    const year = Number(parts[0]);
-    const month = Number(parts[1]);
-
-    if (!year || !month) return 0;
-
-    const checkInTime = parseISODate(checkInStr).getTime();
-    const checkOutTime = parseISODate(checkOutStr).getTime();
-    const monthStartTime = new Date(year, month - 1, 1).getTime();
-    const monthEndTime = new Date(year, month, 1).getTime();
-
-    const start = Math.max(checkInTime, monthStartTime);
-    const end = Math.min(checkOutTime, monthEndTime);
+    const start = Math.max(checkInMs, monthStartMs);
+    const end = Math.min(checkOutMs, monthEndMs);
 
     if (start >= end) return 0;
-
-    return Math.round((end - start) / 86400000);
-};
+    return Math.round((end - start) / MS_PER_DAY);
+}
 
 /**
- * Computes monthly financial, capacity, and volume metrics for rental properties.
+ * Computes monthly financial, capacity, and volume analytics for a single property or the entire portfolio.
  *
- * Calculates total revenue payout, booked nights, occupancy rate, average daily rate (ADR),
- * and month-over-month revenue growth. Supports calculating either for a single villa
- * (capacity = 1 unit) or across the entire portfolio.
+ * Evaluates revenue payout, exact date-clamped night occupancy, average daily rate (ADR),
+ * month-over-month revenue growth, and annual 12-month property revenue distributions.
  *
- * @param bookings - A reactive reference, getter function, or array of bookings.
+ * @param bookings - A reactive `Ref`, getter function, or raw array of Booking records.
  * @param options - Configuration options for scoping the calculation.
  * @param options.targetMonth - Target month in 'YYYY-MM' format (e.g., '2026-09'). Defaults to the current month.
- * @param options.propertyId - Property filter. Accepts a static ID, a `Ref`, or a getter function (e.g., `() => property.id`).
- *                             Defaults to 'all' (aggregates across all active units).
+ * @param options.propertyId - Property filter. Accepts a static PropertyId, 'all', a `Ref`, or a getter function. Defaults to 'all'.
  *
  * @returns An object containing reactive computed values:
- * - `metrics`: Complete monthly metrics summary object.
- * - `totalPayout`: Total gross revenue for check-ins occurring in the target month.
- * - `occupiedNights`: Exact count of occupied nights overlapping the target month.
- * - `totalCapacityNights`: Total available room-nights (days in month × active units).
- * - `occupancyPercentage`: Occupancy rate percentage (0 - 100).
- * - `totalBookingsCount`: Number of active bookings checking in during the month.
- * - `averageDailyRate`: Average revenue earned per occupied night (ADR).
- * - `revenueGrowthPercent`: Percentage change in revenue compared to the previous month.
- * - `monthlyPropertyData`: 12-month breakdown array (Jan–Dec) per property for charts.
+ * - `metrics`: Consolidated `MonthlyMetrics` summary object.
+ * - `totalPayout`: Gross revenue for reservations checking in during the target month.
+ * - `occupiedNights`: Exact count of occupied nights falling strictly within the target month boundaries.
+ * - `totalCapacityNights`: Total available room-nights (days in month × active unit count).
+ * - `occupancyPercentage`: Occupancy rate percentage capped between 0 and 100.
+ * - `totalBookingsCount`: Number of confirmed bookings checking in during the target month.
+ * - `averageDailyRate`: Average Daily Rate (ADR) calculated as `totalPayout / occupiedNights`.
+ * - `revenueGrowthPercent`: Month-over-month percentage revenue change compared to previous month check-ins.
+ * - `monthlyPropertyData`: 12-month (Jan–Dec) per-property revenue matrix for the current calendar year.
  *
  * @example
- * // 1. Global portfolio metrics for current month:
- * const { totalPayout, occupancyPercentage } = useMonthlyMetrics(bookings);
+ * // 1. Portfolio-wide metrics for the active month:
+ * const { totalPayout, occupancyPercentage, averageDailyRate } = useMonthlyMetrics(bookings);
  *
  * @example
- * // 2. Single property metrics inside a card with reactive getter:
- * const { occupancyPercentage, totalPayout, totalBookingsCount } = useMonthlyMetrics(
- *   () => bookings,
+ * // 2. Reactive single-property metrics bound to route params or component props:
+ * const { occupancyPercentage, totalBookingsCount } = useMonthlyMetrics(
+ *   () => bookingStore.bookings,
  *   {
- *     propertyId: () => property.id,
+ *     propertyId: () => props.propertyId,
  *   }
  * );
  *
  * @example
- * // 3. Specific historical month (e.g., August 2026):
+ * // 3. Historical month audit (e.g., August 2026 for a specific villa):
  * const { metrics } = useMonthlyMetrics(bookings, {
  *   targetMonth: '2026-08',
  *   propertyId: 'piyungan',
@@ -101,22 +92,25 @@ export function useMonthlyMetrics(
         let totalPayout = 0;
         let occupiedNights = 0;
         let totalBookingsCount = 0;
-        let currentMonthRevenue = 0;
         let lastMonthRevenue = 0;
 
         const rawMonth = toValue(options.targetMonth);
-        const targetDate = rawMonth
-            ? new Date(Number(rawMonth.split('-')[0]), Number(rawMonth.split('-')[1]) - 1, 1)
-            : new Date();
+        const currentMonth = rawMonth || getCurrentMonth();
+        const previousMonth = getPreviousMonth(parseISODate(currentMonth));
 
-        const currentMonth = rawMonth || getCurrentMonth(targetDate);
-        const previousMonth = getPreviousMonth(targetDate);
+        const [yearStr, monthStr] = currentMonth.split('-');
+        const year = Number(yearStr);
+        const month = Number(monthStr);
 
-        const list = toValue(bookings) || [];
+        // Precalculate boundary timestamps ONCE per calculation run
+        const monthStartMs = Date.UTC(year, month - 1, 1);
+        const monthEndMs = Date.UTC(year, month, 1);
+
+        const list = toValue(bookings) ?? [];
         const rawPropertyId = toValue(options.propertyId);
         const activePropertyId =
             rawPropertyId && rawPropertyId !== 'all' ? (rawPropertyId as PropertyId) : null;
-        const isSingleProperty = !!activePropertyId;
+        const isSingleProperty = Boolean(activePropertyId);
 
         const daysInCurrentMonth = getDaysInMonth(currentMonth);
         const activeUnitsCount = isSingleProperty ? 1 : Math.max(1, getBookedPropertiesCount(list));
@@ -127,31 +121,31 @@ export function useMonthlyMetrics(
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (!b || b.status === 'Unavailable') continue;
+            if (!b || b.status === 'Unavailable' || b.status === 'No show') continue;
 
-            if (activePropertyId && b.propertyId !== activePropertyId) {
-                continue;
-            }
+            if (activePropertyId && b.propertyId !== activePropertyId) continue;
 
             const checkIn = b.checkIn || '';
             const checkOut = b.checkOut || '';
             const payout = b.payout || 0;
 
-            const isCheckInCurrent = checkIn.startsWith(currentMonth);
-            const isCheckInPrevious = checkIn.startsWith(previousMonth);
-
-            if (isCheckInCurrent) {
+            if (checkIn.startsWith(currentMonth)) {
                 totalPayout += payout;
-                currentMonthRevenue += payout;
                 totalBookingsCount++;
             }
 
-            if (isCheckInPrevious) {
+            if (checkIn.startsWith(previousMonth)) {
                 lastMonthRevenue += payout;
             }
 
+            // Check if stay spans any portion of target month
             if (checkIn <= monthEndStr && checkOut >= monthStartStr) {
-                occupiedNights += getOverlappingNights(checkIn, checkOut, currentMonth);
+                occupiedNights += calculateOverlappingNights(
+                    checkIn,
+                    checkOut,
+                    monthStartMs,
+                    monthEndMs
+                );
             }
         }
 
@@ -165,7 +159,7 @@ export function useMonthlyMetrics(
         const revenueGrowthPercent =
             lastMonthRevenue === 0
                 ? 0
-                : Math.round(((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100);
+                : Math.round(((totalPayout - lastMonthRevenue) / lastMonthRevenue) * 100);
 
         return {
             totalPayout,
@@ -178,9 +172,10 @@ export function useMonthlyMetrics(
         };
     });
 
+    // 12-Month Annual Breakdown per Property
     const monthlyPropertyData = computed<MonthlyPropertyRevenue[]>(() => {
         const currentYear = new Date().getFullYear().toString();
-        const list = toValue(bookings) || [];
+        const list = toValue(bookings) ?? [];
 
         const labels = [
             'Jan',
@@ -197,36 +192,34 @@ export function useMonthlyMetrics(
             'Dec',
         ];
 
-        // Initialize complete row objects upfront with default zero balances
-        const monthlyPropertyBookings: MonthlyPropertyRevenue[] = labels.map((label) => {
+        const monthlyBreakdown: MonthlyPropertyRevenue[] = labels.map((label) => {
             const row = { label } as MonthlyPropertyRevenue;
-            for (let i = 0; i < PROPERTY_LIST.length; i++) {
-                const prop = PROPERTY_LIST[i];
-                if (prop) {
-                    row[prop.id] = 0;
-                }
+            for (const prop of PROPERTY_LIST) {
+                row[prop.id] = 0;
             }
             return row;
         });
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (!b || !b.checkIn?.startsWith(currentYear) || b.status === 'Unavailable') {
+            if (
+                !b ||
+                !b.checkIn?.startsWith(currentYear) ||
+                b.status === 'Unavailable' ||
+                b.status === 'No show'
+            ) {
                 continue;
             }
 
             const monthIndex = Number(b.checkIn.substring(5, 7)) - 1;
-            const target = monthlyPropertyBookings[monthIndex];
+            const targetMonthRow = monthlyBreakdown[monthIndex];
 
-            if (target && b.propertyId in target) {
-                const currentVal = target[b.propertyId];
-                if (typeof currentVal === 'number') {
-                    target[b.propertyId] = currentVal + (b.payout || 0);
-                }
+            if (targetMonthRow && b.propertyId in targetMonthRow) {
+                targetMonthRow[b.propertyId] += b.payout || 0;
             }
         }
 
-        return monthlyPropertyBookings;
+        return monthlyBreakdown;
     });
 
     return {

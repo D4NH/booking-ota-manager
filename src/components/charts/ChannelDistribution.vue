@@ -184,8 +184,8 @@ watch(yearOptions, (available) => {
                             {{ channelStats.total }}
                         </span>
                         <span
-                            class="text-[9px] uppercase tracking-wider text-mist-500 font-semibold">
-                            Total stays
+                            class="mt-1 text-[10px] uppercase tracking-wider text-mist-500 font-semibold">
+                            Total bookings
                         </span>
                     </div>
                 </div>
@@ -205,7 +205,7 @@ watch(yearOptions, (available) => {
                                 <span class="font-medium text-mist-200">{{ ch.name }}</span>
                                 &bull;
                                 <span class="text-xs text-mist-500">
-                                    <strong class="text-mist-300">{{ ch.count }}</strong> stays
+                                    <strong class="text-mist-300">{{ ch.count }}</strong> bookings
                                 </span>
                             </span>
                             <span class="font-mono text-mist-400">{{ ch.percentage }}%</span>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useGroupedBookings } from '@/composables/useGroupedBookings';
+import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
+import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
@@ -24,9 +27,13 @@ interface Props {
 const { id } = defineProps<Props>();
 
 const router = useRouter();
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const { deleteBooking } = useBookingSync();
-
+const { totalPayout, revenueGrowthPercent } = useMonthlyMetrics(() => bookings.value, {
+    propertyId: () => id,
+});
 const {
     selectedProperty,
     unitBookings,
@@ -42,7 +49,7 @@ const {
 } = usePropertyDetails(() => id);
 
 const upcomingUnitBookings = computed(() => {
-    const currentMonth = getCurrentMonth(); // "2026-09"
+    const currentMonth = getCurrentMonth();
     return unitBookings.value.filter((b) => b.checkIn >= currentMonth);
 });
 
@@ -281,10 +288,19 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Average Daily Rate
+                    Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
-                <p class="text-xs text-mist-500">Per booked night</p>
+                <p class="font-mono text-lg font-bold text-mist-100">
+                    {{ formatIDR(totalPayout) }}
+                </p>
+                <p class="flex items-center gap-1 text-xs">
+                    <span
+                        class="font-medium"
+                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
+                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                    </span>
+                    <span class="text-mist-500">vs last month</span>
+                </p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">

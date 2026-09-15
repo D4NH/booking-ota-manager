@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { usePropertyStore } from '@/stores/usePropertyStore';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry } from '@/types/sync';
@@ -15,7 +14,6 @@ interface Props {
 const { propertyId = 'all' } = defineProps<Props>();
 
 const bookingStore = useBookingStore();
-const propertyStore = usePropertyStore();
 const { isAuthenticated, refreshAuthStatus, initAuth, fetchSheetRows } = useGoogleSheets();
 
 const isSyncing = ref(false);
@@ -35,7 +33,7 @@ const handleSync = async (): Promise<void> => {
         try {
             await initAuth();
         } catch (authErr) {
-            console.warn('Auth cancelled or failed:', authErr);
+            console.warn('[Sync] Auth aborted or failed:', authErr);
             return;
         }
     }
@@ -51,65 +49,72 @@ const handleSync = async (): Promise<void> => {
                 let totalDeleted = 0;
                 const allLogs: SyncLogEntry[] = [];
 
-                const targetProperties =
+                const targetProperties: PropertyId[] =
                     propertyId === 'all'
-                        ? propertyStore.sortedProperties.map((p) => p.id as PropertyId)
+                        ? (Object.keys(PROPERTY_CONFIGS) as PropertyId[])
                         : [propertyId];
 
+                console.group('🔄 Google Sheets Sync Diagnostics');
+                console.log('Target properties:', targetProperties);
+
                 for (const id of targetProperties) {
-                    const spreadsheetId = PROPERTY_CONFIGS[id]?.spreadsheetId;
-                    if (!spreadsheetId) continue;
+                    const config = PROPERTY_CONFIGS[id];
+                    const spreadsheetId = config?.spreadsheetId;
 
-                    const range = PROPERTY_CONFIGS[id]?.defaultRange || 'A2:J';
-                    const rows = await fetchSheetRows(spreadsheetId, range);
-
-                    if (rows.length > 0) {
-                        const stats = await bookingStore.importBookingsFromGoogleSheets(id, rows);
-                        totalImported += stats.importedCount;
-                        totalUpdated += stats.updatedCount;
-                        totalDeleted += stats.deletedCount;
-                        allLogs.push(...stats.logs);
+                    if (!spreadsheetId || !spreadsheetId.trim()) {
+                        console.warn(
+                            `[Sync] Skipped ${id}: Missing spreadsheetId in PROPERTY_CONFIGS.`
+                        );
+                        continue;
                     }
+
+                    const range = config.defaultRange || 'A2:J';
+                    console.log(`[Sync] Fetching ${id} (${spreadsheetId}) with range: ${range}...`);
+
+                    const rows = await fetchSheetRows(spreadsheetId, range);
+                    console.log(`[Sync] Received ${rows.length} rows for ${id}.`);
+
+                    if (rows.length === 0) {
+                        console.warn(
+                            `[Sync] Google Sheets returned 0 rows for ${id}. Verify tab name and content.`
+                        );
+                        continue;
+                    }
+
+                    const stats = await bookingStore.importBookingsFromGoogleSheets(id, rows);
+                    totalImported += stats.importedCount;
+                    totalUpdated += stats.updatedCount;
+                    totalDeleted += stats.deletedCount;
+                    allLogs.push(...stats.logs);
                 }
 
+                console.groupEnd();
                 syncLogs.value = allLogs;
-
-                if (allLogs.length > 0) {
-                    console.groupCollapsed(
-                        `🔄 Sync Audit: ${totalImported} new, ${totalUpdated} updated, ${totalDeleted} deleted`
-                    );
-                    console.table(
-                        allLogs.map((l) => ({
-                            Action: l.type.toUpperCase(),
-                            ID: l.bookingId,
-                            Guest: l.guestName,
-                            Property: l.propertyId,
-                            Changes:
-                                l.diffs
-                                    ?.map(
-                                        (d) =>
-                                            `${String(d.field)}: "${String(d.oldValue)}" → "${String(d.newValue)}"`
-                                    )
-                                    .join(' | ') || '-',
-                        }))
-                    );
-                    console.groupEnd();
-                }
 
                 return { totalImported, totalUpdated, totalDeleted };
             },
             {
                 loading: {
                     title: 'Syncing...',
-                    description: 'Comparing sheets with local database.',
+                    description: 'Fetching sheets and updating local database.',
                 },
-                success: (data) => ({
-                    title: 'Sync Complete',
-                    description: `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted}.`,
-                }),
+                success: (data) => {
+                    const count = data.totalImported + data.totalUpdated + data.totalDeleted;
+                    if (count === 0) {
+                        return {
+                            title: 'No Changes Detected',
+                            description: 'All local bookings match Google Sheets.',
+                        };
+                    }
+                    return {
+                        title: 'Sync Complete',
+                        description: `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted}.`,
+                    };
+                },
                 error: (err) => ({
                     title: 'Sync failed',
-                    description: err instanceof Error ? err.message : 'Google Sheets sync failed.',
+                    description:
+                        err instanceof Error ? err.message : 'Failed to fetch Google Sheets.',
                 }),
             }
         );
@@ -152,11 +157,12 @@ const handleSync = async (): Promise<void> => {
                 }}
             </span>
         </button>
+
         <button
             v-if="syncLogs.length > 0"
             type="button"
             class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 px-2 py-1.5 text-xs text-mist-300 hover:bg-mist-700 transition"
-            title="View last sync change audit"
+            title="View last sync audit"
             @click="showLogModal = true">
             <fa-icon icon="list-check" />
         </button>
@@ -212,8 +218,6 @@ const handleSync = async (): Promise<void> => {
                                 {{ log.propertyId }}
                             </span>
                         </div>
-
-                        <!-- Detailed Field Diffs for Updates -->
                         <div
                             v-if="log.diffs && log.diffs.length > 0"
                             class="rounded bg-mist-900/60 p-2 space-y-1 font-mono text-[11px]">
