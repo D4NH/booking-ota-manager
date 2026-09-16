@@ -31,7 +31,7 @@ export const CALENDAR_STATUS_STYLES: Record<string, string> = {
     Unavailable: 'border-red-500/40 bg-red-500/10 hover:bg-red-500/40',
 };
 
-export const STATUS_BASE_CLASS = 'rounded-sm px-2 py-0.5 text-xs text-nowrap';
+export const STATUS_BASE_CLASS = 'rounded-sm px-1.5 py-0.5 text-xs text-nowrap';
 
 export const getStatusStyle = (status: string, isCalendar?: boolean) => {
     const statusColors = STATUS_STYLES[status] || STATUS_STYLES.Default;

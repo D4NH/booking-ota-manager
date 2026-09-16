@@ -96,10 +96,8 @@ const handleBookingClick = (booking: Booking, event: Event) => {
             <div
                 v-for="(day, dayIndex) in weekDays"
                 :key="day.dateStr"
-                :class="[
-                    'min-h-32 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
-                    day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
-                ]"
+                class="min-h-32 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40"
+                :class="{ 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30': day.isToday }"
                 @click="handleCellClick(day.dateStr)">
                 <!-- Cell Header -->
                 <div class="flex items-center justify-between mb-1.5">

@@ -47,6 +47,16 @@ export const getDaysInMonth = (yearMonthStr: string): number => {
     return new Date(year, month, 0).getDate();
 };
 
+export const getCurrentWeekNumber = (d: Date = new Date()): number => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    const weekNumber = Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+
+    return weekNumber;
+};
+
 /**
  * Parse an ISO date string ("YYYY-MM-DD" or "YYYY-MM") into a local Date object.
  * Prevents UTC timezone shift backward by 1 day.

@@ -149,7 +149,7 @@ const handleFileChange = async (event: Event): Promise<void> => {
                 <h3 class="text-xs font-bold uppercase tracking-wider text-mist-200">
                     Property Data Backup
                 </h3>
-                <p class="text-xs text-mist-500 mt-0.5">
+                <p class="text-xs text-mist-500 mt-1">
                     Save local unit configurations or restore from JSON backup.
                 </p>
             </div>

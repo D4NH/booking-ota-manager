@@ -164,8 +164,7 @@ watch(
                             {{ day.dayNumber }}
                         </span>
                     </div>
-
-                    <!-- Stays List -->
+                    <!-- Event -->
                     <div class="space-y-1.5 flex-1 flex flex-col justify-start">
                         <div
                             v-for="b in getStaysForDate(day.dateStr)"
@@ -173,87 +172,46 @@ watch(
                             class="group relative z-10">
                             <div
                                 :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
+                                class="h-12 px-1.5 transition shadow-sm cursor-pointer flex flex-col justify-center"
                                 :class="[
-                                    'py-1 px-1.5 text-xs transition shadow-sm cursor-pointer',
                                     multiDayStyling(b, day.dateStr, dayIndex),
                                     getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">
-                                <!-- Initial Day Content -->
+                                <div class="flex items-center justify-between min-w-0">
+                                    <span class="font-semibold text-xs text-mist-100 truncate">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <span
+                                        v-if="
+                                            (b.checkIn === day.dateStr ||
+                                                dayIndex % 7 === 0 ||
+                                                b.nights === 1) &&
+                                            b.status !== 'Unavailable' &&
+                                            selectedProperty === 'all'
+                                        "
+                                        class="capitalize rounded-sm px-1.5 py-0.5 text-xs shrink-0 ml-1"
+                                        :class="[
+                                            getPropertyTheme(b.propertyId).bg,
+                                            getPropertyTheme(b.propertyId).text,
+                                        ]">
+                                        {{ b.propertyId }}
+                                    </span>
+                                </div>
                                 <div
                                     v-if="
-                                        b.checkIn === day.dateStr ||
-                                        dayIndex % 7 === 0 ||
-                                        b.nights === 1
+                                        (b.checkIn === day.dateStr ||
+                                            dayIndex % 7 === 0 ||
+                                            b.nights === 1) &&
+                                        b.status !== 'Unavailable'
                                     "
-                                    class="flex flex-col gap-1 h-10">
-                                    <div class="flex justify-between items-start">
-                                        <span class="font-semibold text-xs text-mist-100 truncate">
-                                            {{ b.guestName }}
-                                        </span>
-                                        <span
-                                            v-if="
-                                                b.status !== 'Unavailable' &&
-                                                selectedProperty === 'all'
-                                            "
-                                            class="capitalize rounded-md px-1 py-0.2 text-[10px] font-bold shrink-0"
-                                            :class="[
-                                                getPropertyTheme(b.propertyId).bg,
-                                                getPropertyTheme(b.propertyId).text,
-                                            ]">
-                                            {{ b.propertyId }}
-                                        </span>
-                                    </div>
-                                    <div
-                                        v-if="b.status !== 'Unavailable'"
-                                        class="text-xs text-mist-400">
-                                        {{ b.listing }}
-                                    </div>
+                                    class="text-[10px] text-mist-400 truncate mt-1">
+                                    via {{ b.listing }}
                                 </div>
-
-                                <!-- Continuation Bar -->
                                 <div
-                                    v-else
-                                    class="text-xs text-mist-400 font-medium truncate flex items-start gap-1 opacity-75 h-10">
-                                    <span class="truncate">{{ b.guestName }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Hover Popover Details -->
-                            <div
-                                v-if="day.isCurrentMonth"
-                                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
-                                <div
-                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                    <div class="border-b border-mist-800 pb-1.5 mb-1.5">
-                                        <span class="font-bold text-mist-200">{{
-                                            b.guestName
-                                        }}</span>
-                                        <span class="block mt-1 text-[10px] text-mist-400"
-                                            >{{ b.checkIn }} → {{ b.checkOut }}</span
-                                        >
-                                    </div>
-                                    <div
-                                        v-if="b.status === 'Waiting for payment'"
-                                        class="mb-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 p-1.5 text-amber-300 font-medium text-[11px]">
-                                        Payment pending
-                                    </div>
-                                    <div
-                                        v-if="b.status === 'Waiting for payout'"
-                                        class="mb-1.5 rounded-md bg-sky-500/10 border border-sky-500/20 p-1.5 text-sky-300 font-medium text-[11px]">
-                                        Payout pending
-                                    </div>
-                                    <div
-                                        v-if="b.notes"
-                                        class="text-mist-300 text-[11px]">
-                                        <span class="font-semibold text-mist-400">Notes:</span>
-                                        <p class="mt-1 whitespace-pre-wrap italic">{{ b.notes }}</p>
-                                    </div>
-                                    <div
-                                        v-else
-                                        class="text-mist-500 italic text-[11px]">
-                                        No notes added
-                                    </div>
+                                    v-else-if="b.nights > 1"
+                                    class="text-[10px] text-mist-500 truncate opacity-60 mt-1">
+                                    &bull;&bull;&bull;
                                 </div>
                             </div>
                         </div>

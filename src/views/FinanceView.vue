@@ -158,7 +158,7 @@ const handleTabChange = (id: string) => (selectedProperty.value = id as Property
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Average Daily Rate (ADR)
+                    Average Daily Rate
                 </h3>
                 <p class="text-lg font-bold font-mono text-mist-100 mt-1">
                     {{ formatIDR(averageDailyRate) }}

@@ -120,19 +120,19 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
         const isLastNight = lastNight === dateStr;
         const isSingleNight = b.nights === 1 || (isCheckIn && isLastNight);
 
-        if (isSingleNight) return 'rounded-md mx-0 border';
+        if (isSingleNight) return 'rounded-sm mx-0 border';
 
         const classes: string[] = ['border-y'];
         if (isCheckIn || dayOfWeek === 0) {
-            classes.push('rounded-l-md ml-0 border-l');
+            classes.push('rounded-l-sm ml-0 border-l');
         } else {
             classes.push('rounded-l-none -ml-2 border-l-0 pl-3');
         }
 
         if (isLastNight || dayOfWeek === 6) {
-            classes.push('rounded-r-md mr-0 border-r');
+            classes.push('rounded-r-sm mr-0 border-r');
         } else {
-            classes.push('rounded-r-none -mr-2 border-r-0 pr-3');
+            classes.push('rounded-r-none -mr-2 border-r-0');
         }
 
         return classes.join(' ');
