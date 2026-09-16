@@ -1,131 +1,143 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { Property } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-import { getCurrentDate } from '@/utils/date';
+import { getCurrentDate, getDaysInMonth, parseISODate } from '@/utils/date';
+
+import CardTitle from '@/components/CardTitle.vue';
+
+interface Props {
+    currentRevenue: number;
+    property: Property;
+    monthlyTarget?: number;
+    today?: string;
+}
 
 const {
     currentRevenue,
+    property,
     monthlyTarget = 15000000,
     today = getCurrentDate(),
-} = defineProps<{
-    currentRevenue: number; // e.g. 9031506
-    monthlyTarget?: number; // e.g. 15000000 (Target for September)
-    today?: string; // e.g. '2026-09-10'
-}>();
+} = defineProps<Props>();
 
-// Date & Days calculations
-const dateObj = computed(() => new Date(today));
-const dayNumber = computed(() => dateObj.value.getDate()); // e.g. 10
-const totalDaysInMonth = computed(() => {
-    const y = dateObj.value.getFullYear();
-    const m = dateObj.value.getMonth() + 1;
-    return new Date(y, m, 0).getDate(); // e.g. 30 for Sept
-});
+const dateObj = computed(() => parseISODate(today));
+const dayNumber = computed(() => dateObj.value.getDate());
+const totalDaysInMonth = computed(() => getDaysInMonth(today.slice(0, 7)));
 const daysRemaining = computed(() => Math.max(0, totalDaysInMonth.value - dayNumber.value));
-// Percentages
-const targetPercentage = computed(() => {
-    if (monthlyTarget === 0) return 0;
-    return Math.min(100, Math.round((currentRevenue / monthlyTarget) * 100));
+// Dynamic Target Resolution (User override -> 70% occupancy target at base rate -> 15M fallback)
+const effectiveTarget = computed(() => {
+    if (typeof monthlyTarget === 'number' && monthlyTarget > 0) return monthlyTarget;
+    if (property?.price) {
+        return Math.round(property.price * totalDaysInMonth.value * 0.7);
+    }
+    return 15_000_000;
 });
-// % of month that has passed (e.g. Day 10 of 30 = 33.3%)
+const targetPercentage = computed(() => {
+    if (effectiveTarget.value === 0) return 0;
+    return Math.min(100, Math.round((currentRevenue / effectiveTarget.value) * 100));
+});
 const monthTimeElapsed = computed(() =>
-    Math.round((dayNumber.value / totalDaysInMonth.value) * 100)
+    Math.min(100, Math.round((dayNumber.value / totalDaysInMonth.value) * 100))
 );
-// Pacing Health: Are we ahead or behind the time curve?
 const isAheadOfPace = computed(() => targetPercentage.value >= monthTimeElapsed.value);
 const pacingDiff = computed(() => targetPercentage.value - monthTimeElapsed.value);
-// Financial Gaps
-const remainingRevenue = computed(() => Math.max(0, monthlyTarget - currentRevenue));
+// Financial Gap & Run-Rate Projections
+const remainingRevenue = computed(() => Math.max(0, effectiveTarget.value - currentRevenue));
 const dailyRunRateNeeded = computed(() => {
     if (daysRemaining.value === 0) return remainingRevenue.value;
     return Math.round(remainingRevenue.value / daysRemaining.value);
 });
+const projectedRevenue = computed(() => {
+    if (dayNumber.value === 0) return currentRevenue;
+    return Math.round((currentRevenue / dayNumber.value) * totalDaysInMonth.value);
+});
 </script>
 
 <template>
-    <div
-        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
-        <div class="flex items-start justify-between">
-            <div>
-                <h3 class="text-base font-bold text-mist-100">Monthly Revenue Pacing</h3>
-                <p class="text-xs text-mist-400">Target vs. Actual Progress</p>
+    <div class="flex flex-col h-full min-h-0">
+        <CardTitle>
+            <template #title>Monthly Pacing</template>
+            <template #subtitle>Target vs. actual trajectory</template>
+        </CardTitle>
+
+        <div
+            class="flex flex-col flex-1 justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-4">
+            <!-- Metric Highlight & Pacing Badge -->
+            <div class="flex items-baseline justify-between">
+                <div>
+                    <span class="text-xl font-bold font-mono text-mist-100">
+                        {{ formatIDR(currentRevenue) }}
+                    </span>
+                    <span class="text-xs text-mist-400 ml-1.5">
+                        / {{ formatIDR(effectiveTarget) }} goal
+                    </span>
+                    <div class="mt-1 flex items-center gap-1 text-xs">
+                        <span
+                            class="font-medium"
+                            :class="isAheadOfPace ? 'text-lime-400' : 'text-rose-400'">
+                            {{ isAheadOfPace ? '+' : '' }}{{ pacingDiff }}%
+                        </span>
+                        <span class="text-mist-500">
+                            {{ isAheadOfPace ? 'ahead of pace' : 'behind pace' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <span class="text-lg font-bold font-mono text-lime-400">
+                        {{ targetPercentage }}%
+                    </span>
+                    <span class="block text-[10px] text-mist-500">
+                        Proj: {{ formatIDR(projectedRevenue) }}
+                    </span>
+                </div>
             </div>
 
-            <!-- Health Badge -->
-            <span
-                :class="[
-                    'rounded-full px-2.5 py-0.5 text-[11px] font-bold border',
-                    isAheadOfPace
-                        ? 'border-lime-500/30 bg-lime-500/10 text-lime-400'
-                        : 'border-amber-500/30 bg-amber-500/10 text-amber-300',
-                ]">
-                {{
-                    isAheadOfPace
-                        ? `Ahead of Pace (+${pacingDiff}%)`
-                        : `Behind Pace (${pacingDiff}%)`
-                }}
-            </span>
-        </div>
+            <!-- Progress Bar with Clamped "Today" Marker -->
+            <div class="space-y-1.5 pt-1">
+                <div class="relative h-2.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                    <!-- Actual Revenue Fill -->
+                    <div
+                        class="h-full rounded-full bg-lime-500 transition-all duration-500 ease-out"
+                        :style="{ width: `${targetPercentage}%` }" />
 
-        <!-- Metric Highlight -->
-        <div class="my-3 flex items-baseline justify-between">
-            <div>
-                <span class="text-xl font-black font-mono text-mist-100">
-                    {{ formatIDR(currentRevenue) }}
-                </span>
-                <span class="text-xs text-mist-400 ml-1.5">
-                    / {{ formatIDR(monthlyTarget) }} goal
-                </span>
-            </div>
-            <span class="text-lg font-bold font-mono text-lime-400"> {{ targetPercentage }}% </span>
-        </div>
+                    <!-- Current Day Time Marker -->
+                    <div
+                        class="absolute top-0 bottom-0 w-1 bg-white shadow-sm z-10 -translate-x-1/2"
+                        :style="{ left: `${monthTimeElapsed}%` }"
+                        :title="`Day ${dayNumber} of ${totalDaysInMonth} (${monthTimeElapsed}% elapsed)`" />
+                </div>
 
-        <!-- Progress Bar with "Today" Time Marker -->
-        <div class="space-y-1.5">
-            <div class="relative h-3 w-full rounded-full bg-mist-950 overflow-hidden">
-                <!-- Actual Revenue Fill -->
-                <div
-                    class="h-full rounded-full bg-lime-500 transition-all duration-500 ease-out"
-                    :style="{ width: `${targetPercentage}%` }" />
-
-                <!-- Month Time Elapsed Marker (Puck) -->
-                <div
-                    class="absolute top-0 bottom-0 w-1 bg-white/70 shadow-sm z-10"
-                    :style="{ left: `${monthTimeElapsed}%` }"
-                    :title="`Day ${dayNumber} of ${totalDaysInMonth} (${monthTimeElapsed}% of month passed)`" />
+                <!-- Scale Labels -->
+                <div class="flex justify-between text-[10px] font-medium text-mist-500">
+                    <span>Day 1</span>
+                    <span class="text-mist-300">
+                        Day {{ dayNumber }} ({{ monthTimeElapsed }}% time elapsed)
+                    </span>
+                    <span>Day {{ totalDaysInMonth }}</span>
+                </div>
             </div>
 
-            <!-- Labels under bar -->
-            <div class="flex justify-between text-[10px] font-medium text-mist-500">
-                <span>0</span>
-                <span
-                    :style="{ marginLeft: `${monthTimeElapsed - 15}%` }"
-                    class="text-mist-300">
-                    Day {{ dayNumber }} (Time: {{ monthTimeElapsed }}%)
-                </span>
-                <span>Target: {{ formatIDR(monthlyTarget) }}</span>
-            </div>
-        </div>
+            <!-- Financial Run-Rate Grid -->
+            <div class="grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs">
+                <div class="rounded bg-mist-950/60 p-2.5 space-y-0.5">
+                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        Gap to Target
+                    </span>
+                    <span class="font-mono text-sm font-bold text-mist-200">
+                        {{ formatIDR(remainingRevenue) }}
+                    </span>
+                </div>
 
-        <!-- Operational Breakdown Row -->
-        <div class="mt-4 grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs">
-            <div class="rounded-md bg-mist-950/60 p-2.5">
-                <span class="block text-[10px] uppercase font-semibold text-mist-500">
-                    Gap to Target
-                </span>
-                <span class="font-mono text-sm font-bold text-mist-200">
-                    {{ formatIDR(remainingRevenue) }}
-                </span>
-            </div>
-
-            <div class="rounded-md bg-mist-950/60 p-2.5">
-                <span class="block text-[10px] uppercase font-semibold text-mist-500">
-                    Req. Rate ({{ daysRemaining }}d left)
-                </span>
-                <span class="font-mono text-sm font-bold text-lime-400">
-                    {{ formatIDR(dailyRunRateNeeded) }}
-                    <span class="text-[10px] font-normal text-mist-400">/ day</span>
-                </span>
+                <div class="rounded bg-mist-950/60 p-2.5 space-y-0.5">
+                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        Needed Rate ({{ daysRemaining }}d left)
+                    </span>
+                    <span class="font-mono text-sm font-bold text-lime-400">
+                        {{ formatIDR(dailyRunRateNeeded) }}
+                        <span class="text-[10px] font-normal text-mist-500">/ day</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
