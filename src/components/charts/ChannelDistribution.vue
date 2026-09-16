@@ -228,7 +228,7 @@ const clearHighlight = (): void => {
                             }}
                         </span>
                         <span
-                            class="text-[10px] uppercase tracking-wider text-mist-500 font-semibold">
+                            class="text-[11px] uppercase tracking-wider text-mist-500 font-semibold mt-1">
                             {{ viewMode === 'revenue' ? 'Total Payout' : 'Total Stays' }}
                         </span>
                     </div>
