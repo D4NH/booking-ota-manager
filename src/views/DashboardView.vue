@@ -13,7 +13,7 @@ import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import RevenuePerformance from '@/components/charts/RevenuePerformance.vue';
-import RecentBookings from '@/components/RecentBookings.vue';
+import UpcomingBookings from '@/components/UpcomingBookings.vue';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -105,9 +105,9 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
 
         <!-- Recent Bookings & Revenue Performance-->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <RecentBookings
+            <UpcomingBookings
                 :bookings="bookings"
-                @select-booking="handleEditBooking" />
+                @edit-booking="handleEditBooking" />
 
             <RevenuePerformance :bookings="bookings" />
         </div>
