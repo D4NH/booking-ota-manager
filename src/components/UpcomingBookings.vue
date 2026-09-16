@@ -119,8 +119,13 @@ const displaySections = computed<MonthSection[]>(() => {
                                         </span>
                                     </div>
                                     <p class="text-[11px] text-mist-400 mt-1">
-                                        {{ formatDate(b.checkIn, { shortMonth: true }) }} &bull;
-                                        {{ b.nights }} night(s) via
+                                        {{
+                                            formatDate(b.checkIn, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                        &bull; {{ b.nights }} night(s) via
                                         <span class="text-mist-300 font-medium">
                                             {{ b.listing }}
                                         </span>

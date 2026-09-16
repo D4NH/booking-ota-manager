@@ -94,10 +94,20 @@ const handleImageError = (e: Event) => {
                                     </span>
                                 </div>
                                 <span class="text-[11px] text-mist-400">
-                                    {{ formatDate(b.checkIn, { shortMonth: true }) }}
+                                    {{
+                                        formatDate(b.checkIn, {
+                                            shortWeekday: true,
+                                            shortMonth: true,
+                                        })
+                                    }}
                                     &rarr;
-                                    {{ formatDate(b.checkOut, { shortMonth: true }) }} &bull;
-                                    {{ b.nights }} night(s)
+                                    {{
+                                        formatDate(b.checkOut, {
+                                            shortWeekday: true,
+                                            shortMonth: true,
+                                        })
+                                    }}
+                                    &bull; {{ b.nights }} night(s)
                                 </span>
                                 <span class="text-[11px] text-mist-500 font-medium">
                                     via {{ b.listing }}

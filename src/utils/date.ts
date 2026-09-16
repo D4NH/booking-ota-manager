@@ -66,24 +66,25 @@ export const parseISODate = (isoStr: string): Date => {
     return new Date(year ?? 2026, (month ?? 1) - 1, day);
 };
 
+export interface FormatDateOptions {
+    includeYear?: boolean;
+    shortMonth?: boolean;
+    monthHeader?: boolean;
+    monthOnly?: boolean;
+    includeWeekday?: boolean; // e.g. "Saturday" (or "Sat" if shortWeekday: true)
+    shortWeekday?: boolean; // e.g. "Sat"
+    weekday?: 'short' | 'long'; // explicit format override
+}
+
 /**
- * Formats an ISO date string ("2026-09-02") into a readable string.
- * Example outputs:
+ * Formats an ISO string ("2026-09-02" or "2026-09") into display text.
+ * Examples:
  *  - formatDate("2026-09-02") -> "02 September"
- *  - formatDate("2026-09-02", { includeYear: true }) -> "02 September 2026"
- *  - formatDate("2026-09-02", { shortMonth: true }) -> "02 Sep"
- *  - formatDate("2026-09-02", { monthHeader: true }) -> "September 2026"
- *  - formatDate("2026-09-02", { monthOnly: true }) -> "September"
+ *  - formatDate("2026-09-02", { shortWeekday: true, shortMonth: true }) -> "Wed, 02 Sep"
+ *  - formatDate("2026-09-02", { includeWeekday: true, includeYear: true }) -> "Wednesday, 02 September 2026"
+ *  - formatDate("2026-09-02", { weekday: 'short' }) -> "Wed, 02 September"
  */
-export const formatDate = (
-    isoDateStr: string,
-    options: {
-        includeYear?: boolean;
-        shortMonth?: boolean;
-        monthHeader?: boolean;
-        monthOnly?: boolean;
-    } = {}
-): string => {
+export const formatDate = (isoDateStr: string, options: FormatDateOptions = {}): string => {
     if (!isoDateStr) return '';
 
     const date = parseISODate(isoDateStr);
@@ -91,13 +92,26 @@ export const formatDate = (
 
     const monthFormat = options.shortMonth ? 'short' : 'long';
     const monthName = date.toLocaleDateString('en-US', { month: monthFormat });
-    const day = String(date.getDate()).padStart(2, '0');
 
-    if (options.includeYear) return `${day} ${monthName} ${date.getFullYear()}`;
     if (options.monthHeader) return `${monthName} ${date.getFullYear()}`;
     if (options.monthOnly) return monthName;
 
-    return `${day} ${monthName}`;
+    const day = String(date.getDate()).padStart(2, '0');
+
+    // Weekday prefix resolution
+    let weekdayPrefix = '';
+    const wantsWeekday = options.includeWeekday || options.shortWeekday || Boolean(options.weekday);
+
+    if (wantsWeekday) {
+        const weekdayStyle: 'short' | 'long' =
+            options.weekday ?? (options.shortWeekday ? 'short' : 'long');
+        const weekdayName = date.toLocaleDateString('en-US', { weekday: weekdayStyle });
+        weekdayPrefix = `${weekdayName} `;
+    }
+
+    const yearSuffix = options.includeYear ? ` ${date.getFullYear()}` : '';
+
+    return `${weekdayPrefix}${day} ${monthName}${yearSuffix}`;
 };
 
 /**
