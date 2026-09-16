@@ -138,11 +138,12 @@ watch(
 <template>
     <Teleport to="body">
         <div
-            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/80 p-4 backdrop-blur-sm">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-2xl space-y-4 rounded-md border border-mist-800 bg-mist-900 p-6 shadow-xl">
+                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between border-b border-mist-800 pb-4 mb-4">
+                <div
+                    class="flex items-center justify-between border-b border-mist-800 px-6 py-4 bg-mist-950/60">
                     <h2 class="text-base font-bold text-mist-100">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
@@ -169,17 +170,17 @@ watch(
                 </div>
 
                 <form
-                    class="space-y-4"
+                    class="p-4 space-y-4 max-h-[80vh] overflow-y-auto"
                     @submit.prevent="handleSubmit">
                     <!-- Property Selection -->
-                    <div class="relative">
-                        <label
-                            for="property"
-                            class="mb-1 block text-xs font-medium text-mist-400">
-                            Property
-                        </label>
+                    <label
+                        for="property"
+                        class="block text-xs font-medium text-mist-400">
+                        Property
+                    </label>
+                    <div class="relative mt-1">
                         <div
-                            class="pointer-events-none absolute inset-y-0 left-3 top-5 flex items-center pr-2 text-mist-400">
+                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-mist-500">
                             <fa-icon
                                 class="text-xs"
                                 icon="house" />
@@ -189,7 +190,7 @@ watch(
                             v-model="form.propertyId"
                             name="property"
                             required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option
                                 value=""
                                 disabled>
@@ -203,7 +204,7 @@ watch(
                             </option>
                         </select>
                         <div
-                            class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                            class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-400">
                             <fa-icon
                                 class="text-xs"
                                 icon="angle-down" />
@@ -215,12 +216,12 @@ watch(
                         <div>
                             <label
                                 for="bookingId"
-                                class="mb-1 block text-xs font-medium text-mist-400">
+                                class="block text-xs font-medium text-mist-400">
                                 Booking ID
                             </label>
-                            <div class="relative">
+                            <div class="relative mt-1">
                                 <div
-                                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                    class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
                                     <fa-icon
                                         icon="hashtag"
                                         class="text-xs" />
@@ -235,16 +236,16 @@ watch(
                                         'cursor-not-allowed disabled:bg-mist-900':
                                             Boolean(bookingToEdit),
                                     }"
-                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                     required />
                             </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                            <label class="block text-xs font-medium text-mist-400">
                                 Guest Name
                                 <div class="relative mt-1">
                                     <div
-                                        class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                        class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
                                         <fa-icon
                                             icon="id-card"
                                             class="text-xs" />
@@ -253,7 +254,7 @@ watch(
                                         v-model="form.guestName"
                                         type="text"
                                         placeholder="Full Name"
-                                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                         required />
                                 </div>
                             </label>
@@ -263,7 +264,7 @@ watch(
                     <!-- Dates & Nights -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-mist-400">
+                            <label class="block text-xs font-medium text-mist-400">
                                 Check In
                                 <div class="relative mt-1">
                                     <input
@@ -277,7 +278,7 @@ watch(
                                         @blur="sanitizeDate('checkIn')"
                                         @change="calculateNights(form.checkIn, form.checkOut)" />
                                     <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
+                                        class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
                                         <fa-icon
                                             class="text-sm"
                                             icon="calendar-days" />
@@ -285,7 +286,7 @@ watch(
                                 </div>
                             </label>
                         </div>
-                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                        <label class="block text-xs font-medium text-mist-400">
                             Check Out
                             <div class="relative mt-1">
                                 <input
@@ -299,35 +300,34 @@ watch(
                                     @blur="sanitizeDate('checkOut')"
                                     @change="calculateNights(form.checkIn, form.checkOut)" />
                                 <div
-                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-500">
+                                    class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
                                     <fa-icon
                                         class="text-sm"
                                         icon="calendar-days" />
                                 </div>
                             </div>
                         </label>
-                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                        <label class="block text-xs font-medium text-mist-400">
                             Nights
                             <input
                                 v-model.number="form.nights"
                                 type="number"
                                 min="1"
                                 disabled
-                                class="mt-1 w-full px-3 py-2.5 text-sm text-mist-200 focus:outline-none" />
+                                class="mt-1 w-full py-2 px-3 text-sm text-mist-200 focus:outline-none" />
                         </label>
                     </div>
 
                     <!-- Channel, Status & Payout -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <label class="mb-1 block text-xs font-medium text-mist-400 relative">
+                        <label class="block text-xs font-medium text-mist-400 relative">
                             Channel
                             <select
                                 v-model="form.listing"
-                                class="mt-1 w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                                 <option
                                     value=""
-                                    disabled
-                                    selected>
+                                    disabled>
                                     --
                                 </option>
                                 <option value="Airbnb">Airbnb</option>
@@ -338,18 +338,18 @@ watch(
                                 <option value="Whatsapp">WhatsApp</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                                class="pointer-events-none absolute inset-y-0 top-3 right-2 flex items-center text-mist-400">
                                 <fa-icon
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
                         </label>
-                        <label class="relative mb-1 block text-xs font-medium text-mist-400">
+                        <label class="relative block text-xs font-medium text-mist-400">
                             Status
                             <select
                                 v-model="form.status"
                                 name="status"
-                                class="mt-1 w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-4 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                                 <option value="Booked">Booked</option>
                                 <option value="Checked-in">Checked-in</option>
                                 <option value="Waiting for payment">Waiting for payment</option>
@@ -359,17 +359,17 @@ watch(
                                 <option value="Unavailable">Unavailable</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center pr-2 text-mist-400">
+                                class="pointer-events-none absolute inset-y-0 top-3 right-2 flex items-center text-mist-400">
                                 <fa-icon
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
                         </label>
-                        <label class="mb-1 block text-xs font-medium text-mist-400">
+                        <label class="block text-xs font-medium text-mist-400">
                             Payout (IDR)
                             <div class="relative mt-1">
                                 <div
-                                    class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
+                                    class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
                                     <fa-icon
                                         icon="rupiah-sign"
                                         class="text-xs" />
@@ -377,19 +377,19 @@ watch(
                                 <input
                                     v-model="form.payout"
                                     type="number"
-                                    placeholder="1.000.000"
-                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 py-2 pl-9 pr-4 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                    placeholder="1000000"
+                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                                     required />
                             </div>
                         </label>
                     </div>
 
                     <!-- Notes -->
-                    <label class="mb-1 block text-xs font-medium text-mist-400">
-                        Notes (Optional)
+                    <label class="block text-xs font-medium text-mist-400">
+                        Notes
                         <textarea
                             v-model="form.notes"
-                            rows="2"
+                            rows="3"
                             placeholder="Special requests, extra beds..."
                             class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
                     </label>
@@ -405,7 +405,7 @@ watch(
                             @click="handleDeleteBooking">
                             <fa-icon icon="trash-can" /> Delete booking
                         </button>
-                        <div>
+                        <div class="flex items-center gap-4">
                             <button
                                 type="button"
                                 class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
@@ -415,7 +415,7 @@ watch(
                             <button
                                 type="submit"
                                 :disabled="Boolean(validationError)"
-                                class="ml-5 cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                                 {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
                             </button>
                         </div>
