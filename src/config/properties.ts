@@ -1,5 +1,4 @@
-// src/config/properties.ts
-import type { Property, PropertyId, PropertyTheme } from '@/types/property';
+import type { Property, PropertyId } from '@/types/property';
 
 export interface PropertyConfig extends Property {
     defaultRange: string;
@@ -30,7 +29,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         address:
             'Mulyosari, Baleharjo, Kec. Wonosari, Kabupaten Gunungkidul, Daerah Istimewa Yogyakarta 55881',
         coordinates: { lat: -7.982310543653178, lng: 110.60562857637551 },
-        color: '#60a5fa',
+        color: '#38bdf8',
         price: 1499000,
         codePrefix: 'MHW',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
@@ -63,7 +62,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         address:
             'Jl. Trompong Jl. Nusa Dua, Selatan, Benoa, Kec. Kuta Sel., Kabupaten Badung, Bali 80361',
         coordinates: { lat: -8.807494847880703, lng: 115.22192033648172 },
-        color: '#F33F5D',
+        color: '#e879f9',
         price: 1499000,
         codePrefix: 'MHN',
         defaultRange: 'A2:J',
@@ -75,18 +74,27 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
     },
 };
 
-// Clean extraction: strips internal config keys while satisfying Property[]
-export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS).map(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ({ defaultRange, spreadsheetId, ...property }) => property
-);
+export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS);
 
-export const PROPERTY_THEMES: Record<PropertyId, PropertyTheme> = {
-    wonosari: { text: 'text-blue-400', color: 'bg-blue-400', bg: 'bg-blue-500/10' },
-    piyungan: { text: 'text-emerald-400', color: 'bg-emerald-400', bg: 'bg-emerald-500/10' },
-    bantul: { text: 'text-amber-400', color: 'bg-amber-400', bg: 'bg-amber-500/10' },
-    nusadua: { text: 'text-rose-400', color: 'bg-rose-400', bg: 'bg-rose-500/10' },
+export const PROPERTY_THEMES: Record<PropertyId, string> = {
+    wonosari: 'text-sky-300 bg-sky-500/15',
+    piyungan: 'text-emerald-300 bg-emerald-500/15',
+    bantul: 'text-amber-300 bg-amber-500/15',
+    nusadua: 'text-fuchsia-300 bg-fuchsia-500/15',
 };
 
-export const getPropertyTheme = (id: PropertyId | string): PropertyTheme =>
-    PROPERTY_THEMES[id as PropertyId] ?? PROPERTY_THEMES.piyungan;
+export const PROPERTY_DOT_COLORS: Record<PropertyId, string> = {
+    wonosari: 'bg-sky-400',
+    piyungan: 'bg-emerald-500',
+    bantul: 'bg-amber-400',
+    nusadua: 'bg-fuchsia-400',
+};
+
+export const PROPERTY_BASE_CLASS =
+    'rounded-sm px-1.5 py-0.5 text-xs capitalize font-medium text-nowrap';
+
+export const getPropertyStyle = (id: PropertyId | string, isDot?: boolean) => {
+    const statusColors = PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;
+
+    return isDot ? PROPERTY_DOT_COLORS[id as PropertyId] : `${PROPERTY_BASE_CLASS} ${statusColors}`;
+};

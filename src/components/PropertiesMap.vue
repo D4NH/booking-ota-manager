@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { formatIDR } from '@/utils/money';
 import type { Property, PropertyId } from '@/types/property';
 
@@ -24,7 +24,7 @@ const INITIAL_CENTER: [number, number] = [-7.8385 - 0.06, 110.4632];
 const INITIAL_ZOOM = 11;
 
 const createPropertyPin = (prop: Property) => {
-    const theme = getPropertyTheme(prop.id);
+    const theme = getPropertyStyle(prop.id);
     const propPrice = formatIDR(prop.price);
 
     return L.divIcon({

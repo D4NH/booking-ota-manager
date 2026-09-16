@@ -163,7 +163,7 @@ const total90dBookedNights = computed(() =>
                     :key="win.label"
                     class="first:pl-0 last:pr-0 px-4 space-y-2.5 flex flex-col justify-between">
                     <!-- Window Header -->
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-start justify-between">
                         <div>
                             <span class="text-xs font-bold text-mist-100 block">
                                 {{ win.label }}
@@ -173,7 +173,7 @@ const total90dBookedNights = computed(() =>
                             </span>
                         </div>
                         <span
-                            class="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                            class="rounded-sm px-1.5 py-0.5 uppercase font-medium text-[10px] text-nowrap"
                             :class="win.statusClass">
                             {{ win.statusText }}
                         </span>

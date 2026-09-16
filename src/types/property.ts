@@ -21,12 +21,6 @@ export interface Property {
     available: boolean;
 }
 
-export interface PropertyTheme {
-    text: string;
-    color: string;
-    bg: string;
-}
-
 export type LiveStatus = 'Occupied' | 'Checking-in' | 'Checking-out' | 'Vacant';
 
 export interface ListingBreakdown {

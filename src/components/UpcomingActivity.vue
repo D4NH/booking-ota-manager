@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 import { getCurrentDate } from '@/utils/date';
 
@@ -117,10 +117,7 @@ const upcomingEvents = computed(() => {
                             <!-- Property Badge -->
                             <span
                                 class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold shrink-0"
-                                :class="[
-                                    getPropertyTheme(event.booking.propertyId).bg,
-                                    getPropertyTheme(event.booking.propertyId).text,
-                                ]">
+                                :class="getPropertyStyle(event.booking.propertyId)">
                                 {{ event.booking.propertyId }}
                             </span>
                         </div>

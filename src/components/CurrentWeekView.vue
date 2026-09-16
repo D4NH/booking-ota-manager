@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
 import { useCalendarGrid } from '@/composables/useCalendarGrid';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
@@ -139,10 +139,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                                             b.status !== 'Unavailable' && selectedProperty === 'all'
                                         "
                                         class="capitalize rounded px-1 py-0.2 text-[10px] font-bold shrink-0"
-                                        :class="[
-                                            getPropertyTheme(b.propertyId).bg,
-                                            getPropertyTheme(b.propertyId).text,
-                                        ]">
+                                        :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
                                 </div>

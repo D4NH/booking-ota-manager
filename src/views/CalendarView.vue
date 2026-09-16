@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { MONTH_NAMES } from '@/config/constants';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
 import { useCalendarGrid } from '@/composables/useCalendarGrid';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
@@ -191,10 +191,7 @@ watch(
                                             selectedProperty === 'all'
                                         "
                                         class="capitalize rounded-sm px-1.5 py-0.5 text-xs shrink-0 ml-1"
-                                        :class="[
-                                            getPropertyTheme(b.propertyId).bg,
-                                            getPropertyTheme(b.propertyId).text,
-                                        ]">
+                                        :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
                                 </div>

@@ -72,7 +72,7 @@ const propertyRack = computed(() =>
         <div class="flex items-center justify-between mb-4 border-b border-mist-800 pb-2.5">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-bold text-mist-100 uppercase tracking-wider">
-                    Live Unit Rack
+                    Live Property Rack
                 </h3>
                 <span class="rounded-full bg-mist-800 px-2 py-0.5 text-[10px] text-mist-400">
                     Real-time Availability

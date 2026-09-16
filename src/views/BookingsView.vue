@@ -109,9 +109,7 @@ onActivated(() => {
     <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
         <PageTitle>
             <template #title>Bookings</template>
-            <template #subtitle>
-                Showing {{ filteredBookings.length }} of {{ propertyBookings.length }} bookings
-            </template>
+            <template #subtitle>Real-time availability and unit operational status</template>
 
             <div class="flex items-center gap-4">
                 <GoogleSyncButton :property-id="selectedProperty" />
@@ -129,7 +127,9 @@ onActivated(() => {
         <div class="shrink-0 space-y-4">
             <CardTitle>
                 <template #title>All Bookings</template>
-                <template #subtitle>Real-time availability and unit operational status</template>
+                <template #subtitle>
+                    Showing {{ filteredBookings.length }} of {{ propertyBookings.length }} bookings
+                </template>
             </CardTitle>
 
             <div
@@ -142,13 +142,13 @@ onActivated(() => {
                                 class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
                                 <fa-icon
                                     icon="magnifying-glass"
-                                    class="w-3.5 h-3.5" />
+                                    class="text-xs" />
                             </div>
                             <input
                                 v-model="searchQuery"
                                 type="text"
                                 placeholder="Search guest, ID, notes..."
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 py-1.5 pl-9 pr-3 text-xs text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-1.5 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
 
@@ -156,7 +156,7 @@ onActivated(() => {
                     <div class="relative w-44">
                         <select
                             v-model="selectedMonth"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="all">All Months</option>
                             <option
                                 v-for="mKey in availableMonths"
@@ -166,9 +166,9 @@ onActivated(() => {
                             </option>
                         </select>
                         <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-mist-400">
+                            class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-400">
                             <fa-icon
-                                class="text-[10px]"
+                                class="text-xs"
                                 icon="angle-down" />
                         </div>
                     </div>
@@ -176,16 +176,18 @@ onActivated(() => {
                     <!-- Status Filters -->
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
+                        class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                        :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-900']"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
                         <fa-icon
-                            class="text-xs"
+                            class="text-xs mr-1"
                             icon="filter" />
+                        Filters
                     </button>
                     <div
                         v-if="toggleFilters"
-                        class="flex flex-wrap items-center gap-1.5 ml-1">
+                        class="flex flex-wrap items-center gap-1.5">
                         <button
                             v-for="status in bookingStatuses"
                             :key="status"
@@ -229,7 +231,7 @@ onActivated(() => {
             :groups="groupedBookings"
             :current-month-key="currentMonthKey"
             :current-date-key="currentDay"
-            show-property-column
+            :show-property-column="selectedProperty === 'all'"
             @edit="handleEditBooking"
             @delete="handleDeleteBooking" />
 

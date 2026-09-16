@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
@@ -111,10 +111,7 @@ const displaySections = computed<MonthSection[]>(() => {
                                         <span
                                             v-if="showProperty"
                                             class="capitalize rounded-sm px-1.5 py-0.5 text-xs font-medium shrink-0"
-                                            :class="[
-                                                getPropertyTheme(b.propertyId).bg,
-                                                getPropertyTheme(b.propertyId).text,
-                                            ]">
+                                            :class="getPropertyStyle(b.propertyId)">
                                             {{ b.propertyId }}
                                         </span>
                                     </div>

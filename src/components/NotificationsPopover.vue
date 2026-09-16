@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 
 const { isOpen, pendingPayments, pendingPayouts } = defineProps<{
@@ -61,10 +61,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                     </span>
                     <span
                         class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
-                        :class="[
-                            getPropertyTheme(b.propertyId).bg,
-                            getPropertyTheme(b.propertyId).text,
-                        ]">
+                        :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>
@@ -105,10 +102,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                     </span>
                     <span
                         class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
-                        :class="[
-                            getPropertyTheme(b.propertyId).bg,
-                            getPropertyTheme(b.propertyId).text,
-                        ]">
+                        :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>

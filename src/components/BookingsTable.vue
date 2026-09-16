@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import { formatDate } from '@/utils/date';
@@ -38,7 +38,7 @@ const {
 
 const emit = defineEmits<Emits>();
 
-const colSpan = computed(() => (showPropertyColumn ? 9 : 8));
+const colSpan = computed(() => (showPropertyColumn ? 8 : 7));
 
 const toggleMonth = (key: string): void => {
     const next = collapsedMonths.includes(key)
@@ -63,11 +63,10 @@ const isCurrentBooking = (b: Booking): boolean => {
             <thead
                 class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
                 <tr>
-                    <th class="w-40 px-4 py-2.5">ID</th>
-                    <th class="w-32 px-4 py-2.5 text-center">Channel</th>
+                    <th class="w-45 px-4 py-2.5">ID- Listing</th>
                     <th
                         v-if="showPropertyColumn"
-                        class="w-32 px-4 py-2.5 text-center">
+                        class="w-35 px-4 py-2.5 text-center">
                         Property
                     </th>
                     <th class="px-4 py-2.5">Guest</th>
@@ -84,7 +83,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                 :key="group.key">
                 <tbody
                     :data-month-key="group.key"
-                    class="border-t border-mist-800 bg-mist-950/40 scroll-mt-10">
+                    class="border-t border-b border-mist-800/50 bg-mist-950/40 scroll-mt-10">
                     <tr>
                         <td
                             :colspan="colSpan"
@@ -126,44 +125,37 @@ const isCurrentBooking = (b: Booking): boolean => {
                                 : 'hover:bg-mist-800/40',
                         ]"
                         @click="emit('edit', b)">
-                        <td class="px-4 py-3 font-mono text-lime-400 truncate text-xs">
-                            {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                        <td class="px-4 py-2">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-mono text-mist-300 truncate">
+                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                                </span>
+                                <span
+                                    v-if="!b.bookingId.includes('UNAVAILABLE')"
+                                    class="text-xs text-mist-400 text-nowrap">
+                                    {{ b.listing }}
+                                </span>
+                            </div>
                         </td>
-
-                        <td class="px-4 py-3 text-center">
-                            <span
-                                class="rounded-sm bg-mist-800 px-2 py-0.5 text-xs text-mist-300 text-nowrap">
-                                {{ b.listing }}
-                            </span>
-                        </td>
-
                         <td
                             v-if="showPropertyColumn"
-                            class="px-4 py-3 text-center">
+                            class="px-4 py-2 text-center">
                             <RouterLink
                                 :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                class="capitalize rounded-sm px-2 py-0.5 text-xs font-medium text-nowrap"
-                                :class="[
-                                    getPropertyTheme(b.propertyId).bg,
-                                    getPropertyTheme(b.propertyId).text,
-                                ]">
+                                :class="getPropertyStyle(b.propertyId)">
                                 {{ b.propertyId }}
                             </RouterLink>
                         </td>
-
-                        <td class="px-4 py-3 font-medium text-mist-100 truncate">
+                        <td class="px-4 py-2 font-medium text-mist-100 truncate">
                             {{ b.guestName }}
                         </td>
-
-                        <td class="px-4 py-3 text-center text-nowrap">
+                        <td class="px-4 py-2 text-center text-nowrap">
                             {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
                             {{ formatDate(b.checkOut, { shortMonth: true }) }}
                         </td>
-
-                        <td class="px-4 py-3 font-mono text-center">{{ b.nights }}</td>
-
+                        <td class="px-4 py-2 font-mono text-center">{{ b.nights }}</td>
                         <td
-                            class="px-4 py-3 font-mono text-right text-nowrap group relative"
+                            class="px-4 py-2 font-mono text-right text-nowrap group relative"
                             :class="{ 'cursor-zoom-in': b.payout !== 0 }">
                             {{ formatIDR(b.payout) }}
                             <div
@@ -180,26 +172,22 @@ const isCurrentBooking = (b: Booking): boolean => {
                                 </div>
                             </div>
                         </td>
-
-                        <td class="px-4 py-3 text-center text-nowrap">
+                        <td class="px-4 py-2 text-center text-nowrap">
                             <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
                         </td>
-
-                        <td class="px-4 py-3 text-right text-nowrap">
+                        <td class="px-4 py-2 text-right text-nowrap">
                             <div class="flex items-center justify-end gap-2">
-                                <button
-                                    type="button"
-                                    class="cursor-pointer text-mist-400 hover:text-mist-100 transition"
-                                    title="Edit Booking"
-                                    @click="emit('edit', b)">
+                                <div
+                                    class="text-mist-400 hover:text-mist-100 transition"
+                                    title="Edit Booking">
                                     <fa-icon icon="pen-to-square" />
-                                </button>
+                                </div>
                                 <span class="text-mist-700">|</span>
                                 <button
                                     type="button"
                                     class="cursor-pointer text-rose-400 hover:text-rose-300 transition"
                                     title="Delete Booking"
-                                    @click="emit('delete', b)">
+                                    @click.prevent="emit('delete', b)">
                                     <fa-icon icon="trash-can" />
                                 </button>
                             </div>

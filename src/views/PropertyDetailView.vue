@@ -121,6 +121,52 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 @change="handleNavigate" />
         </PageTitle>
 
+        <!-- Metric Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Annual Revenue
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">
+                    {{ formatIDR(totalRevenue) }}
+                </p>
+                <p class="text-xs text-mist-500">Total earnings in {{ getCurrentYear() }}</p>
+            </div>
+
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Monthly Revenue
+                </h3>
+                <p class="font-mono text-lg font-bold text-mist-100">
+                    {{ formatIDR(totalPayout) }}
+                </p>
+                <p class="flex items-center gap-1 text-xs">
+                    <span
+                        class="font-medium"
+                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
+                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                    </span>
+                    <span class="text-mist-500">vs last month</span>
+                </p>
+            </div>
+
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Average Daily Rate
+                </h3>
+                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
+                <p class="text-xs text-mist-500">Per booked night</p>
+            </div>
+
+            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Annual Occupancy
+                </h3>
+                <p class="font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</p>
+                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights booked</p>
+            </div>
+        </div>
+
         <!-- Photo & Property Specs -->
         <div class="grid grid-cols-1 lg:grid-cols-4 space-y-4 lg:space-y-0 lg:gap-4">
             <div
@@ -246,8 +292,19 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                             </span>
                                         </div>
                                         <span class="text-xs text-mist-400">
-                                            {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
-                                            {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                                            {{
+                                                formatDate(b.checkIn, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
+                                            &rarr;
+                                            {{
+                                                formatDate(b.checkOut, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
                                             &bull; {{ b.nights }} night(s)
                                         </span>
                                         <span class="text-[10px] text-mist-500 font-medium">
@@ -307,52 +364,6 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
             <PropertyLocationMap :property="selectedProperty" />
         </div>
 
-        <!-- Metric Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Annual Revenue
-                </h3>
-                <p class="font-mono text-lg font-bold text-white">
-                    {{ formatIDR(totalRevenue) }}
-                </p>
-                <p class="text-xs text-mist-500">Total earnings in {{ getCurrentYear() }}</p>
-            </div>
-
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Monthly Revenue
-                </h3>
-                <p class="font-mono text-lg font-bold text-mist-100">
-                    {{ formatIDR(totalPayout) }}
-                </p>
-                <p class="flex items-center gap-1 text-xs">
-                    <span
-                        class="font-medium"
-                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
-                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
-                    </span>
-                    <span class="text-mist-500">vs last month</span>
-                </p>
-            </div>
-
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Average Daily Rate
-                </h3>
-                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
-                <p class="text-xs text-mist-500">Per booked night</p>
-            </div>
-
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Annual Occupancy
-                </h3>
-                <p class="font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</p>
-                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights booked</p>
-            </div>
-        </div>
-
         <!-- Weekly Overview -->
         <div class="grid grid-cols-1">
             <CardTitle>
@@ -387,16 +398,18 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     <!-- Status Filters -->
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
+                        class="rounded-md border border-mist-800 px-4 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                        :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-900']"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
                         <fa-icon
-                            class="text-xs"
+                            class="text-xs mr-1"
                             icon="filter" />
+                        Filters
                     </button>
                     <div
                         v-if="toggleFilters"
-                        class="flex flex-wrap items-center gap-1.5 ml-1">
+                        class="flex flex-wrap items-center gap-1.5">
                         <button
                             v-for="status in bookingStatuses"
                             :key="status"

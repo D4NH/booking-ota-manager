@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { getPropertyTheme } from '@/config/properties';
+import { getPropertyStyle } from '@/config/properties';
 import { formatIDR } from '@/utils/money';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
@@ -139,10 +139,7 @@ const propertyStats = computed(() => {
                     <div class="flex items-center gap-2">
                         <span
                             class="capitalize rounded px-2 py-0.5 text-xs font-bold"
-                            :class="[
-                                getPropertyTheme(stat.property.id).bg,
-                                getPropertyTheme(stat.property.id).text,
-                            ]">
+                            :class="getPropertyStyle(stat.property.id)">
                             {{ stat.property.id }}
                         </span>
                         &bull;

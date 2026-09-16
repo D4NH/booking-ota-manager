@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { PROPERTY_CONFIGS, getPropertyTheme } from '@/config/properties';
+import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
@@ -173,7 +173,7 @@ watch(
                         ]">
                         <span
                             class="h-1.5 w-1.5 rounded-full shrink-0"
-                            :class="getPropertyTheme(prop.id).color || 'bg-lime-400'" />
+                            :class="getPropertyStyle(prop.id, true)" />
                         <span class="truncate capitalize">
                             {{ prop.id }}
                         </span>
