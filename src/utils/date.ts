@@ -138,3 +138,53 @@ export const getOffsetDate = (dateStr: string, offsetDays: number): string => {
     const date = new Date(y!, m! - 1, d! + offsetDays);
     return getCurrentDate(date);
 };
+
+/**
+ * Converts arbitrary Google Sheets date formats (ISO, DD/MM/YYYY, MM/DD/YYYY, or serial number)
+ * into a canonical ISO "YYYY-MM-DD" string.
+ */
+export const normalizeDate = (raw: unknown): string => {
+    if (raw === null || raw === undefined || raw === '') return '';
+
+    // If it is already YYYY-MM-DD
+    const str = String(raw).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+        return str.slice(0, 10);
+    }
+
+    // Google Sheets serial number (e.g. 46282)
+    if (
+        typeof raw === 'number' ||
+        (!isNaN(Number(str)) && !str.includes('-') && !str.includes('/'))
+    ) {
+        const serial = Number(raw);
+        if (serial > 30000 && serial < 60000) {
+            const utcDays = Math.floor(serial - 25569);
+            const dateObj = new Date(utcDays * 86400 * 1000);
+            return dateObj.toISOString().slice(0, 10);
+        }
+    }
+
+    // D/M/YYYY or DD/MM/YYYY or MM/DD/YYYY
+    if (str.includes('/')) {
+        const parts = str.split('/');
+        if (parts.length === 3) {
+            const [p0 = '', p1 = '', p2 = ''] = parts;
+            if (p2.length === 4) {
+                // Determine day vs month defensively
+                const year = p2;
+                const month = p1.padStart(2, '0');
+                const day = p0.padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+        }
+    }
+
+    // Standard JavaScript date string parse
+    const parsed = new Date(str);
+    if (!Number.isNaN(parsed.getTime())) {
+        return parsed.toISOString().slice(0, 10);
+    }
+
+    return str;
+};

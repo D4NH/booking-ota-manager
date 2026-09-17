@@ -1,6 +1,149 @@
-export interface ChannelStat {
-    channel: string;
-    count: number;
-    revenue: number;
-    percentage: number;
+export type PropertyFinanceType = 'income' | 'expense';
+export type PropertyCategory =
+    'rent' | 'cleaning' | 'maintenance' | 'electricity' | 'biznet' | 'Owner Draw Outflow' | string;
+
+export interface PropertyFinance {
+    id: string;
+    propertyId: string;
+    bookingId?: string; // Links entry directly to DexieDB booking
+    type: PropertyFinanceType;
+    category: PropertyCategory;
+    amount: number;
+    date: string;
+    notes: string;
+}
+
+export type PersonalOwner = 'Danh Nguyen' | 'Citra Ayu Wardani';
+export type TransactionType = 'income' | 'fixed_cost' | 'expense';
+
+export type PersonalCategory =
+    'Creditcard' | 'Gold' | 'Other' | 'Payout' | 'Savings' | 'Subscriptions' | string;
+
+export interface PersonalFinance {
+    id: string;
+    owner: PersonalOwner;
+    type: TransactionType;
+    category: PersonalCategory;
+    amount: number;
+    date: string;
+    notes: string;
+    savingsInstitution?: string; // Col H in Personal_Transactions
+    goldWeightGrams?: number; // Col I in Personal_Transactions
+}
+
+export interface PersonalSavings {
+    id: string;
+    owner: PersonalOwner | 'Shared';
+    institution: string;
+    accountNumber?: string;
+    balance: number;
+    updatedAt: string;
+    notes?: string;
+}
+
+export interface AggregatedSavingsAccount {
+    key: string;
+    owner: PersonalFinance['owner'];
+    institution: string;
+    balance: number;
+    lastUpdated: string;
+    transactionCount: number;
+}
+
+export type SharedCategory =
+    | 'BPJS'
+    | 'Creditcard'
+    | 'Electricity'
+    | 'House'
+    | 'Internet'
+    | 'Investments'
+    | 'Kirana'
+    | 'Mai House Jogja Share'
+    | 'Other'
+    | 'Subscriptions'
+    | string;
+
+export interface SharedFinance {
+    id: string;
+    type: TransactionType;
+    category: SharedCategory;
+    amount: number;
+    date: string;
+    notes: string;
+    savingsInstitution?: string;
+    goldWeightGrams?: number;
+}
+
+export type TransferTargetAccount = 'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared';
+
+export interface OwnerTransfer {
+    id: string;
+    sourcePropertyId: string;
+    targetAccount: TransferTargetAccount;
+    amount: number;
+    date: string;
+    notes: string;
+}
+
+export interface Property {
+    id: string;
+    name: string;
+    address: string;
+}
+
+export interface MonthlyBudgetSummary {
+    month: string;
+    propertyRevenue: number;
+    propertyExpenses: number;
+    propertyNetProfit: number;
+    danhIncome: number;
+    danhFixedCosts: number;
+    danhExpenses: number;
+    danhNetBalance: number;
+    citraIncome: number;
+    citraFixedCosts: number;
+    citraExpenses: number;
+    citraNetBalance: number;
+    sharedIncome: number;
+    sharedFixedCosts: number;
+    sharedExpenses: number;
+    sharedNetBalance: number;
+    totalOwnerDraws: number;
+}
+
+export type GoldType = 'Antam' | 'UBS' | 'Digital Pegadaian' | 'Pluang';
+
+export interface GoldAsset {
+    id: string;
+    owner: PersonalOwner | 'Shared';
+    type: GoldType;
+    weightGrams: number;
+    buyPriceTotal: number;
+    purchaseDate: string;
+    certificateNumber?: string;
+    notes?: string;
+}
+
+export type RecurrenceFrequency = 'monthly' | 'yearly';
+export type RecurrenceTargetLedger = 'Property' | 'Personal' | 'Shared';
+
+export interface RecurringTemplate {
+    id: string;
+    targetLedger: RecurrenceTargetLedger;
+    owner?: PersonalOwner;
+    propertyId?: string;
+    type: TransactionType;
+    category: string;
+    amount: number;
+    dueDayOfMonth: number;
+    frequency: RecurrenceFrequency;
+    active: boolean;
+    notes?: string;
+}
+
+export interface ProjectedRecurringItem extends RecurringTemplate {
+    cycleMonth: string;
+    dueDate: string;
+    isSettled: boolean;
+    matchedTransactionId?: string;
 }

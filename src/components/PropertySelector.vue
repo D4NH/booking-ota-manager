@@ -27,7 +27,8 @@ function handleSelect(id: PropertyId | 'all'): void {
 </script>
 
 <template>
-    <div class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0">
+    <div
+        class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
         <!-- "All" Tab -->
         <button
             v-if="showAll"
