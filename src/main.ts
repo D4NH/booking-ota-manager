@@ -49,6 +49,7 @@ import {
     faReceipt,
     faRulerCombined,
     faRupiahSign,
+    faSackDollar,
     faShower,
     faSpinner,
     faTableCellsLarge,
@@ -96,6 +97,7 @@ library.add(
     faReceipt,
     faRulerCombined,
     faRupiahSign,
+    faSackDollar,
     faShower,
     faSpinner,
     faTableCellsLarge,
@@ -116,7 +118,8 @@ app.component('FaIcon', FontAwesomeIcon);
 app.use(
     createToastflow({
         closeButton: false,
-        pauseOnHover: false,
+        closeOnClick: true,
+        duration: 2500,
     })
 );
 
