@@ -130,7 +130,14 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 <p class="font-mono text-lg font-bold text-white">
                     {{ formatIDR(totalRevenue) }}
                 </p>
-                <p class="text-xs text-mist-500">Total earnings in {{ getCurrentYear() }}</p>
+                <p class="flex items-center gap-1 text-xs">
+                    <span
+                        class="font-medium"
+                        :class="totalPayout >= 0 ? 'text-lime-400' : 'text-rose-400'">
+                        {{ totalPayout >= 0 ? '+' : '' }}{{ formatIDR(totalPayout) }}
+                    </span>
+                    <span class="text-mist-500">this month</span>
+                </p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">

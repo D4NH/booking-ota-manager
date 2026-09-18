@@ -60,7 +60,7 @@ const handleTransfer = async () => {
             class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
             <div
                 class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                <h2 class="text-base font-bold text-mist-100">Execute Owner Payout</h2>
+                <h2 class="text-base font-bold text-mist-100">Transfer Funds</h2>
                 <button
                     type="button"
                     class="cursor-pointer text-mist-400 hover:text-mist-200"

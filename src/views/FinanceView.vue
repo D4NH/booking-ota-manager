@@ -6,7 +6,7 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
-import FinanceMetrics from '@/components/finance/FinanceMetrics.vue';
+import FinancePropertyMetrics from '@/components/finance/FinancePropertyMetrics.vue';
 import PropertyFinanceTable from '@/components/finance/PropertyFinanceTable.vue';
 import TransferHistoryTable from '@/components/finance/TransferHistoryTable.vue';
 
@@ -102,7 +102,7 @@ onMounted(async () => {
         </PageTitle>
 
         <div class="space-y-4">
-            <FinanceMetrics />
+            <FinancePropertyMetrics />
             <PropertyFinanceTable />
             <TransferHistoryTable />
         </div>

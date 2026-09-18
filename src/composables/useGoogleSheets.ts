@@ -209,17 +209,22 @@ export function useGoogleSheets() {
 
     const deleteSheetRowByBookingId = async (
         spreadsheetId: string,
-        bookingId: string
+        id: string,
+        sheetName: string = ''
     ): Promise<void> => {
-        const rows = await fetchSheetRows(spreadsheetId, 'A2:A');
-        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
+        const idRange = sheetName ? `'${sheetName}'!A2:A` : 'A2:A';
+        const rows = await fetchSheetRows(spreadsheetId, idRange);
+        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
 
         if (rowIndex === -1) return;
 
         const targetRowNumber = rowIndex + 2;
-        const range = `A${targetRowNumber}:J${targetRowNumber}`;
+        const targetRange = sheetName
+            ? `'${sheetName}'!A${targetRowNumber}:Z${targetRowNumber}`
+            : `A${targetRowNumber}:Z${targetRowNumber}`;
+
         const res = await fetchWithAuth(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`,
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}:clear`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -227,7 +232,6 @@ export function useGoogleSheets() {
         );
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
-
     return {
         isAuthenticated,
         refreshAuthStatus,

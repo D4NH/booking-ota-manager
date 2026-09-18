@@ -41,7 +41,7 @@ const categoriesPersonal = [
     'Investments',
     'Other',
     'Savings',
-    'Subscriptions',
+    'Subscription',
 ] as const satisfies readonly PersonalCategory[];
 
 const categoriesShared = [
@@ -52,7 +52,7 @@ const categoriesShared = [
     'Investments',
     'Kirana',
     'Other',
-    'Subscriptions',
+    'Subscription',
 ] as const satisfies readonly SharedCategory[];
 
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
@@ -259,7 +259,7 @@ watch(formCategory, (newCat) => {
                         <th class="py-3 px-3">Category</th>
                         <th class="py-3 px-3">Notes</th>
                         <th class="py-3 px-3 text-right">Amount</th>
-                        <th class="py-3 px-3 text-center w-16">Actions</th>
+                        <th class="w-20 py-3 px-3 text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60 font-mono">

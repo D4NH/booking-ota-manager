@@ -309,6 +309,135 @@ export function useFinanceSync() {
         }
     };
 
+    const removePropertyTransaction = async (id: string, category: string): Promise<boolean> => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete this ${category} entry? This will delete it from Google Sheets and your local database.`
+        );
+        if (!confirmed) return false;
+
+        try {
+            await toast.loading(
+                async () => {
+                    await financeStore.deletePropertyTransaction(id);
+                },
+                {
+                    loading: {
+                        title: 'Deleting Record...',
+                        description: 'Removing entry from Google Sheets & Dexie.',
+                    },
+                    success: {
+                        title: 'Record Deleted',
+                        description: `Successfully deleted ${category} record.`,
+                    },
+                    error: (err: unknown) => ({
+                        title: 'Delete Failed',
+                        description: err instanceof Error ? err.message : 'Failed to delete row.',
+                    }),
+                }
+            );
+            return true;
+        } catch (err: unknown) {
+            console.error('Delete property transaction aborted:', err);
+            return false;
+        }
+    };
+
+    const removePersonalTransaction = async (id: string, category: string): Promise<boolean> => {
+        const confirmed = window.confirm(`Are you sure you want to delete this ${category} entry?`);
+        if (!confirmed) return false;
+
+        try {
+            await toast.loading(
+                async () => {
+                    await financeStore.deletePersonalTransaction(id);
+                },
+                {
+                    loading: {
+                        title: 'Deleting Record...',
+                        description: 'Removing entry from Google Sheets & Dexie.',
+                    },
+                    success: {
+                        title: 'Record Deleted',
+                        description: `Successfully deleted ${category} transaction.`,
+                    },
+                    error: (err: unknown) => ({
+                        title: 'Delete Failed',
+                        description: err instanceof Error ? err.message : 'Failed to delete row.',
+                    }),
+                }
+            );
+            return true;
+        } catch (err: unknown) {
+            console.error('Delete personal transaction aborted:', err);
+            return false;
+        }
+    };
+
+    const removeSharedTransaction = async (id: string, category: string): Promise<boolean> => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete this ${category} shared entry?`
+        );
+        if (!confirmed) return false;
+
+        try {
+            await toast.loading(
+                async () => {
+                    await financeStore.deleteSharedTransaction(id);
+                },
+                {
+                    loading: {
+                        title: 'Deleting Shared Record...',
+                        description: 'Removing entry from Google Sheets & Dexie.',
+                    },
+                    success: {
+                        title: 'Record Deleted',
+                        description: `Successfully deleted ${category} entry.`,
+                    },
+                    error: (err: unknown) => ({
+                        title: 'Delete Failed',
+                        description: err instanceof Error ? err.message : 'Failed to delete row.',
+                    }),
+                }
+            );
+            return true;
+        } catch (err: unknown) {
+            console.error('Delete shared transaction aborted:', err);
+            return false;
+        }
+    };
+
+    const editPropertyTransaction = async (
+        id: string,
+        payload: Omit<PropertyFinance, 'id'>
+    ): Promise<boolean> => {
+        try {
+            await toast.loading(
+                async () => {
+                    await financeStore.updatePropertyTransaction(id, payload);
+                },
+                {
+                    loading: {
+                        title: 'Updating Property Entry...',
+                        description: 'Syncing ledger changes to Google Sheets & Dexie.',
+                    },
+                    success: {
+                        title: 'Property Ledger Updated',
+                        description: `Saved changes to ${payload.category}.`,
+                    },
+                    error: (err: unknown) => ({
+                        title: 'Update Failed',
+                        description:
+                            err instanceof Error ? err.message : 'Google Sheets update failed.',
+                    }),
+                }
+            );
+            return true;
+        } catch (err: unknown) {
+            console.error('Update property transaction failed:', err);
+            return false;
+        }
+    };
+
     return {
         syncAllFinancialData,
         addPropertyTransaction,
@@ -319,5 +448,9 @@ export function useFinanceSync() {
         editPersonalTransaction,
         editSharedTransaction,
         settleRecurringCommitment,
+        removePropertyTransaction,
+        removePersonalTransaction,
+        removeSharedTransaction,
+        editPropertyTransaction,
     };
 }

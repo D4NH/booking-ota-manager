@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { db } from '@/db';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { normalizeDate, getCurrentMonth } from '@/utils/date';
+import { normalizeDate, getCurrentMonth, getPreviousMonth, parseISODate } from '@/utils/date';
 import type { Booking } from '@/types/booking';
 import type {
     PropertyFinance,
@@ -20,7 +20,8 @@ import type {
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
 
 export const useFinanceStore = defineStore('finance', () => {
-    const { fetchSheetRows, appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
+    const { fetchSheetRows, appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } =
+        useGoogleSheets();
 
     const bookingStore = useBookingStore();
 
@@ -44,6 +45,17 @@ export const useFinanceStore = defineStore('finance', () => {
     const isInSelectedMonth = (dateStr: string): boolean => {
         const normalized = normalizeDate(dateStr);
         return normalized.startsWith(selectedMonth.value);
+    };
+
+    // Calculate previous month string YYYY-MM based on active selectedMonth
+    const previousMonth = computed<string>(() => {
+        const d = parseISODate(`${selectedMonth.value}-01`);
+        return getPreviousMonth(d);
+    });
+
+    const isInPreviousMonth = (dateStr: string): boolean => {
+        const normalized = normalizeDate(dateStr);
+        return normalized.startsWith(previousMonth.value);
     };
 
     const loadLocalFinanceData = async (): Promise<void> => {
@@ -189,6 +201,7 @@ export const useFinanceStore = defineStore('finance', () => {
         () => estimatedGoldMarketValue.value - totalGoldCostBasis.value
     );
 
+    // Current month property revenue
     const monthlyPropertyRevenue = computed<number>(() =>
         filteredPropertyFinances.value
             .filter(
@@ -200,6 +213,7 @@ export const useFinanceStore = defineStore('finance', () => {
             .reduce((sum, item) => sum + Number(item.amount), 0)
     );
 
+    // Current month property expenses
     const monthlyPropertyExpenses = computed<number>(() =>
         filteredPropertyFinances.value
             .filter((item) => item.type === 'expense' && item.category !== 'Owner Payout Outflow')
@@ -782,6 +796,46 @@ export const useFinanceStore = defineStore('finance', () => {
         () => pendingRecurringIncome.value - pendingRecurringExpenses.value
     );
 
+    // Previous month property revenue
+    const previousMonthPropertyRevenue = computed<number>(() =>
+        unifiedPropertyFinances.value
+            .filter(
+                (item) =>
+                    isInPreviousMonth(item.date) &&
+                    item.type === 'income' &&
+                    item.category !== 'Owner Payout' &&
+                    item.category !== 'Mai House Jogja Share'
+            )
+            .reduce((sum, item) => sum + Number(item.amount), 0)
+    );
+
+    // Previous month property expenses
+    const previousMonthPropertyExpenses = computed<number>(() =>
+        unifiedPropertyFinances.value
+            .filter(
+                (item) =>
+                    isInPreviousMonth(item.date) &&
+                    item.type === 'expense' &&
+                    item.category !== 'Owner Payout Outflow'
+            )
+            .reduce((sum, item) => sum + Number(item.amount), 0)
+    );
+
+    // Growth percentage vs last month
+    const propertyRevenueGrowthPct = computed<number>(() => {
+        const prev = previousMonthPropertyRevenue.value;
+        const curr = monthlyPropertyRevenue.value;
+        if (prev === 0) return curr > 0 ? 100 : 0;
+        return Number((((curr - prev) / prev) * 100).toFixed(1));
+    });
+
+    const propertyExpenseGrowthPct = computed<number>(() => {
+        const prev = previousMonthPropertyExpenses.value;
+        const curr = monthlyPropertyExpenses.value;
+        if (prev === 0) return curr > 0 ? 100 : 0;
+        return Number((((curr - prev) / prev) * 100).toFixed(1));
+    });
+
     // 2. Updated Settle Action (respects item.type)
     async function settleRecurringItem(item: ProjectedRecurringItem): Promise<void> {
         if (item.isSettled) return;
@@ -818,6 +872,68 @@ export const useFinanceStore = defineStore('finance', () => {
                 notes: formattedNotes,
             });
         }
+    }
+
+    async function updatePropertyTransaction(
+        id: string,
+        payload: Omit<PropertyFinance, 'id'>
+    ): Promise<void> {
+        if (id.startsWith('dexie-')) {
+            throw new Error('Auto-populated Dexie booking records cannot be edited here.');
+        }
+
+        const cleanDate = normalizeDate(payload.date);
+        const updatedRecord: PropertyFinance = { ...payload, id, date: cleanDate };
+
+        await updateSheetRowByBookingId(
+            SPREADSHEET_ID,
+            id,
+            [
+                id,
+                updatedRecord.propertyId,
+                updatedRecord.type,
+                updatedRecord.category,
+                updatedRecord.amount,
+                cleanDate,
+                updatedRecord.notes,
+            ],
+            'Property_Finances'
+        );
+
+        const index = sheetPropertyFinances.value.findIndex((i) => i.id === id);
+        if (index !== -1) {
+            sheetPropertyFinances.value[index] = updatedRecord;
+        }
+
+        await db.propertyFinances.put(updatedRecord);
+    }
+
+    async function deletePropertyTransaction(id: string): Promise<void> {
+        // Prevent accidental deletion of virtual Dexie bookings from this handler
+        if (id.startsWith('dexie-')) {
+            throw new Error(
+                'This transaction is auto-populated from Dexie bookings. Delete or cancel the booking instead.'
+            );
+        }
+
+        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Property_Finances');
+
+        sheetPropertyFinances.value = sheetPropertyFinances.value.filter((i) => i.id !== id);
+        await db.propertyFinances.delete(id);
+    }
+
+    async function deletePersonalTransaction(id: string): Promise<void> {
+        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Personal_Transactions');
+
+        personalFinances.value = personalFinances.value.filter((i) => i.id !== id);
+        await db.personalFinances.delete(id);
+    }
+
+    async function deleteSharedTransaction(id: string): Promise<void> {
+        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Shared_Transactions');
+
+        sharedFinances.value = sharedFinances.value.filter((i) => i.id !== id);
+        await db.sharedFinances.delete(id);
     }
 
     return {
@@ -870,5 +986,14 @@ export const useFinanceStore = defineStore('finance', () => {
         pendingRecurringExpenses,
         netProjectedRecurringSpread,
         settleRecurringItem,
+        previousMonth,
+        previousMonthPropertyRevenue,
+        previousMonthPropertyExpenses,
+        propertyRevenueGrowthPct,
+        propertyExpenseGrowthPct,
+        updatePropertyTransaction,
+        deletePropertyTransaction,
+        deletePersonalTransaction,
+        deleteSharedTransaction,
     };
 });

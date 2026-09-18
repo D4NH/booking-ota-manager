@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { getPropertyStyle } from '@/config/properties';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import type { PropertyFinanceType, PropertyCategory } from '@/types/finance';
+import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -23,7 +23,7 @@ const pageSizeOptions = [5, 10, 20, 50];
 
 const formPropertyId = ref('piyungan');
 const formType = ref<PropertyFinanceType>('income');
-const formCategory = ref<PropertyCategory>('Payout');
+const formCategory = ref<PropertyCategory>('');
 const formAmount = ref<number | null>(null);
 const formDate = ref(new Date().toISOString().slice(0, 10));
 const formNotes = ref('');
@@ -56,6 +56,12 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
     currentPage.value = 1;
 });
 
+const sanitizeAmount = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const cleanedString = target.value.replace(/\D/g, '');
+    formAmount.value = cleanedString ? parseInt(cleanedString, 10) : 0;
+    target.value = cleanedString;
+};
 function goToPage(page: number): void {
     if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
@@ -88,7 +94,7 @@ async function handleSyncDexieToSheet(): Promise<void> {
     <div class="flex flex-col">
         <div class="flex items-center justify-between">
             <CardTitle>
-                <template #title>Property Wallet</template>
+                <template #title>Transaction Overview</template>
                 <template #subtitle>
                     Bookings auto populated from DexieDB + Google Sheets expenses
                 </template>
@@ -107,15 +113,8 @@ async function handleSyncDexieToSheet(): Promise<void> {
                     <option value="Owner Payout Outflow">Owner Payout Outflow</option>
                 </select>
                 <button
-                    :disabled="isLoading"
-                    title="Commit Dexie bookings to Google Sheets Property_Finances tab"
-                    class="bg-mist-800 hover:bg-mist-700 text-mist-200 border border-mist-700 text-xs font-semibold px-3 py-1.5 rounded-md transition disabled:opacity-50"
-                    @click="handleSyncDexieToSheet">
-                    Persist Bookings
-                </button>
-                <button
                     class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3 py-1.5 rounded-md transition shadow-sm"
-                    @click="isModalOpen = true">
+                    @click="openAddModal">
                     + Add Entry
                 </button>
             </div>
@@ -131,6 +130,7 @@ async function handleSyncDexieToSheet(): Promise<void> {
                         <th class="w-55 py-3 px-3">Category</th>
                         <th class="py-3 px-3">Source</th>
                         <th class="py-3 px-3 text-right">Amount</th>
+                        <th class="w-30 py-3 px-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60">
@@ -170,6 +170,50 @@ async function handleSyncDexieToSheet(): Promise<void> {
                             class="py-3 px-3 text-right font-bold font-mono text-xs"
                             :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
                             {{ item.type === 'expense' ? '-' : '+' }}{{ formatIDR(item.amount) }}
+                        </td>
+                        <td class="py-3 px-3">
+                            <div
+                                v-if="!item.id.startsWith('dexie')"
+                                class="flex items-center justify-end gap-1">
+                                <button
+                                    type="button"
+                                    title="Edit Transaction"
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition"
+                                    @click="openEditModal(item)">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-3.5 h-3.5"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                        <path d="m15 5 4 4" />
+                                    </svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    title="Delete Transaction"
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition"
+                                    @click="removePropertyTransaction(item.id, item.category)">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-3.5 h-3.5"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="displayedTransactions.length === 0">
@@ -217,9 +261,12 @@ async function handleSyncDexieToSheet(): Promise<void> {
             <div class="flex items-center gap-1 font-mono">
                 <button
                     :disabled="currentPage <= 1"
-                    class="px-2.5 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
                     @click="goToPage(currentPage - 1)">
-                    ‹ Prev
+                    <fa-icon
+                        class="text-[10px]"
+                        icon="chevron-left" />
+                    Prev
                 </button>
 
                 <span class="px-3 py-1 font-sans text-mist-300">
@@ -229,9 +276,12 @@ async function handleSyncDexieToSheet(): Promise<void> {
 
                 <button
                     :disabled="currentPage >= totalPages"
-                    class="px-2.5 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
                     @click="goToPage(currentPage + 1)">
-                    Next ›
+                    Next
+                    <fa-icon
+                        class="text-[10px]"
+                        icon="chevron-right" />
                 </button>
             </div>
         </div>
@@ -239,28 +289,51 @@ async function handleSyncDexieToSheet(): Promise<void> {
         <!-- Manual Expense/Income Modal -->
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
             <div
-                class="bg-mist-900 border border-mist-800 rounded-md shadow-2xl w-full max-w-md p-6">
-                <h4 class="font-bold text-mist-100 text-sm mb-4">Add Property Record</h4>
+                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+                <div
+                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                    <h2 class="text-base font-bold text-mist-100">
+                        {{ isEditing ? 'Edit Property Record' : 'Add Property Record' }}
+                    </h2>
+                    <button
+                        type="button"
+                        class="cursor-pointer text-mist-400 hover:text-mist-200"
+                        @click="isModalOpen = false">
+                        <fa-icon icon="xmark" />
+                    </button>
+                </div>
                 <form
                     class="space-y-4"
                     @submit.prevent="submitTransaction">
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Transaction Nature</label
-                        >
+                    <div class="relative">
+                        <label
+                            for="property"
+                            class="block text-xs font-medium text-mist-400">
+                            Transaction
+                        </label>
                         <select
+                            id="property"
                             v-model="formType"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            name="property"
+                            required
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="expense">Expense</option>
                             <option value="income">Income</option>
                         </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Category</label
-                        >
+
+                    <!-- <div>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Category
+                        </label>
                         <select
                             v-model="formCategory"
                             class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5">
@@ -271,31 +344,83 @@ async function handleSyncDexieToSheet(): Promise<void> {
                                 {{ cat }}
                             </option>
                         </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Amount (IDR)</label
-                        >
-                        <input
-                            v-model="formAmount"
-                            type="number"
+                    </div> -->
+
+                    <div class="relative">
+                        <label
+                            for="property"
+                            class="block text-xs font-medium text-mist-400">
+                            Category
+                        </label>
+                        <select
+                            id="property"
+                            v-model="formCategory"
+                            name="property"
                             required
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm focus:border-lime-500 focus:outline-none transition-colors cursor-pointer"
+                            :class="[formCategory === '' ? 'text-mist-600' : 'text-mist-200']">
+                            <option
+                                value=""
+                                disabled>
+                                Select a category
+                            </option>
+                            <option
+                                v-for="cat in categories"
+                                :key="cat"
+                                :value="cat">
+                                {{ cat }}
+                            </option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Date</label>
-                        <input
-                            v-model="formDate"
-                            type="date"
-                            required
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400">Date</label>
+                            <input
+                                v-model="formDate"
+                                type="date"
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 font-mono focus:border-lime-500 focus:outline-none transition-colors"
+                                required />
+                            <div
+                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
+                                <fa-icon
+                                    class="text-sm"
+                                    icon="calendar-days" />
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400">
+                                Amount (IDR)
+                            </label>
+                            <div
+                                class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                                <fa-icon
+                                    icon="rupiah-sign"
+                                    class="text-xs" />
+                            </div>
+                            <input
+                                :value="formAmount"
+                                type="number"
+                                placeholder="100000"
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 font-mono placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                required
+                                @input="sanitizeAmount" />
+                        </div>
                     </div>
+
                     <div>
                         <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5" />
+                            placeholder="Notes.."
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none placeholder-mist-600 transition-colors" />
                     </div>
                     <div class="flex justify-end space-x-2 pt-3">
                         <button
@@ -308,7 +433,7 @@ async function handleSyncDexieToSheet(): Promise<void> {
                             type="submit"
                             :disabled="isLoading"
                             class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition">
-                            Commit
+                            {{ isEditing ? 'Update' : 'Add Record' }}
                         </button>
                     </div>
                 </form>
