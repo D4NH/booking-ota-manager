@@ -5,6 +5,7 @@ import { useHead } from '@unhead/vue';
 import { ToastContainer } from 'vue-toastflow';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -25,6 +26,7 @@ useHead({
 });
 const { saveBooking } = useBookingSync();
 const bookingStore = useBookingStore();
+const financeStore = useFinanceStore();
 const modalStore = useModalStore();
 const {
     isBookingModalOpen,
@@ -48,7 +50,13 @@ const handleSaveProperty = async (propertyData: Property): Promise<void> => {
 };
 
 onMounted(
-    async () => await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()])
+    async () =>
+        await Promise.all([
+            propertyStore.loadProperties(),
+            bookingStore.loadBookings(),
+            financeStore.loadLocalFinanceData(),
+            financeStore.fetchRecurringTemplates(),
+        ])
 );
 </script>
 

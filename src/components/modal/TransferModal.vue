@@ -58,7 +58,7 @@ const handleTransfer = async () => {
         class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
             <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-mist-100 text-sm">Execute Owner Draw</h3>
+                <h3 class="font-bold text-mist-100 text-sm">Execute Owner Payout</h3>
                 <button
                     class="text-mist-400 hover:text-mist-200 text-lg"
                     @click="closeModal">

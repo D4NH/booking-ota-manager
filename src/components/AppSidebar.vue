@@ -27,6 +27,7 @@ const { markBookingComplete } = useBookingSync();
 const isCollapsed = ref(false);
 const isNotificationOpen = ref(true);
 const isPropertiesOpen = ref(true);
+const isFinanceOpen = ref(true);
 
 const pendingPayments = computed(() => {
     const isWithinWindow = (checkIn: string): boolean => {
@@ -63,6 +64,7 @@ const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
     isNotificationOpen.value = false;
     isPropertiesOpen.value = false;
+    isFinanceOpen.value = false;
 };
 const toggleNotifications = () => (isNotificationOpen.value = !isNotificationOpen.value);
 
@@ -73,8 +75,11 @@ watch(
     (newPath) => {
         if (newPath.startsWith('/properties')) {
             isPropertiesOpen.value = true;
+        } else if (newPath.startsWith('/finance')) {
+            isFinanceOpen.value = true;
         } else {
             isPropertiesOpen.value = false;
+            isFinanceOpen.value = false;
         }
     },
     { immediate: true }
@@ -121,7 +126,6 @@ watch(
                     {{ link.name }}
                 </span>
             </RouterLink>
-
             <!-- Properties -->
             <div class="space-y-1 pt-0.5">
                 <div
@@ -181,21 +185,72 @@ watch(
                 </div>
             </div>
             <!-- Finance -->
+            <div class="space-y-1 pt-0.5">
+                <div
+                    :class="[
+                        'flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition group',
+                        isLinkActive('/finance')
+                            ? 'bg-mist-800/80 text-mist-100'
+                            : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
+                    ]">
+                    <RouterLink
+                        to="/finance"
+                        class="flex items-center gap-3 flex-1 min-w-0"
+                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/finance') }">
+                        <fa-icon
+                            icon="house"
+                            class="w-4 h-4 shrink-0 text-center py-2" />
+                        <span
+                            v-show="!isCollapsed"
+                            class="truncate">
+                            Finance
+                        </span>
+                    </RouterLink>
+                    <button
+                        v-show="!isCollapsed"
+                        type="button"
+                        class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
+                        @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
+                        <fa-icon
+                            icon="chevron-down"
+                            class="text-[10px] transition-transform duration-200"
+                            :class="{ 'rotate-180': isFinanceOpen }" />
+                    </button>
+                </div>
+
+                <!-- Finance Subitems -->
+                <div
+                    v-show="!isCollapsed && isFinanceOpen"
+                    class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
+                    <RouterLink
+                        :to="{ name: 'finance-personal' }"
+                        class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        :class="[
+                            route.path === `/finance/personal`
+                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                : 'text-mist-400',
+                        ]">
+                        <span class="h-1.5 w-1.5 rounded-full bg-mist-400 shrink-0" />
+                        <span class="truncate capitalize"> Personal </span>
+                    </RouterLink>
+                </div>
+            </div>
+            <!-- Settings -->
             <RouterLink
-                to="/finance"
+                to="/settings"
                 :class="[
                     'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
-                    isLinkActive('/finance')
+                    isLinkActive('/settings')
                         ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
-                    icon="sack-dollar"
+                    icon="gear"
                     class="w-4 h-4 shrink-0 text-center py-2" />
                 <span
                     v-show="!isCollapsed"
                     class="truncate">
-                    Finance
+                    Settings
                 </span>
             </RouterLink>
             <!-- Settings -->

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatIDR } from '@/utils/money';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
+import { formatIDR } from '@/utils/money';
 
 interface Props {
     bookings: Booking[];

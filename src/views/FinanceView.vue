@@ -6,19 +6,14 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
-import FinanceDashboard from '@/components/finance/FinanceDashboard.vue';
+import FinanceMetrics from '@/components/finance/FinanceMetrics.vue';
 import PropertyFinanceTable from '@/components/finance/PropertyFinanceTable.vue';
-import PersonalFinanceTable from '@/components/finance/PersonalFinanceTable.vue';
-import SavingsAndGoldSection from '@/components/finance/SavingsAndGoldSection.vue';
 import TransferHistoryTable from '@/components/finance/TransferHistoryTable.vue';
-import RecurringChecklist from '@/components/finance/RecurringChecklist.vue';
-import TransferModal from '@/components/modal/TransferModal.vue';
 
 const { syncAllFinancialData } = useFinanceSync();
 const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
 
 const isSyncing = ref(false);
-const isTransferModalOpen = ref(false);
 
 const handleFinanceSync = async (): Promise<void> => {
     if (isSyncing.value) return;
@@ -75,7 +70,7 @@ onMounted(async () => {
     <div class="h-full overflow-y-auto space-y-4 p-4">
         <PageTitle>
             <template #title>Finance Dashboard</template>
-            <template #subtitle> Personal, Shared and Mai House Jogja </template>
+            <template #subtitle> Property, Personal and Shared Finances </template>
 
             <div class="flex items-center space-x-3 w-full sm:w-auto">
                 <button
@@ -107,19 +102,11 @@ onMounted(async () => {
         </PageTitle>
 
         <div class="space-y-4">
-            <FinanceDashboard />
-            <RecurringChecklist />
-            <button
-                class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3.5 py-2 rounded-md transition shadow"
-                @click="isTransferModalOpen = true">
-                Transfer Funds
-            </button>
-            <PersonalFinanceTable />
-            <SavingsAndGoldSection />
+            <FinanceMetrics />
+
             <PropertyFinanceTable />
+
             <TransferHistoryTable />
         </div>
-
-        <TransferModal v-model="isTransferModalOpen" />
     </div>
 </template>

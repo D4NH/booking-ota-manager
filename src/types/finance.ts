@@ -1,6 +1,12 @@
 export type PropertyFinanceType = 'income' | 'expense';
 export type PropertyCategory =
-    'rent' | 'cleaning' | 'maintenance' | 'electricity' | 'biznet' | 'Owner Draw Outflow' | string;
+    | 'Payout'
+    | 'Cleaning'
+    | 'Maintenance'
+    | 'Electricity'
+    | 'Internet'
+    | 'Owner Payout Outflow'
+    | string;
 
 export interface PropertyFinance {
     id: string;

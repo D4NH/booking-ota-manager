@@ -63,7 +63,7 @@ const isCurrentBooking = (b: Booking): boolean => {
             <thead
                 class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
                 <tr>
-                    <th class="w-45 px-4 py-2.5">ID- Listing</th>
+                    <th class="w-45 px-4 py-2.5">ID / Listing</th>
                     <th
                         v-if="showPropertyColumn"
                         class="w-35 px-4 py-2.5 text-center">

@@ -36,6 +36,11 @@ const router = createRouter({
             component: () => import('../views/FinanceView.vue'),
         },
         {
+            path: '/finance/personal',
+            name: 'finance-personal',
+            component: () => import('@/views/FinancePersonalView.vue'),
+        },
+        {
             path: '/settings',
             name: 'settings',
             component: () => import('../views/SettingsView.vue'),
