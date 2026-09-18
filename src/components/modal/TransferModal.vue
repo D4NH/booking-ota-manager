@@ -55,18 +55,21 @@ const handleTransfer = async () => {
 <template>
     <div
         v-if="modelValue"
-        class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-mist-100 text-sm">Execute Owner Payout</h3>
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
+        <div
+            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+            <div
+                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                <h2 class="text-base font-bold text-mist-100">Execute Owner Payout</h2>
                 <button
-                    class="text-mist-400 hover:text-mist-200 text-lg"
+                    type="button"
+                    class="cursor-pointer text-mist-400 hover:text-mist-200"
                     @click="closeModal">
-                    &times;
+                    <fa-icon icon="xmark" />
                 </button>
             </div>
 
-            <p class="text-xs text-mist-400 mb-4 leading-relaxed">
+            <p class="text-xs text-mist-400 leading-relaxed">
                 Transfers create a 3-way record: An outflow under Property Ledger, an inflow under
                 the target ledger, and a permanent entry in the Transfers audit table.
             </p>
@@ -74,64 +77,109 @@ const handleTransfer = async () => {
             <form
                 class="space-y-4"
                 @submit.prevent="handleTransfer">
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">
+                <div class="relative">
+                    <label
+                        for="property"
+                        class="block text-xs font-medium text-mist-400">
                         Source Entity
                     </label>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
+                        <fa-icon
+                            class="text-xs"
+                            icon="house" />
+                    </div>
                     <select
+                        id="property"
                         v-model="sourcePropertyId"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5">
-                        <option value="piyungan">Mai House Jogja - Piyungan</option>
+                        name="property"
+                        required
+                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                        <option value="piyungan">Mai House Jogja</option>
                     </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
+                    </div>
                 </div>
 
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">
+                <div class="relative">
+                    <label
+                        for="property"
+                        class="block text-xs font-medium text-mist-400">
                         Target Account
                     </label>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
+                        <fa-icon
+                            class="text-xs"
+                            icon="id-card" />
+                    </div>
                     <select
+                        id="property"
                         v-model="targetAccount"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5">
-                        <option value="Shared">Shared Household Ledger</option>
-                        <option value="Danh Nguyen">Danh Nguyen Account</option>
-                        <option value="Citra Ayu Wardani">Citra Ayu Wardani Account</option>
+                        name="property"
+                        required
+                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                        <option value="Shared">Shared Household</option>
+                        <option value="Danh Nguyen">Danh Nguyen</option>
+                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
                     </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="relative">
+                        <label class="block text-xs font-medium text-mist-400">Date</label>
+                        <input
+                            v-model="date"
+                            type="date"
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                            required />
+                        <div
+                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
+                            <fa-icon
+                                class="text-sm"
+                                icon="calendar-days" />
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <label class="block text-xs font-medium text-mist-400">
+                            Amount (IDR)
+                        </label>
+                        <div
+                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                            <fa-icon
+                                icon="rupiah-sign"
+                                class="text-xs" />
+                        </div>
+                        <input
+                            :value="amount"
+                            type="number"
+                            placeholder="1000000"
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                            required
+                            @input="sanitizeAmount" />
+                    </div>
                 </div>
 
                 <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">
-                        Amount (IDR)
-                    </label>
-                    <input
-                        :value="amount"
-                        type="number"
-                        required
-                        placeholder="0"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono"
-                        @input="sanitizeAmount" />
-                </div>
-
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">Date</label>
-                    <input
-                        v-model="date"
-                        type="date"
-                        required
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
-                </div>
-
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">
-                        Transfer Memo
-                    </label>
+                    <label class="text-xs font-semibold text-mist-400 block"> Transfer Memo </label>
                     <input
                         v-model="notes"
                         type="text"
                         placeholder="e.g. Dividend share distribution"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5" />
+                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
                 </div>
 
-                <div class="flex justify-end space-x-2 pt-3">
+                <div class="flex justify-end space-x-2">
                     <button
                         type="button"
                         class="px-3 py-2 text-xs font-medium text-mist-400 hover:text-mist-200"

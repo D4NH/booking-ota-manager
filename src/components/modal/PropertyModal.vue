@@ -94,10 +94,10 @@ watch(
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
         <div
-            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
             <!-- Modal Header -->
             <div
-                class="flex items-center justify-between border-b border-mist-800 px-6 py-4 bg-mist-950/60">
+                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
                 <div>
                     <h2 class="text-base font-bold text-mist-100">
                         {{ isEditing ? 'Edit Property' : 'Add New Property' }}
@@ -123,39 +123,44 @@ watch(
                 </button>
             </div>
 
-            <!-- Form Body -->
             <form
-                class="p-4 space-y-4 max-h-[80vh] overflow-y-auto"
+                class="max-h-[80vh] overflow-y-auto space-y-4"
                 @submit.prevent="handleSubmit">
                 <!-- Name & Code Prefix -->
-                <div class="grid grid-cols-9 items-center">
-                    <div class="col-span-8">
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                <div class="grid grid-cols-9 items-end">
+                    <div class="col-span-8 relative">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Property Name
                         </label>
+                        <div
+                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                            <fa-icon
+                                icon="house"
+                                class="text-xs" />
+                        </div>
                         <input
                             v-model.trim="form.name"
                             type="text"
                             placeholder="Mai House Jogja - Piyungan"
                             required
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
-                    <label class="cursor-pointer text-center">
-                        <span class="block text-xs font-semibold text-mist-400 mb-1">
+                    <div class="text-center">
+                        <label class="cursor-pointer block text-xs font-semibold text-mist-400">
                             Available
-                        </span>
+                        </label>
                         <input
                             v-model="form.available"
-                            class="accent-lime-500"
+                            class="mt-1 accent-lime-500"
                             type="checkbox"
                             checked />
-                    </label>
+                    </div>
                 </div>
 
                 <!-- Code Prefix & Theme Color -->
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Prefix
                         </label>
                         <input
@@ -163,11 +168,11 @@ watch(
                             type="text"
                             placeholder="MHJ"
                             required
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Color
                         </label>
                         <div class="flex items-center">
@@ -178,43 +183,39 @@ watch(
                             <input
                                 v-model="form.color"
                                 type="text"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                    <div class="relative">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Base Price (IDR)
                         </label>
-                        <div class="relative mt-1">
-                            <div
-                                class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
-                                <fa-icon
-                                    icon="rupiah-sign"
-                                    class="text-xs" />
-                            </div>
-                            <input
-                                :value="form.price"
-                                type="number"
-                                placeholder="1000000"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                required
-                                @input="sanitizePrice" />
+                        <div
+                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                            <fa-icon
+                                icon="rupiah-sign"
+                                class="text-xs" />
                         </div>
+                        <input
+                            :value="form.price"
+                            type="number"
+                            placeholder="1000000"
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                            required
+                            @input="sanitizePrice" />
                     </div>
                 </div>
 
                 <!-- Address -->
                 <div>
-                    <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
-                        Address
-                    </label>
+                    <label class="block text-xs font-semibold text-mist-400 ml-1"> Address </label>
                     <input
                         v-model.trim="form.address"
                         type="text"
                         placeholder="Street, subdistrict, city..."
                         required
-                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                 </div>
 
                 <!-- GPS Coordinates -->
@@ -225,26 +226,22 @@ watch(
                     </span>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-[11px] text-mist-500 block mb-0.5 ml-1">
-                                Latitude
-                            </label>
+                            <label class="text-[11px] text-mist-500 block ml-1"> Latitude </label>
                             <input
                                 v-model.number="form.coordinates.lat"
                                 type="number"
                                 step="any"
                                 placeholder="-7.8385"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                         <div>
-                            <label class="text-[11px] text-mist-500 block mb-0.5 ml-1">
-                                Longitude
-                            </label>
+                            <label class="text-[11px] text-mist-500 block ml-1"> Longitude </label>
                             <input
                                 v-model.number="form.coordinates.lng"
                                 type="number"
                                 step="any"
                                 placeholder="110.4632"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
                 </div>
@@ -252,27 +249,27 @@ watch(
                 <!-- Bedrooms & Bathrooms -->
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Bedrooms
                         </label>
                         <input
                             v-model.number="form.bedrooms"
                             type="number"
                             min="0"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Bathrooms
                         </label>
                         <input
                             v-model.number="form.bathrooms"
                             type="number"
                             min="0"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 mb-1 ml-1">
+                        <label class="block text-xs font-semibold text-mist-400 ml-1">
                             Plot Size m²
                         </label>
                         <input
@@ -280,7 +277,7 @@ watch(
                             type="number"
                             min="0"
                             placeholder="120"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                 </div>
 
@@ -292,31 +289,29 @@ watch(
                     </span>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-[11px] text-mist-500 block mb-0.5 ml-1">
+                            <label class="text-[11px] text-mist-500 block ml-1">
                                 Network (SSID)
                             </label>
                             <input
                                 v-model.trim="form.wifi.ssid"
                                 type="text"
                                 placeholder="network-ssid"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                         <div>
-                            <label class="text-[11px] text-mist-500 block mb-0.5 ml-1">
-                                Password
-                            </label>
+                            <label class="text-[11px] text-mist-500 block ml-1"> Password </label>
                             <input
                                 v-model.trim="form.wifi.pwd"
                                 type="text"
                                 placeholder="wifi-passwd"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                         </div>
                     </div>
                 </div>
 
                 <!-- Modal Actions -->
                 <div
-                    class="flex items-center gap-3 pt-4 border-t border-mist-800"
+                    class="flex items-center gap-3"
                     :class="[isEditing ? 'justify-between' : 'justify-end']">
                     <button
                         v-if="isEditing"

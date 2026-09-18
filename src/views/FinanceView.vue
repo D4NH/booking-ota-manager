@@ -103,9 +103,7 @@ onMounted(async () => {
 
         <div class="space-y-4">
             <FinanceMetrics />
-
             <PropertyFinanceTable />
-
             <TransferHistoryTable />
         </div>
     </div>

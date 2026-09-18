@@ -146,10 +146,10 @@ watch(
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
                 <!-- Modal Header -->
                 <div
-                    class="flex items-center justify-between border-b border-mist-800 px-6 py-4 bg-mist-950/60">
+                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
                     <h2 class="text-base font-bold text-mist-100">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
@@ -163,7 +163,7 @@ watch(
 
                 <div
                     v-if="channelWarning"
-                    class="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+                    class="rounded-md border border-amber-500/30 bg-amber-500/10 py-4 px-2 text-xs text-amber-300">
                     <ul class="ml-4 list-disc">
                         <li>{{ channelWarning }}</li>
                     </ul>
@@ -171,22 +171,22 @@ watch(
 
                 <div
                     v-if="validationError"
-                    class="rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                    class="rounded-md border border-rose-500/30 bg-rose-500/10 py-4 px-2 text-xs text-rose-300">
                     {{ validationError }}
                 </div>
 
                 <form
-                    class="p-4 space-y-4 max-h-[80vh] overflow-y-auto"
+                    class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="handleSubmit">
                     <!-- Property Selection -->
-                    <label
-                        for="property"
-                        class="block text-xs font-medium text-mist-400">
-                        Property
-                    </label>
-                    <div class="relative mt-1">
+                    <div class="relative">
+                        <label
+                            for="property"
+                            class="block text-xs font-medium text-mist-400">
+                            Property
+                        </label>
                         <div
-                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-mist-500">
+                            class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
                             <fa-icon
                                 class="text-xs"
                                 icon="house" />
@@ -196,11 +196,11 @@ watch(
                             v-model="form.propertyId"
                             name="property"
                             required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option
                                 value=""
                                 disabled>
-                                --
+                                Select property
                             </option>
                             <option
                                 v-for="prop in sortedProperties"
@@ -210,7 +210,7 @@ watch(
                             </option>
                         </select>
                         <div
-                            class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-400">
+                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
                             <fa-icon
                                 class="text-xs"
                                 icon="angle-down" />
@@ -219,115 +219,109 @@ watch(
 
                     <!-- Booking ID & Guest Name -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
+                        <div class="relative">
                             <label
                                 for="bookingId"
                                 class="block text-xs font-medium text-mist-400">
                                 Booking ID
                             </label>
-                            <div class="relative mt-1">
-                                <div
-                                    class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
-                                    <fa-icon
-                                        icon="hashtag"
-                                        class="text-xs" />
-                                </div>
-                                <input
-                                    id="bookingId"
-                                    v-model="form.bookingId"
-                                    type="text"
-                                    placeholder="MHJ-000000"
-                                    :disabled="Boolean(bookingToEdit)"
-                                    :class="{
-                                        'cursor-not-allowed disabled:bg-mist-900':
-                                            Boolean(bookingToEdit),
-                                    }"
-                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required />
+                            <div
+                                class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                                <fa-icon
+                                    icon="hashtag"
+                                    class="text-xs" />
                             </div>
+                            <input
+                                id="bookingId"
+                                v-model="form.bookingId"
+                                type="text"
+                                placeholder="MHJ-000000"
+                                :disabled="Boolean(bookingToEdit)"
+                                :class="{
+                                    'cursor-not-allowed disabled:bg-mist-900':
+                                        Boolean(bookingToEdit),
+                                }"
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                required />
                         </div>
-                        <div>
+                        <div class="relative">
                             <label class="block text-xs font-medium text-mist-400">
                                 Guest Name
-                                <div class="relative mt-1">
-                                    <div
-                                        class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
-                                        <fa-icon
-                                            icon="id-card"
-                                            class="text-xs" />
-                                    </div>
-                                    <input
-                                        v-model="form.guestName"
-                                        type="text"
-                                        placeholder="Full Name"
-                                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                        required />
-                                </div>
                             </label>
+                            <div
+                                class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                                <fa-icon
+                                    icon="id-card"
+                                    class="text-xs" />
+                            </div>
+                            <input
+                                v-model="form.guestName"
+                                type="text"
+                                placeholder="Full Name"
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                required />
                         </div>
                     </div>
 
                     <!-- Dates & Nights -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div>
+                        <div class="relative">
                             <label class="block text-xs font-medium text-mist-400">
                                 Check In
-                                <div class="relative mt-1">
-                                    <input
-                                        v-model="form.checkIn"
-                                        type="date"
-                                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
-                                        required
-                                        :min="checkInMinDate"
-                                        max="2028-12-31"
-                                        @click="triggerDatePicker"
-                                        @blur="sanitizeDate('checkIn')"
-                                        @change="calculateNights(form.checkIn, form.checkOut)" />
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
-                                        <fa-icon
-                                            class="text-sm"
-                                            icon="calendar-days" />
-                                    </div>
-                                </div>
                             </label>
-                        </div>
-                        <label class="block text-xs font-medium text-mist-400">
-                            Check Out
-                            <div class="relative mt-1">
-                                <input
-                                    v-model="form.checkOut"
-                                    type="date"
-                                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required
-                                    :min="form.checkIn"
-                                    max="2028-12-31"
-                                    @click="triggerDatePicker"
-                                    @blur="sanitizeDate('checkOut')"
-                                    @change="calculateNights(form.checkIn, form.checkOut)" />
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
-                                    <fa-icon
-                                        class="text-sm"
-                                        icon="calendar-days" />
-                                </div>
+                            <input
+                                v-model="form.checkIn"
+                                type="date"
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                required
+                                :min="checkInMinDate"
+                                max="2028-12-31"
+                                @click="triggerDatePicker"
+                                @blur="sanitizeDate('checkIn')"
+                                @change="calculateNights(form.checkIn, form.checkOut)" />
+                            <div
+                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
+                                <fa-icon
+                                    class="text-sm"
+                                    icon="calendar-days" />
                             </div>
-                        </label>
-                        <label class="block text-xs font-medium text-mist-400">
-                            Nights
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400">
+                                Check Out
+                            </label>
+                            <input
+                                v-model="form.checkOut"
+                                type="date"
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                                required
+                                :min="form.checkIn"
+                                max="2028-12-31"
+                                @click="triggerDatePicker"
+                                @blur="sanitizeDate('checkOut')"
+                                @change="calculateNights(form.checkIn, form.checkOut)" />
+                            <div
+                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
+                                <fa-icon
+                                    class="text-sm"
+                                    icon="calendar-days" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-mist-400"> Nights </label>
                             <input
                                 v-model.number="form.nights"
                                 type="number"
                                 min="1"
                                 disabled
-                                class="mt-1 w-full py-2 px-3 text-sm text-mist-200 focus:outline-none" />
-                        </label>
+                                class="w-full mt-1 p-2 text-sm text-mist-200 focus:outline-none" />
+                        </div>
                     </div>
 
                     <!-- Channel, Status & Payout -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <label class="block text-xs font-medium text-mist-400 relative">
-                            Channel
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400"> Channel </label>
                             <select
                                 v-model="form.listing"
                                 class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
@@ -344,18 +338,19 @@ watch(
                                 <option value="Whatsapp">WhatsApp</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 top-3 right-2 flex items-center text-mist-400">
+                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
                                 <fa-icon
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
-                        </label>
-                        <label class="relative block text-xs font-medium text-mist-400">
-                            Status
+                        </div>
+
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400"> Status </label>
                             <select
                                 v-model="form.status"
                                 name="status"
-                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-4 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                                 <option value="Booked">Booked</option>
                                 <option value="Checked-in">Checked-in</option>
                                 <option value="Waiting for payment">Waiting for payment</option>
@@ -365,45 +360,46 @@ watch(
                                 <option value="Unavailable">Unavailable</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 top-3 right-2 flex items-center text-mist-400">
+                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
                                 <fa-icon
                                     class="text-xs"
                                     icon="angle-down" />
                             </div>
-                        </label>
-                        <label class="block text-xs font-medium text-mist-400">
-                            Payout (IDR)
-                            <div class="relative mt-1">
-                                <div
-                                    class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-mist-500">
-                                    <fa-icon
-                                        icon="rupiah-sign"
-                                        class="text-xs" />
-                                </div>
-                                <input
-                                    :value="form.payout"
-                                    type="number"
-                                    placeholder="1000000"
-                                    class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required
-                                    @input="sanitizePayout" />
+                        </div>
+
+                        <div class="relative">
+                            <label class="block text-xs font-medium text-mist-400">
+                                Payout (IDR)
+                            </label>
+                            <div
+                                class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                                <fa-icon
+                                    icon="rupiah-sign"
+                                    class="text-xs" />
                             </div>
-                        </label>
+                            <input
+                                :value="form.payout"
+                                type="number"
+                                placeholder="1000000"
+                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
+                                required
+                                @input="sanitizePayout" />
+                        </div>
                     </div>
 
                     <!-- Notes -->
-                    <label class="block text-xs font-medium text-mist-400">
-                        Notes
+                    <div>
+                        <label class="block text-xs font-medium text-mist-400"> Notes </label>
                         <textarea
                             v-model="form.notes"
                             rows="3"
                             placeholder="Special requests, extra beds..."
                             class="mt-1 w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2.5 text-sm text-mist-200 placeholder:text-mist-600 focus:border-lime-500 focus:outline-none" />
-                    </label>
+                    </div>
 
                     <!-- Action Controls -->
                     <div
-                        class="flex gap-3 pt-3"
+                        class="flex gap-3"
                         :class="[Boolean(bookingToEdit) ? 'justify-between' : 'justify-end']">
                         <button
                             v-if="Boolean(bookingToEdit)"
