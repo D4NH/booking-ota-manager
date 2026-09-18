@@ -11,11 +11,14 @@ import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/finance/TransactionNote.vue';
 
 const financeStore = useFinanceStore();
-const { addPropertyTransaction, persistDexieBookings } = useFinanceSync();
+const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
+    useFinanceSync();
 const { filteredPropertyFinances, isLoading } = storeToRefs(financeStore);
 
 const isModalOpen = ref(false);
+const isSubmitting = ref(false);
 const filterCategory = ref<string>('ALL');
+const editingItem = ref<PropertyFinance | null>(null);
 
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -23,16 +26,30 @@ const pageSizeOptions = [5, 10, 20, 50];
 
 const formPropertyId = ref('piyungan');
 const formType = ref<PropertyFinanceType>('income');
-const formCategory = ref<PropertyCategory>('');
+const formCategory = ref<PropertyCategory>('Supplies');
 const formAmount = ref<number | null>(null);
 const formDate = ref(new Date().toISOString().slice(0, 10));
 const formNotes = ref('');
 
-const categories = ['Payout', 'Cleaning', 'Maintenance', 'Electricity', 'Internet'];
+const categories = [
+    'Payout',
+    'Cleaning',
+    'Maintenance',
+    'Electricity',
+    'Internet',
+    'Supplies',
+    'Garbage Disposal',
+];
+
+const isEditing = computed(() => editingItem.value !== null);
 
 const displayedTransactions = computed(() => {
-    if (filterCategory.value === 'ALL') return filteredPropertyFinances.value;
-    return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
+    const list =
+        filterCategory.value === 'ALL'
+            ? filteredPropertyFinances.value
+            : filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
+
+    return [...list].sort((a, b) => b.date.localeCompare(a.date));
 });
 
 const totalItems = computed(() => displayedTransactions.value.length);
@@ -68,26 +85,78 @@ function goToPage(page: number): void {
     }
 }
 
+function openAddModal(): void {
+    editingItem.value = null;
+    formPropertyId.value = 'piyungan';
+    formType.value = 'expense';
+    formCategory.value = '';
+    formAmount.value = null;
+    formDate.value = new Date().toISOString().slice(0, 10);
+    formNotes.value = '';
+    isModalOpen.value = true;
+}
+
+function openEditModal(item: PropertyFinance): void {
+    if (item.id.startsWith('dexie-')) return;
+    editingItem.value = item;
+    formPropertyId.value = item.propertyId;
+    formType.value = item.type;
+    formCategory.value = item.category;
+    formAmount.value = item.amount;
+    formDate.value = item.date;
+    formNotes.value = item.notes || '';
+    isModalOpen.value = true;
+}
+
 async function submitTransaction(): Promise<void> {
-    if (!formAmount.value || !formDate.value) return;
-    const success = await addPropertyTransaction({
-        propertyId: formPropertyId.value,
-        type: formType.value,
-        category: formCategory.value,
-        amount: formAmount.value,
-        date: formDate.value,
-        notes: formNotes.value,
-    });
-    if (success) {
-        isModalOpen.value = false;
-        formAmount.value = null;
-        formNotes.value = '';
+    if (isSubmitting.value || !formAmount.value || !formDate.value) return;
+
+    isSubmitting.value = true;
+    try {
+        let success = false;
+
+        if (isEditing.value && editingItem.value) {
+            success = await editPropertyTransaction(editingItem.value.id, {
+                propertyId: formPropertyId.value,
+                type: formType.value,
+                category: formCategory.value,
+                amount: Number(formAmount.value),
+                date: formDate.value,
+                notes: formNotes.value,
+            });
+        } else {
+            success = await addPropertyTransaction({
+                propertyId: formPropertyId.value,
+                type: formType.value,
+                category: formCategory.value,
+                amount: Number(formAmount.value),
+                date: formDate.value,
+                notes: formNotes.value,
+            });
+        }
+
+        if (success) {
+            isModalOpen.value = false;
+            editingItem.value = null;
+            formAmount.value = null;
+            formNotes.value = '';
+        }
+    } finally {
+        setTimeout(() => {
+            isSubmitting.value = false;
+        }, 1000);
     }
 }
 
-async function handleSyncDexieToSheet(): Promise<void> {
-    await persistDexieBookings();
-}
+const triggerDatePicker = (event: MouseEvent): void => {
+    const target = event.currentTarget as HTMLInputElement | null;
+
+    try {
+        target?.showPicker();
+    } catch {
+        target?.focus();
+    }
+};
 </script>
 
 <template>
@@ -330,22 +399,6 @@ async function handleSyncDexieToSheet(): Promise<void> {
                         </div>
                     </div>
 
-                    <!-- <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Category
-                        </label>
-                        <select
-                            v-model="formCategory"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5">
-                            <option
-                                v-for="cat in categories"
-                                :key="cat"
-                                :value="cat">
-                                {{ cat }}
-                            </option>
-                        </select>
-                    </div> -->
-
                     <div class="relative">
                         <label
                             for="property"
@@ -386,7 +439,8 @@ async function handleSyncDexieToSheet(): Promise<void> {
                                 v-model="formDate"
                                 type="date"
                                 class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 font-mono focus:border-lime-500 focus:outline-none transition-colors"
-                                required />
+                                required
+                                @click="triggerDatePicker" />
                             <div
                                 class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
                                 <fa-icon

@@ -72,8 +72,12 @@ const availableCategories = computed<readonly string[]>(() =>
 );
 
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
-    if (activeTab.value === 'Shared') return filteredSharedFinances.value;
-    return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
+    const list =
+        activeTab.value === 'Shared'
+            ? filteredSharedFinances.value
+            : filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
+
+    return [...list].sort((a, b) => b.date.localeCompare(a.date));
 });
 
 const getDefaultCategory = (): string =>

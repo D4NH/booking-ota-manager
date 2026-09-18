@@ -85,7 +85,7 @@ async function handleSaveGold(): Promise<void> {
                 class="bg-mist-900 border border-mist-800 p-5 rounded-2xl shadow-md relative overflow-hidden">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
-                        Liquid Cash & Reserves
+                        Cash & Reserves
                     </span>
                     <span
                         class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
@@ -275,10 +275,8 @@ async function handleSaveGold(): Promise<void> {
             <div class="bg-mist-900 rounded-2xl border border-mist-800 p-5 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="text-sm font-bold text-mist-100">Gold Holdings (Logam Mulia)</h3>
-                        <p class="text-xs text-mist-400">
-                            Physical Antam/UBS and digital gold weights
-                        </p>
+                        <h3 class="text-sm font-bold text-mist-100">Gold Holdings</h3>
+                        <p class="text-xs text-mist-400">Physical and digital gold weights</p>
                     </div>
                     <button
                         class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3 py-1.5 rounded-lg transition"
@@ -354,16 +352,16 @@ async function handleSaveGold(): Promise<void> {
                         <select
                             v-model="goldType"
                             class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5">
-                            <option value="Antam">Antam CertiEye</option>
+                            <option value="Antam">Antam</option>
                             <option value="UBS">UBS</option>
-                            <option value="Digital Pegadaian">Digital Pegadaian</option>
-                            <option value="Pluang">Pluang</option>
+                            <option value="Galeri 24">Galeri 24</option>
+                            <option value="Semar">Semar</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Weight (Grams)</label
-                        >
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Weight (Grams)
+                        </label>
                         <input
                             v-model="goldGrams"
                             type="number"
@@ -373,9 +371,9 @@ async function handleSaveGold(): Promise<void> {
                             class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Total Cost (IDR)</label
-                        >
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Total Cost (IDR)
+                        </label>
                         <input
                             v-model="goldTotalCost"
                             type="number"
@@ -384,9 +382,9 @@ async function handleSaveGold(): Promise<void> {
                             class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Purchase Date</label
-                        >
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Purchase Date
+                        </label>
                         <input
                             v-model="goldDate"
                             type="date"
@@ -394,9 +392,9 @@ async function handleSaveGold(): Promise<void> {
                             class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Certificate / Serial Number (Optional)</label
-                        >
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Certificate / Serial Number (Optional)
+                        </label>
                         <input
                             v-model="goldCert"
                             type="text"
@@ -413,7 +411,7 @@ async function handleSaveGold(): Promise<void> {
                         <button
                             type="submit"
                             class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-lg font-bold">
-                            Save Holding
+                            Save
                         </button>
                     </div>
                 </form>

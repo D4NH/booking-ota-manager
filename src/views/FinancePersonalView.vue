@@ -8,7 +8,7 @@ import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
 import FinanceMetrics from '@/components/finance/FinanceMetrics.vue';
 import PersonalFinanceTable from '@/components/finance/PersonalFinanceTable.vue';
-import SavingsAndGoldSection from '@/components/finance/SavingsAndGoldSection.vue';
+import SavingsAndGold from '@/components/finance/SavingsAndGold.vue';
 import TransferModal from '@/components/modal/TransferModal.vue';
 
 const { syncAllFinancialData } = useFinanceSync();
@@ -108,7 +108,7 @@ onMounted(async () => {
 
             <PersonalFinanceTable />
 
-            <SavingsAndGoldSection />
+            <SavingsAndGold />
         </div>
 
         <TransferModal v-model="isTransferModalOpen" />

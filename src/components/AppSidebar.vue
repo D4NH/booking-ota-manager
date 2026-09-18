@@ -253,24 +253,6 @@ watch(
                     Settings
                 </span>
             </RouterLink>
-            <!-- Settings -->
-            <RouterLink
-                to="/settings"
-                :class="[
-                    'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
-                    isLinkActive('/settings')
-                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
-                        : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
-                ]">
-                <fa-icon
-                    icon="gear"
-                    class="w-4 h-4 shrink-0 text-center py-2" />
-                <span
-                    v-show="!isCollapsed"
-                    class="truncate">
-                    Settings
-                </span>
-            </RouterLink>
         </nav>
 
         <NotificationsPopover

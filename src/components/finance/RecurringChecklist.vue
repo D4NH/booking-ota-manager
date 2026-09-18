@@ -90,8 +90,15 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                         <div class="truncate">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="font-bold text-sm text-mist-100 truncate group-hover:text-lime-400 transition">
-                                    {{ item.notes || item.category }}
+                                    class="font-bold text-sm text-mist-100 truncate group-hover:text-lime-400 transition gap-1">
+                                    <!-- {{ item.notes || item.category }} -->
+                                    {{ item.category }}
+                                </span>
+                                <span
+                                    v-if="item.notes !== 'Savings'"
+                                    class="text-sm text-mist-100 truncate group-hover:text-lime-400 transition gap-1">
+                                    <!-- {{ item.notes || item.category }} -->
+                                    {{ item.notes }}
                                 </span>
                                 <span
                                     class="text-[11px] px-1.5 py-0.2 rounded font-mono font-bold uppercase"

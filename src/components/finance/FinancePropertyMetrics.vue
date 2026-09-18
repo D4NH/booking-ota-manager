@@ -6,39 +6,21 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
 const financeStore = useFinanceStore();
 const {
-    monthlyPropertyRevenue,
     monthlyPropertyExpenses,
     propertyRevenueGrowthPct,
     propertyExpenseGrowthPct,
-    monthlyOwnerDraws,
     netPropertyProfit,
-    danhNetBalance,
-    citraNetBalance,
-    sharedNetBalance,
-    totalOwnerDraws,
+    monthlyPropertyRevenue,
 } = storeToRefs(financeStore);
 
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
-const { totalPayout, revenueGrowthPercent } = useMonthlyMetrics(bookings, {
+const { totalPayout } = useMonthlyMetrics(bookings, {
     propertyId: () => 'all',
 });
-const {
-    selectedProperty,
-    unitBookings,
-    totalRevenue,
-    adr,
-    totalNights,
-    annualOccupancy,
-    nextUpcoming,
-    lockboxPin,
-    isOccupied,
-    staySections,
-    todayTurnover,
-    currentDay,
-} = usePropertyDetails(() => 'all');
+const { totalRevenue } = usePropertyDetails(() => 'all');
 </script>
 
 <template>
@@ -57,7 +39,7 @@ const {
                 <span class="font-medium text-lime-400">
                     {{ totalPayout >= 0 ? '+' : '' }}{{ formatIDR(totalPayout) }}
                 </span>
-                <span class="text-mist-500">this month</span>
+                <span class="text-mist-500">as latest payout</span>
             </p>
         </div>
 
@@ -69,19 +51,20 @@ const {
                 </h3>
             </div>
             <p class="font-mono text-lg font-bold text-white">
-                {{ formatIDR(totalPayout) }}
+                {{ formatIDR(monthlyPropertyRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span
                     class="font-medium"
                     :class="
-                        revenueGrowthPercent > 0
-                            ? 'text-lime-400'
-                            : revenueGrowthPercent < 0
-                              ? 'text-rose-400'
+                        propertyRevenueGrowthPct > 0
+                            ? 'text-rose-400'
+                            : propertyRevenueGrowthPct < 0
+                              ? 'text-lime-400'
                               : 'text-mist-400'
                     ">
-                    {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                    {{ propertyRevenueGrowthPct >= 0 ? '↑' : '↓'
+                    }}{{ Math.abs(propertyRevenueGrowthPct) }}%
                 </span>
                 <span class="text-mist-500">vs last month</span>
             </p>
