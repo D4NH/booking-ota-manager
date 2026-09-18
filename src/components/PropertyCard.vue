@@ -47,6 +47,9 @@ const handleImageError = (e: Event) => {
         class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-lime-700 hover:shadow-xl shadow-md cursor-pointer">
         <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
             <!-- Property Name & Location -->
+            <!-- <span
+                class="h-2 w-2 rounded-full shrink-0"
+                :class="getPropertyStyle(property.id, true)" /> -->
             <div>
                 <h3 class="text-base font-bold text-mist-100 truncate">
                     {{ property.name }}

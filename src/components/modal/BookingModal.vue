@@ -100,6 +100,12 @@ const handleSubmit = () => {
     });
     emit('close');
 };
+const sanitizePayout = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const cleanedString = target.value.replace(/\D/g, '');
+    form.value.payout = cleanedString ? parseInt(cleanedString, 10) : 0;
+    target.value = cleanedString;
+};
 const sanitizeDate = (field: 'checkIn' | 'checkOut') => {
     const rawVal = field === 'checkIn' ? checkIn.value : checkOut.value;
     if (!rawVal) return;
@@ -375,11 +381,12 @@ watch(
                                         class="text-xs" />
                                 </div>
                                 <input
-                                    v-model="form.payout"
+                                    :value="form.payout"
                                     type="number"
                                     placeholder="1000000"
                                     class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required />
+                                    required
+                                    @input="sanitizePayout" />
                             </div>
                         </label>
                     </div>

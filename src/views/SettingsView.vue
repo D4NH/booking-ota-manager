@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { db } from '@/db';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
@@ -15,6 +16,7 @@ import CardTitle from '@/components/CardTitle.vue';
 import PropertyDataBackup from '@/components/PropertyDataBackup.vue';
 
 const bookingStore = useBookingStore();
+const financeStore = useFinanceStore();
 const propertyStore = usePropertyStore();
 const modalStore = useModalStore();
 
@@ -91,6 +93,27 @@ const handleClearBookings = async (): Promise<void> => {
         description: 'IndexedDB bookings table has been cleared.',
     });
 };
+const handleClearFinance = async (): Promise<void> => {
+    const confirmed = window.confirm(
+        'Are you sure you want to clear all local finance? You can re-import them anytime from Google Sheets.'
+    );
+    if (!confirmed) return;
+
+    await db.propertyFinances.clear();
+    await db.personalFinances.clear();
+    await db.sharedFinances.clear();
+    await db.transfers.clear();
+    await db.personalSavings.clear();
+    await db.transfers.clear();
+    await db.goldAssets.clear();
+    await db.recurringTemplates.clear();
+    await financeStore.loadLocalFinanceData();
+    await financeStore.fetchRecurringTemplates();
+    toast.success({
+        title: 'Finance Cleared',
+        description: 'IndexedDB finance table has been cleared.',
+    });
+};
 const handleWipeDatabase = async (): Promise<void> => {
     const confirmed = window.confirm(
         'WARNING: This will erase ALL local properties and bookings. This cannot be undone unless you have a JSON backup.'
@@ -120,7 +143,6 @@ onMounted(() => refreshAuthStatus());
 
 <template>
     <div class="h-full overflow-y-auto space-y-4 p-4">
-        <!-- Header -->
         <PageTitle>
             <template #title>Settings</template>
             <template #subtitle>
@@ -299,8 +321,9 @@ onMounted(() => refreshAuthStatus());
                     <div>
                         <h4 class="text-xs font-bold text-mist-200">Local Bookings Cache</h4>
                         <p class="text-[11px] text-mist-500">
-                            Currently storing {{ bookings.length }} reservations in local Dexie
-                            database.
+                            Currently storing
+                            <span class="text-white">{{ bookings.length }}</span> reservations in
+                            local Dexie database.
                         </p>
                     </div>
                     <button
@@ -308,6 +331,20 @@ onMounted(() => refreshAuthStatus());
                         class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
                         @click="handleClearBookings">
                         Clear Bookings Cache
+                    </button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-bold text-mist-200">Local Finance Cache</h4>
+                        <p class="text-[11px] text-mist-500">
+                            Permanently purges finances from IndexedDB storage.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
+                        @click="handleClearFinance">
+                        Clear Finance Cache
                     </button>
                 </div>
 

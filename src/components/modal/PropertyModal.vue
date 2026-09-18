@@ -50,6 +50,12 @@ const form = ref<PropertyFormState>(createFormData());
 
 const isEditing = computed(() => Boolean(propertyToEdit?.id));
 
+const sanitizePrice = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const cleanedString = target.value.replace(/\D/g, '');
+    form.value.price = cleanedString ? parseInt(cleanedString, 10) : 0;
+    target.value = cleanedString;
+};
 const handleDeleteProperty = async (): Promise<void> => {
     if (!propertyToEdit) return;
     if (window.confirm(`Delete property ${propertyToEdit}?`)) {
@@ -188,11 +194,12 @@ watch(
                                     class="text-xs" />
                             </div>
                             <input
-                                v-model="form.price"
+                                :value="form.price"
                                 type="number"
                                 placeholder="1000000"
                                 class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                required />
+                                required
+                                @input="sanitizePrice" />
                         </div>
                     </div>
                 </div>
