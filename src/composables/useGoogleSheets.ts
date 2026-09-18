@@ -1,7 +1,5 @@
-// src/composables/useGoogleSheets.ts
 import { ref } from 'vue';
 
-// Ambient declaration for Google Identity Services global
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare const google: any;
 
@@ -157,36 +155,49 @@ export function useGoogleSheets() {
 
     const appendSheetRow = async (
         spreadsheetId: string,
-        values: (string | number)[]
+        values: (string | number)[],
+        range: string = 'A1'
     ): Promise<void> => {
-        const res = await fetchWithAuth(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/A1:append?valueInputOption=USER_ENTERED`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ values: [values] }),
-            }
-        );
-        if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
+        const encodedRange = encodeURIComponent(range);
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+
+        const res = await fetchWithAuth(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values: [values] }),
+        });
+
+        if (!res.ok) {
+            const errorBody = await res.json().catch(() => null);
+            const detail = errorBody?.error?.message || res.statusText;
+            throw new Error(`Google Sheets API Error (${res.status}): ${detail}`);
+        }
     };
 
     const updateSheetRowByBookingId = async (
         spreadsheetId: string,
         bookingId: string,
-        values: (string | number)[]
+        values: (string | number)[],
+        sheetName: string = ''
     ): Promise<void> => {
-        const rows = await fetchSheetRows(spreadsheetId, 'A2:A');
+        const idRange = sheetName ? `'${sheetName}'!A2:A` : 'A2:A';
+        const rows = await fetchSheetRows(spreadsheetId, idRange);
         const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
 
         if (rowIndex === -1) {
-            await appendSheetRow(spreadsheetId, values);
+            const appendRange = sheetName ? `'${sheetName}'!A1` : 'A1';
+            await appendSheetRow(spreadsheetId, values, appendRange);
             return;
         }
 
         const targetRowNumber = rowIndex + 2;
-        const range = `A${targetRowNumber}:J${targetRowNumber}`;
+        const endColLetter = String.fromCharCode(64 + Math.max(values.length, 10)); // Dynamic end column
+        const targetRange = sheetName
+            ? `'${sheetName}'!A${targetRowNumber}:${endColLetter}${targetRowNumber}`
+            : `A${targetRowNumber}:${endColLetter}${targetRowNumber}`;
+
         const res = await fetchWithAuth(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}?valueInputOption=USER_ENTERED`,
             {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
