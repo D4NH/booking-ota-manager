@@ -7,8 +7,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
 import FinancePropertyMetrics from '@/components/finance/FinancePropertyMetrics.vue';
-import PropertyFinanceTable from '@/components/finance/PropertyFinanceTable.vue';
-import TransferHistoryTable from '@/components/finance/TransferHistoryTable.vue';
+import FinancePropertyTable from '@/components/finance/FinancePropertyTable.vue';
 
 const financeStore = useFinanceStore();
 const { syncAllFinancialData } = useFinanceSync();
@@ -34,11 +33,11 @@ onMounted(async () => {
             <template #title>Finance Dashboard</template>
             <template #subtitle> Property, Personal and Shared Finances </template>
 
-            <div class="flex items-center space-x-3 w-full sm:w-auto">
+            <div class="flex items-center gap-2">
                 <button
                     type="button"
                     :disabled="isSyncing"
-                    class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold border transition disabled:opacity-50"
+                    class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium border transition disabled:opacity-50"
                     :class="[
                         isAuthenticated
                             ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'
@@ -65,8 +64,11 @@ onMounted(async () => {
 
         <div class="space-y-4">
             <FinancePropertyMetrics />
-            <PropertyFinanceTable />
-            <TransferHistoryTable />
+
+            <div class="grid grid-cols-3 gap-4">
+                <FinancePropertyTable class="col-span-2" />
+                <div>1</div>
+            </div>
         </div>
     </div>
 </template>

@@ -126,4 +126,8 @@
     [role='button']:not(:disabled) {
         cursor: pointer;
     }
+    td,
+    th {
+        vertical-align: middle;
+    }
 }

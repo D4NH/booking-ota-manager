@@ -7,7 +7,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
 import FinanceMetrics from '@/components/finance/FinanceMetrics.vue';
-import PersonalFinanceTable from '@/components/finance/PersonalFinanceTable.vue';
+import FinancePersonalTable from '@/components/finance/FinancePersonalTable.vue';
 import SavingsAndGold from '@/components/finance/SavingsAndGold.vue';
 import TransferModal from '@/components/modal/TransferModal.vue';
 
@@ -68,7 +68,10 @@ onMounted(async () => {
         <div class="space-y-4">
             <FinanceMetrics />
 
-            <PersonalFinanceTable />
+            <div class="grid grid-cols-3">
+                <FinancePersonalTable class="col-span-2" />
+                <div>1</div>
+            </div>
 
             <SavingsAndGold />
         </div>

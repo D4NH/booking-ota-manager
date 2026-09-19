@@ -129,7 +129,7 @@ onMounted(() => {
         <button
             type="button"
             :disabled="isSyncing"
-            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold border transition disabled:opacity-50"
+            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium border transition disabled:opacity-50"
             :class="[
                 isAuthenticated
                     ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'

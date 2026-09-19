@@ -98,10 +98,6 @@ const {
                 {{ formatIDR(citraNetBalance) }}
             </p>
             <p class="text-xs text-mist-500">Discretionary Net</p>
-            <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-[11px] text-mist-400">
-                Personal Inflows minus Expenses
-            </div> -->
         </div>
     </div>
 </template>

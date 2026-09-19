@@ -58,7 +58,7 @@ const isCurrentBooking = (b: Booking): boolean => {
 
 <template>
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-        <table class="w-full text-left text-sm text-mist-300 table-fixed">
+        <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
             <thead
                 class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-bold uppercase text-mist-400">
                 <tr>
@@ -68,7 +68,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                         class="w-35 px-4 py-2.5 text-center">
                         Property
                     </th>
-                    <th class="px-4 py-2.5">Guest</th>
+                    <th class="w-auto px-4 py-2.5">Guest</th>
                     <th class="w-50 px-4 py-2.5 text-center">Stay Date</th>
                     <th class="w-24 px-4 py-2.5 text-center">Nights</th>
                     <th class="w-36 px-4 py-2.5 text-right">Payout</th>
@@ -117,7 +117,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                     <tr
                         v-for="b in group.bookings"
                         :key="b.id || b.bookingId"
-                        class="transition cursor-pointer"
+                        class="transition cursor-pointer align-middle"
                         :class="[
                             isCurrentBooking(b)
                                 ? 'text-lime-400 bg-lime-500/5 hover:bg-lime-500/15 ring-1 ring-lime-500/30'
@@ -175,7 +175,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                             <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
                         </td>
                         <td class="px-4 py-2 text-right text-nowrap">
-                            <div class="flex items-center justify-end gap-2">
+                            <div class="flex items-center justify-end gap-2 h-7">
                                 <div
                                     class="text-mist-400 hover:text-mist-100 transition"
                                     title="Edit Booking">

@@ -9,6 +9,7 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/finance/TransactionNote.vue';
+import TransferModal from '@/components/modal/TransferModal.vue';
 
 const financeStore = useFinanceStore();
 const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
@@ -26,6 +27,7 @@ const categories = [
 ];
 
 const isModalOpen = ref(false);
+const isTransferModalOpen = ref(false);
 const isSubmitting = ref(false);
 const filterCategory = ref<string>('ALL');
 const editingItem = ref<PropertyFinance | null>(null);
@@ -147,76 +149,80 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Transaction Overview</template>
-                <template #subtitle>
-                    Bookings auto populated from DexieDB + Google Sheets expenses
-                </template>
+                <template #subtitle> Bookings auto populated from DexieDB and expenses </template>
             </CardTitle>
-            <div class="flex gap-4">
-                <select
-                    v-model="filterCategory"
-                    class="text-xs border border-mist-800 rounded-md px-2.5 py-1.5 bg-mist-850 text-mist-200 focus:outline-none focus:border-lime-400">
-                    <option value="ALL">All Categories</option>
-                    <option
-                        v-for="cat in categories"
-                        :key="cat"
-                        :value="cat">
-                        {{ cat }}
-                    </option>
-                    <option value="Owner Payout Outflow">Owner Payout Outflow</option>
-                </select>
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <select
+                        v-model="filterCategory"
+                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                        <option value="ALL">All Categories</option>
+                        <option
+                            v-for="cat in categories"
+                            :key="cat"
+                            :value="cat">
+                            {{ cat }}
+                        </option>
+                        <option value="Owner Payout Outflow">Owner Payout Outflow</option>
+                    </select>
+                    <div
+                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                        <fa-icon
+                            class="text-xs"
+                            icon="angle-down" />
+                    </div>
+                </div>
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3 py-1.5 rounded-md transition shadow-sm"
+                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-medium px-3 py-2 rounded-md transition shadow-sm"
                     @click="openAddModal">
                     + Add Entry
+                </button>
+                <button
+                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-medium px-3 py-2 rounded-md transition shadow"
+                    @click="isTransferModalOpen = true">
+                    Transfer Funds
                 </button>
             </div>
         </div>
 
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-sm text-mist-300 table-fixed">
+            <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
-                        <th class="w-35 py-3 px-3">Date</th>
-                        <th class="w-35 py-3 px-3">Property</th>
-                        <th class="w-45 py-3 px-3">Category</th>
-                        <th class="py-3 px-3">Source</th>
-                        <th class="py-3 px-3 text-right">Amount</th>
-                        <th class="w-30 py-3 px-3 text-right">Actions</th>
+                        <th class="w-26 py-3 px-3">Date</th>
+                        <th class="w-25 py-3 px-3">Property</th>
+                        <th class="w-46 py-3 px-3">Category</th>
+                        <th class="w-auto py-3 px-3">Source</th>
+                        <th class="w-35 py-3 px-3 text-right">Amount</th>
+                        <th class="w-23 py-3 px-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60">
                     <tr
                         v-for="item in paginatedTransactions"
                         :key="item.id"
-                        class="hover:bg-mist-850/50">
+                        class="hover:bg-mist-800/40 align-middle">
                         <td class="py-3 px-3 text-mist-400 text-xs font-mono">{{ item.date }}</td>
                         <td class="py-3 px-3">
-                            <!-- <span
-                                class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
-                                :class="
-                                    item.type === 'income'
-                                        ? 'bg-lime-400/10 text-lime-400 border border-lime-400/20'
-                                        : 'bg-rose-400/10 text-rose-400 border border-rose-400/20'
-                                ">
-                                {{ item.type }}
-                            </span> -->
                             <RouterLink
                                 :to="{ name: 'property-detail', params: { id: item.propertyId } }"
                                 :class="getPropertyStyle(item.propertyId)">
                                 {{ item.propertyId }}
                             </RouterLink>
                         </td>
-                        <td class="py-3 px-3">
+                        <td class="py-3 px-3 truncate">
                             {{ item.category }}
                         </td>
-                        <td class="py-3 px-3 text-mist-400 flex items-center gap-1.5">
-                            <span
-                                v-if="item.id.startsWith('dexie-')"
-                                class="text-[9px] bg-lime-400/10 text-lime-400 border border-lime-400/30 px-1.5 py-0.5 rounded-md font-mono font-bold">
-                                DEXIE
-                            </span>
-                            <TransactionNote :notes="item.notes" />
+                        <td class="py-3 px-3 text-mist-400 truncate">
+                            <div class="flex items-center gap-1.5">
+                                <span
+                                    v-if="item.id.startsWith('dexie-')"
+                                    class="text-[9px] bg-lime-400/10 text-lime-400 border border-lime-400/30 px-1.5 py-0.5 rounded-md font-mono font-bold shrink-0">
+                                    DEXIE
+                                </span>
+                                <TransactionNote :notes="item.notes" />
+                            </div>
                         </td>
                         <td
                             class="py-3 px-3 text-right font-bold font-mono text-xs"
@@ -224,10 +230,9 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                             {{ item.type === 'expense' ? '-' : '+' }}{{ formatIDR(item.amount) }}
                         </td>
                         <td class="py-3 px-3">
-                            <div
-                                v-if="!item.id.startsWith('dexie')"
-                                class="flex items-center justify-end gap-1">
+                            <div class="flex items-center justify-end gap-1 h-7">
                                 <button
+                                    v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Edit Transaction"
                                     class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition"
@@ -236,8 +241,13 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                                         icon="pen-to-square"
                                         class="text-xs" />
                                 </button>
-                                <span class="text-mist-700">|</span>
+                                <span
+                                    v-if="!item.id.startsWith('dexie')"
+                                    class="text-mist-700"
+                                    >|</span
+                                >
                                 <button
+                                    v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Delete Transaction"
                                     class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition"
@@ -457,5 +467,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                 </form>
             </div>
         </div>
+
+        <TransferModal v-model="isTransferModalOpen" />
     </div>
 </template>
