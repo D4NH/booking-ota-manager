@@ -196,7 +196,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     <tr>
                         <th class="w-35 py-3 px-3">Date</th>
                         <th class="w-35 py-3 px-3">Property</th>
-                        <th class="w-55 py-3 px-3">Category</th>
+                        <th class="w-45 py-3 px-3">Category</th>
                         <th class="py-3 px-3">Source</th>
                         <th class="py-3 px-3 text-right">Amount</th>
                         <th class="w-30 py-3 px-3 text-right">Actions</th>
@@ -249,46 +249,27 @@ const triggerDatePicker = (event: MouseEvent): void => {
                                     title="Edit Transaction"
                                     class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition"
                                     @click="openEditModal(item)">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-3.5 h-3.5"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path
-                                            d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                        <path d="m15 5 4 4" />
-                                    </svg>
+                                    <fa-icon
+                                        icon="pen-to-square"
+                                        class="text-xs" />
                                 </button>
+                                <span class="text-mist-700">|</span>
                                 <button
                                     type="button"
                                     title="Delete Transaction"
                                     class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition"
                                     @click="removePropertyTransaction(item.id, item.category)">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-3.5 h-3.5"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M3 6h18" />
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    </svg>
+                                    <fa-icon
+                                        icon="trash-can"
+                                        class="text-xs" />
                                 </button>
                             </div>
                         </td>
                     </tr>
                     <tr v-if="displayedTransactions.length === 0">
                         <td
-                            colspan="5"
-                            class="py-6 text-center text-mist-400 font-sans">
+                            colspan="6"
+                            class="py-6 text-center text-mist-400">
                             No records for this month.
                         </td>
                     </tr>
@@ -301,7 +282,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
             v-if="totalItems > 0"
             class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-xs text-mist-400">
             <div class="flex items-center gap-3">
-                <span class="font-sans">
+                <span class="">
                     Showing
                     <strong class="text-mist-200 font-mono">{{ startItemIndex }}</strong>
                     to
@@ -311,7 +292,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     records
                 </span>
 
-                <div class="flex items-center gap-1.5 font-sans">
+                <div class="flex items-center gap-1.5">
                     <label for="page-size">Per page:</label>
                     <select
                         id="page-size"
@@ -338,7 +319,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     Prev
                 </button>
 
-                <span class="px-3 py-1 font-sans text-mist-300">
+                <span class="px-3 py-1 text-mist-300">
                     Page <strong class="text-lime-400 font-mono">{{ currentPage }}</strong> of
                     <strong class="font-mono">{{ totalPages }}</strong>
                 </span>

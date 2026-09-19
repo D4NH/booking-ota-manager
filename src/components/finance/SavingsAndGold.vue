@@ -112,7 +112,7 @@ async function handleSaveGold(): Promise<void> {
                     </span>
                 </div>
                 <div class="text-2xl font-black text-lime-400 font-mono mt-2">
-                    {{ totalGoldGrams.toFixed(2) }} <span class="text-sm font-sans">grams</span>
+                    {{ totalGoldGrams.toFixed(2) }} <span class="text-sm">grams</span>
                 </div>
                 <p class="text-xs text-mist-400 mt-1">
                     Market Valuation: {{ formatIDR(estimatedGoldMarketValue) }}
@@ -203,10 +203,10 @@ async function handleSaveGold(): Promise<void> {
                                 v-for="acc in dynamicSavingsAccounts"
                                 :key="acc.key"
                                 class="hover:bg-mist-850/50">
-                                <td class="py-2.5 px-3 font-sans font-medium text-mist-100">
+                                <td class="py-2.5 px-3 font-medium text-mist-100">
                                     {{ acc.owner }}
                                 </td>
-                                <td class="py-2.5 px-3 font-sans flex items-center gap-1.5">
+                                <td class="py-2.5 px-3 flex items-center gap-1.5">
                                     <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                                     {{ acc.institution }}
                                 </td>
@@ -218,7 +218,7 @@ async function handleSaveGold(): Promise<void> {
                             <tr v-if="dynamicSavingsAccounts.length === 0">
                                 <td
                                     colspan="4"
-                                    class="py-6 text-center text-mist-400 font-sans">
+                                    class="py-6 text-center text-mist-400">
                                     No personal transactions categorized as "Savings" yet.
                                 </td>
                             </tr>
@@ -246,10 +246,10 @@ async function handleSaveGold(): Promise<void> {
                                 :key="tx.id"
                                 class="hover:bg-mist-850/50">
                                 <td class="py-2.5 px-3 text-mist-400">{{ tx.date }}</td>
-                                <td class="py-2.5 px-3 font-sans font-medium text-mist-100">
+                                <td class="py-2.5 px-3 font-medium text-mist-100">
                                     {{ tx.owner }}
                                 </td>
-                                <td class="py-2.5 px-3 font-sans text-mist-300">
+                                <td class="py-2.5 px-3 text-mist-300">
                                     <span class="text-blue-400 font-medium"
                                         >[{{ tx.savingsInstitution || 'BCA' }}]</span
                                     >
@@ -262,7 +262,7 @@ async function handleSaveGold(): Promise<void> {
                             <tr v-if="dynamicSavingsTransactions.length === 0">
                                 <td
                                     colspan="4"
-                                    class="py-6 text-center text-mist-400 font-sans">
+                                    class="py-6 text-center text-mist-400">
                                     No savings records found.
                                 </td>
                             </tr>
@@ -303,10 +303,10 @@ async function handleSaveGold(): Promise<void> {
                                 :key="g.id"
                                 class="hover:bg-mist-850/50">
                                 <td class="py-2.5 px-3 text-mist-400">{{ g.purchaseDate }}</td>
-                                <td class="py-2.5 px-3 font-sans font-semibold text-mist-100">
+                                <td class="py-2.5 px-3 font-semibold text-mist-100">
                                     {{ g.type }}
                                 </td>
-                                <td class="py-2.5 px-3 font-sans">{{ g.owner }}</td>
+                                <td class="py-2.5 px-3">{{ g.owner }}</td>
                                 <td class="py-2.5 px-3 text-right font-bold text-lime-400">
                                     {{ g.weightGrams }}g
                                 </td>
@@ -317,7 +317,7 @@ async function handleSaveGold(): Promise<void> {
                             <tr v-if="goldAssets.length === 0">
                                 <td
                                     colspan="5"
-                                    class="py-6 text-center text-mist-400 font-sans">
+                                    class="py-6 text-center text-mist-400">
                                     No gold holdings recorded.
                                 </td>
                             </tr>

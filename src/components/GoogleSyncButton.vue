@@ -225,7 +225,7 @@ const handleSync = async (): Promise<void> => {
                                 v-for="d in log.diffs"
                                 :key="String(d.field)"
                                 class="flex items-center justify-between text-mist-300">
-                                <span class="text-mist-400 font-sans font-semibold capitalize">
+                                <span class="text-mist-400 font-semibold capitalize">
                                     {{ String(d.field) }}:
                                 </span>
                                 <div>

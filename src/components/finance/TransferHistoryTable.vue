@@ -83,7 +83,7 @@ const isTransferModalOpen = ref(false);
                     <tr v-if="filteredTransfers.length === 0">
                         <td
                             colspan="5"
-                            class="py-6 text-center text-mist-400 font-sans">
+                            class="py-6 text-center text-mist-400">
                             No payouts logged for this month.
                         </td>
                     </tr>

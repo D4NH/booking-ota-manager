@@ -272,7 +272,7 @@ watch(formCategory, (newCat) => {
                         :key="item.id"
                         class="hover:bg-mist-850/50 group">
                         <td class="py-3 px-3 text-mist-400">{{ item.date }}</td>
-                        <td class="py-3 px-3 font-sans">
+                        <td class="py-3 px-3">
                             <span
                                 class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
                                 :class="{
@@ -286,8 +286,7 @@ watch(formCategory, (newCat) => {
                                 {{ item.type }}
                             </span>
                         </td>
-                        <td
-                            class="py-3 px-3 font-sans font-medium text-mist-100 flex items-center gap-1.5">
+                        <td class="py-3 px-3 font-medium text-mist-100 flex items-center gap-1.5">
                             <span>{{ item.category }}</span>
                             <span
                                 v-if="item.category === 'Gold'"
@@ -295,7 +294,7 @@ watch(formCategory, (newCat) => {
                                 GOLD
                             </span>
                         </td>
-                        <td class="py-3 px-3 font-sans text-mist-400">
+                        <td class="py-3 px-3 text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
                                 class="text-blue-400 mr-1 font-semibold">
@@ -337,7 +336,7 @@ watch(formCategory, (newCat) => {
                     <tr v-if="currentList.length === 0">
                         <td
                             colspan="6"
-                            class="py-6 text-center text-mist-400 font-sans">
+                            class="py-6 text-center text-mist-400">
                             No matching entries logged for this period.
                         </td>
                     </tr>
