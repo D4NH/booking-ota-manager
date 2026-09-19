@@ -23,7 +23,7 @@ interface Options {
  * @returns An object containing:
  * - `selectedProperty`: Computed Property model matching `propertyIdSource` (undefined if 'all').
  * - `unitBookings`: Chronologically sorted (newest first) bookings scoped to the target property.
- * - `totalRevenue`: Gross revenue for the current calendar year.
+ * - `totalYearRevenue`: Gross revenue for the current calendar year.
  * - `totalNights`: Total nights booked for the current calendar year.
  * - `adr`: Average Daily Rate across booked nights for the current calendar year.
  * - `annualOccupancy`: Occupancy percentage (capped at 100%) based on 365 calendar days.
@@ -122,7 +122,7 @@ export function usePropertyDetails(
     return {
         selectedProperty,
         unitBookings: computed(() => unitData.value.bookings),
-        totalRevenue: computed(() => unitData.value.revenue),
+        totalYearRevenue: computed(() => unitData.value.revenue),
         totalNights: computed(() => unitData.value.nights),
         adr: computed(() => unitData.value.adr),
         annualOccupancy: computed(() => unitData.value.occupancy),

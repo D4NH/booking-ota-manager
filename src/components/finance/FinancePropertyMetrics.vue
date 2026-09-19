@@ -20,7 +20,7 @@ const {
 const { totalPayout } = useMonthlyMetrics(bookings, {
     propertyId: () => 'all',
 });
-const { totalRevenue } = usePropertyDetails(() => 'all');
+const { totalYearRevenue } = usePropertyDetails(() => 'all');
 </script>
 
 <template>
@@ -112,7 +112,7 @@ const { totalRevenue } = usePropertyDetails(() => 'all');
                 </h3>
             </div>
             <p class="font-mono text-lg font-semibold text-white">
-                {{ formatIDR(totalRevenue) }}
+                {{ formatIDR(totalYearRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span class="font-medium text-lime-400">
