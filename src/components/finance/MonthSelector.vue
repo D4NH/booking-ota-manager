@@ -3,14 +3,13 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 
 const financeStore = useFinanceStore();
 
-function handleMonthChange(event: Event): void {
+const handleMonthChange = (event: Event): void => {
     const target = event.target as HTMLInputElement;
     if (target?.value) {
         financeStore.selectedMonth = target.value;
     }
-}
-
-function shiftMonth(offset: number): void {
+};
+const shiftMonth = (offset: number): void => {
     const [yearStr, monthStr] = financeStore.selectedMonth.split('-');
     const year = Number(yearStr);
     const month = Number(monthStr);
@@ -23,7 +22,7 @@ function shiftMonth(offset: number): void {
     const newMonth = String(date.getMonth() + 1).padStart(2, '0');
 
     financeStore.selectedMonth = `${newYear}-${newMonth}`;
-}
+};
 </script>
 
 <template>

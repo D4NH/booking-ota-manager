@@ -45,12 +45,6 @@ const yearOptions = computed<number[]>(() => {
 
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
-watch(yearOptions, (available) => {
-    if (!available.includes(selectedYear.value) && available.length > 0) {
-        selectedYear.value = available[0]!;
-    }
-});
-
 const channelStats = computed(() => {
     const targetYearStr = String(selectedYear.value);
     const counts = new Map<string, number>();
@@ -88,7 +82,6 @@ const channelStats = computed(() => {
     entries.sort((a, b) => b.value - a.value);
     return { entries, totalCount, totalRevenue, total };
 });
-
 const chartData = computed<ChartData<'doughnut'>>(() => ({
     labels: channelStats.value.entries.map((e) => e.name),
     datasets: [
@@ -101,7 +94,6 @@ const chartData = computed<ChartData<'doughnut'>>(() => ({
         },
     ],
 }));
-
 const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -135,6 +127,12 @@ const clearHighlight = (): void => {
     chartRef.value?.chart?.setActiveElements([]);
     chartRef.value?.chart?.update();
 };
+
+watch(yearOptions, (available) => {
+    if (!available.includes(selectedYear.value) && available.length > 0) {
+        selectedYear.value = available[0]!;
+    }
+});
 </script>
 
 <template>

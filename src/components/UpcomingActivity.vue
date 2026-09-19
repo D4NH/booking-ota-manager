@@ -13,9 +13,7 @@ const emit = defineEmits<{
     (e: 'select-booking', booking: Booking): void;
 }>();
 
-// Get upcoming arrivals & departures in the next 7 days
 const upcomingEvents = computed(() => {
-    // 7 days window
     const maxDate = new Date(today);
     maxDate.setDate(maxDate.getDate() + 7);
     const maxDateStr = maxDate.toISOString().substring(0, 10);
@@ -30,7 +28,7 @@ const upcomingEvents = computed(() => {
     bookings.forEach((b) => {
         if (b.status === 'Unavailable') return;
 
-        // Check-ins (Arrivals)
+        // Arrivals
         if (b.checkIn >= today && b.checkIn <= maxDateStr) {
             events.push({
                 type: 'arrival',
@@ -40,7 +38,7 @@ const upcomingEvents = computed(() => {
             });
         }
 
-        // Check-outs (Departures)
+        // Departures
         if (b.checkOut >= today && b.checkOut <= maxDateStr) {
             events.push({
                 type: 'departure',
@@ -51,7 +49,6 @@ const upcomingEvents = computed(() => {
         }
     });
 
-    // Sort chronologically
     return events.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
 });
 </script>

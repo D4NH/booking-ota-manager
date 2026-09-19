@@ -19,11 +19,11 @@ const emit = defineEmits<Emits>();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-function handleSelect(id: PropertyId | 'all'): void {
+const handleSelect = (id: PropertyId | 'all'): void => {
     if (id === modelValue) return;
     emit('update:modelValue', id);
     emit('change', id);
-}
+};
 </script>
 
 <template>

@@ -33,12 +33,6 @@ const yearOptions = computed<number[]>(() => {
 
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
-watch(yearOptions, (available) => {
-    if (!available.includes(selectedYear.value) && available.length > 0) {
-        selectedYear.value = available[0]!;
-    }
-});
-
 const propertyStats = computed(() => {
     const targetYearStr = String(selectedYear.value);
     const isLeapYear =
@@ -89,6 +83,12 @@ const propertyStats = computed(() => {
             },
         };
     });
+});
+
+watch(yearOptions, (available) => {
+    if (!available.includes(selectedYear.value) && available.length > 0) {
+        selectedYear.value = available[0]!;
+    }
 });
 </script>
 

@@ -19,9 +19,6 @@ const { properties } = storeToRefs(propertyStore);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isImporting = ref(false);
 
-/**
- * Type guard validating uploaded JSON records match Property interface
- */
 const isValidProperty = (obj: unknown): obj is Property => {
     if (!obj || typeof obj !== 'object') return false;
     const p = obj as Record<string, unknown>;
@@ -39,9 +36,6 @@ const isValidProperty = (obj: unknown): obj is Property => {
         typeof p.available === 'boolean'
     );
 };
-/**
- * Generates and downloads formatted JSON backup
- */
 const exportProperties = (): void => {
     try {
         const backupData: PropertyBackupPayload = {
@@ -74,12 +68,7 @@ const exportProperties = (): void => {
         });
     }
 };
-const triggerFileInput = (): void => {
-    fileInputRef.value?.click();
-};
-/**
- * Validates, loads, and writes imported properties to Dexie database
- */
+const triggerFileInput = (): void => fileInputRef.value?.click();
 const handleFileChange = async (event: Event): Promise<void> => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
@@ -90,8 +79,6 @@ const handleFileChange = async (event: Event): Promise<void> => {
     try {
         const text = await file.text();
         const parsed: unknown = JSON.parse(text);
-
-        // Support both raw array and versioned backup format
         const candidateList: unknown =
             typeof parsed === 'object' && parsed !== null && 'properties' in parsed
                 ? (parsed as PropertyBackupPayload).properties

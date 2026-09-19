@@ -24,7 +24,6 @@ const dateObj = computed(() => parseISODate(today));
 const dayNumber = computed(() => dateObj.value.getDate());
 const totalDaysInMonth = computed(() => getDaysInMonth(today.slice(0, 7)));
 const daysRemaining = computed(() => Math.max(0, totalDaysInMonth.value - dayNumber.value));
-// Dynamic Target Resolution (User override -> 70% occupancy target at base rate -> 15M fallback)
 const effectiveTarget = computed(() => {
     if (typeof monthlyTarget === 'number' && monthlyTarget > 0) return monthlyTarget;
     if (property?.price) {

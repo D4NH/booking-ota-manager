@@ -8,7 +8,6 @@ const { text, characters = '!@#$%^&*()_+-=~0123456789' } = defineProps<{
 
 const isHovered = ref(false);
 
-// Generate scrambled string preserving spaces
 const scrambledText = computed(() => {
     const chars = characters;
     if (!text) return '';

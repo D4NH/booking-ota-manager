@@ -15,22 +15,6 @@ const { addPropertyTransaction, editPropertyTransaction, removePropertyTransacti
     useFinanceSync();
 const { filteredPropertyFinances, isLoading } = storeToRefs(financeStore);
 
-const isModalOpen = ref(false);
-const isSubmitting = ref(false);
-const filterCategory = ref<string>('ALL');
-const editingItem = ref<PropertyFinance | null>(null);
-
-const currentPage = ref(1);
-const pageSize = ref(5);
-const pageSizeOptions = [5, 10, 20, 50];
-
-const formPropertyId = ref('piyungan');
-const formType = ref<PropertyFinanceType>('income');
-const formCategory = ref<PropertyCategory>('Supplies');
-const formAmount = ref<number | null>(null);
-const formDate = ref(new Date().toISOString().slice(0, 10));
-const formNotes = ref('');
-
 const categories = [
     'Payout',
     'Cleaning',
@@ -41,33 +25,36 @@ const categories = [
     'Garbage Disposal',
 ];
 
-const isEditing = computed(() => editingItem.value !== null);
+const isModalOpen = ref(false);
+const isSubmitting = ref(false);
+const filterCategory = ref<string>('ALL');
+const editingItem = ref<PropertyFinance | null>(null);
+const currentPage = ref(1);
+const pageSize = ref(5);
 
+const formPropertyId = ref('piyungan');
+const formType = ref<PropertyFinanceType>('income');
+const formCategory = ref<PropertyCategory>('Supplies');
+const formAmount = ref<number | null>(null);
+const formDate = ref(new Date().toISOString().slice(0, 10));
+const formNotes = ref('');
+
+const isEditing = computed(() => editingItem.value !== null);
 const displayedTransactions = computed(() => {
     if (filterCategory.value === 'ALL') return filteredPropertyFinances.value;
     return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
 });
-
 const totalItems = computed(() => displayedTransactions.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value) || 1);
-
 const paginatedTransactions = computed(() => {
     const start = (currentPage.value - 1) * pageSize.value;
     return displayedTransactions.value.slice(start, start + pageSize.value);
 });
-
 const startItemIndex = computed(() => {
     if (totalItems.value === 0) return 0;
     return (currentPage.value - 1) * pageSize.value + 1;
 });
-
-const endItemIndex = computed(() => {
-    return Math.min(currentPage.value * pageSize.value, totalItems.value);
-});
-
-watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
-    currentPage.value = 1;
-});
+const endItemIndex = computed(() => Math.min(currentPage.value * pageSize.value, totalItems.value));
 
 const sanitizeAmount = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -75,13 +62,12 @@ const sanitizeAmount = (event: Event) => {
     formAmount.value = cleanedString ? parseInt(cleanedString, 10) : 0;
     target.value = cleanedString;
 };
-function goToPage(page: number): void {
+const goToPage = (page: number): void => {
     if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
     }
-}
-
-function openAddModal(): void {
+};
+const openAddModal = (): void => {
     editingItem.value = null;
     formPropertyId.value = 'piyungan';
     formType.value = 'expense';
@@ -90,9 +76,8 @@ function openAddModal(): void {
     formDate.value = new Date().toISOString().slice(0, 10);
     formNotes.value = '';
     isModalOpen.value = true;
-}
-
-function openEditModal(item: PropertyFinance): void {
+};
+const openEditModal = (item: PropertyFinance): void => {
     if (item.id.startsWith('dexie-')) return;
     editingItem.value = item;
     formPropertyId.value = item.propertyId;
@@ -102,9 +87,8 @@ function openEditModal(item: PropertyFinance): void {
     formDate.value = item.date;
     formNotes.value = item.notes || '';
     isModalOpen.value = true;
-}
-
-async function submitTransaction(): Promise<void> {
+};
+const submitTransaction = async (): Promise<void> => {
     if (isSubmitting.value || !formAmount.value || !formDate.value) return;
 
     isSubmitting.value = true;
@@ -142,8 +126,7 @@ async function submitTransaction(): Promise<void> {
             isSubmitting.value = false;
         }, 1000);
     }
-}
-
+};
 const triggerDatePicker = (event: MouseEvent): void => {
     const target = event.currentTarget as HTMLInputElement | null;
 
@@ -153,6 +136,10 @@ const triggerDatePicker = (event: MouseEvent): void => {
         target?.focus();
     }
 };
+
+watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
+    currentPage.value = 1;
+});
 </script>
 
 <template>
@@ -295,7 +282,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                         v-model="pageSize"
                         class="bg-mist-850 border border-mist-800 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
                         <option
-                            v-for="opt in pageSizeOptions"
+                            v-for="opt in [5, 10, 20, 50]"
                             :key="opt"
                             :value="opt">
                             {{ opt }}

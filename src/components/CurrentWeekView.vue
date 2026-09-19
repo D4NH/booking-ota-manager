@@ -19,18 +19,15 @@ const { selectedProperty = 'all', showHeader = true } = defineProps<Props>();
 const modalStore = useModalStore();
 
 const { unitBookings: filteredBookings } = usePropertyDetails(() => selectedProperty);
-
-// Multi-day span styling & date stay assignment from calendar grid composable
 const { getStaysForDate, multiDayStyling } = useCalendarGrid(filteredBookings);
 
-// 7-day strip centered on today (-3 to +3 days)
 const weekDays = computed(() => {
     const now = new Date();
     const todayStr = getCurrentDate(now);
     const days = [];
     const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
     const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short' });
-
+    // 7-day strip centered on today (-3 to +3 days)
     for (let offset = -3; offset <= 3; offset++) {
         const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
         const dateStr = getCurrentDate(d);

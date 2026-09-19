@@ -18,9 +18,7 @@ const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 const isSyncing = ref(false);
 const isTransferModalOpen = ref(false);
 
-const handleFinanceSync = async (): Promise<void> => {
-    await syncAllFinancialData();
-};
+const handleFinanceSync = async () => await syncAllFinancialData();
 
 onMounted(async () => {
     await financeStore.loadLocalFinanceData();

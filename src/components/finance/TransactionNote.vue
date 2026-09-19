@@ -8,8 +8,6 @@ interface Props {
 const { notes = '' } = defineProps<Props>();
 
 const isRecurring = computed(() => /\[RECURRING\]/i.test(notes));
-
-// Strip out the machine-readable [RECURRING] tag for clean display
 const cleanNote = computed(() => notes.replace(/\[RECURRING\]/gi, '').trim());
 </script>
 

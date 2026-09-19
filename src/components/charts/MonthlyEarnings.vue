@@ -10,6 +10,7 @@ import {
     Tooltip,
     Legend,
     Filler,
+    type ChartData,
     type ChartOptions,
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
@@ -49,7 +50,7 @@ const growthPercentage = computed(() => {
     const diff = currentTotal.value - previousTotal.value;
     return Number(((diff / previousTotal.value) * 100).toFixed(1));
 });
-const chartData = computed(() => {
+const chartData = computed<ChartData<'line'>>(() => {
     const isWeekly = activeView.value === 'weekly';
 
     const labels = isWeekly ? weeklyData.labels : monthlyData.labels;
@@ -79,7 +80,7 @@ const chartData = computed(() => {
         ],
     };
 });
-const chartOptions: ChartOptions<'line'> = {
+const chartOptions = computed<ChartOptions<'line'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -129,7 +130,7 @@ const chartOptions: ChartOptions<'line'> = {
             border: { display: false },
         },
     },
-};
+}));
 </script>
 
 <template>

@@ -38,11 +38,10 @@ const visibleProperties = computed(() =>
     isPropertiesExpanded.value ? sortedProperties.value : sortedProperties.value.slice(0, 2)
 );
 
-function handleNavigate(target: PropertyId | 'all'): void {
+const handleNavigate = (target: PropertyId | 'all'): void => {
     if (target === 'all') return;
     router.push({ name: 'property-detail', params: { id: target } });
-}
-
+};
 const handleAddProperty = () => modalStore.openPropertyModal();
 </script>
 

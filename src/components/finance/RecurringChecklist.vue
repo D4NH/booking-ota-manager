@@ -22,19 +22,16 @@ const baseList = computed<ProjectedRecurringItem[]>(() => {
     if (activeSectionTab.value === 'expenses') return monthlyProjectedExpenses.value;
     return [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
 });
-
 const visibleList = computed<ProjectedRecurringItem[]>(() => {
     if (showSettled.value) return baseList.value;
     return baseList.value.filter((item) => !item.isSettled);
 });
-
 const totalPendingCount = computed(() => baseList.value.filter((i) => !i.isSettled).length);
-
 const totalSettledCount = computed(() => baseList.value.filter((i) => i.isSettled).length);
 
-async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
+const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
     await settleRecurringCommitment(item);
-}
+};
 </script>
 
 <template>

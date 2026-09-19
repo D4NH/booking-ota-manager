@@ -37,7 +37,6 @@ const horizonWindows = computed<HorizonWindow[]>(() => {
     const baseDate = parseISODate(today);
     const baseMs = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
 
-    // Discrete 30-day horizons
     const buckets = [
         { label: '0-30 Days', sublabel: 'Immediate', startDayOffset: 0, endDayOffset: 30 },
         { label: '31-60 Days', sublabel: 'Near-Term', startDayOffset: 30, endDayOffset: 60 },
@@ -139,7 +138,6 @@ const horizonWindows = computed<HorizonWindow[]>(() => {
 const totalConfirmed90dRevenue = computed(() =>
     horizonWindows.value.reduce((sum, w) => sum + w.confirmedRevenue, 0)
 );
-
 const total90dBookedNights = computed(() =>
     horizonWindows.value.reduce((sum, w) => sum + w.bookedNights, 0)
 );
@@ -168,12 +166,12 @@ const total90dBookedNights = computed(() =>
                             <span class="text-xs font-bold text-mist-100 block">
                                 {{ win.label }}
                             </span>
-                            <span class="text-[10px] text-mist-500 font-medium">
+                            <span class="text-xs text-mist-500 font-medium">
                                 {{ win.rangeText }}
                             </span>
                         </div>
                         <span
-                            class="rounded-sm px-1.5 py-0.5 uppercase font-medium text-[10px] text-nowrap"
+                            class="rounded-sm px-1.5 py-0.5 uppercase font-medium text-xs text-nowrap"
                             :class="win.statusClass">
                             {{ win.statusText }}
                         </span>

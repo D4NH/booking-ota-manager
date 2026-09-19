@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { toast } from 'vue-toastflow';
 import type { PersonalOwner, GoldType } from '@/types/finance';
+import { formatIDR } from '@/utils/money';
 
 const financeStore = useFinanceStore();
 const {
@@ -19,7 +20,6 @@ const {
 
 const isGoldModalOpen = ref(false);
 const activeSavingsSubTab = ref<'accounts' | 'transactions'>('accounts');
-
 const goldOwner = ref<PersonalOwner | 'Shared'>('Danh Nguyen');
 const goldType = ref<GoldType>('Antam');
 const goldGrams = ref<number | null>(null);
@@ -27,15 +27,7 @@ const goldTotalCost = ref<number | null>(null);
 const goldDate = ref(new Date().toISOString().slice(0, 10));
 const goldCert = ref('');
 
-function formatIDR(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    }).format(amount);
-}
-
-async function handleSaveGold(): Promise<void> {
+const handleSaveGold = async (): Promise<void> => {
     if (!goldGrams.value || !goldTotalCost.value) return;
 
     try {
@@ -74,7 +66,7 @@ async function handleSaveGold(): Promise<void> {
     } catch (err: unknown) {
         console.error('Failed to add gold holding:', err);
     }
-}
+};
 </script>
 
 <template>

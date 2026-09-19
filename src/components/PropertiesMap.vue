@@ -19,7 +19,6 @@ const mapContainer = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;
 const markersMap = new Map<PropertyId, L.Marker>();
 
-// 1. Define initial coordinates and zoom as reusable constants
 const INITIAL_CENTER: [number, number] = [-7.8385 - 0.06, 110.4632];
 const INITIAL_ZOOM = 11;
 
@@ -32,7 +31,7 @@ const createPropertyPin = (prop: Property) => {
         html: `
             <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer group">
                 <div class="relative flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 pr-2.5 py-1 text-xs shadow-xl transition-transform duration-200 group-hover:scale-110">
-                    <span class="h-2 w-2 rounded-md shrink-0 ${theme.bg || 'bg-lime-400'}"></span>
+                    <span class="h-2 w-2 rounded-md shrink-0 ${theme || 'bg-lime-400'}"></span>
                     <span class="font-bold text-mist-100 whitespace-nowrap capitalize">${prop.id}</span>
                     <span class="font-mono font-bold text-lime-400 text-[11px] whitespace-nowrap">${propPrice}</span>
                 </div>

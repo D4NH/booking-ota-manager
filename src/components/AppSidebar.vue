@@ -17,6 +17,7 @@ const navLinks: NavItem[] = [
     { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
     { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
 ];
+const currentYear = new Date().getFullYear();
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -67,8 +68,6 @@ const toggleSidebar = () => {
     isFinanceOpen.value = false;
 };
 const toggleNotifications = () => (isNotificationOpen.value = !isNotificationOpen.value);
-
-const currentYear = new Date().getFullYear();
 
 watch(
     () => route.path,

@@ -27,12 +27,6 @@ const {
 const { filteredPersonalFinances, filteredSharedFinances, isLoading, currentGoldPricePerGram } =
     storeToRefs(financeStore);
 
-const activeTab = ref<'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared'>('Danh Nguyen');
-const isModalOpen = ref(false);
-const isSubmitting = ref(false);
-const editingItem = ref<PersonalFinance | SharedFinance | null>(null);
-const showRecurring = ref(false);
-
 const DEFAULT_PERSONAL_CATEGORY = 'BCA';
 const DEFAULT_SHARED_CATEGORY = 'House';
 
@@ -44,7 +38,6 @@ const categoriesPersonal = [
     'Savings',
     'Subscription',
 ] as const satisfies readonly PersonalCategory[];
-
 const categoriesShared = [
     'BPJS',
     'Creditcard',
@@ -55,9 +48,13 @@ const categoriesShared = [
     'Other',
     'Subscription',
 ] as const satisfies readonly SharedCategory[];
-
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
 
+const activeTab = ref<'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared'>('Danh Nguyen');
+const isModalOpen = ref(false);
+const isSubmitting = ref(false);
+const editingItem = ref<PersonalFinance | SharedFinance | null>(null);
+const showRecurring = ref(false);
 const formType = ref<TransactionType>('expense');
 const formCategory = ref<string>(DEFAULT_PERSONAL_CATEGORY);
 const formSavingsInstitution = ref<string>('BCA');
@@ -67,11 +64,9 @@ const formDate = ref(new Date().toISOString().slice(0, 10));
 const formNotes = ref('');
 
 const isEditing = computed(() => editingItem.value !== null);
-
 const availableCategories = computed<readonly string[]>(() =>
     activeTab.value === 'Shared' ? categoriesShared : categoriesPersonal
 );
-
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (activeTab.value === 'Shared') return filteredSharedFinances.value;
     return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
@@ -79,7 +74,6 @@ const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
 
 const getDefaultCategory = (): string =>
     activeTab.value === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
-
 const openAddModal = (): void => {
     editingItem.value = null;
     formCategory.value = getDefaultCategory();
@@ -91,7 +85,6 @@ const openAddModal = (): void => {
     formType.value = 'expense';
     isModalOpen.value = true;
 };
-
 const openEditModal = (item: PersonalFinance | SharedFinance): void => {
     editingItem.value = item;
     formType.value = item.type;
@@ -105,7 +98,6 @@ const openEditModal = (item: PersonalFinance | SharedFinance): void => {
         'goldWeightGrams' in item && item.goldWeightGrams ? item.goldWeightGrams : null;
     isModalOpen.value = true;
 };
-
 const handleAmountChange = (): void => {
     if (formCategory.value === 'Gold' && formAmount.value && Number(formAmount.value) > 0) {
         const rate = currentGoldPricePerGram.value || 2450000;
@@ -113,7 +105,6 @@ const handleAmountChange = (): void => {
         formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
     }
 };
-
 const submitRecord = async (): Promise<void> => {
     if (isSubmitting.value || !formAmount.value || !formDate.value) return;
 
@@ -195,7 +186,6 @@ watch(activeTab, () => {
         formCategory.value = getDefaultCategory();
     }
 });
-
 watch(formCategory, (newCat) => {
     if (newCat === 'Gold') {
         handleAmountChange();

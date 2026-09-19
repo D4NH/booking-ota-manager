@@ -20,11 +20,6 @@ const isSyncing = ref(false);
 const showLogModal = ref(false);
 const syncLogs = ref<SyncLogEntry[]>([]);
 
-onMounted(() => {
-    refreshAuthStatus();
-    window.addEventListener('focus', refreshAuthStatus);
-});
-
 const handleSync = async (): Promise<void> => {
     if (isSyncing.value) return;
 
@@ -122,6 +117,11 @@ const handleSync = async (): Promise<void> => {
         isSyncing.value = false;
     }
 };
+
+onMounted(() => {
+    refreshAuthStatus();
+    window.addEventListener('focus', refreshAuthStatus);
+});
 </script>
 
 <template>

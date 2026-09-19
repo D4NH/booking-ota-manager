@@ -46,7 +46,6 @@ const toggleMonth = (key: string): void => {
         : [...collapsedMonths, key];
     emit('update:collapsedMonths', next);
 };
-
 const isCurrentBooking = (b: Booking): boolean => {
     if (!currentDateKey) return false;
     return (
