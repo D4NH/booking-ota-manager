@@ -129,7 +129,7 @@ onMounted(() => {
         <button
             type="button"
             :disabled="isSyncing"
-            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium border transition disabled:opacity-50"
+            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold border transition disabled:opacity-50"
             :class="[
                 isAuthenticated
                     ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'
@@ -175,7 +175,7 @@ onMounted(() => {
             <div
                 class="flex flex-col max-h-[80vh] w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 p-4 shadow-2xl space-y-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
-                    <h3 class="font-bold text-mist-100 text-sm flex items-center gap-2">
+                    <h3 class="font-semibold text-mist-100 text-sm flex items-center gap-2">
                         <span>Sync Audit Log</span>
                         <span
                             class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-400 font-mono">
@@ -198,7 +198,7 @@ onMounted(() => {
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase"
+                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
                                     :class="[
                                         log.type === 'imported' &&
                                             'bg-lime-500/10 text-lime-400 border border-lime-500/20',
@@ -209,12 +209,12 @@ onMounted(() => {
                                     ]">
                                     {{ log.type }}
                                 </span>
-                                <span class="font-bold text-mist-200">{{ log.guestName }}</span>
+                                <span class="font-semibold text-mist-200">{{ log.guestName }}</span>
                                 <span class="font-mono text-mist-500 text-[11px]">
                                     ({{ log.bookingId }})
                                 </span>
                             </div>
-                            <span class="capitalize text-[10px] text-mist-400 font-bold">
+                            <span class="capitalize text-[10px] text-mist-400 font-semibold">
                                 {{ log.propertyId }}
                             </span>
                         </div>
@@ -225,7 +225,7 @@ onMounted(() => {
                                 v-for="d in log.diffs"
                                 :key="String(d.field)"
                                 class="flex items-center justify-between text-mist-300">
-                                <span class="text-mist-400 font-bold capitalize">
+                                <span class="text-mist-400 font-semibold capitalize">
                                     {{ String(d.field) }}:
                                 </span>
                                 <div>
@@ -233,7 +233,7 @@ onMounted(() => {
                                         {{ String(d.oldValue) || '(empty)' }}
                                     </span>
                                     &rarr;
-                                    <span class="text-lime-400 font-bold ml-1">
+                                    <span class="text-lime-400 font-semibold ml-1">
                                         {{ String(d.newValue) || '(empty)' }}
                                     </span>
                                 </div>

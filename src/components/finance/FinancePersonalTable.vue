@@ -206,9 +206,9 @@ watch(formCategory, (newCat) => {
             <div
                 class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
                 <button
-                    v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared'] as const"
+                    v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared']"
                     :key="tab"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
                     :class="
                         activeTab === tab
                             ? 'bg-mist-700 text-mist-100 shadow'
@@ -218,7 +218,7 @@ watch(formCategory, (newCat) => {
                     {{ tab }}
                 </button>
             </div>
-            <div class="flex gap-4">
+            <div class="flex items-center gap-2">
                 <button
                     type="button"
                     class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
@@ -231,7 +231,7 @@ watch(formCategory, (newCat) => {
                     Recurring Payments
                 </button>
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3 py-1.5 rounded-md transition shadow-sm"
+                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
                     @click="openAddModal">
                     + Add Record
                 </button>
@@ -241,16 +241,15 @@ watch(formCategory, (newCat) => {
         <RecurringChecklist v-if="showRecurring" />
 
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-xs text-mist-200">
+            <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
                     <tr>
-                        <th class="py-3 px-3">Date</th>
-                        <th class="py-3 px-3">Type</th>
-                        <th class="py-3 px-3">Category</th>
-                        <th class="py-3 px-3">Notes</th>
-                        <th class="py-3 px-3 text-right">Amount</th>
-                        <th class="w-20 py-3 px-3 text-center">Actions</th>
+                        <th class="w-28 px-4 py-2.5">Date</th>
+                        <th class="w-32 px-4 py-2.5">Category</th>
+                        <th class="w-auto px-4 py-2.5">Notes</th>
+                        <th class="w-35 px-4 py-2.5 text-right">Amount</th>
+                        <th class="w-23 px-4 py-2.5 text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60 font-mono">
@@ -258,49 +257,35 @@ watch(formCategory, (newCat) => {
                         v-for="item in currentList"
                         :key="item.id"
                         class="hover:bg-mist-850/50 group">
-                        <td class="py-3 px-3 text-mist-400">{{ item.date }}</td>
-                        <td class="py-3 px-3">
-                            <span
-                                class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
-                                :class="{
-                                    'bg-lime-400/10 text-lime-400 border border-lime-400/20':
-                                        item.type === 'income',
-                                    'bg-amber-400/10 text-amber-300 border border-amber-400/20':
-                                        item.type === 'fixed_cost',
-                                    'bg-rose-400/10 text-rose-400 border border-rose-400/20':
-                                        item.type === 'expense',
-                                }">
-                                {{ item.type }}
-                            </span>
-                        </td>
-                        <td class="py-3 px-3 font-medium text-mist-100 flex items-center gap-1.5">
+                        <td class="px-4 py-2.5 text-mist-400">{{ item.date }}</td>
+                        <td class="px-4 py-2.5 font-medium text-mist-100 flex items-center gap-1.5">
                             <span>{{ item.category }}</span>
                             <span
                                 v-if="item.category === 'Gold'"
-                                class="text-[9px] bg-amber-400/10 text-amber-400 border border-amber-400/20 px-1 rounded-md font-mono font-bold">
+                                class="text-[9px] bg-amber-400/10 text-amber-400 border border-amber-400/20 px-1 rounded-md font-mono font-semibold">
                                 GOLD
                             </span>
                         </td>
-                        <td class="py-3 px-3 text-mist-400">
+                        <td class="px-4 py-2.5 text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
-                                class="text-blue-400 mr-1 font-bold">
+                                class="text-blue-400 mr-1 font-semibold">
                                 [{{ item.savingsInstitution }}]
                             </span>
                             <span
                                 v-if="'goldWeightGrams' in item && item.goldWeightGrams"
-                                class="text-amber-400 mr-1 font-bold">
+                                class="text-amber-400 mr-1 font-semibold">
                                 [{{ item.goldWeightGrams }}g]
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
                         <td
-                            class="py-3 px-3 text-right font-bold"
+                            class="px-4 py-2.5 text-right font-semibold"
                             :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
                             {{ item.type === 'income' ? '+' : '-' }}{{ formatIDR(item.amount) }}
                         </td>
-                        <td class="py-3 px-3 text-center">
-                            <div class="flex items-center justify-end gap-1">
+                        <td class="px-4 py-2.5 text-center">
+                            <div class="flex items-center justify-end gap-1 h-7">
                                 <button
                                     type="button"
                                     title="Edit Transaction"
@@ -340,7 +325,7 @@ watch(formCategory, (newCat) => {
             <div
                 class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h4 class="font-bold text-mist-100 text-sm">
+                    <h4 class="font-semibold text-mist-100 text-sm">
                         {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ activeTab }}
                     </h4>
                     <button
@@ -355,7 +340,7 @@ watch(formCategory, (newCat) => {
                     class="space-y-4"
                     @submit.prevent="submitRecord">
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">Type</label>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
                         <select
                             v-model="formType"
                             class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
@@ -366,7 +351,9 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1"> Category </label>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                            Category
+                        </label>
                         <select
                             v-model="formCategory"
                             class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
@@ -382,7 +369,7 @@ watch(formCategory, (newCat) => {
                     <div
                         v-if="formCategory === 'Savings'"
                         class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-bold text-lime-400 block">
+                        <label class="text-xs font-semibold text-lime-400 block">
                             Destination Savings Account
                         </label>
                         <select
@@ -403,7 +390,7 @@ watch(formCategory, (newCat) => {
                     <div
                         v-if="formCategory === 'Gold'"
                         class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-bold text-amber-400 block">
+                        <label class="text-xs font-semibold text-amber-400 block">
                             Weight in Grams
                         </label>
                         <input
@@ -419,7 +406,7 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Amount (IDR)
                         </label>
                         <input
@@ -451,7 +438,7 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">Notes</label>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"
@@ -469,7 +456,7 @@ watch(formCategory, (newCat) => {
                         <button
                             type="submit"
                             :disabled="isLoading || isSubmitting"
-                            class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 disabled:cursor-not-allowed text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5">
+                            class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 disabled:cursor-not-allowed text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5">
                             <span
                                 v-if="isSubmitting"
                                 class="w-3 h-3 border-2 border-mist-800 border-t-transparent rounded-full animate-spin"></span>

@@ -239,10 +239,10 @@ watch(yearOptions, (available) => {
             @mouseleave="hoveredIndex = null">
             <div class="flex justify-between items-center">
                 <div class="flex flex-col space-y-1">
-                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         {{ displayHeaderMonth }}
                     </span>
-                    <div class="font-mono text-lg font-bold text-mist-100">
+                    <div class="font-mono text-lg font-semibold text-mist-100">
                         {{ formatIDR(displayHeaderValue) }}
                     </div>
                 </div>

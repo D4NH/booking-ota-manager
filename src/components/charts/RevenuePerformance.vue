@@ -203,10 +203,10 @@ const chartOptions: ChartOptions<'bar'> = {
             <div class="flex items-start justify-between gap-4">
                 <!-- KPI Summary Cards -->
                 <div class="flex flex-col space-y-1">
-                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         {{ summaryStats.highlightedMonthLabel }}
                     </span>
-                    <div class="font-mono text-lg font-bold text-lime-400">
+                    <div class="font-mono text-lg font-semibold text-lime-400">
                         {{ formatIDR(summaryStats.highlightedMonthRevenue) }}
                     </div>
                     <div

@@ -58,12 +58,12 @@ const upcomingEvents = computed(() => {
         class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
-                <h3 class="text-base font-bold text-mist-100">Upcoming Activity</h3>
+                <h3 class="text-base font-semibold text-mist-100">Upcoming Activity</h3>
                 <p class="text-xs text-mist-400">Scheduled arrivals & departures (Next 7 days)</p>
             </div>
             <RouterLink
                 :to="{ name: 'bookings' }"
-                class="text-xs font-bold text-lime-400 hover:text-lime-300 transition">
+                class="text-xs font-semibold text-lime-400 hover:text-lime-300 transition">
                 View all &rarr;
             </RouterLink>
         </div>
@@ -89,7 +89,7 @@ const upcomingEvents = computed(() => {
                     <!-- Event Tag -->
                     <span
                         :class="[
-                            'rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider shrink-0 border',
+                            'rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider shrink-0 border',
                             event.type === 'arrival'
                                 ? event.isToday
                                     ? 'bg-lime-500/20 text-lime-400 border-lime-500/30 animate-pulse'
@@ -108,12 +108,12 @@ const upcomingEvents = computed(() => {
                     </span>
                     <div class="truncate">
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-sm text-mist-100 truncate">
+                            <span class="font-semibold text-sm text-mist-100 truncate">
                                 {{ event.booking.guestName }}
                             </span>
                             <!-- Property Badge -->
                             <span
-                                class="capitalize rounded px-1.5 py-0.2 text-[10px] font-bold shrink-0"
+                                class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold shrink-0"
                                 :class="getPropertyStyle(event.booking.propertyId)">
                                 {{ event.booking.propertyId }}
                             </span>

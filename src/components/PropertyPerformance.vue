@@ -146,7 +146,7 @@ watch(yearOptions, (available) => {
                             {{ formatIDR(stat.property.price) }} / night
                         </span>
                     </div>
-                    <span class="font-mono text-sm font-bold text-mist-300 block">
+                    <span class="font-mono text-sm font-semibold text-mist-300 block">
                         {{ formatIDR(stat.revenue) }}
                     </span>
                 </div>

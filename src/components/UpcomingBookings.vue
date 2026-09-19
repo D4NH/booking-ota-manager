@@ -85,7 +85,7 @@ const displaySections = computed<MonthSection[]>(() => {
                     <!-- Month Header -->
                     <div
                         v-if="showMonthHeaders && section.label"
-                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/90 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
+                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/90 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
                         {{ section.label }}
                     </div>
                     <div class="flex-1 flex flex-col divide-y divide-mist-800">
@@ -97,7 +97,7 @@ const displaySections = computed<MonthSection[]>(() => {
                             <!-- Guest Info & Property -->
                             <div class="min-w-0 flex items-center gap-3">
                                 <div
-                                    class="h-10 w-10 rounded-md bg-mist-800 flex items-center justify-center text-xs font-bold text-mist-300 shrink-0">
+                                    class="h-10 w-10 rounded-md bg-mist-800 flex items-center justify-center text-xs font-semibold text-mist-300 shrink-0">
                                     {{ b.guestName.charAt(0).toUpperCase() }}
                                 </div>
                                 <div class="truncate">
@@ -129,7 +129,7 @@ const displaySections = computed<MonthSection[]>(() => {
                             </div>
                             <!-- Payout & Status -->
                             <div class="text-right shrink-0">
-                                <span class="font-mono text-xs font-bold text-mist-300 block">
+                                <span class="font-mono text-xs font-semibold text-mist-300 block">
                                     {{ formatIDR(b.payout) }}
                                 </span>
                                 <span

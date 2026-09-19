@@ -76,7 +76,7 @@ const handleImageError = (e: Event) => {
                         v-for="section in staySections"
                         :key="section.label">
                         <span
-                            class="mb-1.5 flex items-center gap-1.5 text-xs font-bold"
+                            class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold"
                             :class="[
                                 section.label === 'Arriving Today'
                                     ? 'text-lime-400'
@@ -89,7 +89,7 @@ const handleImageError = (e: Event) => {
                             :key="b.id || b.bookingId">
                             <div class="flex justify-between space-y-1">
                                 <div class="flex flex-col items-start space-y-1">
-                                    <span class="text-sm font-bold text-mist-100 truncate">
+                                    <span class="text-sm font-semibold text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
                                     <span class="text-xs text-mist-400">
@@ -114,7 +114,7 @@ const handleImageError = (e: Event) => {
                                 </div>
                                 <div class="flex flex-col items-end space-y-1">
                                     <span
-                                        class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
+                                        class="text-xs font-semibold font-mono text-mist-100 whitespace-nowrap">
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                     <span
@@ -161,26 +161,26 @@ const handleImageError = (e: Event) => {
                     v-if="property.available"
                     class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-bold text-mist-500">
+                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
                             Occupancy
                         </span>
-                        <span class="font-mono text-xs font-bold text-lime-400">
+                        <span class="font-mono text-xs font-semibold text-lime-400">
                             {{ occupancyPercentage }}%
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-bold text-mist-500">
+                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
                             Revenue
                         </span>
-                        <span class="font-mono text-xs font-bold text-mist-100">
+                        <span class="font-mono text-xs font-semibold text-mist-100">
                             {{ formatIDR(totalPayout) }}
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-bold text-mist-500">
+                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
                             Bookings
                         </span>
-                        <span class="font-mono text-xs font-bold text-mist-200">
+                        <span class="font-mono text-xs font-semibold text-mist-200">
                             {{ totalBookingsCount }}
                         </span>
                     </div>
@@ -221,7 +221,7 @@ const handleImageError = (e: Event) => {
                         </span>
                     </div>
                     <div>
-                        <span class="text-sm font-bold font-mono text-mist-300">
+                        <span class="text-sm font-semibold font-mono text-mist-300">
                             {{ formatIDR(property.price) }}
                         </span>
                         <span class="text-xs text-mist-500"> / night</span>

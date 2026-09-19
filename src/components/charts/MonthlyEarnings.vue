@@ -178,7 +178,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <!-- Current Total -->
                 <div class="flex flex-col items-baseline gap-1">
-                    <p class="font-mono text-lg font-bold text-mist-100">
+                    <p class="font-mono text-lg font-semibold text-mist-100">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">

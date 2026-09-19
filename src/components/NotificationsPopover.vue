@@ -28,11 +28,11 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                 <fa-icon
                     icon="bell"
                     class="text-mist-400 text-sm" />
-                <span class="font-bold text-sm text-mist-100">Notifications</span>
+                <span class="font-semibold text-sm text-mist-100">Notifications</span>
             </div>
             <span
                 v-if="totalCount > 0"
-                class="rounded-md bg-lime-500/20 px-2 py-0.5 text-[10px] font-bold text-lime-400 border border-lime-500/30">
+                class="rounded-md bg-lime-500/20 px-2 py-0.5 text-[10px] font-semibold text-lime-400 border border-lime-500/30">
                 {{ totalCount }} New
             </span>
         </div>
@@ -56,17 +56,18 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                 class="rounded-xs border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
                 @click="emit('edit', b)">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
-                    <span class="flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
+                    <span
+                        class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
                         Payment Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-bold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>
                 <div class="flex flex-col items-start justify-between gap-2">
-                    <p class="text-sm font-bold text-mist-100 leading-tight">
+                    <p class="text-sm font-semibold text-mist-100 leading-tight">
                         {{ b.guestName }}
                     </p>
                     <p class="text-xs text-mist-400">
@@ -77,7 +78,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                     </p>
                 </div>
                 <div class="mt-2.5 flex items-center justify-between border-t border-mist-800 pt-2">
-                    <span class="text-xs font-mono font-bold shrink-0">
+                    <span class="text-xs font-mono font-semibold shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
                     <div class="flex items-center gap-2">
@@ -97,18 +98,18 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                 :key="'payout-' + (b.id || b.bookingId)"
                 class="rounded-xs border-l-2 border-l-sky-500 border-b-0 p-3 hover:bg-mist-800/40 transition group">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
-                    <span class="flex items-center gap-1.5 text-[11px] font-bold text-sky-400">
+                    <span class="flex items-center gap-1.5 text-[11px] font-semibold text-sky-400">
                         Payout Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-bold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>
 
                 <div class="flex flex-col items-start justify-between gap-2">
-                    <p class="text-sm font-bold text-mist-100 leading-tight">
+                    <p class="text-sm font-semibold text-mist-100 leading-tight">
                         {{ b.guestName }}
                     </p>
                     <p class="text-xs text-mist-400">
@@ -121,7 +122,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
 
                 <div
                     class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-2">
-                    <span class="text-xs font-mono font-bold text-mist-200 shrink-0">
+                    <span class="text-xs font-mono font-semibold text-mist-200 shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
                     <div class="flex items-center gap-2">

@@ -40,7 +40,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
             <template #title> Dashboard </template>
             <template #subtitle>
                 Live operational activity for
-                <span class="font-bold">
+                <span class="font-semibold">
                     {{ formatDate(getCurrentMonth(), { monthHeader: true }) }}
                 </span>
             </template>
@@ -49,10 +49,10 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
         <!-- Monthly Summary -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-bold text-mist-100">
+                <p class="font-mono text-lg font-semibold text-mist-100">
                     {{ formatIDR(totalPayout) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -65,10 +65,12 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Occupancy Rate
                 </h3>
-                <p class="font-mono text-lg font-bold text-mist-100">{{ occupancyPercentage }}%</p>
+                <p class="font-mono text-lg font-semibold text-mist-100">
+                    {{ occupancyPercentage }}%
+                </p>
                 <!-- <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
@@ -79,19 +81,19 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Month Bookings
                 </h3>
-                <p class="font-mono text-lg font-bold text-mist-100">
+                <p class="font-mono text-lg font-semibold text-mist-100">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500">Active bookings</p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Today's Turnover
                 </h3>
-                <p class="text-lg font-bold text-mist-100">
+                <p class="text-lg font-semibold text-mist-100">
                     <span class="text-lime-400 mr-3">
                         ↓ <span class="font-mono">{{ todaysTurnover.in }}</span> In
                     </span>

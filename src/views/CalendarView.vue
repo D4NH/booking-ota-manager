@@ -76,7 +76,7 @@ watch(
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 font-semibold hover:bg-mist-800 transition shadow-sm cursor-pointer"
                     @click="goToToday">
                     Today
                 </button>
@@ -93,7 +93,7 @@ watch(
                     <fa-icon icon="chevron-right" />
                 </button>
             </div>
-            <div class="flex items-center justify-center gap-2 text-mist-300 font-bold">
+            <div class="flex items-center justify-center gap-2 text-mist-300 font-semibold">
                 <select
                     name="month-selector"
                     :value="selectedMonth"
@@ -123,7 +123,7 @@ watch(
             </div>
             <button
                 type="button"
-                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-bold text-mist-950 hover:bg-lime-400 transition"
+                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
                 @click="handleAddBooking">
                 <fa-icon
                     class="text-xs mr-1"
@@ -136,7 +136,7 @@ watch(
             class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <!-- Weekday Header -->
             <div
-                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-bold uppercase text-mist-400">
+                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="px-4 py-2.5">Mon</div>
                 <div class="px-4 py-2.5">Tue</div>
                 <div class="px-4 py-2.5">Wed</div>
@@ -179,7 +179,7 @@ watch(
                                 ]"
                                 @click="handleBookingClick(b, $event)">
                                 <div class="flex items-center justify-between min-w-0">
-                                    <span class="font-bold text-xs text-mist-100 truncate">
+                                    <span class="font-semibold text-xs text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
                                     <span

@@ -150,7 +150,7 @@ watch(
                 <!-- Modal Header -->
                 <div
                     class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                    <h2 class="text-base font-bold text-mist-100">
+                    <h2 class="text-base font-semibold text-mist-100">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
                     <button
@@ -404,21 +404,21 @@ watch(
                         <button
                             v-if="Boolean(bookingToEdit)"
                             type="button"
-                            class="cursor-pointer py-2 text-xs font-bold text-rose-400 hover:text-rose-300"
+                            class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
                             @click="handleDeleteBooking">
                             <fa-icon icon="trash-can" /> Delete booking
                         </button>
                         <div class="flex items-center gap-4">
                             <button
                                 type="button"
-                                class="cursor-pointer px-4 py-2 text-xs font-bold text-mist-400 hover:text-mist-200"
+                                class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                                 @click="emit('close')">
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 :disabled="Boolean(validationError)"
-                                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-bold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                                 {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
                             </button>
                         </div>

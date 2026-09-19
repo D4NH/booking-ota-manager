@@ -60,7 +60,7 @@ const isCurrentBooking = (b: Booking): boolean => {
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
             <thead
-                class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-bold uppercase text-mist-400">
+                class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
                 <tr>
                     <th class="w-45 px-4 py-2.5">ID / Listing</th>
                     <th
@@ -89,7 +89,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                             class="p-0">
                             <button
                                 type="button"
-                                class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-bold text-mist-200 hover:bg-mist-800/40"
+                                class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-semibold text-mist-200 hover:bg-mist-800/40"
                                 @click="toggleMonth(group.key)">
                                 <span class="flex items-center gap-2">
                                     <span class="text-xs text-mist-400">
@@ -163,8 +163,8 @@ const isCurrentBooking = (b: Booking): boolean => {
                                 <div
                                     class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-bold text-mist-400">Payout 15%</span>
-                                        <span class="font-bold text-mist-200">
+                                        <span class="font-semibold text-mist-400">Payout 15%</span>
+                                        <span class="font-semibold text-mist-200">
                                             {{ formatIDR(b.payout * 0.15) }}
                                         </span>
                                     </div>

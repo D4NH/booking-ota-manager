@@ -163,7 +163,7 @@ const total90dBookedNights = computed(() =>
                     <!-- Window Header -->
                     <div class="flex items-start justify-between">
                         <div>
-                            <span class="text-xs font-bold text-mist-100 block">
+                            <span class="text-xs font-semibold text-mist-100 block">
                                 {{ win.label }}
                             </span>
                             <span class="text-xs text-mist-500 font-medium">
@@ -180,7 +180,7 @@ const total90dBookedNights = computed(() =>
                     <!-- Pace Metric & Progress Bar -->
                     <div class="space-y-1">
                         <div class="flex items-baseline justify-between font-mono">
-                            <span class="text-lg font-bold text-mist-100">
+                            <span class="text-lg font-semibold text-mist-100">
                                 {{ win.occupancyPace }}%
                             </span>
                             <span class="text-xs text-mist-400">
@@ -200,7 +200,7 @@ const total90dBookedNights = computed(() =>
                     <div
                         class="pt-2 border-t border-mist-800 flex items-center justify-between text-xs">
                         <span class="text-mist-500 text-[11px]">Confirmed:</span>
-                        <span class="font-mono font-bold text-mist-200">
+                        <span class="font-mono font-semibold text-mist-200">
                             {{ formatIDR(win.confirmedRevenue) }}
                         </span>
                     </div>
@@ -211,14 +211,14 @@ const total90dBookedNights = computed(() =>
             <div class="border-t border-mist-800 pt-3 flex items-center justify-between text-xs">
                 <div class="flex items-center gap-2">
                     <span class="text-mist-400">Total 90-Day Pipeline:</span>
-                    <span class="font-mono font-bold text-lime-400">
+                    <span class="font-mono font-semibold text-lime-400">
                         {{ total90dBookedNights }} nights booked
                     </span>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <span class="text-mist-500">Secured OTB Revenue:</span>
-                    <span class="font-mono text-sm font-bold text-mist-100">
+                    <span class="font-mono text-sm font-semibold text-mist-100">
                         {{ formatIDR(totalConfirmed90dRevenue) }}
                     </span>
                 </div>

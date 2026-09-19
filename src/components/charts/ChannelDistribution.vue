@@ -189,14 +189,15 @@ watch(yearOptions, (available) => {
                         :options="chartOptions" />
                     <div
                         class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
-                        <span class="font-mono text-lg font-bold text-mist-100">
+                        <span class="font-mono text-lg font-semibold text-mist-100">
                             {{
                                 viewMode === 'revenue'
                                     ? formatIDR(channelStats.totalRevenue)
                                     : channelStats.totalCount
                             }}
                         </span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-mist-400 mt-1">
+                        <span
+                            class="text-xs font-semibold uppercase tracking-wider text-mist-400 mt-1">
                             {{ viewMode === 'revenue' ? 'Total Payout' : 'Total Stays' }}
                         </span>
                     </div>
@@ -226,7 +227,7 @@ watch(yearOptions, (available) => {
                                     }}
                                 </span>
                             </span>
-                            <span class="font-mono text-sm font-bold text-mist-300 block">
+                            <span class="font-mono text-sm font-semibold text-mist-300 block">
                                 {{ ch.percentage }}%
                             </span>
                         </div>

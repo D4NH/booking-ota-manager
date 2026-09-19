@@ -32,8 +32,8 @@ const createPropertyPin = (prop: Property) => {
             <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer group">
                 <div class="relative flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 pr-2.5 py-1 text-xs shadow-xl transition-transform duration-200 group-hover:scale-110">
                     <span class="h-2 w-2 rounded-md shrink-0 ${theme || 'bg-lime-400'}"></span>
-                    <span class="font-bold text-mist-100 whitespace-nowrap capitalize">${prop.id}</span>
-                    <span class="font-mono font-bold text-lime-400 text-[11px] whitespace-nowrap">${propPrice}</span>
+                    <span class="font-semibold text-mist-100 whitespace-nowrap capitalize">${prop.id}</span>
+                    <span class="font-mono font-semibold text-lime-400 text-[11px] whitespace-nowrap">${propPrice}</span>
                 </div>
             </div>
         `,
@@ -150,7 +150,9 @@ onBeforeUnmount(() => {
 <template>
     <div class="flex flex-col mb-4">
         <div class="mt-4 mb-4">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-mist-100">All Properties</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-mist-100">
+                All Properties
+            </h2>
             <p class="mt-1 text-xs text-mist-400">Across Indonsia</p>
         </div>
         <div
@@ -164,7 +166,9 @@ onBeforeUnmount(() => {
             <div
                 class="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-md border border-mist-800 bg-mist-900/90 px-3 py-1.5 text-xs text-mist-200 backdrop-blur-sm shadow-lg">
                 <span class="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
-                <span class="font-bold"> {{ properties.length }} Locations Across Indonesia </span>
+                <span class="font-semibold">
+                    {{ properties.length }} Locations Across Indonesia
+                </span>
             </div>
         </div>
     </div>

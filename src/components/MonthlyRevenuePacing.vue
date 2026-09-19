@@ -64,7 +64,7 @@ const projectedRevenue = computed(() => {
             <!-- Metric Highlight & Pacing Badge -->
             <div class="flex items-baseline justify-between">
                 <div>
-                    <span class="text-lg font-bold font-mono text-mist-100">
+                    <span class="text-lg font-semibold font-mono text-mist-100">
                         {{ formatIDR(currentRevenue) }}
                     </span>
                     <span class="text-xs text-mist-400 ml-1.5">
@@ -83,7 +83,7 @@ const projectedRevenue = computed(() => {
                 </div>
 
                 <div class="text-right">
-                    <span class="text-lg font-bold font-mono text-lime-400">
+                    <span class="text-lg font-semibold font-mono text-lime-400">
                         {{ targetPercentage }}%
                     </span>
                     <span class="block text-xs text-mist-500">
@@ -121,19 +121,21 @@ const projectedRevenue = computed(() => {
             <div
                 class="grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs divide-x divide-mist-800 text-center">
                 <div class="p-2.5 space-y-0.5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-mist-500">
+                    <span
+                        class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
                         Gap to Target
                     </span>
-                    <span class="font-mono text-sm font-bold text-mist-200">
+                    <span class="font-mono text-sm font-semibold text-mist-200">
                         {{ formatIDR(remainingRevenue) }}
                     </span>
                 </div>
 
                 <div class="p-2.5 space-y-0.5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-mist-500">
+                    <span
+                        class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
                         Needed Rate ({{ daysRemaining }}d left)
                     </span>
-                    <span class="font-mono text-sm font-bold text-lime-400">
+                    <span class="font-mono text-sm font-semibold text-lime-400">
                         {{ formatIDR(dailyRunRateNeeded) }}
                         <span class="text-xs font-normal text-mist-500">/ day</span>
                     </span>

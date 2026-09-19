@@ -67,7 +67,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
             v-if="showHeader"
             class="flex items-center justify-between px-4 py-2.5 border-b border-mist-800 bg-mist-950/40">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-mist-300">
+                <span class="text-xs font-semibold uppercase tracking-wider text-mist-300">
                     Current Week
                 </span>
             </div>
@@ -78,12 +78,12 @@ const handleBookingClick = (booking: Booking, event: Event) => {
 
         <!-- 7-Day Column Headers -->
         <div
-            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-bold uppercase text-mist-400">
+            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
             <div
                 v-for="day in weekDays"
                 :key="day.dateStr"
                 class="py-2.5"
-                :class="day.isToday ? 'text-lime-400 font-bold' : 'text-mist-400'">
+                :class="day.isToday ? 'text-lime-400 font-semibold' : 'text-mist-400'">
                 {{ day.weekdayName }}
             </div>
         </div>
@@ -100,7 +100,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                 <div class="flex items-center justify-between mb-1.5">
                     <div class="flex items-center gap-1">
                         <span
-                            class="text-xs font-bold rounded-md h-6 w-6 flex items-center justify-center">
+                            class="text-xs font-semibold rounded-md h-6 w-6 flex items-center justify-center">
                             {{ day.dayNumber }}
                         </span>
                         <span class="text-[10px] text-mist-500 font-medium">
@@ -128,14 +128,14 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                                 v-if="b.checkIn === day.dateStr || dayIndex === 0 || b.nights === 1"
                                 class="flex flex-col gap-1 min-h-9">
                                 <div class="flex justify-between items-start">
-                                    <span class="font-bold text-xs text-mist-100 truncate">
+                                    <span class="font-semibold text-xs text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
                                     <span
                                         v-if="
                                             b.status !== 'Unavailable' && selectedProperty === 'all'
                                         "
-                                        class="capitalize rounded px-1 py-0.2 text-[10px] font-bold shrink-0"
+                                        class="capitalize rounded px-1 py-0.2 text-[10px] font-semibold shrink-0"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
@@ -161,7 +161,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                             <div
                                 class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                 <div class="border-b border-mist-800 pb-1.5 mb-1.5">
-                                    <span class="font-bold text-mist-200 block">
+                                    <span class="font-semibold text-mist-200 block">
                                         {{ b.guestName }}
                                     </span>
                                     <span class="text-[10px] text-mist-400">

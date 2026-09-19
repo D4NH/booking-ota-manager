@@ -58,7 +58,7 @@ const departedGuests = computed(() =>
     <div class="rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md space-y-4">
         <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
-                <h3 class="text-base font-bold text-mist-100">Active Stays</h3>
+                <h3 class="text-base font-semibold text-mist-100">Active Stays</h3>
                 <p class="text-xs text-mist-400">Current in-house guests & today's departures</p>
             </div>
             <span class="rounded bg-mist-800 px-2 py-0.5 text-xs font-mono text-mist-300">
@@ -76,7 +76,7 @@ const departedGuests = computed(() =>
         <div
             v-if="inHouseGuests.length > 0"
             class="space-y-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-mist-400">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-mist-400">
                 Currently In-House ({{ inHouseGuests.length }})
             </span>
             <div
@@ -86,11 +86,11 @@ const departedGuests = computed(() =>
                 <!-- Guest Info -->
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-sm text-mist-100 truncate">
+                        <span class="font-semibold text-sm text-mist-100 truncate">
                             {{ b.guestName }}
                         </span>
                         <span
-                            class="capitalize rounded px-1.5 py-0.2 text-[10px] font-bold"
+                            class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold"
                             :class="getPropertyStyle(b.propertyId)">
                             {{ b.propertyId }}
                         </span>
@@ -98,7 +98,7 @@ const departedGuests = computed(() =>
                         <!-- Urgency Tag if leaving today -->
                         <span
                             v-if="b.checkOut === today"
-                            class="rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-bold text-amber-300 animate-pulse">
+                            class="rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300 animate-pulse">
                             Due Out at 12:00
                         </span>
                     </div>
@@ -111,14 +111,14 @@ const departedGuests = computed(() =>
 
                 <!-- Quick Checkout button if leaving today -->
                 <div class="flex items-center gap-3 shrink-0">
-                    <span class="font-mono text-xs font-bold text-mist-200">
+                    <span class="font-mono text-xs font-semibold text-mist-200">
                         {{ formatIDR(b.payout) }}
                     </span>
 
                     <button
                         v-if="b.checkOut === today"
                         type="button"
-                        class="rounded bg-amber-500 hover:bg-amber-400 px-2.5 py-1 text-xs font-bold text-mist-950 transition"
+                        class="rounded bg-amber-500 hover:bg-amber-400 px-2.5 py-1 text-xs font-semibold text-mist-950 transition"
                         @click="emit('checkout', b)">
                         Check Out
                     </button>
@@ -131,7 +131,7 @@ const departedGuests = computed(() =>
             v-if="departedGuests.length > 0"
             class="pt-2 border-t border-mist-800 space-y-2">
             <span
-                class="text-[11px] font-bold uppercase tracking-wider text-mist-500 flex items-center gap-1.5">
+                class="text-[11px] font-semibold uppercase tracking-wider text-mist-500 flex items-center gap-1.5">
                 <fa-icon
                     icon="circle-check"
                     class="text-xs text-lime-400" />
@@ -143,7 +143,7 @@ const departedGuests = computed(() =>
                 :key="'departed-' + (b.id || b.bookingId)"
                 class="rounded-md border border-mist-800 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
                 <div class="text-xs">
-                    <span class="font-bold text-mist-300 line-through mr-2">
+                    <span class="font-semibold text-mist-300 line-through mr-2">
                         {{ b.guestName }}
                     </span>
                     <span class="text-mist-500">

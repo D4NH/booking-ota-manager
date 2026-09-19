@@ -76,11 +76,11 @@ const handleSaveGold = async (): Promise<void> => {
             <div
                 class="bg-mist-900 border border-mist-800 p-5 rounded-2xl shadow-md relative overflow-hidden">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         Cash & Reserves
                     </span>
                     <span
-                        class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
+                        class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold">
                         Auto Synced
                     </span>
                 </div>
@@ -95,11 +95,11 @@ const handleSaveGold = async (): Promise<void> => {
             <div
                 class="bg-mist-900 border border-mist-800 p-5 rounded-2xl shadow-md relative overflow-hidden">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         Total Gold Reserves
                     </span>
                     <span
-                        class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-lime-400/10 text-lime-400 border border-lime-400/20 font-bold">
+                        class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-lime-400/10 text-lime-400 border border-lime-400/20 font-semibold">
                         Precious Metals
                     </span>
                 </div>
@@ -114,7 +114,7 @@ const handleSaveGold = async (): Promise<void> => {
             <div
                 class="bg-mist-900 border border-mist-800 p-5 rounded-2xl shadow-md relative overflow-hidden">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         Gold Unrealized P&L
                     </span>
                     <span class="text-[10px] font-mono text-mist-400">
@@ -139,10 +139,10 @@ const handleSaveGold = async (): Promise<void> => {
                 <div
                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                     <div>
-                        <h3 class="text-sm font-bold text-mist-100 flex items-center gap-2">
+                        <h3 class="text-sm font-semibold text-mist-100 flex items-center gap-2">
                             Liquid Savings
                             <span
-                                class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.2 rounded font-mono font-bold">
+                                class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.2 rounded font-mono font-semibold">
                                 {{ dynamicSavingsAccounts.length }} Account(s)
                             </span>
                         </h3>
@@ -152,9 +152,9 @@ const handleSaveGold = async (): Promise<void> => {
                     </div>
 
                     <!-- View Switcher -->
-                    <div class="flex space-x-1 border border-mist-800 p-1 rounded-lg bg-mist-850">
+                    <div class="flex space-x-1 border border-mist-800 p-1 rounded-md bg-mist-850">
                         <button
-                            class="px-2.5 py-1 text-[11px] font-bold rounded transition"
+                            class="px-2.5 py-1 text-[11px] font-semibold rounded transition"
                             :class="
                                 activeSavingsSubTab === 'accounts'
                                     ? 'bg-mist-700 text-mist-100 shadow'
@@ -164,7 +164,7 @@ const handleSaveGold = async (): Promise<void> => {
                             Accounts
                         </button>
                         <button
-                            class="px-2.5 py-1 text-[11px] font-bold rounded transition"
+                            class="px-2.5 py-1 text-[11px] font-semibold rounded transition"
                             :class="
                                 activeSavingsSubTab === 'transactions'
                                     ? 'bg-mist-700 text-mist-100 shadow'
@@ -182,7 +182,7 @@ const handleSaveGold = async (): Promise<void> => {
                     class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-mist-200">
                         <thead
-                            class="bg-mist-850 text-mist-400 uppercase font-bold border-y border-mist-800">
+                            class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
                             <tr>
                                 <th class="py-2.5 px-3">Owner</th>
                                 <th class="py-2.5 px-3">Institution</th>
@@ -203,7 +203,7 @@ const handleSaveGold = async (): Promise<void> => {
                                     {{ acc.institution }}
                                 </td>
                                 <td class="py-2.5 px-3 text-mist-400">{{ acc.lastUpdated }}</td>
-                                <td class="py-2.5 px-3 text-right font-bold text-lime-400">
+                                <td class="py-2.5 px-3 text-right font-semibold text-lime-400">
                                     {{ formatIDR(acc.balance) }}
                                 </td>
                             </tr>
@@ -224,7 +224,7 @@ const handleSaveGold = async (): Promise<void> => {
                     class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-mist-200">
                         <thead
-                            class="bg-mist-850 text-mist-400 uppercase font-bold border-y border-mist-800">
+                            class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
                             <tr>
                                 <th class="py-2.5 px-3">Date</th>
                                 <th class="py-2.5 px-3">Owner</th>
@@ -247,7 +247,7 @@ const handleSaveGold = async (): Promise<void> => {
                                     >
                                     {{ tx.notes || 'Savings allocation' }}
                                 </td>
-                                <td class="py-2.5 px-3 text-right font-bold text-lime-400">
+                                <td class="py-2.5 px-3 text-right font-semibold text-lime-400">
                                     +{{ formatIDR(tx.amount) }}
                                 </td>
                             </tr>
@@ -267,11 +267,11 @@ const handleSaveGold = async (): Promise<void> => {
             <div class="bg-mist-900 rounded-2xl border border-mist-800 p-5 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="text-sm font-bold text-mist-100">Gold Holdings</h3>
+                        <h3 class="text-sm font-semibold text-mist-100">Gold Holdings</h3>
                         <p class="text-xs text-mist-400">Physical and digital gold weights</p>
                     </div>
                     <button
-                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-bold px-3 py-1.5 rounded-lg transition"
+                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition"
                         @click="isGoldModalOpen = true">
                         + Add Gold
                     </button>
@@ -280,7 +280,7 @@ const handleSaveGold = async (): Promise<void> => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-mist-200">
                         <thead
-                            class="bg-mist-850 text-mist-400 uppercase font-bold border-y border-mist-800">
+                            class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
                             <tr>
                                 <th class="py-2.5 px-3">Date</th>
                                 <th class="py-2.5 px-3">Type</th>
@@ -295,11 +295,11 @@ const handleSaveGold = async (): Promise<void> => {
                                 :key="g.id"
                                 class="hover:bg-mist-850/50">
                                 <td class="py-2.5 px-3 text-mist-400">{{ g.purchaseDate }}</td>
-                                <td class="py-2.5 px-3 font-bold text-mist-100">
+                                <td class="py-2.5 px-3 font-semibold text-mist-100">
                                     {{ g.type }}
                                 </td>
                                 <td class="py-2.5 px-3">{{ g.owner }}</td>
-                                <td class="py-2.5 px-3 text-right font-bold text-lime-400">
+                                <td class="py-2.5 px-3 text-right font-semibold text-lime-400">
                                     {{ g.weightGrams }}g
                                 </td>
                                 <td class="py-2.5 px-3 text-right text-mist-300">
@@ -325,25 +325,25 @@ const handleSaveGold = async (): Promise<void> => {
             class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
             <div
                 class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-                <h4 class="font-bold text-mist-100 text-sm mb-4">Add Gold Holding</h4>
+                <h4 class="font-semibold text-mist-100 text-sm mb-4">Add Gold Holding</h4>
                 <form
                     class="space-y-4"
                     @submit.prevent="handleSaveGold">
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">Owner</label>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">Owner</label>
                         <select
                             v-model="goldOwner"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
                             <option value="Danh Nguyen">Danh Nguyen</option>
                             <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
                             <option value="Shared">Shared</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">Type</label>
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
                         <select
                             v-model="goldType"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
                             <option value="Antam">Antam</option>
                             <option value="UBS">UBS</option>
                             <option value="Galeri 24">Galeri 24</option>
@@ -351,7 +351,7 @@ const handleSaveGold = async (): Promise<void> => {
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Weight (Grams)
                         </label>
                         <input
@@ -360,10 +360,10 @@ const handleSaveGold = async (): Promise<void> => {
                             step="0.01"
                             required
                             placeholder="10"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Total Cost (IDR)
                         </label>
                         <input
@@ -371,27 +371,27 @@ const handleSaveGold = async (): Promise<void> => {
                             type="number"
                             required
                             placeholder="24500000"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Purchase Date
                         </label>
                         <input
                             v-model="goldDate"
                             type="date"
                             required
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">
+                        <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Certificate / Serial Number (Optional)
                         </label>
                         <input
                             v-model="goldCert"
                             type="text"
                             placeholder="CERT-12345"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-lg p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div class="flex justify-end space-x-2 pt-3">
                         <button
@@ -402,7 +402,7 @@ const handleSaveGold = async (): Promise<void> => {
                         </button>
                         <button
                             type="submit"
-                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-lg font-bold">
+                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
                             Save
                         </button>
                     </div>

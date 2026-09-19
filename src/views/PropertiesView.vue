@@ -90,7 +90,7 @@ const handleAddProperty = () => modalStore.openPropertyModal();
 
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition"
+                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition"
                         @click="handleAddProperty">
                         <fa-icon
                             class="text-xs mr-1"

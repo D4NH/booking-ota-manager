@@ -74,7 +74,7 @@ const handleTransfer = async (): Promise<void> => {
             class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
             <div
                 class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                <h2 class="text-base font-bold text-mist-100">Transfer Funds</h2>
+                <h2 class="text-base font-semibold text-mist-100">Transfer Funds</h2>
                 <button
                     type="button"
                     class="cursor-pointer text-mist-400 hover:text-mist-200"
@@ -166,7 +166,7 @@ const handleTransfer = async (): Promise<void> => {
                         </div>
                     </div>
                     <div class="relative">
-                        <label class="text-xs font-bold text-mist-400 block">
+                        <label class="text-xs font-semibold text-mist-400 block">
                             {{ isBothMode ? 'Payout Amount' : 'Amount' }}
                         </label>
                         <div
@@ -186,7 +186,7 @@ const handleTransfer = async (): Promise<void> => {
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-mist-400 block"> Transfer Memo </label>
+                    <label class="text-xs font-semibold text-mist-400 block"> Transfer Memo </label>
                     <input
                         v-model="notes"
                         type="text"
@@ -197,14 +197,14 @@ const handleTransfer = async (): Promise<void> => {
                 <div class="flex justify-end space-x-2">
                     <button
                         type="button"
-                        class="px-3 py-2 text-xs font-medium text-mist-400 hover:text-mist-200"
+                        class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                         @click="closeModal">
                         Cancel
                     </button>
                     <button
                         type="submit"
                         :disabled="isLoading || isSubmitting"
-                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5 disabled:opacity-50">
+                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5 disabled:opacity-50">
                         <span
                             v-if="isSubmitting"
                             class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin"></span>

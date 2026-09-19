@@ -32,18 +32,16 @@ const shiftMonth = (offset: number): void => {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
                 @click="shiftMonth(-1)">
-                <fa-icon
-                    icon="chevron-left"
-                    class="text-xs" />
+                <fa-icon icon="chevron-left" />
             </button>
 
             <div class="relative">
                 <input
                     :value="financeStore.selectedMonth"
                     type="month"
-                    class="cursor-pointer w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                    class="cursor-pointer w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1 py-1.5 text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
                     required
                     @change="handleMonthChange" />
                 <div
@@ -57,11 +55,9 @@ const shiftMonth = (offset: number): void => {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
                 @click="shiftMonth(1)">
-                <fa-icon
-                    icon="chevron-right"
-                    class="text-xs" />
+                <fa-icon icon="chevron-right" />
             </button>
         </div>
     </div>

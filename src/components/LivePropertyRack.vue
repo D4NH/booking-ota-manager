@@ -71,7 +71,7 @@ const propertyRack = computed(() =>
     <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="flex items-center justify-between mb-4 border-b border-mist-800 pb-2.5">
             <div class="flex items-center gap-2">
-                <h3 class="text-sm font-bold text-mist-100 uppercase tracking-wider">
+                <h3 class="text-sm font-semibold text-mist-100 uppercase tracking-wider">
                     Live Property Rack
                 </h3>
                 <span class="rounded-full bg-mist-800 px-2 py-0.5 text-[10px] text-mist-400">
@@ -99,14 +99,14 @@ const propertyRack = computed(() =>
                                           ? 'bg-amber-400 animate-pulse'
                                           : 'bg-mist-600',
                                 ]" />
-                            <h4 class="font-bold text-sm text-mist-100 truncate">
+                            <h4 class="font-semibold text-sm text-mist-100 truncate">
                                 {{ item.property.name }}
                             </h4>
                         </div>
 
                         <span
                             :class="[
-                                'rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border shrink-0',
+                                'rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border shrink-0',
                                 item.statusBadgeClass,
                             ]">
                             {{ item.statusLabel }}
@@ -119,7 +119,7 @@ const propertyRack = computed(() =>
                         <div
                             v-if="item.currentStay"
                             class="text-xs">
-                            <p class="font-bold text-mist-200 truncate">
+                            <p class="font-semibold text-mist-200 truncate">
                                 {{ item.currentStay.guestName }}
                             </p>
                             <p class="text-[11px] text-mist-400 mt-1">
@@ -132,7 +132,7 @@ const propertyRack = computed(() =>
                         <div
                             v-else-if="item.arrivingToday"
                             class="text-xs">
-                            <p class="font-bold text-cyan-300 truncate">
+                            <p class="font-semibold text-cyan-300 truncate">
                                 {{ item.arrivingToday.guestName }}
                             </p>
                             <p class="text-[11px] text-mist-400 mt-1">

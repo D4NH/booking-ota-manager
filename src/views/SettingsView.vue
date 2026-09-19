@@ -157,7 +157,7 @@ onMounted(() => refreshAuthStatus());
                         class="h-3 w-3 rounded-full shrink-0"
                         :class="isAuthenticated ? 'bg-lime-400 animate-pulse' : 'bg-amber-400'" />
                     <div>
-                        <h4 class="text-xs font-bold text-mist-100">
+                        <h4 class="text-xs font-semibold text-mist-100">
                             {{
                                 isAuthenticated
                                     ? 'OAuth Token Active'
@@ -179,7 +179,7 @@ onMounted(() => refreshAuthStatus());
                         v-if="!isAuthenticated"
                         type="button"
                         :disabled="isConnecting"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-bold text-mist-950 transition disabled:opacity-50"
+                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition disabled:opacity-50"
                         @click="handleGoogleConnect">
                         {{ isConnecting ? 'Connecting...' : 'Authorize Google Account' }}
                     </button>
@@ -187,7 +187,7 @@ onMounted(() => refreshAuthStatus());
                     <button
                         v-else
                         type="button"
-                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 hover:bg-mist-700 px-3 py-1.5 text-xs font-bold text-mist-300 hover:text-mist-100 transition"
+                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 hover:bg-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:text-mist-100 transition"
                         @click="handleGoogleDisconnect">
                         Disconnect Token
                     </button>
@@ -206,7 +206,7 @@ onMounted(() => refreshAuthStatus());
                 </CardTitle>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-bold text-mist-950 transition"
+                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition"
                     @click="handleAddProperty">
                     <fa-icon
                         icon="plus"
@@ -229,7 +229,7 @@ onMounted(() => refreshAuthStatus());
                     v-else
                     class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
-                        class="border-b border-mist-800 bg-mist-950 text-xs font-bold uppercase text-mist-400">
+                        class="border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
                         <tr>
                             <th class="w-32 px-4 py-2.5">ID</th>
                             <th class="px-4 py-2.5">Name</th>
@@ -272,7 +272,7 @@ onMounted(() => refreshAuthStatus());
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span
-                                    class="rounded px-2 py-0.5 text-[10px] font-bold uppercase"
+                                    class="rounded px-2 py-0.5 text-[10px] font-semibold uppercase"
                                     :class="
                                         p.available
                                             ? 'bg-lime-500/10 text-lime-400 border border-lime-500/20'
@@ -319,7 +319,7 @@ onMounted(() => refreshAuthStatus());
             <div class="rounded-md border border-rose-500/20 bg-mist-900 p-4 shadow-md space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-xs font-bold text-mist-200">Local Bookings Cache</h4>
+                        <h4 class="text-xs font-semibold text-mist-200">Local Bookings Cache</h4>
                         <p class="text-[11px] text-mist-500">
                             Currently storing
                             <span class="text-white">{{ bookings.length }}</span> reservations in
@@ -328,21 +328,21 @@ onMounted(() => refreshAuthStatus());
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
                         @click="handleClearBookings">
                         Clear Bookings Cache
                     </button>
                 </div>
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-xs font-bold text-mist-200">Local Finance Cache</h4>
+                        <h4 class="text-xs font-semibold text-mist-200">Local Finance Cache</h4>
                         <p class="text-[11px] text-mist-500">
                             Permanently purges finances from IndexedDB storage.
                         </p>
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
                         @click="handleClearFinance">
                         Clear Finance Cache
                     </button>
@@ -350,14 +350,14 @@ onMounted(() => refreshAuthStatus());
 
                 <div class="border-t border-mist-800/60 pt-3 flex items-center justify-between">
                     <div>
-                        <h4 class="text-xs font-bold text-rose-400">Hard Reset Database</h4>
+                        <h4 class="text-xs font-semibold text-rose-400">Hard Reset Database</h4>
                         <p class="text-[11px] text-mist-500">
                             Permanently purges both properties and bookings from IndexedDB storage.
                         </p>
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-rose-600 hover:bg-rose-500 px-3 py-1.5 text-xs font-bold text-white transition shadow-sm"
+                        class="cursor-pointer rounded-md bg-rose-600 hover:bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition shadow-sm"
                         @click="handleWipeDatabase">
                         Purge All Data
                     </button>

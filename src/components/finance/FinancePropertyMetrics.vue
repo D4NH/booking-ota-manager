@@ -28,11 +28,11 @@ const { totalRevenue } = usePropertyDetails(() => 'all');
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Earnings
                 </h3>
             </div>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-semibold text-white">
                 {{ formatIDR(monthlyPropertyRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
@@ -61,11 +61,11 @@ const { totalRevenue } = usePropertyDetails(() => 'all');
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Expenses
                 </h3>
             </div>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-semibold text-white">
                 {{ formatIDR(monthlyPropertyExpenses) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
@@ -94,11 +94,11 @@ const { totalRevenue } = usePropertyDetails(() => 'all');
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Net Profit
                 </h3>
             </div>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-semibold text-white">
                 {{ formatIDR(netPropertyProfit) }}
             </p>
             <p class="text-xs text-mist-500">This month</p>
@@ -107,11 +107,11 @@ const { totalRevenue } = usePropertyDetails(() => 'all');
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Total Balance
                 </h3>
             </div>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-semibold text-white">
                 {{ formatIDR(totalRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
