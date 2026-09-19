@@ -612,10 +612,72 @@ export const useFinanceStore = defineStore('finance', () => {
         await db.sharedFinances.put(item);
     }
     async function recordOwnerTransfer(payload: Omit<OwnerTransfer, 'id'>): Promise<void> {
+        const cleanDate = normalizeDate(payload.date);
+        const sourceProperty = capitalize(payload.sourcePropertyId);
+        const amount = Number(payload.amount);
+
+        // CASE 1: BOTH RECIPIENTS (2 SEPARATE RECORDS FOR PROPERTY, TRANSFERS, AND PERSONAL)
+        if (payload.targetAccount === 'Split') {
+            const owners: PersonalFinance['owner'][] = ['Danh Nguyen', 'Citra Ayu Wardani'];
+
+            for (const owner of owners) {
+                const outflowId = crypto.randomUUID();
+                const transferId = crypto.randomUUID();
+                const entryId = crypto.randomUUID();
+
+                const noteText = [`Payout to ${owner}`, payload.notes].filter(Boolean).join(' | ');
+
+                // 1. Separate Property Outflow row per owner
+                await appendSheetRow(
+                    SPREADSHEET_ID,
+                    [
+                        outflowId,
+                        payload.sourcePropertyId,
+                        'expense',
+                        'Owner Payout Outflow',
+                        amount,
+                        cleanDate,
+                        noteText,
+                    ],
+                    "'Property_Finances'!A1"
+                );
+
+                // 2. Separate Transfer Audit row per owner
+                await appendSheetRow(
+                    SPREADSHEET_ID,
+                    [transferId, payload.sourcePropertyId, owner, amount, cleanDate, noteText],
+                    "'Transfers'!A1"
+                );
+
+                // 3. Separate Personal Income row per owner
+                await appendSheetRow(
+                    SPREADSHEET_ID,
+                    [
+                        entryId,
+                        owner,
+                        'income',
+                        'Owner Payout',
+                        amount,
+                        cleanDate,
+                        `Payout from ${sourceProperty}`,
+                        '',
+                        '',
+                    ],
+                    "'Personal_Transactions'!A1"
+                );
+            }
+
+            await fetchFinancialData();
+            return;
+        }
+
+        // CASE 2: SINGLE RECIPIENT
         const transferId = crypto.randomUUID();
         const outflowId = crypto.randomUUID();
         const entryId = crypto.randomUUID();
-        const cleanDate = normalizeDate(payload.date);
+        const noteText = [`Payout to ${payload.targetAccount}`, payload.notes]
+            .filter(Boolean)
+            .join(' | ');
 
         await appendSheetRow(
             SPREADSHEET_ID,
@@ -623,7 +685,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 transferId,
                 payload.sourcePropertyId,
                 payload.targetAccount,
-                payload.amount,
+                amount,
                 cleanDate,
                 payload.notes,
             ],
@@ -637,9 +699,9 @@ export const useFinanceStore = defineStore('finance', () => {
                 payload.sourcePropertyId,
                 'expense',
                 'Owner Payout Outflow',
-                payload.amount,
+                amount,
                 cleanDate,
-                [`Payout to ${payload.targetAccount}`, payload.notes].filter(Boolean).join(' | '),
+                noteText,
             ],
             "'Property_Finances'!A1"
         );
@@ -651,9 +713,9 @@ export const useFinanceStore = defineStore('finance', () => {
                     entryId,
                     'income',
                     'Mai House Jogja Share',
-                    payload.amount,
+                    amount,
                     cleanDate,
-                    `Payout from ${capitalize(payload.sourcePropertyId)}`,
+                    `Payout from ${sourceProperty}`,
                 ],
                 "'Shared_Transactions'!A1"
             );
@@ -665,9 +727,9 @@ export const useFinanceStore = defineStore('finance', () => {
                     payload.targetAccount,
                     'income',
                     'Owner Payout',
-                    payload.amount,
+                    amount,
                     cleanDate,
-                    `Payout from ${capitalize(payload.sourcePropertyId)}`,
+                    `Payout from ${sourceProperty}`,
                     '',
                     '',
                 ],
@@ -825,12 +887,82 @@ export const useFinanceStore = defineStore('finance', () => {
     }
     async function deletePropertyTransaction(id: string): Promise<void> {
         if (id.startsWith('dexie-')) {
-            throw new Error('This transaction is auto-populated from Dexie bookings.');
+            throw new Error(
+                'This transaction is auto-populated from Dexie bookings. Delete or cancel the booking instead.'
+            );
         }
 
+        const targetItem = sheetPropertyFinances.value.find((i) => i.id === id);
+        if (!targetItem) return;
+
         await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Property_Finances');
+
         sheetPropertyFinances.value = sheetPropertyFinances.value.filter((i) => i.id !== id);
         await db.propertyFinances.delete(id);
+
+        // Cascading delete for 1-to-1 matching payout row
+        if (targetItem.category === 'Owner Payout Outflow') {
+            const targetDate = targetItem.date;
+            const targetAmount = Number(targetItem.amount);
+
+            // Detect recipient name from notes (e.g., "Payout to Danh Nguyen | ...")
+            const ownerMatch = targetItem.notes.match(
+                /Payout to (Danh Nguyen|Citra Ayu Wardani|Shared)/i
+            );
+            const recipient = ownerMatch ? ownerMatch[1] : null;
+
+            const matchingTransfer = transfers.value.find(
+                (t) =>
+                    t.date === targetDate &&
+                    Math.abs(Number(t.amount) - targetAmount) < 100 &&
+                    (!recipient || t.targetAccount.toLowerCase() === recipient.toLowerCase())
+            );
+
+            if (matchingTransfer) {
+                await deleteSheetRowByBookingId(SPREADSHEET_ID, matchingTransfer.id, 'Transfers');
+                transfers.value = transfers.value.filter((t) => t.id !== matchingTransfer.id);
+                await db.transfers.delete(matchingTransfer.id);
+
+                if (matchingTransfer.targetAccount === 'Shared') {
+                    const matchingShared = sharedFinances.value.find(
+                        (s) =>
+                            s.date === targetDate &&
+                            s.type === 'income' &&
+                            Math.abs(Number(s.amount) - targetAmount) < 100
+                    );
+                    if (matchingShared) {
+                        await deleteSheetRowByBookingId(
+                            SPREADSHEET_ID,
+                            matchingShared.id,
+                            'Shared_Transactions'
+                        );
+                        sharedFinances.value = sharedFinances.value.filter(
+                            (s) => s.id !== matchingShared.id
+                        );
+                        await db.sharedFinances.delete(matchingShared.id);
+                    }
+                } else {
+                    const matchingPersonal = personalFinances.value.find(
+                        (p) =>
+                            p.owner === matchingTransfer.targetAccount &&
+                            p.date === targetDate &&
+                            p.type === 'income' &&
+                            Math.abs(Number(p.amount) - targetAmount) < 100
+                    );
+                    if (matchingPersonal) {
+                        await deleteSheetRowByBookingId(
+                            SPREADSHEET_ID,
+                            matchingPersonal.id,
+                            'Personal_Transactions'
+                        );
+                        personalFinances.value = personalFinances.value.filter(
+                            (p) => p.id !== matchingPersonal.id
+                        );
+                        await db.personalFinances.delete(matchingPersonal.id);
+                    }
+                }
+            }
+        }
     }
     async function deletePersonalTransaction(id: string): Promise<void> {
         await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Personal_Transactions');

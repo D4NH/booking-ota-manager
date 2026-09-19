@@ -80,8 +80,7 @@ export interface SharedFinance {
     goldWeightGrams?: number;
 }
 
-export type TransferTargetAccount = 'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared';
-
+export type TransferTargetAccount = 'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared' | 'Split';
 export interface OwnerTransfer {
     id: string;
     sourcePropertyId: string;

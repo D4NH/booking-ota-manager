@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { TransferTargetAccount } from '@/types/finance';
@@ -16,12 +17,16 @@ const emit = defineEmits<{
 
 const financeStore = useFinanceStore();
 const { executeOwnerTransfer } = useFinanceSync();
+const { isLoading } = storeToRefs(financeStore);
 
 const sourcePropertyId = ref('piyungan');
-const targetAccount = ref<TransferTargetAccount>('Shared');
+const targetAccount = ref<TransferTargetAccount>('Split');
 const amount = ref<number | null>(null);
 const date = ref(new Date().toISOString().slice(0, 10));
 const notes = ref('');
+const isSubmitting = ref(false);
+
+const isBothMode = computed(() => targetAccount.value === 'Split');
 
 const sanitizeAmount = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -29,25 +34,34 @@ const sanitizeAmount = (event: Event) => {
     amount.value = cleanedString ? parseInt(cleanedString, 10) : 0;
     target.value = cleanedString;
 };
-const closeModal = () => emit('update:modelValue', false);
-const handleTransfer = async () => {
-    if (!amount.value || !date.value) return;
+const closeModal = (): void => {
+    emit('update:modelValue', false);
+};
+const handleTransfer = async (): Promise<void> => {
+    if (isSubmitting.value || !amount.value || !date.value) return;
 
+    isSubmitting.value = true;
     const targetDate = date.value;
 
-    const success = await executeOwnerTransfer({
-        sourcePropertyId: sourcePropertyId.value,
-        targetAccount: targetAccount.value,
-        amount: amount.value,
-        date: targetDate,
-        notes: notes.value,
-    });
+    try {
+        const success = await executeOwnerTransfer({
+            sourcePropertyId: sourcePropertyId.value,
+            targetAccount: targetAccount.value,
+            amount: Number(amount.value),
+            date: targetDate,
+            notes: notes.value,
+        });
 
-    if (success) {
-        financeStore.selectedMonth = targetDate.slice(0, 7);
-        amount.value = null;
-        notes.value = '';
-        closeModal();
+        if (success) {
+            financeStore.selectedMonth = targetDate.slice(0, 7);
+            amount.value = null;
+            notes.value = '';
+            closeModal();
+        }
+    } finally {
+        setTimeout(() => {
+            isSubmitting.value = false;
+        }, 1000);
     }
 };
 </script>
@@ -124,8 +138,9 @@ const handleTransfer = async () => {
                         required
                         class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                         <option value="Shared">Shared Household</option>
-                        <option value="Danh Nguyen">Danh Nguyen</option>
-                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
+                        <option value="Split">Danh / Citra</option>
+                        <!-- <option value="Danh Nguyen">Danh Nguyen</option>
+                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option> -->
                     </select>
                     <div
                         class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
@@ -151,8 +166,8 @@ const handleTransfer = async () => {
                         </div>
                     </div>
                     <div class="relative">
-                        <label class="block text-xs font-medium text-mist-400">
-                            Amount (IDR)
+                        <label class="text-xs font-bold text-mist-400 block">
+                            {{ isBothMode ? 'Payout Amount' : 'Amount' }}
                         </label>
                         <div
                             class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
@@ -171,7 +186,7 @@ const handleTransfer = async () => {
                 </div>
 
                 <div>
-                    <label class="text-xs font-semibold text-mist-400 block"> Transfer Memo </label>
+                    <label class="text-xs font-bold text-mist-400 block"> Transfer Memo </label>
                     <input
                         v-model="notes"
                         type="text"
@@ -188,9 +203,12 @@ const handleTransfer = async () => {
                     </button>
                     <button
                         type="submit"
-                        :disabled="financeStore.isLoading"
-                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-lg font-bold transition">
-                        Execute Transfer
+                        :disabled="isLoading || isSubmitting"
+                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5 disabled:opacity-50">
+                        <span
+                            v-if="isSubmitting"
+                            class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin"></span>
+                        <span>{{ isBothMode ? 'Payout Both' : 'Confirm Payout' }}</span>
                     </button>
                 </div>
             </form>

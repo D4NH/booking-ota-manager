@@ -206,14 +206,20 @@ export function useFinanceSync() {
         });
     };
 
-    const executeOwnerTransfer = (payload: Omit<OwnerTransfer, 'id'>): Promise<boolean> =>
-        runWithToast(() => financeStore.recordOwnerTransfer(payload), {
-            loadingTitle: 'Executing Transfer...',
-            loadingDesc: 'Moving funds from property revenue into target ledger.',
-            successTitle: 'Owner Transfer Completed',
-            successDesc: `Successfully allocated funds to ${payload.targetAccount}.`,
+    const executeOwnerTransfer = (payload: Omit<OwnerTransfer, 'id'>): Promise<boolean> => {
+        const isBoth = payload.targetAccount === 'Split';
+        return runWithToast(() => financeStore.recordOwnerTransfer(payload), {
+            loadingTitle: isBoth ? 'Processing Dual Payout...' : 'Executing Transfer...',
+            loadingDesc: isBoth
+                ? 'Crediting Danh Nguyen and Citra Ayu Wardani simultaneously.'
+                : `Moving funds from property revenue to ${payload.targetAccount}.`,
+            successTitle: 'Payout Completed',
+            successDesc: isBoth
+                ? 'Both Danh Nguyen and Citra Ayu Wardani received payout.'
+                : `Successfully allocated funds to ${payload.targetAccount}.`,
             errorTitle: 'Transfer Failed',
         });
+    };
     const settleRecurringCommitment = (item: ProjectedRecurringItem): Promise<boolean> =>
         runWithToast(() => financeStore.settleRecurringItem(item), {
             loadingTitle: 'Posting Recurring Bill...',
