@@ -44,12 +44,8 @@ const categories = [
 const isEditing = computed(() => editingItem.value !== null);
 
 const displayedTransactions = computed(() => {
-    const list =
-        filterCategory.value === 'ALL'
-            ? filteredPropertyFinances.value
-            : filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
-
-    return [...list].sort((a, b) => b.date.localeCompare(a.date));
+    if (filterCategory.value === 'ALL') return filteredPropertyFinances.value;
+    return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
 });
 
 const totalItems = computed(() => displayedTransactions.value.length);

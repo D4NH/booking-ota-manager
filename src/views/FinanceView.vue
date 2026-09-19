@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { toast } from 'vue-toastflow';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/finance/MonthSelector.vue';
@@ -10,58 +10,22 @@ import FinancePropertyMetrics from '@/components/finance/FinancePropertyMetrics.
 import PropertyFinanceTable from '@/components/finance/PropertyFinanceTable.vue';
 import TransferHistoryTable from '@/components/finance/TransferHistoryTable.vue';
 
+const financeStore = useFinanceStore();
 const { syncAllFinancialData } = useFinanceSync();
-const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
+const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 
 const isSyncing = ref(false);
 
 const handleFinanceSync = async (): Promise<void> => {
-    if (isSyncing.value) return;
-
-    refreshAuthStatus();
-    if (!isAuthenticated.value) {
-        try {
-            await initAuth();
-        } catch (authErr) {
-            console.warn('[Sync] Auth aborted or failed:', authErr);
-            return;
-        }
-    }
-
-    isSyncing.value = true;
-
-    try {
-        await toast.loading(
-            async () => {
-                await syncAllFinancialData();
-            },
-            {
-                loading: {
-                    title: 'Syncing...',
-                    description: 'Fetching sheets and updating local database.',
-                },
-                success: (data) => {
-                    return {
-                        title: 'Sync Complete',
-                        description: `Imported all finance data: ${data}`,
-                    };
-                },
-                error: (err) => ({
-                    title: 'Sync failed',
-                    description:
-                        err instanceof Error ? err.message : 'Failed to fetch Google Sheets.',
-                }),
-            }
-        );
-    } finally {
-        isSyncing.value = false;
-    }
+    await syncAllFinancialData();
 };
 
 onMounted(async () => {
-    const valid = refreshAuthStatus();
-    if (valid || isAuthenticated.value) {
-        await syncAllFinancialData();
+    await financeStore.loadLocalFinanceData();
+    await financeStore.fetchRecurringTemplates();
+
+    if (refreshAuthStatus() || isAuthenticated.value) {
+        await syncAllFinancialData({ silent: true });
     }
 });
 </script>
