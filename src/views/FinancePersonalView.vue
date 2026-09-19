@@ -68,7 +68,7 @@ onMounted(async () => {
         <div class="space-y-4">
             <FinanceMetrics />
 
-            <div class="grid grid-cols-3">
+            <div class="grid grid-cols-3 gap-4">
                 <FinancePersonalTable class="col-span-2" />
                 <div>1</div>
             </div>

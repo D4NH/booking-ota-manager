@@ -29,7 +29,7 @@ interface MonthSection {
 }
 
 const sortedUpcomingBookings = computed<Booking[]>(() => {
-    const today = getCurrentDate(); // Evaluated ONCE per run
+    const today = getCurrentDate();
 
     return bookings
         .filter((b) => b.status !== 'Unavailable' && b.status !== 'No show' && b.checkIn >= today)

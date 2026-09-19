@@ -30,7 +30,7 @@ const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
 const { monthlyPropertyData } = useMonthlyMetrics(bookings);
-const { totalRevenue } = usePropertyDetails(() => 'all');
+const { totalYearRevenue } = usePropertyDetails(() => 'all');
 
 const isPropertiesExpanded = ref(false);
 
@@ -131,7 +131,7 @@ const handleAddProperty = () => modalStore.openPropertyModal();
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AnnualRevenue
                 :data="monthlyPropertyData"
-                :total-revenue="totalRevenue" />
+                :total-revenue="totalYearRevenue" />
 
             <PropertyPerformance
                 :bookings="bookings"

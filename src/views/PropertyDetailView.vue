@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useBookingSync } from '@/composables/useBookingSync';
-import { useGroupedBookings } from '@/composables/useGroupedBookings';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { bookingStatuses, getStatusStyle } from '@/config/status';
+import { getStatusStyle } from '@/config/status';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { formatDate, getCurrentMonth, getCurrentWeekNumber } from '@/utils/date';
+import { formatDate, getCurrentWeekNumber } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -19,7 +16,7 @@ import PageTitle from '@/components/PageTitle.vue';
 import OccupiedTag from '@/components/OccupiedTag.vue';
 import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
 import PropertySelector from '@/components/PropertySelector.vue';
-import BookingsTable from '@/components/BookingsTable.vue';
+import UpcomingBookings from '@/components/UpcomingBookings.vue';
 import CurrentWeekView from '@/components/CurrentWeekView.vue';
 
 import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
@@ -35,14 +32,13 @@ const router = useRouter();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
-const { deleteBooking } = useBookingSync();
 const { totalPayout, revenueGrowthPercent } = useMonthlyMetrics(() => bookings.value, {
     propertyId: () => id,
 });
 const {
     selectedProperty,
     unitBookings,
-    totalRevenue,
+    totalYearRevenue,
     adr,
     totalNights,
     annualOccupancy,
@@ -51,43 +47,10 @@ const {
     isOccupied,
     staySections,
     todayTurnover,
-    currentDay,
 } = usePropertyDetails(() => id);
 
-const hiddenStatuses = ref<Booking['status'][]>(['Completed']);
-const toggleFilters = ref<boolean>(false);
-
-const upcomingUnitBookings = computed<Booking[]>(() => {
-    const currentMonth = getCurrentMonth();
-    const hidden = hiddenStatuses.value;
-
-    return unitBookings.value.filter((b) => {
-        if (hidden.includes(b.status)) return false;
-        return b.checkIn >= currentMonth;
-    });
-});
-
-const { groupedBookings, collapsedMonths, currentMonthKey } = useGroupedBookings(
-    upcomingUnitBookings,
-    {
-        autoCollapsePast: false,
-    }
-);
-
-const currentMonthLabel = computed(() => formatDate(currentMonthKey.value, { monthHeader: true }));
-
-const toggleStatusVisibility = (status: Booking['status']): void => {
-    const idx = hiddenStatuses.value.indexOf(status);
-    if (idx > -1) {
-        hiddenStatuses.value.splice(idx, 1);
-    } else {
-        hiddenStatuses.value.push(status);
-    }
-};
 const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
 const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
-const handleDeleteBooking = async (booking: Booking): Promise<void> =>
-    void (await deleteBooking(booking));
 const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
 const handleNavigate = (target: PropertyId | 'all'): void => {
     if (target === 'all') router.push({ name: 'properties' });
@@ -128,7 +91,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     Annual Revenue
                 </h3>
                 <p class="font-mono text-lg font-semibold text-mist-100">
-                    {{ formatIDR(totalRevenue) }}
+                    {{ formatIDR(totalYearRevenue) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
                     <span
@@ -317,7 +280,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                         </div>
                                         <div class="flex flex-col items-end space-y-1">
                                             <span
-                                                class="text-xs font-semibold font-mono text-mist-100 whitespace-nowrap">
+                                                class="text-xs font-semibold font-mono text-mist-100 text-nowrap">
                                                 {{ formatIDR(b.payout) }}
                                             </span>
                                             <span
@@ -390,90 +353,43 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
         <!-- Weekly Overview -->
         <div class="grid grid-cols-1">
-            <CardTitle>
-                <template #title>Weekly Overview</template>
-                <template #subtitle>Starting from week {{ getCurrentWeekNumber() }}</template>
-            </CardTitle>
+            <div class="flex items-center justify-between">
+                <CardTitle>
+                    <template #title>Weekly Overview</template>
+                    <template #subtitle>Starting from week {{ getCurrentWeekNumber() }}</template>
+                </CardTitle>
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
+                    @click="handleAddBooking(id)">
+                    <fa-icon icon="plus" /> Add Booking
+                </button>
+            </div>
+
             <CurrentWeekView
                 :selected-property="id"
                 :show-header="false"
                 class="shrink-0" />
         </div>
 
-        <!-- Property Analytics -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 grid-rows-2 gap-4">
+            <!-- Property Analytics -->
             <MonthlyRevenuePacing
+                class="col-start-1"
                 :current-revenue="totalPayout"
                 :property="selectedProperty" />
 
             <ForwardBookingHorizon
+                class="row-start-2"
                 :bookings="unitBookings"
                 :property="selectedProperty" />
-        </div>
 
-        <!-- Bookings Table -->
-        <div class="grid grid-cols-1">
-            <div class="flex items-center justify-between">
-                <CardTitle>
-                    <template #title>Upcoming Bookings</template>
-                    <template #subtitle>Starting from {{ currentMonthLabel }}</template>
-                </CardTitle>
-                <div class="flex gap-3">
-                    <!-- Status Filters -->
-                    <button
-                        type="button"
-                        class="rounded-md border border-mist-800 px-4 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
-                        :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-900']"
-                        title="Filter by Status"
-                        @click="toggleFilters = !toggleFilters">
-                        <fa-icon
-                            class="text-xs mr-1"
-                            icon="filter" />
-                        Filters
-                    </button>
-                    <div
-                        v-if="toggleFilters"
-                        class="flex flex-wrap items-center gap-1.5">
-                        <button
-                            v-for="status in bookingStatuses"
-                            :key="status"
-                            type="button"
-                            :class="[
-                                'cursor-pointer rounded-md px-2.5 py-1 text-xs border transition',
-                                hiddenStatuses.includes(status)
-                                    ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
-                                    : 'border-mist-800 bg-mist-800 text-mist-300 hover:border-mist-600',
-                            ]"
-                            @click="toggleStatusVisibility(status)">
-                            {{ status }}
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
-                        @click="handleAddBooking(id)">
-                        <fa-icon icon="plus" /> Add Booking
-                    </button>
-                </div>
-            </div>
-
-            <div
-                v-if="groupedBookings.length === 0"
-                class="flex flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-6">
-                <fa-icon
-                    icon="house"
-                    class="text-xl" />
-                <p class="mt-2">No upcoming reservations found</p>
-            </div>
-
-            <BookingsTable
-                v-else
-                v-model:collapsed-months="collapsedMonths"
-                :groups="groupedBookings"
-                :current-month-key="currentMonthKey"
-                :current-date-key="currentDay"
-                @edit="handleEditBooking"
-                @delete="handleDeleteBooking" />
+            <UpcomingBookings
+                class="col-start-2 row-span-2 h-135"
+                :bookings="unitBookings"
+                :show-month-headers="true"
+                :show-property="false"
+                @edit-booking="handleEditBooking" />
         </div>
     </div>
 </template>

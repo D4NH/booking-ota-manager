@@ -114,7 +114,7 @@ const handleImageError = (e: Event) => {
                                 </div>
                                 <div class="flex flex-col items-end space-y-1">
                                     <span
-                                        class="text-xs font-semibold font-mono text-mist-100 whitespace-nowrap">
+                                        class="text-xs font-semibold font-mono text-mist-100 text-nowrap">
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                     <span
