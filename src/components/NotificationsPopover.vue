@@ -60,7 +60,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                         Payment Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-bold"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
@@ -101,7 +101,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
                         Payout Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-bold"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>

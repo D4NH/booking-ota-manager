@@ -70,11 +70,11 @@ const handleAddProperty = () => modalStore.openPropertyModal();
                     <template #subtitle> Operational status and unit specifications </template>
                 </CardTitle>
 
-                <div class="flex gap-4">
+                <div class="flex items-center gap-2">
                     <button
                         v-if="sortedProperties.length > 2"
                         type="button"
-                        class="flex items-center gap-1.5 rounded-md border border-mist-700 bg-mist-900 px-3 py-1.5 text-xs text-mist-300 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                        class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 transition shadow-sm cursor-pointer"
                         @click="isPropertiesExpanded = !isPropertiesExpanded">
                         <span>
                             {{
@@ -91,7 +91,7 @@ const handleAddProperty = () => modalStore.openPropertyModal();
 
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition"
+                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition"
                         @click="handleAddProperty">
                         <fa-icon
                             class="text-xs mr-1"

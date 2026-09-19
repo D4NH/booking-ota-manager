@@ -3,10 +3,12 @@
 </script>
 
 <template>
-    <div class="flex shrink-0 items-center justify-between relative">
-        <div>
-            <h1 class="text-xl font-bold text-mist-100"><slot name="title">Title</slot></h1>
-            <div class="mt-1 text-xs text-mist-400">
+    <div class="flex shrink-0 items-center justify-between">
+        <div class="space-y-1">
+            <h1 class="text-xl font-bold text-mist-100">
+                <slot name="title">Title</slot>
+            </h1>
+            <div class="text-sm text-mist-500 leading-relaxed">
                 <slot name="subtitle">Subtitle</slot>
             </div>
         </div>

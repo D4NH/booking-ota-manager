@@ -63,7 +63,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
             <button
                 v-if="totalSettledCount > 0"
                 type="button"
-                class="text-[11px] font-semibold text-mist-400 hover:text-mist-200 transition flex items-center gap-1.5"
+                class="text-[11px] font-bold text-mist-400 hover:text-mist-200 transition flex items-center gap-1.5"
                 @click="showSettled = !showSettled">
                 <span
                     class="w-2 h-2 rounded-full"
@@ -112,7 +112,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                             </div>
                             <div class="flex items-center gap-1 mt-1">
                                 <span
-                                    class="text-[11px] px-1.5 py-0.2 rounded font-mono font-medium text-mist-300 bg-mist-800 border border-mist-700">
+                                    class="text-[11px] px-1.5 py-0.2 rounded font-mono font-medium text-mist-300 bg-mist-800 border border-mist-800">
                                     {{ item.targetLedger }}
                                 </span>
                                 <span
@@ -166,7 +166,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                                 {{ item.type === 'income' ? 'Inflow' : 'Bill' }}
                             </span>
                             <span
-                                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-medium text-mist-300 bg-mist-800 border border-mist-700">
+                                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-medium text-mist-300 bg-mist-800 border border-mist-800">
                                 {{ item.targetLedger }}
                             </span>
                             <span
@@ -214,7 +214,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
             <div
                 v-if="visibleList.length === 0"
                 class="py-8 text-center bg-mist-850/40 rounded-md border border-mist-800">
-                <p class="text-xs font-semibold text-lime-400 mb-1">
+                <p class="text-xs font-bold text-lime-400 mb-1">
                     {{
                         totalSettledCount > 0 && !showSettled
                             ? 'All recurring items for this cycle are settled.'

@@ -33,7 +33,7 @@ function handleSelect(id: PropertyId | 'all'): void {
         <button
             v-if="showAll"
             type="button"
-            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+            class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors"
             :class="[
                 modelValue === 'all'
                     ? 'bg-mist-800 text-lime-400 shadow-md'
@@ -48,7 +48,7 @@ function handleSelect(id: PropertyId | 'all'): void {
             v-for="prop in sortedProperties"
             :key="prop.id"
             type="button"
-            class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+            class="capitalize rounded-md px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer"
             :class="[
                 modelValue === prop.id
                     ? 'bg-mist-800 text-lime-400 shadow-md'

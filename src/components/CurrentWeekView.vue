@@ -81,7 +81,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
 
         <!-- 7-Day Column Headers -->
         <div
-            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase">
+            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-bold uppercase text-mist-400">
             <div
                 v-for="day in weekDays"
                 :key="day.dateStr"
@@ -131,7 +131,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                                 v-if="b.checkIn === day.dateStr || dayIndex === 0 || b.nights === 1"
                                 class="flex flex-col gap-1 min-h-9">
                                 <div class="flex justify-between items-start">
-                                    <span class="font-semibold text-xs text-mist-100 truncate">
+                                    <span class="font-bold text-xs text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
                                     <span

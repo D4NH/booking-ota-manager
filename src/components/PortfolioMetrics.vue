@@ -53,10 +53,10 @@ const metrics = computed(() => {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Revenue -->
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                 Portfolio Revenue
             </h3>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-bold text-mist-100">
                 {{ formatIDR(metrics.revenue) }}
             </p>
             <p class="text-xs text-mist-500">Total earnings in {{ year }}</p>
@@ -64,22 +64,22 @@ const metrics = computed(() => {
 
         <!-- Active Listings -->
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                 Active Listings
             </h3>
             <p class="font-mono text-lg font-bold text-mist-100">
                 <span class="text-lime-400">{{ metrics.activeUnits }}</span>
-                <span class="text-mist-500 text-lg"> / {{ properties.length }} Units</span>
+                <span class="text-mist-100 text-lg"> / {{ properties.length }} Units</span>
             </p>
             <p class="text-xs text-mist-500">Generating revenue</p>
         </div>
 
         <!-- ADR -->
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                 Average Daily Rate
             </h3>
-            <p class="font-mono text-lg font-bold text-white">
+            <p class="font-mono text-lg font-bold text-mist-100">
                 {{ formatIDR(metrics.adr) }}
             </p>
             <p class="text-xs text-mist-500">Across {{ metrics.nights }} booked nights</p>
@@ -87,7 +87,7 @@ const metrics = computed(() => {
 
         <!-- Annual Occupancy -->
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                 Annual Occupancy
             </h3>
             <p class="font-mono text-lg font-bold text-lime-400">{{ metrics.occupancy }}%</p>

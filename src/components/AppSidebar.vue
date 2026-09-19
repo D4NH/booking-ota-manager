@@ -114,7 +114,7 @@ watch(
                 :class="[
                     'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                     isLinkActive(link.path)
-                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                        ? 'bg-mist-800 text-lime-400 font-bold shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
@@ -138,7 +138,7 @@ watch(
                     <RouterLink
                         to="/properties"
                         class="flex items-center gap-3 flex-1 min-w-0"
-                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/properties') }">
+                        :class="{ 'text-lime-400 font-bold': isLinkActive('/properties') }">
                         <fa-icon
                             icon="house"
                             class="w-4 h-4 shrink-0 text-center py-2" />
@@ -172,7 +172,7 @@ watch(
                         class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
                         :class="[
                             route.path === `/properties/${prop.id}`
-                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                ? 'bg-mist-800/90 font-bold text-lime-400'
                                 : 'text-mist-400',
                         ]">
                         <span
@@ -196,9 +196,9 @@ watch(
                     <RouterLink
                         to="/finance"
                         class="flex items-center gap-3 flex-1 min-w-0"
-                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/finance') }">
+                        :class="{ 'text-lime-400 font-bold': isLinkActive('/finance') }">
                         <fa-icon
-                            icon="house"
+                            icon="sack-dollar"
                             class="w-4 h-4 shrink-0 text-center py-2" />
                         <span
                             v-show="!isCollapsed"
@@ -227,7 +227,7 @@ watch(
                         class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
                         :class="[
                             route.path === `/finance/personal`
-                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                ? 'bg-mist-800/90 font-bold text-lime-400'
                                 : 'text-mist-400',
                         ]">
                         <span class="h-1.5 w-1.5 rounded-full bg-mist-400 shrink-0" />
@@ -241,7 +241,7 @@ watch(
                 :class="[
                     'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                     isLinkActive('/settings')
-                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                        ? 'bg-mist-800 text-lime-400 font-bold shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon

@@ -66,7 +66,7 @@ const upcomingEvents = computed(() => {
             </div>
             <RouterLink
                 :to="{ name: 'bookings' }"
-                class="text-xs font-semibold text-lime-400 hover:text-lime-300 transition">
+                class="text-xs font-bold text-lime-400 hover:text-lime-300 transition">
                 View all &rarr;
             </RouterLink>
         </div>
@@ -116,7 +116,7 @@ const upcomingEvents = computed(() => {
                             </span>
                             <!-- Property Badge -->
                             <span
-                                class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold shrink-0"
+                                class="capitalize rounded px-1.5 py-0.2 text-[10px] font-bold shrink-0"
                                 :class="getPropertyStyle(event.booking.propertyId)">
                                 {{ event.booking.propertyId }}
                             </span>

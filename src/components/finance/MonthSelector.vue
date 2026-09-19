@@ -33,7 +33,7 @@ function shiftMonth(offset: number): void {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
                 @click="shiftMonth(-1)">
                 <fa-icon
                     icon="chevron-left"
@@ -58,7 +58,7 @@ function shiftMonth(offset: number): void {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
                 @click="shiftMonth(1)">
                 <fa-icon
                     icon="chevron-right"

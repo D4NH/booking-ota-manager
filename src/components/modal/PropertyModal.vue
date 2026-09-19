@@ -129,7 +129,7 @@ watch(
                 <!-- Name & Code Prefix -->
                 <div class="grid grid-cols-9 items-end">
                     <div class="col-span-8 relative">
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                        <label class="block text-xs font-bold text-mist-400 ml-1">
                             Property Name
                         </label>
                         <div
@@ -146,7 +146,7 @@ watch(
                             class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div class="text-center">
-                        <label class="cursor-pointer block text-xs font-semibold text-mist-400">
+                        <label class="cursor-pointer block text-xs font-bold text-mist-400">
                             Available
                         </label>
                         <input
@@ -160,9 +160,7 @@ watch(
                 <!-- Code Prefix & Theme Color -->
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
-                            Prefix
-                        </label>
+                        <label class="block text-xs font-bold text-mist-400 ml-1"> Prefix </label>
                         <input
                             v-model.trim="form.codePrefix"
                             type="text"
@@ -172,9 +170,7 @@ watch(
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
-                            Color
-                        </label>
+                        <label class="block text-xs font-bold text-mist-400 ml-1"> Color </label>
                         <div class="flex items-center">
                             <input
                                 v-model="form.color"
@@ -188,7 +184,7 @@ watch(
                     </div>
 
                     <div class="relative">
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                        <label class="block text-xs font-bold text-mist-400 ml-1">
                             Base Price (IDR)
                         </label>
                         <div
@@ -209,7 +205,7 @@ watch(
 
                 <!-- Address -->
                 <div>
-                    <label class="block text-xs font-semibold text-mist-400 ml-1"> Address </label>
+                    <label class="block text-xs font-bold text-mist-400 ml-1"> Address </label>
                     <input
                         v-model.trim="form.address"
                         type="text"
@@ -249,9 +245,7 @@ watch(
                 <!-- Bedrooms & Bathrooms -->
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
-                            Bedrooms
-                        </label>
+                        <label class="block text-xs font-bold text-mist-400 ml-1"> Bedrooms </label>
                         <input
                             v-model.number="form.bedrooms"
                             type="number"
@@ -259,7 +253,7 @@ watch(
                             class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                        <label class="block text-xs font-bold text-mist-400 ml-1">
                             Bathrooms
                         </label>
                         <input
@@ -269,7 +263,7 @@ watch(
                             class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                        <label class="block text-xs font-bold text-mist-400 ml-1">
                             Plot Size m²
                         </label>
                         <input
@@ -316,20 +310,20 @@ watch(
                     <button
                         v-if="isEditing"
                         type="button"
-                        class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                        class="cursor-pointer py-2 text-xs font-bold text-rose-400 hover:text-rose-300"
                         @click="handleDeleteProperty">
                         <fa-icon icon="trash-can" /> Delete Property
                     </button>
                     <div class="flex items-center gap-4">
                         <button
                             type="button"
-                            class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
+                            class="cursor-pointer px-4 py-2 text-xs font-bold text-mist-400 hover:text-mist-200"
                             @click="emit('close')">
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
+                            class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-bold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
                             {{ isEditing ? 'Save Changes' : 'Create Property' }}
                         </button>
                     </div>

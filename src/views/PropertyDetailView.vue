@@ -6,12 +6,12 @@ import { useBookingSync } from '@/composables/useBookingSync';
 import { useGroupedBookings } from '@/composables/useGroupedBookings';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { bookingStatuses } from '@/config/status';
+import { bookingStatuses, getStatusStyle } from '@/config/status';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { formatDate, getCurrentMonth, getCurrentYear, getCurrentWeekNumber } from '@/utils/date';
+import { formatDate, getCurrentMonth, getCurrentWeekNumber } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -124,10 +124,10 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
         <!-- Metric Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Annual Revenue
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">
+                <p class="font-mono text-lg font-bold text-mist-100">
                     {{ formatIDR(totalRevenue) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -141,7 +141,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
                 </h3>
                 <p class="font-mono text-lg font-bold text-mist-100">
@@ -158,15 +158,15 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Average Daily Rate
                 </h3>
-                <p class="font-mono text-lg font-bold text-white">{{ formatIDR(adr) }}</p>
+                <p class="font-mono text-lg font-bold text-mist-100">{{ formatIDR(adr) }}</p>
                 <p class="text-xs text-mist-500">Per booked night</p>
             </div>
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Annual Occupancy
                 </h3>
                 <p class="font-mono text-lg font-bold text-lime-400">{{ annualOccupancy }}%</p>
@@ -183,18 +183,18 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     <img
                         :src="`/images/${id}.jpg`"
                         :alt="selectedProperty.name"
-                        class="mask-b-from-25% mask-b-to-95% absolute inset-0 h-full w-full object-cover pointer-events-none" />
+                        class="mask-b-from-15% mask-b-to-95% absolute inset-0 h-full w-full object-cover pointer-events-none" />
 
-                    <div class="relative z-10 flex items-center justify-end">
+                    <div class="relative z-10 flex items-center">
                         <OccupiedTag :is-occupied="isOccupied" />
                     </div>
 
                     <div class="relative z-10 space-y-2 mt-12">
-                        <div>
+                        <div class="border-b border-mist-600/50 pb-3">
                             <div class="flex gap-2">
-                                <h1 class="text-xl font-bold text-mist-100">
+                                <h3 class="text-lg font-bold text-mist-100 truncate">
                                     {{ selectedProperty.name }}
-                                </h1>
+                                </h3>
                                 <button
                                     type="button"
                                     class="cursor-pointer hover:text-mist-300"
@@ -202,14 +202,16 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                     <fa-icon icon="pen-to-square" />
                                 </button>
                             </div>
-                            <p class="text-xs text-mist-300 mt-1 max-w-md truncate">
+                            <p class="text-xs text-mist-300 leading-relaxed mt-1 max-w-md truncate">
+                                <fa-icon
+                                    icon="location-dot"
+                                    class="text-[10px] text-mist-400 shrink-0" />
                                 {{ selectedProperty.address }}
                             </p>
                         </div>
 
                         <div class="flex items-center justify-between">
-                            <div
-                                class="flex items-center gap-4 text-xs font-semibold text-mist-200 pt-2 border-t border-mist-800/40">
+                            <div class="flex items-center gap-4 text-xs font-medium text-mist-200">
                                 <span>
                                     <fa-icon
                                         icon="bed"
@@ -231,7 +233,6 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                     {{ selectedProperty.plotSize }} m²
                                 </span>
                             </div>
-
                             <div>
                                 <span class="text-sm font-bold font-mono text-mist-100">
                                     {{ formatIDR(selectedProperty.price) }}
@@ -288,35 +289,42 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                     :key="b.id || b.bookingId"
                                     class="rounded-md hover:bg-mist-800/40 -mx-2 -mt-0.5 -mb-1 px-2 pt-0.5 pb-1 transition cursor-pointer"
                                     @click="handleEditBooking(b)">
-                                    <div class="flex flex-col space-y-0.5">
-                                        <div class="flex items-center justify-between">
+                                    <div class="flex justify-between space-y-1">
+                                        <div class="flex flex-col items-start space-y-1">
                                             <span class="text-sm font-bold text-mist-100 truncate">
                                                 {{ b.guestName }}
                                             </span>
-                                            <span
-                                                class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
-                                                {{ formatIDR(b.payout) }}
+                                            <span class="text-xs text-mist-400">
+                                                {{
+                                                    formatDate(b.checkIn, {
+                                                        shortWeekday: true,
+                                                        shortMonth: true,
+                                                    })
+                                                }}
+                                                &rarr;
+                                                {{
+                                                    formatDate(b.checkOut, {
+                                                        shortWeekday: true,
+                                                        shortMonth: true,
+                                                    })
+                                                }}
+                                                &bull; {{ b.nights }} night(s)
+                                            </span>
+                                            <span class="text-xs text-mist-500 font-medium">
+                                                via {{ b.listing }}
                                             </span>
                                         </div>
-                                        <span class="text-xs text-mist-400">
-                                            {{
-                                                formatDate(b.checkIn, {
-                                                    shortWeekday: true,
-                                                    shortMonth: true,
-                                                })
-                                            }}
-                                            &rarr;
-                                            {{
-                                                formatDate(b.checkOut, {
-                                                    shortWeekday: true,
-                                                    shortMonth: true,
-                                                })
-                                            }}
-                                            &bull; {{ b.nights }} night(s)
-                                        </span>
-                                        <span class="text-[10px] text-mist-500 font-medium">
-                                            via {{ b.listing }}
-                                        </span>
+                                        <div class="flex flex-col items-end space-y-1">
+                                            <span
+                                                class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
+                                                {{ formatIDR(b.payout) }}
+                                            </span>
+                                            <span
+                                                class="mt-0.5 text-xs"
+                                                :class="getStatusStyle(b.status)">
+                                                {{ b.status }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -349,16 +357,24 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     <div
                         class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
                         <div class="px-1">
-                            <span class="text-xs font-semibold text-mist-500 block">
-                                Lockbox Code
+                            <span
+                                class="block text-xs font-bold uppercase tracking-wider text-mist-500">
+                                <fa-icon
+                                    icon="key"
+                                    class="text-xs" />
+                                Lockbox
                             </span>
                             <span class="font-mono text-sm font-bold text-mist-100">
                                 {{ lockboxPin || '----' }}
                             </span>
                         </div>
                         <div class="px-1">
-                            <span class="text-xs font-semibold text-mist-500 block">
-                                SSID: {{ selectedProperty.wifi?.ssid }}
+                            <span
+                                class="block text-xs font-bold uppercase tracking-wider text-mist-500">
+                                <fa-icon
+                                    icon="wifi"
+                                    class="text-xs" />
+                                {{ selectedProperty.wifi?.ssid }}
                             </span>
                             <span class="font-mono text-sm font-bold text-mist-100">
                                 {{ selectedProperty.wifi?.pwd || '----' }}
@@ -433,7 +449,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
+                        class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-bold text-mist-950 hover:bg-lime-400 transition"
                         @click="handleAddBooking(id)">
                         <fa-icon icon="plus" /> Add Booking
                     </button>

@@ -154,7 +154,7 @@ const handleFileChange = async (event: Event): Promise<void> => {
                 </p>
             </div>
             <span
-                class="rounded bg-mist-800 px-2 py-0.5 font-mono text-[11px] font-semibold text-mist-300">
+                class="rounded bg-mist-800 px-2 py-0.5 font-mono text-[11px] font-bold text-mist-300">
                 {{ properties.length }} Active Units
             </span>
         </div>
@@ -168,7 +168,7 @@ const handleFileChange = async (event: Event): Promise<void> => {
                 @change="handleFileChange" />
             <button
                 type="button"
-                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:border-mist-600 hover:text-white transition"
+                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-bold text-mist-200 hover:border-mist-600 hover:text-white transition"
                 @click="exportProperties">
                 <fa-icon
                     icon="download"
@@ -178,7 +178,7 @@ const handleFileChange = async (event: Event): Promise<void> => {
             <button
                 type="button"
                 :disabled="isImporting"
-                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:border-mist-600 hover:text-white transition disabled:opacity-50"
+                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-bold text-mist-200 hover:border-mist-600 hover:text-white transition disabled:opacity-50"
                 @click="triggerFileInput">
                 <fa-icon
                     :icon="isImporting ? 'spinner' : 'upload'"

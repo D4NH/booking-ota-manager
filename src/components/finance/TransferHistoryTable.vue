@@ -39,7 +39,7 @@ const isTransferModalOpen = ref(false);
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-200 table-fixed">
                 <thead
-                    class="border-b border-mist-800/50 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
                         <th class="w-35 py-3 px-3">Date</th>
                         <th class="w-35 py-3 px-3">Property</th>

@@ -179,7 +179,7 @@ onMounted(() => refreshAuthStatus());
                         v-if="!isAuthenticated"
                         type="button"
                         :disabled="isConnecting"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition disabled:opacity-50"
+                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-bold text-mist-950 transition disabled:opacity-50"
                         @click="handleGoogleConnect">
                         {{ isConnecting ? 'Connecting...' : 'Authorize Google Account' }}
                     </button>
@@ -187,7 +187,7 @@ onMounted(() => refreshAuthStatus());
                     <button
                         v-else
                         type="button"
-                        class="cursor-pointer rounded-md border border-mist-700 bg-mist-800 hover:bg-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:text-mist-100 transition"
+                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 hover:bg-mist-700 px-3 py-1.5 text-xs font-bold text-mist-300 hover:text-mist-100 transition"
                         @click="handleGoogleDisconnect">
                         Disconnect Token
                     </button>
@@ -206,7 +206,7 @@ onMounted(() => refreshAuthStatus());
                 </CardTitle>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition"
+                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-bold text-mist-950 transition"
                     @click="handleAddProperty">
                     <fa-icon
                         icon="plus"
@@ -229,7 +229,7 @@ onMounted(() => refreshAuthStatus());
                     v-else
                     class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
-                        class="border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
+                        class="border-b border-mist-800 bg-mist-950 text-xs font-bold uppercase text-mist-400">
                         <tr>
                             <th class="w-32 px-4 py-2.5">ID</th>
                             <th class="px-4 py-2.5">Name</th>
@@ -328,7 +328,7 @@ onMounted(() => refreshAuthStatus());
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-300 transition"
                         @click="handleClearBookings">
                         Clear Bookings Cache
                     </button>
@@ -342,7 +342,7 @@ onMounted(() => refreshAuthStatus());
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-300 transition"
                         @click="handleClearFinance">
                         Clear Finance Cache
                     </button>
@@ -357,7 +357,7 @@ onMounted(() => refreshAuthStatus());
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-rose-600 hover:bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition shadow-sm"
+                        class="cursor-pointer rounded-md bg-rose-600 hover:bg-rose-500 px-3 py-1.5 text-xs font-bold text-white transition shadow-sm"
                         @click="handleWipeDatabase">
                         Purge All Data
                     </button>

@@ -119,7 +119,7 @@ const propertyRack = computed(() =>
                         <div
                             v-if="item.currentStay"
                             class="text-xs">
-                            <p class="font-semibold text-mist-200 truncate">
+                            <p class="font-bold text-mist-200 truncate">
                                 {{ item.currentStay.guestName }}
                             </p>
                             <p class="text-[11px] text-mist-400 mt-1">
@@ -132,7 +132,7 @@ const propertyRack = computed(() =>
                         <div
                             v-else-if="item.arrivingToday"
                             class="text-xs">
-                            <p class="font-semibold text-cyan-300 truncate">
+                            <p class="font-bold text-cyan-300 truncate">
                                 {{ item.arrivingToday.guestName }}
                             </p>
                             <p class="text-[11px] text-mist-400 mt-1">

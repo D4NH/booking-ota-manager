@@ -34,7 +34,7 @@ const createPropertyPin = (prop: Property) => {
                 <div class="relative flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 pr-2.5 py-1 text-xs shadow-xl transition-transform duration-200 group-hover:scale-110">
                     <span class="h-2 w-2 rounded-md shrink-0 ${theme.bg || 'bg-lime-400'}"></span>
                     <span class="font-bold text-mist-100 whitespace-nowrap capitalize">${prop.id}</span>
-                    <span class="font-mono font-semibold text-lime-400 text-[11px] whitespace-nowrap">${propPrice}</span>
+                    <span class="font-mono font-bold text-lime-400 text-[11px] whitespace-nowrap">${propPrice}</span>
                 </div>
             </div>
         `,
@@ -163,11 +163,9 @@ onBeforeUnmount(() => {
 
             <!-- Top Left: Map Legend / Info Badge -->
             <div
-                class="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-md border border-mist-800/80 bg-mist-900/90 px-3 py-1.5 text-xs text-mist-200 backdrop-blur-sm shadow-lg">
+                class="absolute top-4 right-4 z-20 flex items-center gap-2 rounded-md border border-mist-800 bg-mist-900/90 px-3 py-1.5 text-xs text-mist-200 backdrop-blur-sm shadow-lg">
                 <span class="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
-                <span class="font-semibold">
-                    {{ properties.length }} Locations Across Indonesia
-                </span>
+                <span class="font-bold"> {{ properties.length }} Locations Across Indonesia </span>
             </div>
         </div>
     </div>

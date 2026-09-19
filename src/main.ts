@@ -40,6 +40,7 @@ import {
     faHouseCircleCheck,
     faHouseUser,
     faIdCard,
+    faKey,
     faListCheck,
     faMagnifyingGlass,
     faMapMarkerAlt,
@@ -56,6 +57,7 @@ import {
     faTrashCan,
     faTriangleExclamation,
     faUpload,
+    faWifi,
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -88,6 +90,7 @@ library.add(
     faHouseCircleCheck,
     faHouseUser,
     faIdCard,
+    faKey,
     faListCheck,
     faMagnifyingGlass,
     faMapMarkerAlt,
@@ -104,6 +107,7 @@ library.add(
     faTrashCan,
     faTriangleExclamation,
     faUpload,
+    faWifi,
     faXmark
 );
 

@@ -91,7 +91,6 @@ watch(selectedMonth, (newMonth) => {
     }
     scrollToCurrentMonth();
 });
-
 watch(selectedProperty, () => {
     scrollToCurrentMonth();
 });
@@ -110,14 +109,12 @@ onActivated(() => {
         <PageTitle>
             <template #title>Bookings</template>
             <template #subtitle>Real-time availability and unit operational status</template>
-
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
                 <GoogleSyncButton :property-id="selectedProperty" />
                 <PropertySelector v-model="selectedProperty" />
             </div>
         </PageTitle>
 
-        <!-- Operational 7-Day Bar -->
         <CurrentWeekView
             class="shrink-0"
             :selected-property="selectedProperty"
@@ -177,7 +174,7 @@ onActivated(() => {
                     <button
                         type="button"
                         class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
-                        :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-900']"
+                        :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-950/50']"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
                         <fa-icon
@@ -187,7 +184,7 @@ onActivated(() => {
                     </button>
                     <div
                         v-if="toggleFilters"
-                        class="flex flex-wrap items-center gap-1.5">
+                        class="flex flex-wrap items-center gap-2">
                         <button
                             v-for="status in bookingStatuses"
                             :key="status"
@@ -206,7 +203,7 @@ onActivated(() => {
 
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition"
+                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-bold text-mist-950 transition"
                     @click="handleAddBooking">
                     <fa-icon
                         class="text-xs mr-1"
@@ -239,7 +236,7 @@ onActivated(() => {
         <div class="flex shrink-0 justify-end">
             <button
                 type="button"
-                class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
+                class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-500/20 transition"
                 @click="handleClearAllLocal">
                 Clear Local DB
             </button>

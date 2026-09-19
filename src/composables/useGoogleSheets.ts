@@ -209,12 +209,12 @@ export function useGoogleSheets() {
 
     const deleteSheetRowByBookingId = async (
         spreadsheetId: string,
-        id: string,
+        bookingId: string,
         sheetName: string = ''
     ): Promise<void> => {
         const idRange = sheetName ? `'${sheetName}'!A2:A` : 'A2:A';
         const rows = await fetchSheetRows(spreadsheetId, idRange);
-        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
+        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
 
         if (rowIndex === -1) return;
 

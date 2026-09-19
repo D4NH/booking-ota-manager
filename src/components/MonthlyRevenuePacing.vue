@@ -65,7 +65,7 @@ const projectedRevenue = computed(() => {
             <!-- Metric Highlight & Pacing Badge -->
             <div class="flex items-baseline justify-between">
                 <div>
-                    <span class="text-xl font-bold font-mono text-mist-100">
+                    <span class="text-lg font-bold font-mono text-mist-100">
                         {{ formatIDR(currentRevenue) }}
                     </span>
                     <span class="text-xs text-mist-400 ml-1.5">
@@ -87,7 +87,7 @@ const projectedRevenue = computed(() => {
                     <span class="text-lg font-bold font-mono text-lime-400">
                         {{ targetPercentage }}%
                     </span>
-                    <span class="block text-[10px] text-mist-500">
+                    <span class="block text-xs text-mist-500">
                         Proj: {{ formatIDR(projectedRevenue) }}
                     </span>
                 </div>
@@ -109,7 +109,7 @@ const projectedRevenue = computed(() => {
                 </div>
 
                 <!-- Scale Labels -->
-                <div class="flex justify-between text-[10px] font-medium text-mist-500">
+                <div class="flex justify-between text-xs font-medium text-mist-500">
                     <span>Day 1</span>
                     <span class="text-mist-300">
                         Day {{ dayNumber }} ({{ monthTimeElapsed }}% time elapsed)
@@ -119,9 +119,10 @@ const projectedRevenue = computed(() => {
             </div>
 
             <!-- Financial Run-Rate Grid -->
-            <div class="grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs">
-                <div class="rounded bg-mist-950/60 p-2.5 space-y-0.5">
-                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+            <div
+                class="grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs divide-x divide-mist-800 text-center">
+                <div class="p-2.5 space-y-0.5">
+                    <span class="block text-xs font-bold uppercase tracking-wider text-mist-500">
                         Gap to Target
                     </span>
                     <span class="font-mono text-sm font-bold text-mist-200">
@@ -129,13 +130,13 @@ const projectedRevenue = computed(() => {
                     </span>
                 </div>
 
-                <div class="rounded bg-mist-950/60 p-2.5 space-y-0.5">
-                    <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                <div class="p-2.5 space-y-0.5">
+                    <span class="block text-xs font-bold uppercase tracking-wider text-mist-500">
                         Needed Rate ({{ daysRemaining }}d left)
                     </span>
                     <span class="font-mono text-sm font-bold text-lime-400">
                         {{ formatIDR(dailyRunRateNeeded) }}
-                        <span class="text-[10px] font-normal text-mist-500">/ day</span>
+                        <span class="text-xs font-normal text-mist-500">/ day</span>
                     </span>
                 </div>
             </div>

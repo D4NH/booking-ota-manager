@@ -145,53 +145,24 @@ const clearHighlight = (): void => {
                 <template #subtitle>Share breakdown by volume and gross revenue</template>
             </CardTitle>
 
-            <div class="flex items-center gap-2">
-                <!-- Count / Revenue Toggle -->
+            <!-- Year Selector -->
+            <div class="relative w-18">
+                <select
+                    v-model.number="selectedYear"
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    <option
+                        v-for="year in yearOptions"
+                        :key="year"
+                        :value="year"
+                        class="bg-mist-900">
+                        {{ year }}
+                    </option>
+                </select>
                 <div
-                    class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs">
-                    <button
-                        type="button"
-                        class="rounded px-2 py-1 transition"
-                        :class="
-                            viewMode === 'count'
-                                ? 'bg-mist-800 text-lime-400'
-                                : 'text-mist-400 hover:text-mist-200'
-                        "
-                        @click="viewMode = 'count'">
-                        Volume
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded px-2 py-1 transition"
-                        :class="
-                            viewMode === 'revenue'
-                                ? 'bg-mist-800 text-lime-400'
-                                : 'text-mist-400 hover:text-mist-200'
-                        "
-                        @click="viewMode = 'revenue'">
-                        Payout
-                    </button>
-                </div>
-
-                <!-- Year Selector -->
-                <div class="relative w-18">
-                    <select
-                        v-model.number="selectedYear"
-                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                        <option
-                            v-for="year in yearOptions"
-                            :key="year"
-                            :value="year"
-                            class="bg-mist-900">
-                            {{ year }}
-                        </option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
-                        <fa-icon
-                            class="text-xs"
-                            icon="angle-down" />
-                    </div>
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
+                    <fa-icon
+                        class="text-xs"
+                        icon="angle-down" />
                 </div>
             </div>
         </div>
@@ -212,7 +183,7 @@ const clearHighlight = (): void => {
                 v-else
                 class="flex flex-1 items-center gap-4">
                 <div
-                    class="relative h-52 w-52 shrink-0"
+                    class="relative h-75 w-75 shrink-0"
                     @mouseleave="clearHighlight">
                     <Doughnut
                         ref="chartRef"
@@ -220,34 +191,35 @@ const clearHighlight = (): void => {
                         :options="chartOptions" />
                     <div
                         class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
-                        <span class="text-base font-bold font-mono text-mist-100 leading-tight">
+                        <span class="font-mono text-lg font-bold text-mist-100">
                             {{
                                 viewMode === 'revenue'
                                     ? formatIDR(channelStats.totalRevenue)
                                     : channelStats.totalCount
                             }}
                         </span>
-                        <span
-                            class="text-[11px] uppercase tracking-wider text-mist-500 font-semibold mt-1">
+                        <span class="text-xs font-bold uppercase tracking-wider text-mist-400 mt-1">
                             {{ viewMode === 'revenue' ? 'Total Payout' : 'Total Stays' }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Breakdown List -->
-                <div class="flex-1 overflow-y-auto space-y-1">
+                <div class="flex-1 overflow-y-auto">
                     <div
                         v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
                         class="text-xs p-2 rounded-md transition"
                         :class="{ 'bg-mist-800/60': hoveredIndex === index }">
                         <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-1.5">
+                            <span class="flex items-center gap-2">
                                 <span
                                     class="h-2 w-2 rounded-full shrink-0"
                                     :style="{ backgroundColor: ch.color }" />
-                                <span class="font-medium text-mist-200">{{ ch.name }}</span>
-                                &bull;
+                                <span class="font-medium text-mist-200 py-0.5">
+                                    {{ ch.name }}
+                                </span>
+                                <span class="text-xs text-mist-400">&bull;</span>
                                 <span class="text-xs text-mist-400">
                                     {{
                                         viewMode === 'revenue'
@@ -256,18 +228,23 @@ const clearHighlight = (): void => {
                                     }}
                                 </span>
                             </span>
-                            <span class="font-mono text-mist-400 font-semibold">
+                            <span class="font-mono text-sm font-bold text-mist-300 block">
                                 {{ ch.percentage }}%
                             </span>
                         </div>
 
-                        <div class="mt-1.5 h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
-                            <div
-                                class="h-full rounded-full transition-all duration-500"
-                                :style="{
-                                    width: `${ch.percentage}%`,
-                                    backgroundColor: ch.color,
-                                }" />
+                        <div class="mt-2.5 space-y-2">
+                            <div class="h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                                <div
+                                    class="h-full rounded-full transition-all duration-500"
+                                    :style="{
+                                        width: `${ch.percentage}%`,
+                                        backgroundColor: ch.color,
+                                    }" />
+                            </div>
+                            <div class="flex justify-between text-[11px] text-mist-400 pt-0.5">
+                                {{ formatIDR(ch.revenue) }}
+                            </div>
                         </div>
                     </div>
                 </div>

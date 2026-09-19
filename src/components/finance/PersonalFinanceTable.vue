@@ -217,7 +217,7 @@ watch(formCategory, (newCat) => {
                 <button
                     v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared'] as const"
                     :key="tab"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-bold transition-colors"
                     :class="
                         activeTab === tab
                             ? 'bg-mist-700 text-mist-100 shadow'
@@ -252,7 +252,7 @@ watch(formCategory, (newCat) => {
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-xs text-mist-200">
                 <thead
-                    class="border-b border-mist-800/50 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
                         <th class="py-3 px-3">Date</th>
                         <th class="py-3 px-3">Type</th>
@@ -293,12 +293,12 @@ watch(formCategory, (newCat) => {
                         <td class="py-3 px-3 text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
-                                class="text-blue-400 mr-1 font-semibold">
+                                class="text-blue-400 mr-1 font-bold">
                                 [{{ item.savingsInstitution }}]
                             </span>
                             <span
                                 v-if="'goldWeightGrams' in item && item.goldWeightGrams"
-                                class="text-amber-400 mr-1 font-semibold">
+                                class="text-amber-400 mr-1 font-bold">
                                 [{{ item.goldWeightGrams }}g]
                             </span>
                             <TransactionNote :notes="item.notes" />
@@ -361,10 +361,10 @@ watch(formCategory, (newCat) => {
                     class="space-y-4"
                     @submit.prevent="submitRecord">
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
+                        <label class="text-xs font-bold text-mist-400 block mb-1">Type</label>
                         <select
                             v-model="formType"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
                             <option value="fixed_cost">Fixed Cost</option>
@@ -372,12 +372,10 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Category
-                        </label>
+                        <label class="text-xs font-bold text-mist-400 block mb-1"> Category </label>
                         <select
                             v-model="formCategory"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
                             <option
                                 v-for="cat in availableCategories"
                                 :key="cat"
@@ -389,13 +387,13 @@ watch(formCategory, (newCat) => {
 
                     <div
                         v-if="formCategory === 'Savings'"
-                        class="bg-mist-850 border border-mist-750 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-semibold text-lime-400 block">
+                        class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
+                        <label class="text-xs font-bold text-lime-400 block">
                             Destination Savings Account
                         </label>
                         <select
                             v-model="formSavingsInstitution"
-                            class="w-full text-xs border border-mist-700 bg-mist-900 text-mist-100 rounded-md p-2">
+                            class="w-full text-xs border border-mist-800 bg-mist-900 text-mist-100 rounded-md p-2">
                             <option
                                 v-for="inst in savingsInstitutions"
                                 :key="inst"
@@ -410,8 +408,8 @@ watch(formCategory, (newCat) => {
 
                     <div
                         v-if="formCategory === 'Gold'"
-                        class="bg-mist-850 border border-mist-750 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-semibold text-amber-400 block">
+                        class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
+                        <label class="text-xs font-bold text-amber-400 block">
                             Weight in Grams
                         </label>
                         <input
@@ -419,7 +417,7 @@ watch(formCategory, (newCat) => {
                             type="number"
                             step="0.01"
                             placeholder="Auto-calculated if blank"
-                            class="w-full text-xs border border-mist-700 bg-mist-900 text-mist-100 rounded-lg p-2 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-900 text-mist-100 rounded-lg p-2 font-mono" />
                         <p class="text-[11px] text-mist-400">
                             Benchmark rate: {{ formatIDR(currentGoldPricePerGram) }}/g.
                             Automatically estimated from total amount.
@@ -427,7 +425,7 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                        <label class="text-xs font-bold text-mist-400 block mb-1">
                             Amount (IDR)
                         </label>
                         <input
@@ -435,7 +433,7 @@ watch(formCategory, (newCat) => {
                             type="number"
                             required
                             placeholder="0"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono"
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono"
                             @input="handleAmountChange" />
                     </div>
 
@@ -459,12 +457,12 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
+                        <label class="text-xs font-bold text-mist-400 block mb-1">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"
                             placeholder="e.g. Monthly emergency fund deposit"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5" />
+                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5" />
                     </div>
 
                     <div class="flex justify-end space-x-2 pt-3">
@@ -480,7 +478,7 @@ watch(formCategory, (newCat) => {
                             class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 disabled:cursor-not-allowed text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5">
                             <span
                                 v-if="isSubmitting"
-                                class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin"></span>
+                                class="w-3 h-3 border-2 border-mist-800 border-t-transparent rounded-full animate-spin"></span>
                             <span>{{ isEditing ? 'Save Changes' : 'Add Entry' }}</span>
                         </button>
                     </div>

@@ -117,10 +117,10 @@ const chartData = computed<ChartData<'bar'>>(() => ({
         {
             label: 'Gross Revenue (IDR)',
             backgroundColor: fourMonthSequence.value.map((item) =>
-                item.isHighlighted ? '#a3e635' : '#475569'
+                item.isHighlighted ? '#7DCF00' : '#475569'
             ),
             hoverBackgroundColor: fourMonthSequence.value.map((item) =>
-                item.isHighlighted ? '#84cc16' : '#334155'
+                item.isHighlighted ? '#a3e635' : '#334155'
             ),
             borderRadius: 4,
             data: fourMonthSequence.value.map((item) => item.revenue),
@@ -153,7 +153,7 @@ const chartOptions: ChartOptions<'bar'> = {
         y: {
             grid: { color: '#1e293b' },
             ticks: {
-                color: '#64748b',
+                color: '#71717a',
                 callback: (val) => {
                     const num = Number(val);
                     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)}jt`;
@@ -163,7 +163,7 @@ const chartOptions: ChartOptions<'bar'> = {
         },
         x: {
             grid: { display: false },
-            ticks: { color: '#f8fafc', font: { size: 13 } },
+            ticks: { color: '#71717a', font: { size: 13 } },
         },
     },
 };
@@ -182,7 +182,7 @@ const chartOptions: ChartOptions<'bar'> = {
             <div class="relative w-23">
                 <select
                     v-model.number="activeQuarterIndex"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                     <option
                         v-for="q in quartersList"
                         :key="q.id"
@@ -202,16 +202,16 @@ const chartOptions: ChartOptions<'bar'> = {
         <div class="p-4 h-full min-h-0 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div class="flex items-start justify-between gap-4">
                 <!-- KPI Summary Cards -->
-                <div class="flex flex-col">
-                    <span class="text-xs font-medium uppercase tracking-wider text-mist-400">
+                <div class="flex flex-col space-y-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
                         {{ summaryStats.highlightedMonthLabel }}
                     </span>
-                    <div class="mt-1 text-lg font-mono font-extrabold text-lime-400">
+                    <div class="font-mono text-lg font-bold text-lime-400">
                         {{ formatIDR(summaryStats.highlightedMonthRevenue) }}
                     </div>
                     <div
                         v-if="summaryStats.prevMonthLabel"
-                        class="flex items-center gap-1 text-xs mt-1">
+                        class="flex items-center gap-1 text-xs">
                         <span
                             :class="summaryStats.momChange >= 0 ? 'text-lime-400' : 'text-rose-400'"
                             class="font-medium">

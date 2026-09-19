@@ -74,6 +74,7 @@ onMounted(
             :property-to-edit="propertyToEdit"
             @close="modalStore.closePropertyModal"
             @save="handleSaveProperty" />
+
         <ToastContainer />
     </div>
 </template>

@@ -21,7 +21,7 @@ const {
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
                     Mai House Jogja
                 </h3>
             </div>
@@ -30,16 +30,16 @@ const {
             </p>
             <p class="text-xs text-mist-500">Operating Profit</p>
             <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800/80 grid grid-cols-2 gap-2 text-xs">
+            <!-- <div class="pt-3 mt-3 border-t border-mist-800 grid grid-cols-2 gap-2 text-xs">
                 <div>
                     Rev:
-                    <span class="font-semibold text-lime-400 font-mono">{{
+                    <span class="font-bold text-lime-400 font-mono">{{
                         formatIDR(monthlyPropertyRevenue)
                     }}</span>
                 </div>
                 <div>
                     Exp:
-                    <span class="font-semibold text-rose-400 font-mono">{{
+                    <span class="font-bold text-rose-400 font-mono">{{
                         formatIDR(monthlyPropertyExpenses)
                     }}</span>
                 </div>
@@ -49,7 +49,7 @@ const {
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
                     Shared Household
                 </h3>
             </div>
@@ -58,9 +58,9 @@ const {
             </p>
             <p class="text-xs text-mist-500">Remaining Balance</p>
             <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800/80 text-xs text-mist-400">
+            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-xs text-mist-400">
                 Total Joint Outflows:
-                <span class="font-semibold text-lime-400 font-mono">
+                <span class="font-bold text-lime-400 font-mono">
                     {{ formatIDR(totalOwnerDraws) }}
                 </span>
             </div> -->
@@ -69,7 +69,7 @@ const {
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
                     Danh Nguyen
                 </h3>
             </div>
@@ -80,7 +80,7 @@ const {
             </p>
             <p class="text-xs text-mist-500">Discretionary Net</p>
             <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800/80 text-[11px] text-mist-400">
+            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-[11px] text-mist-400">
                 Personal Inflows minus Expenses
             </div> -->
         </div>
@@ -88,7 +88,7 @@ const {
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-bold uppercase tracking-wider text-mist-400">
                     Citra Ayu Wardani
                 </h3>
             </div>
@@ -99,7 +99,7 @@ const {
             </p>
             <p class="text-xs text-mist-500">Discretionary Net</p>
             <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800/80 text-[11px] text-mist-400">
+            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-[11px] text-mist-400">
                 Personal Inflows minus Expenses
             </div> -->
         </div>

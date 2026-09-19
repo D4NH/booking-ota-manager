@@ -147,10 +147,10 @@ const chartOptions: ChartOptions<'line'> = {
             </CardTitle>
             <!-- Toggle Buttons -->
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950 p-0.5 text-xs">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-2.5 py-1 transition"
+                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
                     :class="[
                         activeView === 'weekly'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
@@ -161,7 +161,7 @@ const chartOptions: ChartOptions<'line'> = {
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-2.5 py-1 transition"
+                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
                     :class="[
                         activeView === 'monthly'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
@@ -177,7 +177,7 @@ const chartOptions: ChartOptions<'line'> = {
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <!-- Current Total -->
                 <div class="flex flex-col items-baseline gap-1">
-                    <p class="text-xl font-black font-mono text-mist-100">
+                    <p class="font-mono text-lg font-bold text-mist-100">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">
@@ -196,9 +196,9 @@ const chartOptions: ChartOptions<'line'> = {
                 <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
                     <div class="flex items-center gap-1.5">
                         <span class="h-2 w-2 rounded-full bg-lime-400"></span>
-                        <span class="text-mist-200">{{
-                            activeView === 'weekly' ? 'This Week' : 'This Month'
-                        }}</span>
+                        <span class="text-mist-200">
+                            {{ activeView === 'weekly' ? 'This Week' : 'This Month' }}
+                        </span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span

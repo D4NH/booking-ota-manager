@@ -76,19 +76,19 @@ watch(
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 hover:bg-mist-700 transition"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-900/50 px-3 py-1.5 text-xs text-mist-300 hover:bg-mist-800 transition"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
@@ -123,7 +123,7 @@ watch(
             </div>
             <button
                 type="button"
-                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
+                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-bold text-mist-950 hover:bg-lime-400 transition"
                 @click="handleAddBooking">
                 <fa-icon
                     class="text-xs mr-1"
@@ -136,7 +136,7 @@ watch(
             class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <!-- Weekday Header -->
             <div
-                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
+                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-bold uppercase text-mist-400">
                 <div class="px-4 py-2.5">Mon</div>
                 <div class="px-4 py-2.5">Tue</div>
                 <div class="px-4 py-2.5">Wed</div>
@@ -179,7 +179,7 @@ watch(
                                 ]"
                                 @click="handleBookingClick(b, $event)">
                                 <div class="flex items-center justify-between min-w-0">
-                                    <span class="font-semibold text-xs text-mist-100 truncate">
+                                    <span class="font-bold text-xs text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
                                     <span
@@ -203,7 +203,7 @@ watch(
                                         b.status !== 'Unavailable'
                                     "
                                     class="text-[10px] text-mist-400 truncate mt-1">
-                                    via {{ b.listing }}
+                                    {{ b.listing }}
                                 </div>
                                 <div
                                     v-else-if="b.nights > 1"

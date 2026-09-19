@@ -102,7 +102,7 @@ const propertyStats = computed(() => {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
@@ -136,26 +136,23 @@ const propertyStats = computed(() => {
                 class="flex grow flex-col justify-center p-4 hover:bg-mist-800/40">
                 <!-- Unit Name & Total Revenue -->
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-between gap-2">
                         <span
-                            class="capitalize rounded px-2 py-0.5 text-xs font-bold"
+                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
                             :class="getPropertyStyle(stat.property.id)">
                             {{ stat.property.id }}
                         </span>
-                        &bull;
                         <span class="text-xs text-mist-400">
-                            Base rate: {{ formatIDR(stat.property.price) }} / night
+                            {{ formatIDR(stat.property.price) }} / night
                         </span>
                     </div>
-                    <div class="text-right">
-                        <span class="font-mono text-sm font-bold text-mist-100">
-                            {{ formatIDR(stat.revenue) }}
-                        </span>
-                    </div>
+                    <span class="font-mono text-sm font-bold text-mist-300 block">
+                        {{ formatIDR(stat.revenue) }}
+                    </span>
                 </div>
                 <!-- Progress Bar -->
                 <div class="mt-2.5 space-y-2">
-                    <div class="h-2 w-full rounded-full bg-mist-950 overflow-hidden">
+                    <div class="h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
                         <div
                             class="h-full rounded-full transition-all duration-500"
                             :class="stat.revenue > 0 ? 'bg-lime-400' : 'bg-mist-700'"
@@ -164,7 +161,7 @@ const propertyStats = computed(() => {
                             }" />
                     </div>
                     <div class="flex justify-between text-[11px] text-mist-500 pt-0.5">
-                        <div>
+                        <div class="flex gap-2">
                             <span class="text-xs text-mist-400">
                                 Occupancy:
                                 <strong
@@ -176,7 +173,7 @@ const propertyStats = computed(() => {
                                     {{ stat.propertyStats.occupancy }}%
                                 </strong>
                             </span>
-                            &bull;
+                            <span class="text-xs text-mist-400">&bull;</span>
                             <span class="text-xs text-mist-400">
                                 {{ stat.propertyStats.bookingsCount }} stays /
                                 {{ stat.nights }} nights

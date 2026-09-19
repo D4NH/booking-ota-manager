@@ -14,7 +14,6 @@ interface Props {
     showMonthHeaders?: boolean;
     showProperty?: boolean;
 }
-
 interface Emits {
     (e: 'edit-booking', booking: Booking): void;
 }
@@ -37,7 +36,6 @@ const sortedUpcomingBookings = computed<Booking[]>(() => {
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
         .slice(0, limit);
 });
-
 const displaySections = computed<MonthSection[]>(() => {
     const list = sortedUpcomingBookings.value;
 
@@ -87,10 +85,10 @@ const displaySections = computed<MonthSection[]>(() => {
                     <!-- Month Header -->
                     <div
                         v-if="showMonthHeaders && section.label"
-                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800/80 bg-mist-950/90 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
+                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/90 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
                         {{ section.label }}
                     </div>
-                    <div class="flex-1 flex flex-col divide-y divide-mist-800/60">
+                    <div class="flex-1 flex flex-col divide-y divide-mist-800">
                         <div
                             v-for="b in section.items"
                             :key="b.id || b.bookingId"
@@ -99,13 +97,13 @@ const displaySections = computed<MonthSection[]>(() => {
                             <!-- Guest Info & Property -->
                             <div class="min-w-0 flex items-center gap-3">
                                 <div
-                                    class="h-8 w-8 rounded-full bg-mist-800 flex items-center justify-center text-xs font-bold text-mist-300 shrink-0">
+                                    class="h-10 w-10 rounded-md bg-mist-800 flex items-center justify-center text-xs font-bold text-mist-300 shrink-0">
                                     {{ b.guestName.charAt(0).toUpperCase() }}
                                 </div>
                                 <div class="truncate">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="font-bold text-sm text-mist-100 truncate group-hover:text-lime-400 transition">
+                                            class="font-medium text-sm text-mist-100 truncate group-hover:text-lime-400 transition">
                                             {{ b.guestName }}
                                         </span>
                                         <span
@@ -131,7 +129,7 @@ const displaySections = computed<MonthSection[]>(() => {
                             </div>
                             <!-- Payout & Status -->
                             <div class="text-right shrink-0">
-                                <span class="font-mono text-xs font-bold text-mist-100 block">
+                                <span class="font-mono text-xs font-bold text-mist-300 block">
                                     {{ formatIDR(b.payout) }}
                                 </span>
                                 <span

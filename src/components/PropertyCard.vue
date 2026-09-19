@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
+import { getStatusStyle } from '@/config/status';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 import { formatDate, getCurrentDate } from '@/utils/date';
@@ -50,12 +51,12 @@ const handleImageError = (e: Event) => {
             <!-- <span
                 class="h-2 w-2 rounded-full shrink-0"
                 :class="getPropertyStyle(property.id, true)" /> -->
-            <div>
-                <h3 class="text-base font-bold text-mist-100 truncate">
+            <div class="space-y-1">
+                <h3 class="text-sm font-medium text-mist-100 truncate">
                     {{ property.name }}
                 </h3>
                 <p
-                    class="text-xs text-mist-400 mt-1 truncate flex items-center gap-1"
+                    class="text-xs text-mist-500 leading-relaxed truncate flex items-center gap-1"
                     :title="property.address">
                     <fa-icon
                         icon="location-dot"
@@ -75,7 +76,7 @@ const handleImageError = (e: Event) => {
                         v-for="section in staySections"
                         :key="section.label">
                         <span
-                            class="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold"
+                            class="mb-1.5 flex items-center gap-1.5 text-xs font-bold"
                             :class="[
                                 section.label === 'Arriving Today'
                                     ? 'text-lime-400'
@@ -86,35 +87,42 @@ const handleImageError = (e: Event) => {
                         <div
                             v-for="b in section.items"
                             :key="b.id || b.bookingId">
-                            <div class="flex flex-col space-y-1">
-                                <div class="flex items-center justify-between">
+                            <div class="flex justify-between space-y-1">
+                                <div class="flex flex-col items-start space-y-1">
                                     <span class="text-sm font-bold text-mist-100 truncate">
                                         {{ b.guestName }}
                                     </span>
-                                    <span
-                                        class="text-xs font-bold font-mono text-lime-400 whitespace-nowrap">
-                                        {{ formatIDR(b.payout) }}
+                                    <span class="text-xs text-mist-400">
+                                        {{
+                                            formatDate(b.checkIn, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                        &rarr;
+                                        {{
+                                            formatDate(b.checkOut, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                        &bull; {{ b.nights }} night(s)
+                                    </span>
+                                    <span class="text-xs text-mist-500 font-medium">
+                                        via {{ b.listing }}
                                     </span>
                                 </div>
-                                <span class="text-[11px] text-mist-400">
-                                    {{
-                                        formatDate(b.checkIn, {
-                                            shortWeekday: true,
-                                            shortMonth: true,
-                                        })
-                                    }}
-                                    &rarr;
-                                    {{
-                                        formatDate(b.checkOut, {
-                                            shortWeekday: true,
-                                            shortMonth: true,
-                                        })
-                                    }}
-                                    &bull; {{ b.nights }} night(s)
-                                </span>
-                                <span class="text-[11px] text-mist-500 font-medium">
-                                    via {{ b.listing }}
-                                </span>
+                                <div class="flex flex-col items-end space-y-1">
+                                    <span
+                                        class="text-xs font-bold font-mono text-mist-100 whitespace-nowrap">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                    <span
+                                        class="mt-0.5 text-xs"
+                                        :class="getStatusStyle(b.status)">
+                                        {{ b.status }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -136,12 +144,12 @@ const handleImageError = (e: Event) => {
                     <span class="ml-2 font-medium text-mist-400">No active in-house guest</span>
                     <p
                         v-if="nextUpcoming"
-                        class="text-[11px] mt-1">
+                        class="text-xs mt-1">
                         Next: {{ formatDate(nextUpcoming.checkIn) }} - {{ nextUpcoming.guestName }}
                     </p>
                     <p
                         v-else
-                        class="text-[11px] mt-1">
+                        class="text-xs mt-1">
                         Unit is vacant and ready for check-in
                     </p>
                 </div>
@@ -153,7 +161,7 @@ const handleImageError = (e: Event) => {
                     v-if="property.available"
                     class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] uppercase font-bold text-mist-500">
                             Occupancy
                         </span>
                         <span class="font-mono text-xs font-bold text-lime-400">
@@ -161,7 +169,7 @@ const handleImageError = (e: Event) => {
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] uppercase font-bold text-mist-500">
                             Revenue
                         </span>
                         <span class="font-mono text-xs font-bold text-mist-100">
@@ -169,7 +177,7 @@ const handleImageError = (e: Event) => {
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] uppercase font-bold text-mist-500">
                             Bookings
                         </span>
                         <span class="font-mono text-xs font-bold text-mist-200">
@@ -194,29 +202,29 @@ const handleImageError = (e: Event) => {
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="bed"
-                                class="text-[11px] text-mist-500" />
+                                class="text-xs text-mist-500" />
                             {{ property.bedrooms }} Beds
                         </span>
                         <span class="text-mist-700">&bull;</span>
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="shower"
-                                class="text-[11px] text-mist-500" />
+                                class="text-xs text-mist-500" />
                             {{ property.bathrooms }} Baths
                         </span>
                         <span class="text-mist-700">&bull;</span>
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="ruler-combined"
-                                class="text-[11px] text-mist-500" />
+                                class="text-xs text-mist-500" />
                             {{ property.plotSize }} m²
                         </span>
                     </div>
                     <div>
-                        <span class="text-sm font-bold font-mono text-mist-100">
+                        <span class="text-sm font-bold font-mono text-mist-300">
                             {{ formatIDR(property.price) }}
                         </span>
-                        <span class="text-[11px] text-mist-500"> / night</span>
+                        <span class="text-xs text-mist-500"> / night</span>
                     </div>
                 </div>
             </div>

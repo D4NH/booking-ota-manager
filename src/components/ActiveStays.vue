@@ -90,7 +90,7 @@ const departedGuests = computed(() =>
                             {{ b.guestName }}
                         </span>
                         <span
-                            class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold"
+                            class="capitalize rounded px-1.5 py-0.2 text-[10px] font-bold"
                             :class="getPropertyStyle(b.propertyId)">
                             {{ b.propertyId }}
                         </span>
@@ -129,7 +129,7 @@ const departedGuests = computed(() =>
         <!-- Departed Guests (Moved here after 12:00 or upon clicking Check Out) -->
         <div
             v-if="departedGuests.length > 0"
-            class="pt-2 border-t border-mist-800/80 space-y-2">
+            class="pt-2 border-t border-mist-800 space-y-2">
             <span
                 class="text-[11px] font-bold uppercase tracking-wider text-mist-500 flex items-center gap-1.5">
                 <fa-icon
@@ -143,7 +143,7 @@ const departedGuests = computed(() =>
                 :key="'departed-' + (b.id || b.bookingId)"
                 class="rounded-md border border-mist-800 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
                 <div class="text-xs">
-                    <span class="font-semibold text-mist-300 line-through mr-2">
+                    <span class="font-bold text-mist-300 line-through mr-2">
                         {{ b.guestName }}
                     </span>
                     <span class="text-mist-500">

@@ -21,7 +21,7 @@ const filterCategory = ref<string>('ALL');
 const editingItem = ref<PropertyFinance | null>(null);
 
 const currentPage = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(5);
 const pageSizeOptions = [5, 10, 20, 50];
 
 const formPropertyId = ref('piyungan');
@@ -167,7 +167,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
             <div class="flex gap-4">
                 <select
                     v-model="filterCategory"
-                    class="text-xs border border-mist-700 rounded-md px-2.5 py-1.5 bg-mist-850 text-mist-200 focus:outline-none focus:border-lime-400">
+                    class="text-xs border border-mist-800 rounded-md px-2.5 py-1.5 bg-mist-850 text-mist-200 focus:outline-none focus:border-lime-400">
                     <option value="ALL">All Categories</option>
                     <option
                         v-for="cat in categories"
@@ -188,7 +188,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300 table-fixed">
                 <thead
-                    class="border-b border-mist-800/50 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
                         <th class="w-35 py-3 px-3">Date</th>
                         <th class="w-35 py-3 px-3">Property</th>
@@ -293,7 +293,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     <select
                         id="page-size"
                         v-model="pageSize"
-                        class="bg-mist-850 border border-mist-700 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
+                        class="bg-mist-850 border border-mist-800 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
                         <option
                             v-for="opt in pageSizeOptions"
                             :key="opt"
@@ -307,7 +307,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
             <div class="flex items-center gap-1 font-mono">
                 <button
                     :disabled="currentPage <= 1"
-                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-850 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
                     @click="goToPage(currentPage - 1)">
                     <fa-icon
                         class="text-[10px]"
@@ -322,7 +322,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
 
                 <button
                     :disabled="currentPage >= totalPages"
-                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-850 border border-mist-700 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-850 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
                     @click="goToPage(currentPage + 1)">
                     Next
                     <fa-icon
@@ -446,7 +446,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
+                        <label class="text-xs font-bold text-mist-400 block mb-1">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"

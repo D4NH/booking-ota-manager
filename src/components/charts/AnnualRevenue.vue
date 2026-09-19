@@ -217,7 +217,7 @@ watch(yearOptions, (available) => {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-xs text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
@@ -238,15 +238,13 @@ watch(yearOptions, (available) => {
             class="h-full flex flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <div class="flex justify-between items-center">
-                <div>
-                    <div class="flex items-center gap-2 h-5">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                            {{ displayHeaderMonth }}
-                        </h3>
-                    </div>
-                    <p class="mt-1 text-xl font-bold font-mono text-mist-100">
+                <div class="flex flex-col space-y-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-mist-400">
+                        {{ displayHeaderMonth }}
+                    </span>
+                    <div class="font-mono text-lg font-bold text-mist-100">
                         {{ formatIDR(displayHeaderValue) }}
-                    </p>
+                    </div>
                 </div>
                 <!-- Legend -->
                 <div class="flex items-center gap-4">

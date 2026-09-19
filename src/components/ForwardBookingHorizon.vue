@@ -182,7 +182,7 @@ const total90dBookedNights = computed(() =>
                     <!-- Pace Metric & Progress Bar -->
                     <div class="space-y-1">
                         <div class="flex items-baseline justify-between font-mono">
-                            <span class="text-2xl font-bold text-mist-100">
+                            <span class="text-lg font-bold text-mist-100">
                                 {{ win.occupancyPace }}%
                             </span>
                             <span class="text-xs text-mist-400">
@@ -200,7 +200,7 @@ const total90dBookedNights = computed(() =>
 
                     <!-- Revenue Secured -->
                     <div
-                        class="pt-2 border-t border-mist-800/80 flex items-center justify-between text-xs">
+                        class="pt-2 border-t border-mist-800 flex items-center justify-between text-xs">
                         <span class="text-mist-500 text-[11px]">Confirmed:</span>
                         <span class="font-mono font-bold text-mist-200">
                             {{ formatIDR(win.confirmedRevenue) }}

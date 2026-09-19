@@ -49,7 +49,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
         <!-- Monthly Summary -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
                 </h3>
                 <p class="font-mono text-lg font-bold text-mist-100">
@@ -65,7 +65,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Occupancy Rate
                 </h3>
                 <p class="font-mono text-lg font-bold text-mist-100">{{ occupancyPercentage }}%</p>
@@ -79,7 +79,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Total Month Bookings
                 </h3>
                 <p class="font-mono text-lg font-bold text-mist-100">
@@ -88,7 +88,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 <p class="text-xs text-mist-500">Active bookings</p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-mist-400">
                     Today's Turnover
                 </h3>
                 <p class="text-lg font-bold text-mist-100">

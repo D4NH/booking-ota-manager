@@ -61,7 +61,7 @@ const isCurrentBooking = (b: Booking): boolean => {
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <table class="w-full text-left text-sm text-mist-300 table-fixed">
             <thead
-                class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
+                class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-bold uppercase text-mist-400">
                 <tr>
                     <th class="w-45 px-4 py-2.5">ID / Listing</th>
                     <th
@@ -83,7 +83,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                 :key="group.key">
                 <tbody
                     :data-month-key="group.key"
-                    class="border-t border-b border-mist-800/50 bg-mist-950/40 scroll-mt-10">
+                    class="border-t border-b border-mist-800 bg-mist-950/40 scroll-mt-10">
                     <tr>
                         <td
                             :colspan="colSpan"
@@ -132,7 +132,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                                 </span>
                                 <span
                                     v-if="!b.bookingId.includes('UNAVAILABLE')"
-                                    class="text-xs text-mist-400 text-nowrap">
+                                    class="text-[11px] text-mist-400 mt-1 text-nowrap">
                                     {{ b.listing }}
                                 </span>
                             </div>
@@ -165,7 +165,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                                     class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div class="flex items-center justify-between">
                                         <span class="font-bold text-mist-400">Payout 15%</span>
-                                        <span class="font-semibold text-mist-200">
+                                        <span class="font-bold text-mist-200">
                                             {{ formatIDR(b.payout * 0.15) }}
                                         </span>
                                     </div>
