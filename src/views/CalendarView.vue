@@ -190,7 +190,7 @@ watch(
                                             b.status !== 'Unavailable' &&
                                             selectedProperty === 'all'
                                         "
-                                        class="capitalize rounded-sm px-1.5 py-0.5 text-xs shrink-0 ml-1"
+                                        class="capitalize rounded px-1 py-0.2 text-[10px] font-semibold shrink-0"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
@@ -207,7 +207,7 @@ watch(
                                 </div>
                                 <div
                                     v-else-if="b.nights > 1"
-                                    class="text-[10px] text-mist-500 truncate opacity-60 mt-1">
+                                    class="text-[10px] text-mist-500 opacity-60 mt-1">
                                     &bull;&bull;&bull;
                                 </div>
                             </div>

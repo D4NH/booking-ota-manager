@@ -142,7 +142,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                                 </div>
                                 <div
                                     v-if="b.status !== 'Unavailable'"
-                                    class="text-[11px] text-mist-400">
+                                    class="text-[10px] text-mist-400">
                                     {{ b.listing }}
                                 </div>
                             </div>
@@ -161,21 +161,21 @@ const handleBookingClick = (booking: Booking, event: Event) => {
                             <div
                                 class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                 <div class="border-b border-mist-800 pb-1.5 mb-1.5">
-                                    <span class="font-semibold text-mist-200 block">
+                                    <span class="font-semibold text-mist-200 block mb-1">
                                         {{ b.guestName }}
                                     </span>
-                                    <span class="text-[10px] text-mist-400">
+                                    <span class="text-xs text-mist-400">
                                         {{ b.checkIn }} &rarr; {{ b.checkOut }}
                                     </span>
                                 </div>
                                 <div
                                     v-if="b.status === 'Waiting for payment'"
-                                    class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-[10px]">
+                                    class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-xs">
                                     Payment pending
                                 </div>
                                 <div
                                     v-if="b.notes"
-                                    class="text-mist-300 text-[10px] italic">
+                                    class="text-mist-300 text-xs">
                                     {{ b.notes }}
                                 </div>
                             </div>

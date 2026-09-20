@@ -60,7 +60,7 @@ const displaySections = computed<MonthSection[]>(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex flex-col h-full min-h-0 overflow-y-auto">
         <CardTitle>
             <template #title>Upcoming Bookings</template>
             <template #subtitle>Next confirmed reservations across all units</template>
@@ -85,14 +85,14 @@ const displaySections = computed<MonthSection[]>(() => {
                     <!-- Month Header -->
                     <div
                         v-if="showMonthHeaders && section.label"
-                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/90 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
+                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
                         {{ section.label }}
                     </div>
                     <div class="flex-1 flex flex-col divide-y divide-mist-800">
                         <div
                             v-for="b in section.items"
                             :key="b.id || b.bookingId"
-                            class="flex grow items-center justify-between px-3 py-3 hover:bg-mist-800/40 transition cursor-pointer group"
+                            class="flex items-center justify-between px-3 py-3 hover:bg-mist-800/40 transition cursor-pointer group"
                             @click="emit('edit-booking', b)">
                             <!-- Guest Info & Property -->
                             <div class="min-w-0 flex items-center gap-3">

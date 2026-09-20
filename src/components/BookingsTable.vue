@@ -16,7 +16,6 @@ export interface BookingGroup {
 
 interface Props {
     groups: BookingGroup[];
-    collapsedMonths?: string[];
     showPropertyColumn?: boolean;
     currentMonthKey?: string;
     currentDateKey?: string;
@@ -30,7 +29,6 @@ interface Emits {
 
 const {
     groups,
-    collapsedMonths = [],
     showPropertyColumn = false,
     currentMonthKey = '',
     currentDateKey = '',
@@ -38,14 +36,20 @@ const {
 
 const emit = defineEmits<Emits>();
 
-const colSpan = computed(() => (showPropertyColumn ? 8 : 7));
+const collapsedMonths = defineModel<string[]>('collapsedMonths', { default: () => [] });
+
+const collapsedSet = computed(() => new Set(collapsedMonths.value));
+
+const colSpan = computed(() => (showPropertyColumn ? 7 : 6));
 
 const toggleMonth = (key: string): void => {
-    const next = collapsedMonths.includes(key)
-        ? collapsedMonths.filter((m) => m !== key)
-        : [...collapsedMonths, key];
-    emit('update:collapsedMonths', next);
+    if (collapsedSet.value.has(key)) {
+        collapsedMonths.value = collapsedMonths.value.filter((m) => m !== key);
+    } else {
+        collapsedMonths.value = [...collapsedMonths.value, key];
+    }
 };
+
 const isCurrentBooking = (b: Booking): boolean => {
     if (!currentDateKey) return false;
     return (
@@ -58,42 +62,39 @@ const isCurrentBooking = (b: Booking): boolean => {
 
 <template>
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-        <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
+        <table class="w-full text-left text-sm text-mist-300">
             <thead
-                class="sticky top-0 z-20 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
+                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
                 <tr>
-                    <th class="w-45 px-4 py-2.5">ID / Listing</th>
+                    <th class="w-45 px-4 py-2.5">ID</th>
                     <th
                         v-if="showPropertyColumn"
-                        class="w-35 px-4 py-2.5 text-center">
-                        Property
+                        class="w-28 px-4 py-2.5">
+                        Listing
                     </th>
-                    <th class="w-auto px-4 py-2.5">Guest</th>
-                    <th class="w-50 px-4 py-2.5 text-center">Stay Date</th>
-                    <th class="w-24 px-4 py-2.5 text-center">Nights</th>
-                    <th class="w-36 px-4 py-2.5 text-right">Payout</th>
-                    <th class="w-40 px-4 py-2.5 text-center">Status</th>
-                    <th class="w-24 px-4 py-2.5 text-right">Actions</th>
+                    <th class="px-4 py-2.5">Guest</th>
+                    <th class="w-40 px-4 py-2.5 text-center">Stay Date</th>
+                    <th class="w-10 px-4 py-2.5 text-center">Nights</th>
+                    <th class="px-4 py-2.5 text-right">Payout</th>
+                    <th class="w-26 px-4 py-2.5 text-right">Actions</th>
                 </tr>
             </thead>
-
             <template
                 v-for="group in groups"
                 :key="group.key">
+                <!-- Group Header -->
                 <tbody
                     :data-month-key="group.key"
                     class="border-t border-b border-mist-800 bg-mist-950/40 scroll-mt-10">
                     <tr>
-                        <td
-                            :colspan="colSpan"
-                            class="p-0">
+                        <td :colspan="colSpan">
                             <button
                                 type="button"
-                                class="cursor-pointer flex w-full items-center justify-between px-4 py-2.5 font-semibold text-mist-200 hover:bg-mist-800/40"
+                                class="flex w-full cursor-pointer items-center justify-between px-4 py-2.5 font-semibold text-mist-200 hover:bg-mist-800/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-lime-500"
                                 @click="toggleMonth(group.key)">
                                 <span class="flex items-center gap-2">
                                     <span class="text-xs text-mist-400">
-                                        {{ collapsedMonths.includes(group.key) ? '▶' : '▼' }}
+                                        {{ collapsedSet.has(group.key) ? '▶' : '▼' }}
                                     </span>
                                     {{ group.label }}
                                     <span
@@ -111,82 +112,115 @@ const isCurrentBooking = (b: Booking): boolean => {
                     </tr>
                 </tbody>
 
+                <!-- Booking Item -->
                 <tbody
-                    v-show="!collapsedMonths.includes(group.key)"
+                    v-show="!collapsedSet.has(group.key)"
                     class="divide-y divide-mist-800/60">
                     <tr
                         v-for="b in group.bookings"
                         :key="b.id || b.bookingId"
-                        class="transition cursor-pointer align-middle"
+                        class="transition align-middle"
                         :class="[
                             isCurrentBooking(b)
-                                ? 'text-lime-400 bg-lime-500/5 hover:bg-lime-500/15 ring-1 ring-lime-500/30'
+                                ? 'bg-lime-500/5 text-lime-400 ring-1 ring-lime-500/30 hover:bg-lime-500/15'
                                 : 'hover:bg-mist-800/40',
                         ]"
                         @click="emit('edit', b)">
-                        <td class="px-4 py-2">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-mono text-mist-300 truncate">
-                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
-                                </span>
-                                <span
-                                    v-if="!b.bookingId.includes('UNAVAILABLE')"
-                                    class="text-[11px] text-mist-400 mt-1 text-nowrap">
-                                    {{ b.listing }}
-                                </span>
-                            </div>
+                        <td class="px-4 py-2.5 align-middle">
+                            <span class="font-mono">
+                                {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                            </span>
                         </td>
                         <td
                             v-if="showPropertyColumn"
-                            class="px-4 py-2 text-center">
-                            <RouterLink
-                                :to="{ name: 'property-detail', params: { id: b.propertyId } }"
-                                :class="getPropertyStyle(b.propertyId)">
-                                {{ b.propertyId }}
-                            </RouterLink>
+                            class="px-4 py-2.5 align-middle">
+                            <div class="flex flex-col space-y-1">
+                                <div>
+                                    <span
+                                        v-if="b.bookingId.includes('UNAVAILABLE')"
+                                        class="text-mist-500">
+                                        -
+                                    </span>
+                                    <RouterLink
+                                        v-else
+                                        :to="{
+                                            name: 'property-detail',
+                                            params: { id: b.propertyId },
+                                        }"
+                                        :class="getPropertyStyle(b.propertyId)">
+                                        {{ b.propertyId }}
+                                    </RouterLink>
+                                </div>
+                                <span class="ml-1 text-xs">{{ b.listing }}</span>
+                            </div>
                         </td>
-                        <td class="px-4 py-2 font-medium text-mist-100 truncate">
-                            {{ b.guestName }}
+                        <td class="px-4 py-2.5 align-middle">
+                            <span class="truncate font-medium text-mist-100 leading-5">
+                                {{ b.guestName }}
+                            </span>
                         </td>
-                        <td class="px-4 py-2 text-center text-nowrap">
-                            {{ formatDate(b.checkIn, { shortMonth: true }) }} &rarr;
-                            {{ formatDate(b.checkOut, { shortMonth: true }) }}
+                        <td class="px-4 py-2.5 align-middle text-center text-nowrap">
+                            <span>
+                                {{
+                                    formatDate(b.checkIn, {
+                                        shortWeekday: true,
+                                        shortMonth: true,
+                                    })
+                                }}
+                                &rarr;
+                                {{
+                                    formatDate(b.checkOut, {
+                                        shortWeekday: true,
+                                        shortMonth: true,
+                                    })
+                                }}
+                            </span>
                         </td>
-                        <td class="px-4 py-2 font-mono text-center">{{ b.nights }}</td>
-                        <td
-                            class="px-4 py-2 font-mono text-right text-nowrap group relative"
-                            :class="{ 'cursor-zoom-in': b.payout !== 0 }">
-                            {{ formatIDR(b.payout) }}
-                            <div
-                                v-if="b.payout !== 0"
-                                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-48 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                        <td class="px-4 py-2.5 align-middle text-center">{{ b.nights }}</td>
+                        <td class="px-4 py-2.5 align-middle text-right">
+                            <div class="group relative -mt-1">
+                                <div class="flex flex-col items-end justify-center text-right">
+                                    <span class="font-mono text-sm font-medium">
+                                        {{ formatIDR(b.payout) }}
+                                    </span>
+                                    <span
+                                        class="mt-1 h-5 inline-flex items-center"
+                                        :class="getStatusStyle(b.status)">
+                                        {{ b.status }}
+                                    </span>
+                                </div>
                                 <div
-                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-semibold text-mist-400">Payout 15%</span>
-                                        <span class="font-semibold text-mist-200">
-                                            {{ formatIDR(b.payout * 0.15) }}
-                                        </span>
+                                    v-if="b.payout !== 0"
+                                    class="pointer-events-none absolute bottom-full left-0 top-1 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    <div
+                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-semibold text-mist-400">
+                                                Payout 15%
+                                            </span>
+                                            <span class="font-semibold text-mist-200">
+                                                {{ formatIDR(b.payout * 0.15) }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2 text-center text-nowrap">
-                            <span :class="getStatusStyle(b.status)">{{ b.status }}</span>
-                        </td>
-                        <td class="px-4 py-2 text-right text-nowrap">
-                            <div class="flex items-center justify-end gap-2 h-7">
-                                <div
-                                    class="text-mist-400 hover:text-mist-100 transition"
-                                    title="Edit Booking">
+                        <td class="px-4 py-2.5 align-middle text-right text-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <button
+                                    type="button"
+                                    class="cursor-pointer text-mist-400 transition hover:text-mist-100 focus:outline-none"
+                                    title="Edit Booking"
+                                    @click.stop="emit('edit', b)">
                                     <fa-icon icon="pen-to-square" />
-                                </div>
+                                </button>
                                 <span class="text-mist-700">|</span>
                                 <button
                                     type="button"
-                                    class="cursor-pointer text-rose-400 hover:text-rose-300 transition"
+                                    class="cursor-pointer text-rose-400 transition hover:text-rose-300 focus:outline-none"
                                     title="Delete Booking"
-                                    @click.prevent="emit('delete', b)">
+                                    @click.stop="emit('delete', b)">
                                     <fa-icon icon="trash-can" />
                                 </button>
                             </div>

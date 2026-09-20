@@ -384,12 +384,14 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 :bookings="unitBookings"
                 :property="selectedProperty" />
 
-            <UpcomingBookings
-                class="col-start-2 row-span-2 h-135"
-                :bookings="unitBookings"
-                :show-month-headers="true"
-                :show-property="false"
-                @edit-booking="handleEditBooking" />
+            <div class="col-start-2 row-span-2 h-170 overflow-y-scroll">
+                <UpcomingBookings
+                    :limit="15"
+                    :bookings="unitBookings"
+                    :show-month-headers="true"
+                    :show-property="false"
+                    @edit-booking="handleEditBooking" />
+            </div>
         </div>
     </div>
 </template>
