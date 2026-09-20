@@ -232,6 +232,32 @@ export function useGoogleSheets() {
         );
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     };
+
+    /**
+     * Retrieves multiple sheet ranges in 1 single HTTP request via values:batchGet.
+     * Conserves API read quotas by reducing N requests to 1 request.
+     */
+    const batchFetchSheetRows = async (
+        spreadsheetId: string,
+        ranges: string[]
+    ): Promise<(string | number)[][][]> => {
+        if (!ranges.length) return [];
+
+        const query = ranges.map((range) => `ranges=${encodeURIComponent(range)}`).join('&');
+
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${query}`;
+        const res = await fetchWithAuth(url);
+
+        if (!res.ok) {
+            throw new Error(`Google Sheets Batch API Error (${res.status}): ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        const valueRanges: { values?: (string | number)[][] }[] = data.valueRanges || [];
+
+        return valueRanges.map((vr) => vr.values || []);
+    };
+
     return {
         isAuthenticated,
         refreshAuthStatus,
@@ -242,5 +268,6 @@ export function useGoogleSheets() {
         appendSheetRow,
         updateSheetRowByBookingId,
         deleteSheetRowByBookingId,
+        batchFetchSheetRows,
     };
 }

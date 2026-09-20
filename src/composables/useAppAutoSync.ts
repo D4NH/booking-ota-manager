@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useDocumentVisibility, useWindowFocus, useOnline } from '@vueuse/core';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
@@ -7,30 +7,39 @@ import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 
 const LAST_SYNC_KEY = 'app_global_last_sync';
-const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes revalidation threshold
+const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 export function useAppAutoSync() {
     const bookingStore = useBookingStore();
     const { syncAllFinancialData } = useFinanceSync();
     const { fetchSheetRows, isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 
-    const isSyncing = ref<boolean>(false);
-    const lastSyncTime = ref<number>(Number(localStorage.getItem(LAST_SYNC_KEY)) || 0);
+    let ticker: ReturnType<typeof setInterval> | null = null;
 
     const isOnline = useOnline();
     const windowFocused = useWindowFocus();
     const visibility = useDocumentVisibility();
 
-    const shouldRevalidate = (): boolean => {
-        if (!isOnline.value) return false;
-        return Date.now() - lastSyncTime.value > SYNC_COOLDOWN_MS;
-    };
+    const isSyncing = ref<boolean>(false);
+    const lastSyncTime = ref<number>(Number(localStorage.getItem(LAST_SYNC_KEY)) || 0);
+    const nowTimestamp = ref<number>(Date.now());
 
-    /**
-     * Pulls latest bookings across all properties and synchronizes all financial
-     * ledgers (including property finances, personal transactions, shared costs,
-     * transfers, gold assets, and recurring templates).
-     */
+    const cooldownRemainingSec = computed<number>(() => {
+        const elapsed = nowTimestamp.value - lastSyncTime.value;
+        const diff = Math.max(0, SYNC_COOLDOWN_MS - elapsed);
+        return Math.ceil(diff / 1000);
+    });
+    const isEligibleToAutoSync = computed<boolean>(
+        () => isOnline.value && cooldownRemainingSec.value === 0
+    );
+    const formattedCountdown = computed<string>(() => {
+        const sec = cooldownRemainingSec.value;
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    });
+
+    const shouldRevalidate = (): boolean => isOnline.value && isEligibleToAutoSync.value;
     const syncAllData = async (
         options: { force?: boolean; silent?: boolean } = {}
     ): Promise<boolean> => {
@@ -47,7 +56,6 @@ export function useAppAutoSync() {
         try {
             const propertyIds = Object.keys(PROPERTY_CONFIGS) as PropertyId[];
 
-            // Sync Bookings across all configured property sheets
             const bookingsTask = Promise.all(
                 propertyIds.map(async (propId) => {
                     const spreadsheetId = PROPERTY_CONFIGS[propId]?.spreadsheetId;
@@ -60,7 +68,6 @@ export function useAppAutoSync() {
                 })
             );
 
-            // Sync Financial (Silent during auto-revalidation, toastflow when forced)
             const financeTask = syncAllFinancialData({
                 silent: options.silent ?? true,
             });
@@ -69,6 +76,7 @@ export function useAppAutoSync() {
 
             const now = Date.now();
             lastSyncTime.value = now;
+            nowTimestamp.value = now;
             localStorage.setItem(LAST_SYNC_KEY, String(now));
             return true;
         } catch (err: unknown) {
@@ -79,14 +87,22 @@ export function useAppAutoSync() {
         }
     };
 
-    // Auto-revalidate when returning to the browser window or tab
+    onMounted(() => {
+        ticker = setInterval(() => {
+            nowTimestamp.value = Date.now();
+        }, 1000);
+    });
+
+    onUnmounted(() => {
+        if (ticker) clearInterval(ticker);
+    });
+
     watch([windowFocused, visibility], ([focused, vis]) => {
         if (focused && vis === 'visible') {
             syncAllData({ force: false, silent: true });
         }
     });
 
-    // Auto-revalidate when device recovers internet connectivity
     watch(isOnline, (online) => {
         if (online) {
             syncAllData({ force: false, silent: true });
@@ -96,6 +112,9 @@ export function useAppAutoSync() {
     return {
         isSyncing,
         lastSyncTime,
+        cooldownRemainingSec,
+        isEligibleToAutoSync,
+        formattedCountdown,
         syncAllData,
     };
 }

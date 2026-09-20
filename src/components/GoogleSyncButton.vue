@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceStore } from '@/stores/useFinanceStore';
+import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry } from '@/types/sync';
@@ -11,13 +12,15 @@ import { toast } from 'vue-toastflow';
 interface Props {
     scope?: 'all' | 'bookings' | 'finance';
     propertyId?: PropertyId | 'all';
+    showTimer?: boolean;
 }
 
-const { scope = 'all', propertyId = 'all' } = defineProps<Props>();
+const { scope = 'all', propertyId = 'all', showTimer = false } = defineProps<Props>();
 
 const bookingStore = useBookingStore();
 const financeStore = useFinanceStore();
 const { isAuthenticated, refreshAuthStatus, initAuth, fetchSheetRows } = useGoogleSheets();
+const { isEligibleToAutoSync, formattedCountdown, lastSyncTime } = useAppAutoSync();
 
 const isSyncing = ref(false);
 const showLogModal = ref(false);
@@ -120,6 +123,9 @@ const handleSync = async (): Promise<void> => {
         await toast.loading(
             async () => {
                 await Promise.all(tasks);
+                const now = Date.now();
+                lastSyncTime.value = now;
+                localStorage.setItem('app_global_last_sync', String(now));
                 return { totalImported, totalUpdated, totalDeleted };
             },
             {
@@ -175,6 +181,28 @@ onMounted(() => {
                 ]" />
             <span>{{ buttonLabel }}</span>
         </button>
+
+        <div
+            v-if="showTimer && isAuthenticated"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-mono text-[11px]"
+            :class="[
+                isEligibleToAutoSync
+                    ? 'border-lime-500/30 bg-lime-500/5 text-lime-400'
+                    : 'border-mist-800 bg-mist-900 text-mist-400',
+            ]"
+            :title="
+                isEligibleToAutoSync
+                    ? 'Cooldown elapsed: Next window focus will trigger background sync'
+                    : `In cooldown: Next background sync eligible in ${formattedCountdown}`
+            ">
+            <span
+                class="w-1.5 h-1.5 rounded-full"
+                :class="isEligibleToAutoSync ? 'bg-lime-400 animate-ping' : 'bg-mist-600'" />
+            <span class="font-sans font-medium text-[10px] text-mist-400">Auto:</span>
+            <span class="font-bold">
+                {{ isEligibleToAutoSync ? 'READY' : formattedCountdown }}
+            </span>
+        </div>
 
         <button
             v-if="syncLogs.length > 0"

@@ -4,8 +4,8 @@ import { formatIDR } from '@/utils/money';
 import { getPropertyStyle } from '@/config/properties';
 import type { Booking } from '@/types/booking';
 
-const { isOpen, pendingPayments, pendingPayouts } = defineProps<{
-    isOpen: boolean;
+const { isCollapsed, pendingPayments, pendingPayouts } = defineProps<{
+    isCollapsed: boolean;
     pendingPayments: Booking[];
     pendingPayouts: Booking[];
 }>();
@@ -22,7 +22,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
     <div class="bg-mist-900 border-t border-mist-800 overflow-hidden">
         <div
             class="cursor-pointer flex items-center justify-between px-4 py-3 bg-mist-950/50"
-            :class="{ 'border-b border-mist-800': isOpen }"
+            :class="{ 'border-b border-mist-800': !isCollapsed }"
             @click="emit('close')">
             <div class="flex items-center gap-2">
                 <fa-icon
@@ -38,7 +38,7 @@ const totalCount = computed(() => pendingPayments.length + pendingPayouts.length
         </div>
 
         <div
-            v-if="isOpen"
+            v-if="!isCollapsed"
             class="divide-y divide-mist-800/60 p-2 space-y-1">
             <div
                 v-if="totalCount === 0"

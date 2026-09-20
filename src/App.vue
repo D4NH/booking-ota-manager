@@ -5,6 +5,7 @@ import { useHead } from '@unhead/vue';
 import { ToastContainer } from 'vue-toastflow';
 import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useBookingSync } from '@/composables/useBookingSync';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -29,6 +30,7 @@ const { syncAllData } = useAppAutoSync();
 const { saveBooking } = useBookingSync();
 const bookingStore = useBookingStore();
 const financeStore = useFinanceStore();
+const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 const modalStore = useModalStore();
 const {
     isBookingModalOpen,
@@ -58,7 +60,9 @@ onMounted(async () => {
         propertyStore.loadProperties(),
     ]);
 
-    syncAllData({ force: false, silent: true });
+    if (refreshAuthStatus() || isAuthenticated.value) {
+        syncAllData({ force: false, silent: true });
+    }
 });
 </script>
 
