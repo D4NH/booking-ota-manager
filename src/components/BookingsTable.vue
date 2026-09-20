@@ -127,7 +127,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                         ]"
                         @click="emit('edit', b)">
                         <td class="px-4 py-2.5 align-middle">
-                            <span class="font-mono">
+                            <span class="font-mono text-xs">
                                 {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
                             </span>
                         </td>

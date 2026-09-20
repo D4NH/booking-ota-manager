@@ -12,7 +12,6 @@ import { formatDate } from '@/utils/date';
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import CurrentWeekView from '@/components/CurrentWeekView.vue';
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 import PropertySelector from '@/components/PropertySelector.vue';
 import BookingsTable from '@/components/BookingsTable.vue';
 
@@ -109,10 +108,8 @@ onActivated(() => {
         <PageTitle>
             <template #title>Bookings</template>
             <template #subtitle>Real-time availability and unit operational status</template>
-            <div class="flex items-center gap-2">
-                <GoogleSyncButton :property-id="selectedProperty" />
-                <PropertySelector v-model="selectedProperty" />
-            </div>
+
+            <PropertySelector v-model="selectedProperty" />
         </PageTitle>
 
         <CurrentWeekView

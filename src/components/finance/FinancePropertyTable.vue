@@ -32,7 +32,7 @@ const isSubmitting = ref(false);
 const filterCategory = ref<string>('ALL');
 const editingItem = ref<PropertyFinance | null>(null);
 const currentPage = ref(1);
-const pageSize = ref(5);
+const pageSize = ref(10);
 
 const formPropertyId = ref('piyungan');
 const formType = ref<PropertyFinanceType>('income');
@@ -186,13 +186,13 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
         </div>
 
         <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
+            <table class="w-full text-left text-sm text-mist-300">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
-                        <th class="w-25 px-4 py-2.5">Property</th>
-                        <th class="w-46 px-4 py-2.5">Category</th>
+                        <th class="w-28 px-4 py-2.5">Property</th>
+                        <th class="w-48 px-4 py-2.5">Category</th>
                         <th class="w-auto px-4 py-2.5">Source</th>
                         <th class="w-35 px-4 py-2.5 text-right">Amount</th>
                         <th class="w-23 px-4 py-2.5 text-right">Actions</th>
@@ -218,14 +218,14 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
-                                    class="text-[9px] bg-lime-400/10 text-lime-400 border border-lime-400/30 px-1.5 py-0.5 rounded-md font-mono font-semibold shrink-0">
+                                    class="text-[9px] bg-lime-400/10 text-lime-400 border border-lime-400/30 px-1.5 py-0.5 rounded-md font-mono font-bold shrink-0">
                                     DEXIE
                                 </span>
                                 <TransactionNote :notes="item.notes" />
                             </div>
                         </td>
                         <td
-                            class="px-4 py-2.5 text-right font-semibold font-mono text-xs"
+                            class="px-4 py-2.5 text-right font-bold font-mono text-xs"
                             :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
                             {{ item.type === 'expense' ? '-' : '+' }}{{ formatIDR(item.amount) }}
                         </td>
@@ -337,7 +337,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                 class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
                 <div
                     class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                    <h2 class="text-base font-semibold text-mist-100">
+                    <h2 class="text-base font-bold text-mist-100">
                         {{ isEditing ? 'Edit Property Record' : 'Add Property Record' }}
                     </h2>
                     <button
@@ -443,7 +443,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
+                        <label class="text-xs font-bold text-mist-400 block mb-1">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"
@@ -460,7 +460,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                         <button
                             type="submit"
                             :disabled="isLoading"
-                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition">
+                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition">
                             {{ isEditing ? 'Update' : 'Add Record' }}
                         </button>
                     </div>

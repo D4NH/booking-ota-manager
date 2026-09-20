@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { db } from '@/db';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
@@ -11,6 +11,7 @@ import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import PropertyDataBackup from '@/components/PropertyDataBackup.vue';
@@ -23,34 +24,8 @@ const modalStore = useModalStore();
 const { bookings } = storeToRefs(bookingStore);
 const { properties, sortedProperties } = storeToRefs(propertyStore);
 
-const { isAuthenticated, refreshAuthStatus, initAuth, logout } = useGoogleSheets();
+const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 
-const isConnecting = ref(false);
-
-const handleGoogleConnect = async (): Promise<void> => {
-    isConnecting.value = true;
-    try {
-        await initAuth();
-        toast.success({
-            title: 'Connected to Google',
-            description: 'Access token acquired. Google Sheets sync is active.',
-        });
-    } catch (err) {
-        toast.error({
-            title: 'Connection Failed',
-            description: err instanceof Error ? err.message : 'Google OAuth failed.',
-        });
-    } finally {
-        isConnecting.value = false;
-    }
-};
-const handleGoogleDisconnect = (): void => {
-    logout();
-    toast.info({
-        title: 'Disconnected',
-        description: 'Local Google OAuth token cleared.',
-    });
-};
 const handleAddProperty = (): void => modalStore.openPropertyModal();
 const handleEditProperty = (property: Property): void => modalStore.openPropertyModal({ property });
 const handleDeleteProperty = async (id: PropertyId): Promise<void> => {
@@ -150,7 +125,7 @@ onMounted(() => refreshAuthStatus());
             </template>
         </PageTitle>
 
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-4">
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <span
@@ -174,29 +149,12 @@ onMounted(() => refreshAuthStatus());
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <button
-                        v-if="!isAuthenticated"
-                        type="button"
-                        :disabled="isConnecting"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition disabled:opacity-50"
-                        @click="handleGoogleConnect">
-                        {{ isConnecting ? 'Connecting...' : 'Authorize Google Account' }}
-                    </button>
-
-                    <button
-                        v-else
-                        type="button"
-                        class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 hover:bg-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-300 hover:text-mist-100 transition"
-                        @click="handleGoogleDisconnect">
-                        Disconnect Token
-                    </button>
-                </div>
+                <GoogleSyncButton scope="all" />
             </div>
         </div>
 
         <!-- Property Management -->
-        <div>
+        <div class="flex flex-col">
             <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Property Roster</template>
@@ -306,16 +264,15 @@ onMounted(() => refreshAuthStatus());
             </div>
 
             <!-- JSON Backup & Restore Component -->
-            <PropertyDataBackup />
+            <PropertyDataBackup class="mt-4" />
         </div>
 
-        <!-- 3. Danger Zone / Database Maintenance -->
-        <div class="space-y-3 pt-4 border-t border-mist-800">
+        <!-- Danger Zone / Database Maintenance -->
+        <div class="flex flex-col">
             <CardTitle>
                 <template #title>Database Storage & Cache</template>
                 <template #subtitle>Manage client-side IndexedDB records</template>
             </CardTitle>
-
             <div class="rounded-md border border-rose-500/20 bg-mist-900 p-4 shadow-md space-y-4">
                 <div class="flex items-center justify-between">
                     <div>

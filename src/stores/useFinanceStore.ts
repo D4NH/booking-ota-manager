@@ -400,7 +400,6 @@ export const useFinanceStore = defineStore('finance', () => {
         return Number((((curr - prev) / prev) * 100).toFixed(1));
     });
 
-    // Sheet Synchronization
     async function fetchFinancialData(): Promise<void> {
         isLoading.value = true;
         error.value = null;
@@ -408,15 +407,24 @@ export const useFinanceStore = defineStore('finance', () => {
         try {
             await Promise.all([bookingStore.loadBookings(), loadLocalFinanceData()]);
 
-            const [propsRows, propFinRows, personalRows, sharedRows, transferRows, goldRows] =
-                await Promise.all([
-                    fetchSheetRows(SPREADSHEET_ID, "'Properties'!A2:C").catch(() => []),
-                    fetchSheetRows(SPREADSHEET_ID, "'Property_Finances'!A2:G").catch(() => []),
-                    fetchSheetRows(SPREADSHEET_ID, "'Personal_Transactions'!A2:I").catch(() => []),
-                    fetchSheetRows(SPREADSHEET_ID, "'Shared_Transactions'!A2:F").catch(() => []),
-                    fetchSheetRows(SPREADSHEET_ID, "'Transfers'!A2:F").catch(() => []),
-                    fetchSheetRows(SPREADSHEET_ID, "'Gold_Assets'!A2:G").catch(() => []),
-                ]);
+            // Add Recurring_Templates to the parallel fetch pool
+            const [
+                propsRows,
+                propFinRows,
+                personalRows,
+                sharedRows,
+                transferRows,
+                goldRows,
+                recurringRows,
+            ] = await Promise.all([
+                fetchSheetRows(SPREADSHEET_ID, "'Properties'!A2:C").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Property_Finances'!A2:G").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Personal_Transactions'!A2:I").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Shared_Transactions'!A2:F").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Transfers'!A2:F").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Gold_Assets'!A2:G").catch(() => []),
+                fetchSheetRows(SPREADSHEET_ID, "'Recurring_Templates'!A2:K").catch(() => []),
+            ]);
 
             if (propsRows.length) {
                 properties.value = propsRows
@@ -488,12 +496,29 @@ export const useFinanceStore = defineStore('finance', () => {
                     certificateNumber: String(r[6] || ''),
                 }));
 
+            const parsedRecurring: RecurringTemplate[] = recurringRows
+                .filter((r) => r[0] && String(r[0]).trim())
+                .map((r) => ({
+                    id: String(r[0]),
+                    targetLedger: (r[1] as RecurringTemplate['targetLedger']) || 'Shared',
+                    owner: (r[2] as PersonalFinance['owner']) || undefined,
+                    propertyId: String(r[3] || '') || undefined,
+                    type: (r[4] as RecurringTemplate['type']) || 'fixed_cost',
+                    category: String(r[5] || ''),
+                    amount: Number(r[6]) || 0,
+                    dueDayOfMonth: Number(r[7]) || 1,
+                    frequency: (r[8] as RecurringTemplate['frequency']) || 'monthly',
+                    active: String(r[9]).toUpperCase() === 'TRUE',
+                    notes: String(r[10] || '').trim(),
+                }));
+
             // Atomic state swap prevents multiple render cycles
             sheetPropertyFinances.value = parsedPropFinances;
             personalFinances.value = parsedPersonal;
             sharedFinances.value = parsedShared;
             transfers.value = parsedTransfers;
             goldAssets.value = parsedGold;
+            recurringTemplates.value = parsedRecurring;
 
             // Non-blocking IndexedDB synchronization
             db.transaction(
@@ -504,6 +529,7 @@ export const useFinanceStore = defineStore('finance', () => {
                     db.sharedFinances,
                     db.transfers,
                     db.goldAssets,
+                    db.recurringTemplates,
                 ],
                 async () => {
                     await Promise.all([
@@ -518,6 +544,9 @@ export const useFinanceStore = defineStore('finance', () => {
                             .then(() => db.sharedFinances.bulkPut(parsedShared)),
                         db.transfers.clear().then(() => db.transfers.bulkPut(parsedTransfers)),
                         db.goldAssets.clear().then(() => db.goldAssets.bulkPut(parsedGold)),
+                        db.recurringTemplates
+                            .clear()
+                            .then(() => db.recurringTemplates.bulkPut(parsedRecurring)),
                     ]);
                 }
             ).catch((err) => console.warn('Dexie background sync warning:', err));

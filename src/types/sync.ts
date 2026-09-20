@@ -1,17 +1,16 @@
-import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 
 export interface BookingChangeDiff {
-    field: keyof Booking;
+    field: string;
     oldValue: unknown;
     newValue: unknown;
 }
 
 export interface SyncLogEntry {
-    type: 'imported' | 'updated' | 'deleted';
+    type: 'imported' | 'updated' | 'deleted' | 'finance';
     bookingId: string;
     guestName: string;
-    propertyId: PropertyId;
+    propertyId: PropertyId | string;
     diffs?: BookingChangeDiff[];
 }
 

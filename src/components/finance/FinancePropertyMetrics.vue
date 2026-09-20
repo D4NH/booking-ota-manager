@@ -74,9 +74,9 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                     class="font-medium"
                     :class="
                         propertyExpenseGrowthPct > 0
-                            ? 'text-lime-400'
+                            ? 'text-rose-400'
                             : propertyExpenseGrowthPct < 0
-                              ? 'text-rose-400'
+                              ? 'text-lime-400'
                               : 'text-mist-400'
                     ">
                     {{ propertyExpenseGrowthPct >= 0 ? '↑' : '↓'
@@ -85,7 +85,7 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                 <span
                     v-else
                     class="font-medium text-mist-500">
-                    —
+                    -
                 </span>
                 <span class="text-mist-500">vs last month</span>
             </p>

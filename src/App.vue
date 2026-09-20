@@ -3,8 +3,10 @@ import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useHead } from '@unhead/vue';
 import { ToastContainer } from 'vue-toastflow';
+import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
@@ -23,8 +25,10 @@ useHead({
         },
     ],
 });
+const { syncAllData } = useAppAutoSync();
 const { saveBooking } = useBookingSync();
 const bookingStore = useBookingStore();
+const financeStore = useFinanceStore();
 const modalStore = useModalStore();
 const {
     isBookingModalOpen,
@@ -47,9 +51,15 @@ const handleSaveProperty = async (propertyData: Property): Promise<void> => {
     modalStore.closePropertyModal();
 };
 
-onMounted(
-    async () => await Promise.all([propertyStore.loadProperties(), bookingStore.loadBookings()])
-);
+onMounted(async () => {
+    await Promise.all([
+        bookingStore.loadBookings(),
+        financeStore.loadLocalFinanceData(),
+        propertyStore.loadProperties(),
+    ]);
+
+    syncAllData({ force: false, silent: true });
+});
 </script>
 
 <template>

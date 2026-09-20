@@ -1,24 +1,38 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry } from '@/types/sync';
 import { toast } from 'vue-toastflow';
 
 interface Props {
+    scope?: 'all' | 'bookings' | 'finance';
     propertyId?: PropertyId | 'all';
 }
 
-const { propertyId = 'all' } = defineProps<Props>();
+const { scope = 'all', propertyId = 'all' } = defineProps<Props>();
 
 const bookingStore = useBookingStore();
+const financeStore = useFinanceStore();
 const { isAuthenticated, refreshAuthStatus, initAuth, fetchSheetRows } = useGoogleSheets();
 
 const isSyncing = ref(false);
 const showLogModal = ref(false);
 const syncLogs = ref<SyncLogEntry[]>([]);
+
+const buttonLabel = computed(() => {
+    if (isSyncing.value) return 'Syncing...';
+    if (!isAuthenticated.value) return 'Connect & Sync';
+    if (scope === 'finance') return 'Sync Finances';
+    if (scope === 'bookings')
+        return propertyId !== 'all'
+            ? `Sync ${propertyId.replace(/^./, (match) => match.toUpperCase())}`
+            : 'Sync Bookings';
+    return 'Sync All';
+});
 
 const handleSync = async (): Promise<void> => {
     if (isSyncing.value) return;
@@ -36,80 +50,94 @@ const handleSync = async (): Promise<void> => {
     isSyncing.value = true;
     syncLogs.value = [];
 
-    try {
-        await toast.loading(
-            async () => {
-                let totalImported = 0;
-                let totalUpdated = 0;
-                let totalDeleted = 0;
-                const allLogs: SyncLogEntry[] = [];
+    const tasks: Promise<unknown>[] = [];
+    let totalImported = 0;
+    let totalUpdated = 0;
+    let totalDeleted = 0;
 
-                const targetProperties: PropertyId[] =
-                    propertyId === 'all'
-                        ? (Object.keys(PROPERTY_CONFIGS) as PropertyId[])
-                        : [propertyId];
+    if (scope === 'all' || scope === 'bookings') {
+        const targetProperties: PropertyId[] =
+            propertyId === 'all' ? (Object.keys(PROPERTY_CONFIGS) as PropertyId[]) : [propertyId];
 
-                console.group('🔄 Google Sheets Sync Diagnostics');
-                console.log('Target properties:', targetProperties);
-
+        tasks.push(
+            (async () => {
                 for (const id of targetProperties) {
                     const config = PROPERTY_CONFIGS[id];
                     const spreadsheetId = config?.spreadsheetId;
-
-                    if (!spreadsheetId || !spreadsheetId.trim()) {
-                        console.warn(
-                            `[Sync] Skipped ${id}: Missing spreadsheetId in PROPERTY_CONFIGS.`
-                        );
-                        continue;
-                    }
+                    if (!spreadsheetId?.trim()) continue;
 
                     const range = config.defaultRange || 'A2:J';
-                    console.log(`[Sync] Fetching ${id} (${spreadsheetId}) with range: ${range}...`);
-
                     const rows = await fetchSheetRows(spreadsheetId, range);
-                    console.log(`[Sync] Received ${rows.length} rows for ${id}.`);
-
-                    if (rows.length === 0) {
-                        console.warn(
-                            `[Sync] Google Sheets returned 0 rows for ${id}. Verify tab name and content.`
-                        );
-                        continue;
-                    }
+                    if (!rows || rows.length === 0) continue;
 
                     const stats = await bookingStore.importBookingsFromGoogleSheets(id, rows);
                     totalImported += stats.importedCount;
                     totalUpdated += stats.updatedCount;
                     totalDeleted += stats.deletedCount;
-                    allLogs.push(...stats.logs);
+                    syncLogs.value.push(...stats.logs);
                 }
+            })()
+        );
+    }
 
-                console.groupEnd();
-                syncLogs.value = allLogs;
+    if (scope === 'all' || scope === 'finance') {
+        tasks.push(
+            (async () => {
+                await financeStore.fetchFinancialData();
+                syncLogs.value.push({
+                    type: 'finance',
+                    bookingId: 'FINANCE-SYNC',
+                    guestName: 'Ledgers Synchronized',
+                    propertyId: 'Keuangan 2026',
+                    diffs: [
+                        {
+                            field: 'propertyLedger',
+                            oldValue: 0,
+                            newValue: financeStore.sheetPropertyFinances.length,
+                        },
+                        {
+                            field: 'personalTransactions',
+                            oldValue: 0,
+                            newValue: financeStore.personalFinances.length,
+                        },
+                        {
+                            field: 'sharedTransactions',
+                            oldValue: 0,
+                            newValue: financeStore.sharedFinances.length,
+                        },
+                        {
+                            field: 'transfers',
+                            oldValue: 0,
+                            newValue: financeStore.transfers.length,
+                        },
+                    ],
+                });
+            })()
+        );
+    }
 
+    try {
+        await toast.loading(
+            async () => {
+                await Promise.all(tasks);
                 return { totalImported, totalUpdated, totalDeleted };
             },
             {
                 loading: {
-                    title: 'Syncing...',
-                    description: 'Fetching sheets and updating local database.',
+                    title: `Syncing ${scope === 'finance' ? 'Finances' : scope === 'bookings' ? 'Bookings' : 'All Data'}...`,
+                    description: 'Updating local cache from Google Sheets.',
                 },
-                success: (data) => {
-                    const count = data.totalImported + data.totalUpdated + data.totalDeleted;
-                    if (count === 0) {
-                        return {
-                            title: 'No Changes Detected',
-                            description: 'All local bookings match Google Sheets.',
-                        };
-                    }
-                    return {
-                        title: 'Sync Complete',
-                        description: `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted}.`,
-                    };
-                },
-                error: (err) => ({
-                    title: 'Sync failed',
+                success: (data) => ({
+                    title: 'Sync Complete',
                     description:
-                        err instanceof Error ? err.message : 'Failed to fetch Google Sheets.',
+                        scope === 'finance'
+                            ? 'All finance tabs updated.'
+                            : `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted}.`,
+                }),
+                error: (err) => ({
+                    title: 'Sync Failed',
+                    description:
+                        err instanceof Error ? err.message : 'Google Sheets request failed.',
                 }),
             }
         );
@@ -129,7 +157,7 @@ onMounted(() => {
         <button
             type="button"
             :disabled="isSyncing"
-            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold border transition disabled:opacity-50"
+            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold border transition disabled:opacity-50"
             :class="[
                 isAuthenticated
                     ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'
@@ -145,24 +173,14 @@ onMounted(() => {
                           ? 'bg-lime-400 animate-pulse'
                           : 'bg-amber-400',
                 ]" />
-            <span>
-                {{
-                    isSyncing
-                        ? 'Syncing...'
-                        : isAuthenticated
-                          ? propertyId !== 'all'
-                              ? 'Sync Property Sheet'
-                              : 'Sync All Sheets'
-                          : 'Connect & Sync'
-                }}
-            </span>
+            <span>{{ buttonLabel }}</span>
         </button>
 
         <button
             v-if="syncLogs.length > 0"
             type="button"
-            class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-700 transition"
-            title="View last sync audit"
+            class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-2.5 py-1.5 text-xs text-mist-300 hover:bg-mist-700 transition"
+            title="View sync audit log"
             @click="showLogModal = true">
             <fa-icon icon="list-check" />
         </button>
@@ -173,20 +191,20 @@ onMounted(() => {
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
             @click.self="showLogModal = false">
             <div
-                class="flex flex-col max-h-[80vh] w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 p-4 shadow-2xl space-y-4">
+                class="flex flex-col max-h-[80vh] w-full max-w-2xl rounded-2xl border border-mist-800 bg-mist-900 p-5 shadow-2xl space-y-4">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
                     <h3 class="font-semibold text-mist-100 text-sm flex items-center gap-2">
-                        <span>Sync Audit Log</span>
+                        <span>Sync Audit Diagnostics</span>
                         <span
                             class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-400 font-mono">
-                            {{ syncLogs.length }} actions
+                            {{ syncLogs.length }} events
                         </span>
                     </h3>
                     <button
                         type="button"
-                        class="cursor-pointer text-mist-400 hover:text-mist-100"
+                        class="cursor-pointer text-mist-400 hover:text-mist-100 text-base"
                         @click="showLogModal = false">
-                        &times;
+                        <fa-icon icon="xmark" />
                     </button>
                 </div>
 
@@ -194,11 +212,11 @@ onMounted(() => {
                     <div
                         v-for="(log, idx) in syncLogs"
                         :key="idx"
-                        class="rounded border border-mist-800 bg-mist-950 p-2.5 text-xs space-y-1.5">
+                        class="rounded-xl border border-mist-800 bg-mist-950 p-3 text-xs space-y-1.5">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
                                     :class="[
                                         log.type === 'imported' &&
                                             'bg-lime-500/10 text-lime-400 border border-lime-500/20',
@@ -206,6 +224,8 @@ onMounted(() => {
                                             'bg-sky-500/10 text-sky-400 border border-sky-500/20',
                                         log.type === 'deleted' &&
                                             'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+                                        log.type === 'finance' &&
+                                            'bg-purple-500/10 text-purple-400 border border-purple-500/20',
                                     ]">
                                     {{ log.type }}
                                 </span>
@@ -214,13 +234,16 @@ onMounted(() => {
                                     ({{ log.bookingId }})
                                 </span>
                             </div>
-                            <span class="capitalize text-[10px] text-mist-400 font-semibold">
+                            <span
+                                class="capitalize text-[10px] text-mist-400 font-semibold font-mono">
                                 {{ log.propertyId }}
                             </span>
                         </div>
+
+                        <!-- Diff Viewer -->
                         <div
                             v-if="log.diffs && log.diffs.length > 0"
-                            class="rounded bg-mist-900/60 p-2 space-y-1 font-mono text-[11px]">
+                            class="rounded-lg bg-mist-900/60 p-2 space-y-1 font-mono text-[11px]">
                             <div
                                 v-for="d in log.diffs"
                                 :key="String(d.field)"
@@ -229,13 +252,20 @@ onMounted(() => {
                                     {{ String(d.field) }}:
                                 </span>
                                 <div>
-                                    <span class="text-rose-400 line-through mr-1">
-                                        {{ String(d.oldValue) || '(empty)' }}
-                                    </span>
-                                    &rarr;
-                                    <span class="text-lime-400 font-semibold ml-1">
-                                        {{ String(d.newValue) || '(empty)' }}
-                                    </span>
+                                    <template v-if="log.type === 'finance'">
+                                        <span class="text-lime-400 font-semibold">
+                                            {{ d.newValue }} active records
+                                        </span>
+                                    </template>
+                                    <template v-else>
+                                        <span class="text-rose-400 line-through mr-1">
+                                            {{ String(d.oldValue) || '(empty)' }}
+                                        </span>
+                                        &rarr;
+                                        <span class="text-lime-400 font-semibold ml-1">
+                                            {{ String(d.newValue) || '(empty)' }}
+                                        </span>
+                                    </template>
                                 </div>
                             </div>
                         </div>
