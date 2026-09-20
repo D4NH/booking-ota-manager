@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useStorage } from '@vueuse/core';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -10,7 +11,7 @@ import type { Booking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
-import NotificationsPopover from '@/components/NotificationsPopover.vue';
+import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
 
 const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
@@ -24,9 +25,10 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
 const { markBookingComplete } = useBookingSync();
+const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
+const isNotificationCollapsed = useStorage('notifications-collapsed', false);
 
-const isCollapsed = ref(false);
-const isNotificationOpen = ref(true);
+// const isNotificationCollapsed = ref(true);
 const isPropertiesOpen = ref(true);
 const isFinanceOpen = ref(true);
 
@@ -62,20 +64,22 @@ const isLinkActive = (path: string) => {
     return route.path.startsWith(path);
 };
 const toggleSidebar = () => {
-    isCollapsed.value = !isCollapsed.value;
-    isNotificationOpen.value = false;
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+    isNotificationCollapsed.value = true;
     isPropertiesOpen.value = false;
     isFinanceOpen.value = false;
 };
-const toggleNotifications = () => (isNotificationOpen.value = !isNotificationOpen.value);
+const toggleNotifications = () => (isNotificationCollapsed.value = !isNotificationCollapsed.value);
 
 watch(
     () => route.path,
     (newPath) => {
         if (newPath.startsWith('/properties')) {
             isPropertiesOpen.value = true;
+            isFinanceOpen.value = false;
         } else if (newPath.startsWith('/finance')) {
             isFinanceOpen.value = true;
+            isPropertiesOpen.value = false;
         } else {
             isPropertiesOpen.value = false;
             isFinanceOpen.value = false;
@@ -89,7 +93,7 @@ watch(
     <aside
         :class="[
             'relative flex flex-col shrink-0 border border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
-            isCollapsed ? 'w-16' : 'w-60',
+            isSidebarCollapsed ? 'w-16' : 'w-60',
         ]">
         <div class="flex h-14 items-center border-b border-mist-800 px-4 overflow-hidden">
             <div class="flex items-center gap-3">
@@ -98,7 +102,7 @@ watch(
                     src="/images/maihouse_logo.jpg"
                     alt="Mai House" />
                 <span
-                    v-show="!isCollapsed"
+                    v-show="!isSidebarCollapsed"
                     class="font-semibold text-mist-100 text-nowrap transition-opacity duration-200">
                     Mai House
                 </span>
@@ -120,7 +124,7 @@ watch(
                     :icon="link.icon"
                     class="w-4 h-4 shrink-0 text-center py-2" />
                 <span
-                    v-show="!isCollapsed"
+                    v-show="!isSidebarCollapsed"
                     class="truncate">
                     {{ link.name }}
                 </span>
@@ -142,14 +146,14 @@ watch(
                             icon="house"
                             class="w-4 h-4 shrink-0 text-center py-2" />
                         <span
-                            v-show="!isCollapsed"
+                            v-show="!isSidebarCollapsed"
                             class="truncate">
                             Properties
                         </span>
                     </RouterLink>
 
                     <button
-                        v-show="!isCollapsed"
+                        v-show="!isSidebarCollapsed"
                         type="button"
                         class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
@@ -162,16 +166,16 @@ watch(
 
                 <!-- Properties Subitems -->
                 <div
-                    v-show="!isCollapsed && isPropertiesOpen"
+                    v-show="!isSidebarCollapsed && isPropertiesOpen"
                     class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
                     <RouterLink
                         v-for="prop in PROPERTY_CONFIGS"
                         :key="prop.id"
                         :to="{ name: 'property-detail', params: { id: prop.id } }"
-                        class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
                         :class="[
                             route.path === `/properties/${prop.id}`
-                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
                         <span
@@ -200,13 +204,13 @@ watch(
                             icon="sack-dollar"
                             class="w-4 h-4 shrink-0 text-center py-2" />
                         <span
-                            v-show="!isCollapsed"
+                            v-show="!isSidebarCollapsed"
                             class="truncate">
                             Finance
                         </span>
                     </RouterLink>
                     <button
-                        v-show="!isCollapsed"
+                        v-show="!isSidebarCollapsed"
                         type="button"
                         class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
@@ -219,14 +223,14 @@ watch(
 
                 <!-- Finance Subitems -->
                 <div
-                    v-show="!isCollapsed && isFinanceOpen"
+                    v-show="!isSidebarCollapsed && isFinanceOpen"
                     class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
                     <RouterLink
                         :to="{ name: 'finance-personal' }"
-                        class="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
                         :class="[
                             route.path === `/finance/personal`
-                                ? 'bg-mist-800/90 font-semibold text-lime-400'
+                                ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
                         <span class="h-1.5 w-1.5 rounded-full bg-mist-400 shrink-0" />
@@ -247,15 +251,15 @@ watch(
                     icon="gear"
                     class="w-4 h-4 shrink-0 text-center py-2" />
                 <span
-                    v-show="!isCollapsed"
+                    v-show="!isSidebarCollapsed"
                     class="truncate">
                     Settings
                 </span>
             </RouterLink>
         </nav>
 
-        <NotificationsPopover
-            :is-open="isNotificationOpen"
+        <NotificationsDrawer
+            :is-collapsed="isNotificationCollapsed"
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
             @close="toggleNotifications"
@@ -274,12 +278,12 @@ watch(
         <button
             type="button"
             class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-mist-800 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
-            :title="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
             @click="toggleSidebar">
             <fa-icon
                 icon="chevron-left"
                 class="transition-transform duration-300"
-                :class="{ 'rotate-180': isCollapsed }" />
+                :class="{ 'rotate-180': isSidebarCollapsed }" />
         </button>
     </aside>
 </template>
