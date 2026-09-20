@@ -22,8 +22,13 @@ const REGEX_MHJ_BOOKING = /\[MHJ-BOOKING:\s*([^\]]+)\]/;
 const REGEX_SAVINGS_TAG = /\[(BCA|Bank Jago|Blu by BCA|Seabank|Mandiri|Bibit)\]/i;
 
 export const useFinanceStore = defineStore('finance', () => {
-    const { fetchSheetRows, appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } =
-        useGoogleSheets();
+    const {
+        fetchSheetRows,
+        appendSheetRow,
+        updateSheetRowByBookingId,
+        deleteSheetRowByBookingId,
+        batchFetchSheetRows,
+    } = useGoogleSheets();
 
     const bookingStore = useBookingStore();
 
@@ -243,6 +248,7 @@ export const useFinanceStore = defineStore('finance', () => {
     const netPropertyProfit = computed<number>(
         () => monthlyPropertyRevenue.value - monthlyPropertyExpenses.value
     );
+
     const calculateNetForOwner = (ownerName: PersonalFinance['owner']): number => {
         let net = 0;
         const list = filteredPersonalFinances.value;
@@ -254,6 +260,7 @@ export const useFinanceStore = defineStore('finance', () => {
         }
         return net;
     };
+
     const danhNetBalance = computed<number>(() => calculateNetForOwner('Danh Nguyen'));
     const citraNetBalance = computed<number>(() => calculateNetForOwner('Citra Ayu Wardani'));
     const sharedNetBalance = computed<number>(() => {
@@ -271,7 +278,6 @@ export const useFinanceStore = defineStore('finance', () => {
         filteredTransfers.value.reduce((sum, item) => sum + Number(item.amount), 0)
     );
 
-    // Recurring Projection
     const monthlyProjectedRecurring = computed<ProjectedRecurringItem[]>(() => {
         const cycle = selectedMonth.value;
         const templates = recurringTemplates.value.filter((t) => t.active);
@@ -407,24 +413,25 @@ export const useFinanceStore = defineStore('finance', () => {
         try {
             await Promise.all([bookingStore.loadBookings(), loadLocalFinanceData()]);
 
-            // Add Recurring_Templates to the parallel fetch pool
-            const [
-                propsRows,
-                propFinRows,
-                personalRows,
-                sharedRows,
-                transferRows,
-                goldRows,
-                recurringRows,
-            ] = await Promise.all([
-                fetchSheetRows(SPREADSHEET_ID, "'Properties'!A2:C").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Property_Finances'!A2:G").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Personal_Transactions'!A2:I").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Shared_Transactions'!A2:F").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Transfers'!A2:F").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Gold_Assets'!A2:G").catch(() => []),
-                fetchSheetRows(SPREADSHEET_ID, "'Recurring_Templates'!A2:K").catch(() => []),
-            ]);
+            const financeRanges = [
+                "'Properties'!A2:C",
+                "'Property_Finances'!A2:G",
+                "'Personal_Transactions'!A2:I",
+                "'Shared_Transactions'!A2:F",
+                "'Transfers'!A2:F",
+                "'Gold_Assets'!A2:G",
+                "'Recurring_Templates'!A2:K",
+            ];
+
+            const batchResults = await batchFetchSheetRows(SPREADSHEET_ID, financeRanges);
+
+            const propsRows = batchResults[0] || [];
+            const propFinRows = batchResults[1] || [];
+            const personalRows = batchResults[2] || [];
+            const sharedRows = batchResults[3] || [];
+            const transferRows = batchResults[4] || [];
+            const goldRows = batchResults[5] || [];
+            const recurringRows = batchResults[6] || [];
 
             if (propsRows.length) {
                 properties.value = propsRows
@@ -512,7 +519,6 @@ export const useFinanceStore = defineStore('finance', () => {
                     notes: String(r[10] || '').trim(),
                 }));
 
-            // Atomic state swap prevents multiple render cycles
             sheetPropertyFinances.value = parsedPropFinances;
             personalFinances.value = parsedPersonal;
             sharedFinances.value = parsedShared;
@@ -520,7 +526,6 @@ export const useFinanceStore = defineStore('finance', () => {
             goldAssets.value = parsedGold;
             recurringTemplates.value = parsedRecurring;
 
-            // Non-blocking IndexedDB synchronization
             db.transaction(
                 'rw',
                 [
