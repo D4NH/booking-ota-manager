@@ -6,12 +6,13 @@ export type PropertyCategory =
     | 'Electricity'
     | 'Internet'
     | 'Owner Payout Outflow'
+    | 'Other'
     | string;
 
 export interface PropertyFinance {
     id: string;
     propertyId: string;
-    bookingId?: string; // Links entry directly to DexieDB booking
+    bookingId?: string;
     type: PropertyFinanceType;
     category: PropertyCategory;
     amount: number;
@@ -33,8 +34,8 @@ export interface PersonalFinance {
     amount: number;
     date: string;
     notes: string;
-    savingsInstitution?: string; // Col H in Personal_Transactions
-    goldWeightGrams?: number; // Col I in Personal_Transactions
+    savingsInstitution?: string;
+    goldWeightGrams?: number;
 }
 
 export interface PersonalSavings {
@@ -180,4 +181,21 @@ export interface InvestmentPortfolioSummary {
     goldUnrealizedPnL: number;
     goldPnLPct: number;
     totalPortfolioValue: number;
+}
+
+export interface SavingGoal {
+    id: string;
+    name: string;
+    owner: PersonalOwner | 'Shared';
+    targetAmount: number;
+    priority?: number; // Optional priority ordering (1, 2, 3...)
+    deadline?: string; // "YYYY-MM-DD"
+    notes?: string;
+}
+
+export interface ComputedSavingGoal extends SavingGoal {
+    allocatedAmount: number; // Dynamically allocated from savings pool
+    progressPct: number; // 0 - 100% (Strictly capped)
+    isCompleted: boolean; // true when allocatedAmount >= targetAmount
+    remainingAmount: number; // targetAmount - allocatedAmount
 }

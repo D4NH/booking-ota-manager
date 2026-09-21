@@ -23,6 +23,8 @@ import type {
     ProjectedRecurringItem,
     SbnInvestment,
     InvestmentPortfolioSummary,
+    SavingGoal,
+    ComputedSavingGoal,
 } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
@@ -38,6 +40,7 @@ export const useFinanceStore = defineStore('finance', () => {
     const transfers = shallowRef<OwnerTransfer[]>([]);
     const goldAssets = shallowRef<GoldAsset[]>([]);
     const recurringTemplates = shallowRef<RecurringTemplate[]>([]);
+    const savingGoals = ref<SavingGoal[]>([]);
 
     const currentGoldPricePerGram = ref<number>(2450000);
     const selectedMonth = ref<string>(getCurrentMonth());
@@ -62,7 +65,6 @@ export const useFinanceStore = defineStore('finance', () => {
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
             .sort(sortNewestFirst)
     );
-
     const totalOwnerDraws = computed<number>(() =>
         filteredTransfers.value.reduce((sum, item) => sum + Number(item.amount), 0)
     );
@@ -142,6 +144,54 @@ export const useFinanceStore = defineStore('finance', () => {
             goldPnLPct: goldPnLPct.value,
             totalPortfolioValue: totalVal,
         };
+    });
+    const dynamicAllocatedGoals = computed<ComputedSavingGoal[]>(() => {
+        // Compute total available liquid savings per owner
+        const pools: Record<string, number> = {
+            'Danh Nguyen': 0,
+            'Citra Ayu Wardani': 0,
+            Shared: 0,
+        };
+
+        personalDomain.dynamicSavingsAccounts.value.forEach((acc) => {
+            const owner = acc.owner || 'Shared';
+            pools[owner] = (pools[owner] || 0) + Math.max(0, Number(acc.balance) || 0);
+        });
+
+        // Create a mutable balance pool copy
+        const remainingPools: Record<string, number> = { ...pools };
+
+        // Sort goals by priority (or earliest deadline if priority is identical)
+        const sortedGoals = [...savingGoals.value].sort((a, b) => {
+            const pA = a.priority ?? 99;
+            const pB = b.priority ?? 99;
+            if (pA !== pB) return pA - pB;
+            return (a.deadline || '9999').localeCompare(b.deadline || '9999');
+        });
+
+        // Cascade allocate funds up to 100% capacity
+        return sortedGoals.map((goal): ComputedSavingGoal => {
+            const ownerPool = remainingPools[goal.owner] ?? 0;
+            const needed = goal.targetAmount;
+
+            // Take from pool up to the target amount, never exceeding it
+            const allocated = Math.min(ownerPool, needed);
+
+            // Deduct allocated amount so next goal gets only the remainder
+            remainingPools[goal.owner] = Math.max(0, ownerPool - allocated);
+
+            const progressPct =
+                needed > 0 ? Math.min(100, Math.round((allocated / needed) * 100)) : 0;
+            const isCompleted = allocated >= needed;
+
+            return {
+                ...goal,
+                allocatedAmount: allocated,
+                progressPct,
+                isCompleted,
+                remainingAmount: Math.max(0, needed - allocated),
+            };
+        });
     });
 
     // Recurring Templates
@@ -456,18 +506,50 @@ export const useFinanceStore = defineStore('finance', () => {
             });
         }
     }
+    async function addSavingGoal(payload: Omit<SavingGoal, 'id'>): Promise<void> {
+        const id = `GOAL-${Date.now()}-${crypto.randomUUID().slice(0, 4)}`;
+        const newGoal: SavingGoal = {
+            ...payload,
+            id,
+            targetAmount: Number(payload.targetAmount),
+            priority: Number(payload.priority) || 1,
+        };
+
+        await appendSheetRow(
+            SPREADSHEET_ID,
+            [
+                newGoal.id,
+                newGoal.name,
+                newGoal.owner,
+                newGoal.targetAmount,
+                newGoal.priority ?? 1,
+                newGoal.deadline || '',
+                newGoal.notes || '',
+            ],
+            "'Saving_Goals'!A1"
+        );
+
+        savingGoals.value = [...savingGoals.value, newGoal];
+
+        if (db.savingGoals) {
+            await db.savingGoals
+                .put(newGoal)
+                .catch((e) => console.warn('Dexie goal save error:', e));
+        }
+    }
 
     // Data Synchronization
     const loadLocalFinanceData = async (): Promise<void> => {
         try {
             if (!db.propertyFinances) return;
-            const [pFin, persFin, sFin, trans, gold, rec] = await Promise.all([
+            const [pFin, persFin, sFin, trans, gold, rec, goals] = await Promise.all([
                 db.propertyFinances.toArray(),
                 db.personalFinances.toArray(),
                 db.sharedFinances.toArray(),
                 db.transfers.toArray(),
                 db.goldAssets.toArray(),
                 db.recurringTemplates.toArray(),
+                db.savingGoals ? db.savingGoals.toArray() : Promise.resolve([]),
             ]);
 
             if (pFin.length) sheetPropertyFinances.value = pFin;
@@ -476,6 +558,7 @@ export const useFinanceStore = defineStore('finance', () => {
             if (trans.length) transfers.value = trans;
             if (gold.length) goldAssets.value = gold;
             if (rec.length) recurringTemplates.value = rec;
+            if (goals.length) savingGoals.value = goals;
         } catch (err) {
             console.error('Failed to load local finance storage:', err);
         }
@@ -495,6 +578,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 "'Transfers'!A2:F",
                 "'Gold_Assets'!A2:G",
                 "'Recurring_Templates'!A2:K",
+                "'Saving_Goals'!A2:G",
             ];
 
             const batchResults = await batchFetchSheetRows(SPREADSHEET_ID, financeRanges);
@@ -585,12 +669,25 @@ export const useFinanceStore = defineStore('finance', () => {
                     notes: String(r[10] || '').trim(),
                 }));
 
+            const parsedGoals: SavingGoal[] = (batchResults[7] || [])
+                .filter((r) => r[0] && String(r[0]).trim())
+                .map((r) => ({
+                    id: String(r[0]),
+                    name: String(r[1] || ''),
+                    owner: (r[2] as SavingGoal['owner']) || 'Shared',
+                    targetAmount: Number(r[3]) || 0,
+                    priority: Number(r[4]) || 1,
+                    deadline: r[5] ? normalizeDate(r[5]) : undefined,
+                    notes: String(r[6] || '').trim(),
+                }));
+
             sheetPropertyFinances.value = parsedPropFinances;
             personalFinances.value = parsedPersonal;
             sharedFinances.value = parsedShared;
             transfers.value = parsedTransfers;
             goldAssets.value = parsedGold;
             recurringTemplates.value = parsedRecurring;
+            savingGoals.value = parsedGoals;
 
             db.transaction(
                 'rw',
@@ -601,6 +698,7 @@ export const useFinanceStore = defineStore('finance', () => {
                     db.transfers,
                     db.goldAssets,
                     db.recurringTemplates,
+                    db.savingGoals,
                 ],
                 async () => {
                     await Promise.all([
@@ -618,6 +716,7 @@ export const useFinanceStore = defineStore('finance', () => {
                         db.recurringTemplates
                             .clear()
                             .then(() => db.recurringTemplates.bulkPut(parsedRecurring)),
+                        db.savingGoals.clear().then(() => db.savingGoals.bulkPut(parsedGoals)),
                     ]);
                 }
             ).catch((err) => console.warn('Dexie background sync warning:', err));
@@ -718,6 +817,11 @@ export const useFinanceStore = defineStore('finance', () => {
         goldPnLPct,
         portfolioSummary,
         addGoldPurchase,
+
+        // Savinfs
+        savingGoals,
+        addSavingGoal,
+        dynamicAllocatedGoals,
 
         // Recurring
         recurringTemplates,

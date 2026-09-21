@@ -5,6 +5,7 @@ import type {
     SharedFinance,
     OwnerTransfer,
     ProjectedRecurringItem,
+    SavingGoal,
 } from '@/types/finance';
 import { toast } from 'vue-toastflow';
 
@@ -229,6 +230,15 @@ export function useFinanceSync() {
             errorTitle: 'Failed to Post',
         });
 
+    const createSavingGoal = (payload: Omit<SavingGoal, 'id'>): Promise<boolean> =>
+        runWithToast(() => financeStore.addSavingGoal(payload), {
+            loadingTitle: 'Creating Savings Goal...',
+            loadingDesc: `Setting up target "${payload.name}" for ${payload.owner}.`,
+            successTitle: 'Goal Created',
+            successDesc: `Successfully added ${payload.name} target.`,
+            errorTitle: 'Failed to Save Goal',
+        });
+
     return {
         syncAllFinancialData,
         addPropertyTransaction,
@@ -243,5 +253,6 @@ export function useFinanceSync() {
         removeSharedTransaction,
         executeOwnerTransfer,
         settleRecurringCommitment,
+        createSavingGoal,
     };
 }

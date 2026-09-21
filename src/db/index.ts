@@ -9,6 +9,7 @@ import type {
     PersonalSavings,
     GoldAsset,
     RecurringTemplate,
+    SavingGoal,
 } from '@/types/finance';
 
 export const db = new Dexie('YogyakartaRentalsDB') as Dexie & {
@@ -21,6 +22,7 @@ export const db = new Dexie('YogyakartaRentalsDB') as Dexie & {
     personalSavings: EntityTable<PersonalSavings, 'id'>;
     goldAssets: EntityTable<GoldAsset, 'id'>;
     recurringTemplates: EntityTable<RecurringTemplate, 'id'>;
+    savingGoals: EntityTable<SavingGoal, 'id'>;
 };
 
 db.version(1).stores({
@@ -58,6 +60,19 @@ db.version(4).stores({
     personalSavings: 'id, owner, institution',
     goldAssets: 'id, owner, type, purchaseDate',
     recurringTemplates: 'id, targetLedger, category, active',
+});
+
+db.version(5).stores({
+    properties: 'id, name',
+    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
+    propertyFinances: 'id, propertyId, type, category, date, bookingId',
+    personalFinances: 'id, owner, type, category, date',
+    sharedFinances: 'id, type, category, date',
+    transfers: 'id, sourcePropertyId, targetAccount, date',
+    personalSavings: 'id, owner, institution',
+    goldAssets: 'id, owner, type, purchaseDate',
+    recurringTemplates: 'id, targetLedger, category, active',
+    savingGoals: 'id, owner, priority',
 });
 
 export default db;
