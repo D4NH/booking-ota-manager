@@ -198,7 +198,7 @@ onMounted(() => {
             <span
                 class="w-1.5 h-1.5 rounded-full"
                 :class="isEligibleToAutoSync ? 'bg-lime-400 animate-ping' : 'bg-mist-600'" />
-            <span class="font-sans font-medium text-[10px] text-mist-400">Auto:</span>
+            <span class="font-medium text-[10px] text-mist-400">Auto:</span>
             <span class="font-bold">
                 {{ isEligibleToAutoSync ? 'READY' : formattedCountdown }}
             </span>

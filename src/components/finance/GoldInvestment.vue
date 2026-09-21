@@ -125,7 +125,7 @@ const handleSaveGold = async (): Promise<void> => {
             <div class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50">
                 <div class="flex justify-between items-start mb-6">
                     <div>
-                        <span class="text-xs text-amber-300/70 uppercase font-mono block">
+                        <span class="text-xs text-mist-200 uppercase font-mono block">
                             Physical Holding
                         </span>
                         <span class="text-xs font-bold text-amber-300 font-mono tracking-wider">
@@ -134,7 +134,7 @@ const handleSaveGold = async (): Promise<void> => {
                     </div>
                     <div class="text-right">
                         <span class="text-xs text-mist-400 block">Benchmark:</span>
-                        <span class="text-xs font-mono font-bold text-amber-400">
+                        <span class="text-xs font-mono font-bold text-mist-200">
                             {{ formatIDR(currentGoldPricePerGram) }}/g
                         </span>
                     </div>
@@ -183,9 +183,9 @@ const handleSaveGold = async (): Promise<void> => {
                     <span>Reserve Density</span>
                     <span class="text-mist-200">Total Net Weight: {{ totalGoldGrams }}g</span>
                 </div>
-                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden">
+                <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
                     <div
-                        class="h-full rounded-full bg-linear-to-r from-amber-500 to-amber-300 transition-all duration-500"
+                        class="h-full rounded-full bg-amber-300 transition-all duration-500"
                         :style="{ width: `${Math.min(100, (totalGoldGrams / 50) * 100)}%` }"></div>
                 </div>
             </div>
@@ -247,7 +247,7 @@ const handleSaveGold = async (): Promise<void> => {
                 </strong>
             </span>
             <span class="text-mist-400">
-                Status: <strong class="text-lime-400 font-mono">Secured (Vault)</strong>
+                Status: <strong class="text-lime-400 font-mono">Secured</strong>
             </span>
         </div>
 

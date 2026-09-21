@@ -22,6 +22,7 @@ const categories = [
     'Maintenance',
     'Electricity',
     'Internet',
+    'Other',
     'Supplies',
     'Garbage Disposal',
 ];
@@ -145,7 +146,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
 </script>
 
 <template>
-    <div class="flex flex-col">
+    <div class="min-h-165 flex flex-col">
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Transaction Overview</template>
@@ -185,14 +186,14 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             </div>
         </div>
 
-        <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-sm text-mist-300">
+        <div class="flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
                         <th class="w-28 px-4 py-2.5">Property</th>
-                        <th class="w-48 px-4 py-2.5">Category</th>
+                        <th class="w-50 px-4 py-2.5">Category</th>
                         <th class="w-auto px-4 py-2.5">Source</th>
                         <th class="w-35 px-4 py-2.5 text-right">Amount</th>
                         <th class="w-23 px-4 py-2.5 text-right">Actions</th>

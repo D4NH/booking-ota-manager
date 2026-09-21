@@ -103,7 +103,7 @@ const cashFlowBars = computed(() => {
                                 stroke-width="12"
                                 fill="transparent"
                                 :stroke-dasharray="`${circumference} 0`"
-                                stroke-linecap="round" />
+                                stroke-linecap="butt" />
                             <!-- SBN Slice -->
                             <circle
                                 cx="50"
@@ -114,7 +114,7 @@ const cashFlowBars = computed(() => {
                                 fill="transparent"
                                 :stroke-dasharray="sbnStrokeDasharray"
                                 stroke-dashoffset="0"
-                                stroke-linecap="round" />
+                                stroke-linecap="butt" />
                         </svg>
                         <div
                             class="absolute inset-0 flex flex-col items-center justify-center font-mono">
@@ -127,17 +127,15 @@ const cashFlowBars = computed(() => {
                     <div class="space-y-2 text-xs font-mono">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-mist-500"></span>
-                            <div>
-                                <span class="text-mist-300 block">SBN SR022</span>
+                            <div class="flex gap-2">
+                                <span class="text-mist-300">SBN SR022</span>
                                 <strong class="text-mist-400">{{ sbnSharePct }}%</strong>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <div>
-                                <span class="text-mist-300 block">
-                                    Gold ({{ totalGoldGrams }}g)
-                                </span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                            <div class="flex gap-2">
+                                <span class="text-mist-300"> Gold ({{ totalGoldGrams }}g)</span>
                                 <strong class="text-amber-400">{{ goldSharePct }}%</strong>
                             </div>
                         </div>

@@ -35,7 +35,7 @@ const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex flex-col">
         <div class="flex justify-between">
             <CardTitle>
                 <template #title>
@@ -70,9 +70,8 @@ const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
         </div>
 
         <!-- Filter Subtabs & Settled Toggle -->
-        <div
-            class="flex flex-col flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md mb-4">
-            <div class="flex-1 flex flex-col divide-y divide-mist-800/60">
+        <div class="flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md mb-4">
+            <div class="flex flex-col divide-y divide-mist-800/60">
                 <div
                     v-for="item in visibleList"
                     :key="item.id"

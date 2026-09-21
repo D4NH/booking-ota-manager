@@ -135,6 +135,7 @@ const isCurrentBooking = (b: Booking): boolean => {
                             v-if="showPropertyColumn"
                             class="px-4 py-2.5 align-middle">
                             <div class="flex flex-col space-y-1">
+                                <span class="ml-1 text-xs">{{ b.listing }}</span>
                                 <div>
                                     <span
                                         v-if="b.bookingId.includes('UNAVAILABLE')"
@@ -151,7 +152,6 @@ const isCurrentBooking = (b: Booking): boolean => {
                                         {{ b.propertyId }}
                                     </RouterLink>
                                 </div>
-                                <span class="ml-1 text-xs">{{ b.listing }}</span>
                             </div>
                         </td>
                         <td class="px-4 py-2.5 align-middle">

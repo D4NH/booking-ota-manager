@@ -3,13 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import type {
-    TransactionType,
-    PersonalFinance,
-    SharedFinance,
-    PersonalCategory,
-    SharedCategory,
-} from '@/types/finance';
+import type { TransactionType, PersonalFinance, SharedFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -24,22 +18,27 @@ const {
     editSharedTransaction,
     removePersonalTransaction,
 } = useFinanceSync();
-const { filteredPersonalFinances, filteredSharedFinances, isLoading, currentGoldPricePerGram } =
-    storeToRefs(financeStore);
+const {
+    filteredPersonalFinances,
+    filteredSharedFinances,
+    isLoading,
+    currentGoldPricePerGram,
+    monthlyProjectedIncome,
+    monthlyProjectedExpenses,
+} = storeToRefs(financeStore);
 
 const DEFAULT_PERSONAL_CATEGORY = 'BCA';
 const DEFAULT_SHARED_CATEGORY = 'House';
 
 const categoriesPersonal = [
     'Creditcard',
-    'Gold',
     'Investments',
     'Other',
     'Food & Drinks',
     'Groceries',
     'Savings',
     'Subscription',
-] as const satisfies readonly PersonalCategory[];
+] as const;
 const categoriesShared = [
     'BPJS',
     'Creditcard',
@@ -49,7 +48,7 @@ const categoriesShared = [
     'Kirana',
     'Other',
     'Subscription',
-] as const satisfies readonly SharedCategory[];
+] as const;
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
 
 const activeTab = ref<'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared'>('Danh Nguyen');
@@ -72,6 +71,10 @@ const availableCategories = computed<readonly string[]>(() =>
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (activeTab.value === 'Shared') return filteredSharedFinances.value;
     return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
+});
+const totalRecurringCount = computed(() => {
+    const recurringItems = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
+    return recurringItems.filter((i) => !i.isSettled).length;
 });
 
 const getDefaultCategory = (): string =>
@@ -206,14 +209,14 @@ watch(formCategory, (newCat) => {
         </CardTitle>
         <div class="flex shrink-0 items-center justify-between">
             <div
-                class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
                     v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared']"
                     :key="tab"
-                    class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
                     :class="
                         activeTab === tab
-                            ? 'bg-mist-700 text-mist-100 shadow'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="activeTab = tab">
@@ -230,7 +233,7 @@ watch(formCategory, (newCat) => {
                     <fa-icon
                         class="text-xs mr-1"
                         icon="arrows-rotate" />
-                    Recurring Payments
+                    Recurring Payments ({{ totalRecurringCount }})
                 </button>
                 <button
                     class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
@@ -319,7 +322,7 @@ watch(formCategory, (newCat) => {
                     </tr>
                     <tr v-if="currentList.length === 0">
                         <td
-                            colspan="6"
+                            colspan="5"
                             class="py-6 text-center text-mist-400">
                             No matching entries logged for this period.
                         </td>

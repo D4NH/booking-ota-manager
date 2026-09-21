@@ -29,7 +29,6 @@ const { bookings } = defineProps<Props>();
 
 const chartRef = ref<DoughnutChartRef | null>(null);
 const hoveredIndex = ref<number | null>(null);
-const viewMode = ref<'count' | 'revenue'>('count');
 
 const yearOptions = computed<number[]>(() => {
     const years = new Set<number>();
@@ -66,9 +65,8 @@ const channelStats = computed(() => {
         totalRevenue += payout;
     }
 
-    const isRev = viewMode.value === 'revenue';
-    const sourceMap = isRev ? revenues : counts;
-    const total = isRev ? totalRevenue : totalCount;
+    const sourceMap = counts;
+    const total = totalCount;
 
     const entries = Array.from(sourceMap.entries()).map(([name, value]) => ({
         name,
@@ -113,9 +111,7 @@ const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
             callbacks: {
                 label: (ctx) => {
                     const val = Number(ctx.raw) || 0;
-                    return viewMode.value === 'revenue'
-                        ? ` ${ctx.label}: ${formatIDR(val)}`
-                        : ` ${ctx.label}: ${val} stays`;
+                    return ` ${ctx.label}: ${val} stays`;
                 },
             },
         },
@@ -181,7 +177,7 @@ watch(yearOptions, (available) => {
                 v-else
                 class="flex flex-1 items-center gap-4">
                 <div
-                    class="relative h-75 w-75 shrink-0"
+                    class="relative h-60 w-60 shrink-0"
                     @mouseleave="clearHighlight">
                     <Doughnut
                         ref="chartRef"
@@ -190,15 +186,11 @@ watch(yearOptions, (available) => {
                     <div
                         class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
                         <span class="font-mono text-lg font-semibold text-mist-100">
-                            {{
-                                viewMode === 'revenue'
-                                    ? formatIDR(channelStats.totalRevenue)
-                                    : channelStats.totalCount
-                            }}
+                            {{ channelStats.totalCount }}
                         </span>
                         <span
                             class="text-xs font-semibold uppercase tracking-wider text-mist-400 mt-1">
-                            {{ viewMode === 'revenue' ? 'Total Payout' : 'Total Stays' }}
+                            Total Stays
                         </span>
                     </div>
                 </div>
@@ -208,7 +200,7 @@ watch(yearOptions, (available) => {
                     <div
                         v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
-                        class="text-xs p-2 rounded-md transition"
+                        class="text-xs px-2 py-1.5 rounded-md transition"
                         :class="{ 'bg-mist-800/60': hoveredIndex === index }">
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-2">
@@ -220,19 +212,20 @@ watch(yearOptions, (available) => {
                                 </span>
                                 <span class="text-xs text-mist-400">&bull;</span>
                                 <span class="text-xs text-mist-400">
-                                    {{
-                                        viewMode === 'revenue'
-                                            ? formatIDR(ch.revenue)
-                                            : `${ch.count} stays`
-                                    }}
+                                    {{ `${ch.count} stays` }}
                                 </span>
                             </span>
-                            <span class="font-mono text-sm font-semibold text-mist-300 block">
-                                {{ ch.percentage }}%
-                            </span>
+                            <div class="flex items-center gap-2 font-mono">
+                                <span class="text-mist-400">
+                                    {{ formatIDR(ch.revenue) }}
+                                </span>
+                                <span class="font-semibold text-mist-200 min-w-8 text-right">
+                                    {{ ch.percentage }}%
+                                </span>
+                            </div>
                         </div>
 
-                        <div class="mt-2.5 space-y-2">
+                        <div class="mt-2 space-y-2">
                             <div class="h-1.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
@@ -240,9 +233,6 @@ watch(yearOptions, (available) => {
                                         width: `${ch.percentage}%`,
                                         backgroundColor: ch.color,
                                     }" />
-                            </div>
-                            <div class="flex justify-between text-[11px] text-mist-400 pt-0.5">
-                                {{ formatIDR(ch.revenue) }}
                             </div>
                         </div>
                     </div>
