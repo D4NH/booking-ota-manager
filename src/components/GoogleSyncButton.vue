@@ -240,7 +240,7 @@ onMounted(() => {
                     <div
                         v-for="(log, idx) in syncLogs"
                         :key="idx"
-                        class="rounded-xl border border-mist-800 bg-mist-950 p-3 text-xs space-y-1.5">
+                        class="rounded-xl border border-mist-800 bg-mist-950/50 p-3 text-xs space-y-1.5">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span

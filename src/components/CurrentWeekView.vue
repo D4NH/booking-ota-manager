@@ -78,7 +78,7 @@ const handleBookingClick = (booking: Booking, event: Event) => {
 
         <!-- 7-Day Column Headers -->
         <div
-            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
+            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold uppercase text-mist-400">
             <div
                 v-for="day in weekDays"
                 :key="day.dateStr"

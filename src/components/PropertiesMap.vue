@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
             <p class="mt-1 text-xs text-mist-400">Across Indonsia</p>
         </div>
         <div
-            class="relative h-full min-h-64 w-full overflow-hidden rounded-md border border-mist-800 bg-mist-950 shadow-md">
+            class="relative h-full min-h-64 w-full overflow-hidden rounded-md border border-mist-800 bg-mist-950/50 shadow-md">
             <!-- Map Canvas -->
             <div
                 ref="mapContainer"

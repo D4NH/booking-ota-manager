@@ -68,9 +68,9 @@ const { dynamicSavingsAccounts, dynamicSavingsTransactions } = storeToRefs(finan
                     class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
                     <tr>
                         <th class="w-25 py-2.5 px-3">Date</th>
-                        <th class="w-26 py-2.5 px-3">Owner</th>
+                        <!-- <th class="w-26 py-2.5 px-3">Owner</th> -->
                         <th class="py-2.5 px-3">Notes</th>
-                        <th class="w-30 py-2.5 px-3 text-right">Amount</th>
+                        <th class="py-2.5 px-3 text-right">Amount</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60 font-mono">
@@ -79,9 +79,9 @@ const { dynamicSavingsAccounts, dynamicSavingsTransactions } = storeToRefs(finan
                         :key="tx.id"
                         class="hover:bg-mist-850/50">
                         <td class="py-2.5 px-3 text-mist-400">{{ tx.date }}</td>
-                        <td class="py-2.5 px-3 font-medium text-mist-100">
+                        <!-- <td class="py-2.5 px-3 font-medium text-mist-100">
                             {{ tx.owner }}
-                        </td>
+                        </td> -->
                         <td class="py-2.5 px-3 text-mist-300">
                             <TransactionNote :notes="tx.notes" />
                         </td>

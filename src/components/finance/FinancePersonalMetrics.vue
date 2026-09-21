@@ -5,14 +5,11 @@ import { formatIDR } from '@/utils/money';
 
 const financeStore = useFinanceStore();
 const {
-    monthlyPropertyRevenue,
-    monthlyPropertyExpenses,
-    monthlyOwnerDraws,
     netPropertyProfit,
     danhNetBalance,
+    danhRevenueGrowthPct,
     citraNetBalance,
     sharedNetBalance,
-    totalOwnerDraws,
 } = storeToRefs(financeStore);
 </script>
 
@@ -29,41 +26,6 @@ const {
                 {{ formatIDR(netPropertyProfit) }}
             </p>
             <p class="text-xs text-mist-500">Operating Profit</p>
-            <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                    Rev:
-                    <span class="font-semibold text-lime-400 font-mono">{{
-                        formatIDR(monthlyPropertyRevenue)
-                    }}</span>
-                </div>
-                <div>
-                    Exp:
-                    <span class="font-semibold text-rose-400 font-mono">{{
-                        formatIDR(monthlyPropertyExpenses)
-                    }}</span>
-                </div>
-            </div> -->
-        </div>
-
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
-                <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Shared Household
-                </h3>
-            </div>
-            <p class="font-mono text-lg font-semibold text-white">
-                {{ formatIDR(sharedNetBalance) }}
-            </p>
-            <p class="text-xs text-mist-500">Remaining Balance</p>
-            <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-xs text-mist-400">
-                Total Joint Outflows:
-                <span class="font-semibold text-lime-400 font-mono">
-                    {{ formatIDR(totalOwnerDraws) }}
-                </span>
-            </div> -->
         </div>
 
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
@@ -78,11 +40,26 @@ const {
                 :class="danhNetBalance >= 0 ? 'text-mist-100' : 'text-rose-400'">
                 {{ formatIDR(danhNetBalance) }}
             </p>
-            <p class="text-xs text-mist-500">Discretionary Net</p>
-            <!-- Outflows -->
-            <!-- <div class="pt-3 mt-3 border-t border-mist-800 text-[11px] text-mist-400">
-                Personal Inflows minus Expenses
-            </div> -->
+            <p class="flex items-center gap-1 text-xs">
+                <span
+                    v-if="danhRevenueGrowthPct !== null"
+                    class="font-medium"
+                    :class="
+                        danhRevenueGrowthPct > 0
+                            ? 'text-lime-400'
+                            : danhRevenueGrowthPct < 0
+                              ? 'text-rose-400'
+                              : 'text-mist-400'
+                    ">
+                    {{ danhRevenueGrowthPct >= 0 ? '↑' : '↓' }}{{ Math.abs(danhRevenueGrowthPct) }}%
+                </span>
+                <span
+                    v-else
+                    class="font-medium text-mist-500">
+                    —
+                </span>
+                <span class="text-mist-500">vs last month</span>
+            </p>
         </div>
 
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
@@ -98,6 +75,19 @@ const {
                 {{ formatIDR(citraNetBalance) }}
             </p>
             <p class="text-xs text-mist-500">Discretionary Net</p>
+        </div>
+
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <div class="flex justify-between items-center">
+                <h3
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Shared Household
+                </h3>
+            </div>
+            <p class="font-mono text-lg font-semibold text-white">
+                {{ formatIDR(sharedNetBalance) }}
+            </p>
+            <p class="text-xs text-mist-500">Remaining Balance</p>
         </div>
     </div>
 </template>

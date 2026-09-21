@@ -94,7 +94,7 @@ const projectedRevenue = computed(() => {
 
             <!-- Progress Bar with Clamped "Today" Marker -->
             <div class="space-y-1.5 pt-1">
-                <div class="relative h-2.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                <div class="relative h-2.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
                     <!-- Actual Revenue Fill -->
                     <div
                         class="h-full rounded-full bg-lime-500 transition-all duration-500 ease-out"

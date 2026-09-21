@@ -152,3 +152,32 @@ export interface ProjectedRecurringItem extends RecurringTemplate {
     isSettled: boolean;
     matchedTransactionId?: string;
 }
+
+export type SbnSeries = 'SR022-T3' | 'SR022-T5' | 'SR021' | 'ORI026';
+
+export interface SbnInvestment {
+    id: string;
+    series: SbnSeries;
+    owner: PersonalOwner | 'Shared';
+    principalAmount: number;
+    couponRatePct: number; // e.g. 6.45
+    taxRatePct: number; // e.g. 10
+    issueDate: string; // "2025-06-25"
+    maturityDate: string; // "2028-06-10"
+    payoutDayOfMonth: number; // 10
+    active: boolean;
+    notes?: string;
+}
+
+export interface InvestmentPortfolioSummary {
+    sbnTotalPrincipal: number;
+    sbnMonthlyGrossYield: number;
+    sbnMonthlyNetYield: number;
+    sbnTotalCollectedYield: number;
+    goldTotalGrams: number;
+    goldTotalCostBasis: number;
+    goldCurrentValuation: number;
+    goldUnrealizedPnL: number;
+    goldPnLPct: number;
+    totalPortfolioValue: number;
+}

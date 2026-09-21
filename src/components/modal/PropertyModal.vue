@@ -179,7 +179,7 @@ watch(
                             <input
                                 v-model="form.color"
                                 type="color"
-                                class="h-9 w-12 cursor-pointer rounded-md border border-mist-800 bg-mist-950 p-1" />
+                                class="h-9 w-12 cursor-pointer rounded-md border border-mist-800 bg-mist-950/50 p-1" />
                             <input
                                 v-model="form.color"
                                 type="text"

@@ -187,7 +187,7 @@ onMounted(() => refreshAuthStatus());
                     v-else
                     class="w-full text-left text-sm text-mist-300 table-fixed">
                     <thead
-                        class="border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
+                        class="border-b border-mist-800 bg-mist-950/50 text-xs font-semibold uppercase text-mist-400">
                         <tr>
                             <th class="w-32 px-4 py-2.5">ID</th>
                             <th class="px-4 py-2.5">Name</th>

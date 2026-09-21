@@ -152,7 +152,7 @@ watch(yearOptions, (available) => {
                 </div>
                 <!-- Progress Bar -->
                 <div class="mt-2.5 space-y-2">
-                    <div class="h-1.5 w-full rounded-full bg-mist-950 overflow-hidden">
+                    <div class="h-1.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
                         <div
                             class="h-full rounded-full transition-all duration-500"
                             :class="stat.revenue > 0 ? 'bg-lime-400' : 'bg-mist-700'"

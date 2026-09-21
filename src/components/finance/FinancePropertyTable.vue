@@ -185,7 +185,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
+        <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-sm text-mist-300">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
@@ -198,23 +198,25 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                         <th class="w-23 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-mist-800/60">
+                <tbody class="divide-y divide-mist-800/60 align-middle">
                     <tr
                         v-for="item in paginatedTransactions"
                         :key="item.id"
                         class="hover:bg-mist-800/40 align-middle">
-                        <td class="px-4 py-2.5 text-mist-400 text-xs font-mono">{{ item.date }}</td>
-                        <td class="px-4 py-2.5">
+                        <td class="px-4 py-2.5 align-middle text-mist-400 text-xs font-mono">
+                            {{ item.date }}
+                        </td>
+                        <td class="px-4 py-2.5 align-middle">
                             <RouterLink
                                 :to="{ name: 'property-detail', params: { id: item.propertyId } }"
                                 :class="getPropertyStyle(item.propertyId)">
                                 {{ item.propertyId }}
                             </RouterLink>
                         </td>
-                        <td class="px-4 py-2.5 truncate">
+                        <td class="px-4 py-2.5 align-middle truncate">
                             {{ item.category }}
                         </td>
-                        <td class="px-4 py-2.5 text-mist-400 truncate">
+                        <td class="px-4 py-2.5 align-middle text-mist-400 truncate">
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
@@ -224,12 +226,14 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                                 <TransactionNote :notes="item.notes" />
                             </div>
                         </td>
-                        <td
-                            class="px-4 py-2.5 text-right font-bold font-mono text-xs"
-                            :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
-                            {{ item.type === 'expense' ? '-' : '+' }}{{ formatIDR(item.amount) }}
+                        <td class="px-4 py-2.5 text-right font-bold font-mono text-xs">
+                            <span
+                                :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
+                                {{ item.type === 'expense' ? '-' : '+' }}
+                            </span>
+                            {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="px-4 py-2.5">
+                        <td class="px-4 py-2.5 align-middle">
                             <div class="flex items-center justify-end gap-1 h-7">
                                 <button
                                     v-if="!item.id.startsWith('dexie')"
@@ -243,9 +247,9 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                                 </button>
                                 <span
                                     v-if="!item.id.startsWith('dexie')"
-                                    class="text-mist-700"
-                                    >|</span
-                                >
+                                    class="text-mist-700">
+                                    |
+                                </span>
                                 <button
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"

@@ -64,7 +64,7 @@ const isCurrentBooking = (b: Booking): boolean => {
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <table class="w-full text-left text-sm text-mist-300">
             <thead
-                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950 text-xs font-semibold uppercase text-mist-400">
+                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
                 <tr>
                     <th class="w-45 px-4 py-2.5">ID</th>
                     <th

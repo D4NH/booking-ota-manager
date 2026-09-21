@@ -35,6 +35,8 @@ const categoriesPersonal = [
     'Gold',
     'Investments',
     'Other',
+    'Food & Drinks',
+    'Groceries',
     'Savings',
     'Subscription',
 ] as const satisfies readonly PersonalCategory[];
@@ -194,7 +196,7 @@ watch(formCategory, (newCat) => {
 </script>
 
 <template>
-    <div class="flex flex-col space-y-4">
+    <div class="min-h-0 flex flex-col space-y-4">
         <CardTitle>
             <template #title>Budget Overview</template>
             <template #subtitle>
@@ -240,10 +242,11 @@ watch(formCategory, (newCat) => {
 
         <RecurringChecklist v-if="showRecurring" />
 
-        <div class="overflow-x-auto flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md">
+        <div
+            class="flex-1 overflow-auto max-h-76.5 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
+                    class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
                         <th class="w-32 px-4 py-2.5">Category</th>
@@ -252,21 +255,25 @@ watch(formCategory, (newCat) => {
                         <th class="w-23 px-4 py-2.5 text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-mist-800/60 font-mono">
+                <tbody class="divide-y divide-mist-800/60 align-middle">
                     <tr
                         v-for="item in currentList"
                         :key="item.id"
                         class="hover:bg-mist-850/50 group">
-                        <td class="px-4 py-2.5 text-mist-400">{{ item.date }}</td>
-                        <td class="px-4 py-2.5 font-medium text-mist-100 flex items-center gap-1.5">
-                            <span>{{ item.category }}</span>
-                            <span
-                                v-if="item.category === 'Gold'"
-                                class="text-[9px] bg-amber-400/10 text-amber-400 border border-amber-400/20 px-1 rounded-md font-mono font-semibold">
-                                GOLD
-                            </span>
+                        <td class="px-4 py-2.5 align-middle text-mist-400 font-mono">
+                            {{ item.date }}
                         </td>
-                        <td class="px-4 py-2.5 text-mist-400">
+                        <td class="px-4 py-2.5 align-middle font-medium text-mist-100">
+                            <div class="flex items-center gap-1.5">
+                                <span>{{ item.category }}</span>
+                                <span
+                                    v-if="item.category === 'Gold'"
+                                    class="text-[9px] bg-amber-400/10 text-amber-400 border border-amber-400/20 px-1 rounded-md font-mono font-semibold">
+                                    GOLD
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2.5 align-middle text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
                                 class="text-blue-400 mr-1 font-semibold">
@@ -279,14 +286,14 @@ watch(formCategory, (newCat) => {
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
-                        <td class="px-4 py-2.5 text-right font-semibold">
+                        <td class="px-4 py-2.5 align-middle text-right font-semibold font-mono">
                             <span
                                 :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
                                 {{ item.type === 'income' ? '+' : '-' }}
                             </span>
                             {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="px-4 py-2.5 text-center">
+                        <td class="px-4 py-2.5 align-middle text-center">
                             <div class="flex items-center justify-end gap-1 h-7">
                                 <button
                                     type="button"

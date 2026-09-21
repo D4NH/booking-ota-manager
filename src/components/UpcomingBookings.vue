@@ -85,7 +85,7 @@ const displaySections = computed<MonthSection[]>(() => {
                     <!-- Month Header -->
                     <div
                         v-if="showMonthHeaders && section.label"
-                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400 backdrop-blur-xs">
+                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/50 backdrop-blur-sm px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400">
                         {{ section.label }}
                     </div>
                     <div class="flex-1 flex flex-col divide-y divide-mist-800">

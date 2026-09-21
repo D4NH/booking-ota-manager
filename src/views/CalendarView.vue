@@ -136,7 +136,7 @@ watch(
             class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
             <!-- Weekday Header -->
             <div
-                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950 text-center text-xs font-semibold uppercase text-mist-400">
+                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold uppercase text-mist-400">
                 <div class="px-4 py-2.5">Mon</div>
                 <div class="px-4 py-2.5">Tue</div>
                 <div class="px-4 py-2.5">Wed</div>

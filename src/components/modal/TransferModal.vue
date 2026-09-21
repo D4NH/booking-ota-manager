@@ -139,8 +139,8 @@ const handleTransfer = async (): Promise<void> => {
                         class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                         <option value="Shared">Shared Household</option>
                         <option value="Split">Danh / Citra</option>
-                        <!-- <option value="Danh Nguyen">Danh Nguyen</option>
-                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option> -->
+                        <option value="Danh Nguyen">Danh Nguyen</option>
+                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
                     </select>
                     <div
                         class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">

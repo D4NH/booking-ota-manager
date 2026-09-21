@@ -170,7 +170,7 @@ const cashFlowBars = computed(() => {
                         class="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer">
                         <!-- Tooltip on Hover -->
                         <div
-                            class="opacity-0 group-hover:opacity-100 transition-opacity text-[9px] bg-mist-950 text-mist-300 px-1 py-0.5 rounded border border-mist-700 mb-1 pointer-events-none whitespace-nowrap">
+                            class="opacity-0 group-hover:opacity-100 transition-opacity text-[9px] bg-mist-950/50 text-mist-300 px-1 py-0.5 rounded border border-mist-700 mb-1 pointer-events-none whitespace-nowrap">
                             {{ formatIDR(bar.amount) }}
                         </div>
                         <div
