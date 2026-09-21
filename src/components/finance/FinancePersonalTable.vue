@@ -196,7 +196,7 @@ watch(formCategory, (newCat) => {
 <template>
     <div class="flex flex-col space-y-4">
         <CardTitle>
-            <template #title>Personal Wallet</template>
+            <template #title>Budget Overview</template>
             <template #subtitle>
                 Income allocation, fixed commitments and variable spend across personal and shared
                 accounts
@@ -240,7 +240,7 @@ watch(formCategory, (newCat) => {
 
         <RecurringChecklist v-if="showRecurring" />
 
-        <div class="overflow-x-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
+        <div class="overflow-x-auto flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-semibold uppercase text-mist-400">
@@ -279,10 +279,12 @@ watch(formCategory, (newCat) => {
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
-                        <td
-                            class="px-4 py-2.5 text-right font-semibold"
-                            :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
-                            {{ item.type === 'income' ? '+' : '-' }}{{ formatIDR(item.amount) }}
+                        <td class="px-4 py-2.5 text-right font-semibold">
+                            <span
+                                :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
+                                {{ item.type === 'income' ? '+' : '-' }}
+                            </span>
+                            {{ formatIDR(item.amount) }}
                         </td>
                         <td class="px-4 py-2.5 text-center">
                             <div class="flex items-center justify-end gap-1 h-7">

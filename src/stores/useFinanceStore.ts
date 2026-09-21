@@ -15,6 +15,8 @@ import type {
     Property,
     RecurringTemplate,
     ProjectedRecurringItem,
+    SbnInvestment,
+    InvestmentPortfolioSummary,
 } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
@@ -152,7 +154,9 @@ export const useFinanceStore = defineStore('finance', () => {
 
     // Savings & Gold Aggregations
     const dynamicSavingsTransactions = computed<PersonalFinance[]>(() =>
-        personalFinances.value.filter((item) => item.category.trim().toLowerCase() === 'savings')
+        personalFinances.value
+            .filter((item) => item.category.trim().toLowerCase() === 'savings')
+            .sort(sortNewestFirst)
     );
     const dynamicSavingsAccounts = computed<AggregatedSavingsAccount[]>(() => {
         const groups = new Map<string, AggregatedSavingsAccount>();
@@ -1077,6 +1081,84 @@ export const useFinanceStore = defineStore('finance', () => {
         }
     }
 
+    const sbnInvestments = ref<SbnInvestment[]>([
+        {
+            id: 'SBN-SR022-01',
+            series: 'SR022-T3',
+            owner: 'Shared',
+            principalAmount: Number(import.meta.env.VITE_SBN_AMOUNT) || 0,
+            couponRatePct: 6.45,
+            taxRatePct: 10,
+            issueDate: '2025-06-25',
+            maturityDate: '2028-06-10',
+            payoutDayOfMonth: 10,
+            active: true,
+            notes: 'Kemenkeu Sukuk Ritel Syariah via BCA',
+        },
+    ]);
+
+    // SBN Yield Computations
+    const sbnTotalPrincipal = computed<number>(() =>
+        sbnInvestments.value.filter((s) => s.active).reduce((sum, s) => sum + s.principalAmount, 0)
+    );
+
+    // Monthly Gross Coupon = (Principal * Rate / 12)
+    const sbnMonthlyGrossYield = computed<number>(() =>
+        sbnInvestments.value
+            .filter((s) => s.active)
+            .reduce((sum, s) => sum + (s.principalAmount * (s.couponRatePct / 100)) / 12, 0)
+    );
+
+    // Monthly Net Coupon = Gross - 10% Final Tax
+    const sbnMonthlyNetYield = computed<number>(() =>
+        sbnInvestments.value
+            .filter((s) => s.active)
+            .reduce((sum, s) => {
+                const gross = (s.principalAmount * (s.couponRatePct / 100)) / 12;
+                return sum + gross * (1 - s.taxRatePct / 100);
+            }, 0)
+    );
+
+    // Historical SBN coupons actually collected across Shared & Personal ledgers
+    const sbnTotalCollectedYield = computed<number>(() => {
+        const fromShared = sharedFinances.value
+            .filter((s) => s.type === 'income' && /SR022|SBN/i.test(s.category))
+            .reduce((sum, s) => sum + Number(s.amount), 0);
+
+        const fromPersonal = personalFinances.value
+            .filter((p) => p.type === 'income' && /SR022|SBN/i.test(p.notes))
+            .reduce((sum, p) => sum + Number(p.amount), 0);
+
+        return fromShared + fromPersonal;
+    });
+
+    // Gold Metrics
+    const goldTotalCostBasis = computed<number>(() =>
+        goldAssets.value.reduce((sum, g) => sum + Number(g.buyPriceTotal), 0)
+    );
+
+    const goldPnLPct = computed<number>(() => {
+        if (goldTotalCostBasis.value === 0) return 0;
+        return Number(((goldUnrealizedPnL.value / goldTotalCostBasis.value) * 100).toFixed(1));
+    });
+
+    // Combined Portfolio Summary
+    const portfolioSummary = computed<InvestmentPortfolioSummary>(() => {
+        const totalVal = sbnTotalPrincipal.value + estimatedGoldMarketValue.value;
+        return {
+            sbnTotalPrincipal: sbnTotalPrincipal.value,
+            sbnMonthlyGrossYield: sbnMonthlyGrossYield.value,
+            sbnMonthlyNetYield: sbnMonthlyNetYield.value,
+            sbnTotalCollectedYield: sbnTotalCollectedYield.value,
+            goldTotalGrams: totalGoldGrams.value,
+            goldTotalCostBasis: goldTotalCostBasis.value,
+            goldCurrentValuation: estimatedGoldMarketValue.value,
+            goldUnrealizedPnL: goldUnrealizedPnL.value,
+            goldPnLPct: goldPnLPct.value,
+            totalPortfolioValue: totalVal,
+        };
+    });
+
     return {
         properties,
         sheetPropertyFinances,
@@ -1136,5 +1218,12 @@ export const useFinanceStore = defineStore('finance', () => {
         previousMonthPropertyExpenses,
         propertyRevenueGrowthPct,
         propertyExpenseGrowthPct,
+        sbnInvestments,
+        sbnTotalPrincipal,
+        sbnMonthlyGrossYield,
+        sbnMonthlyNetYield,
+        sbnTotalCollectedYield,
+        goldPnLPct,
+        portfolioSummary,
     };
 });
