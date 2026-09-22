@@ -111,7 +111,11 @@ const handleAmountChange = (): void => {
     }
 };
 const submitRecord = async (): Promise<void> => {
-    if (isSubmitting.value || !formAmount.value || !formDate.value) return;
+    if (isSubmitting.value) return;
+
+    if (!formAmount.value || formAmount.value <= 0 || !formDate.value || !formCategory.value) {
+        return;
+    }
 
     isSubmitting.value = true;
     const resolvedCategory = formCategory.value.trim() || getDefaultCategory();
@@ -179,10 +183,9 @@ const submitRecord = async (): Promise<void> => {
             formGoldWeightGrams.value = null;
         }
     } finally {
-        // Enforce 1000ms debounce guardrail against click spamming
         setTimeout(() => {
             isSubmitting.value = false;
-        }, 1000);
+        }, 500);
     }
 };
 const triggerDatePicker = (event: MouseEvent): void => {
@@ -367,7 +370,7 @@ watch(formCategory, (newCat) => {
                     <div class="relative">
                         <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
                         <select
-                            v-model.number="formType"
+                            v-model="formType"
                             class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
@@ -386,12 +389,13 @@ watch(formCategory, (newCat) => {
                             Category
                         </label>
                         <select
-                            v-model.number="formCategory"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            v-model="formCategory"
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer"
+                            required>
                             <option
                                 value=""
                                 disabled>
-                                --
+                                -- Select Category --
                             </option>
                             <option
                                 v-for="cat in availableCategories"
@@ -440,9 +444,10 @@ watch(formCategory, (newCat) => {
                                 class="text-xs" />
                         </div>
                         <input
-                            :value="formAmount"
+                            v-model.number="formAmount"
                             type="number"
                             placeholder="100000"
+                            min="1"
                             class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 font-mono pt-1.5 pb-1.5 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                             required
                             @input="handleAmountChange" />
