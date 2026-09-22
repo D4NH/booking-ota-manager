@@ -6,7 +6,7 @@ import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { getCurrentDate, formatDate, parseISODate } from '@/utils/date';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 interface Props {
     bookings: Booking[];

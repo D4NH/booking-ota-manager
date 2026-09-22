@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 const financeStore = useFinanceStore();
 const {

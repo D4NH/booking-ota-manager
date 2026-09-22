@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
-import PageTitle from '@/components/ui/PageTitle.vue';
-import MonthSelector from '@/components/ui/MonthSelector.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
+import PageTitle from '@/components/PageTitle.vue';
+import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePropertyMetrics from '@/features/finance/PropertyMetrics.vue';
 import FinancePropertyTable from '@/features/finance/PropertyTable.vue';
 import FinancePropertyBreakdown from '@/features/finance/PropertyBreakdown.vue';

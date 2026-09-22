@@ -7,7 +7,7 @@ import type { ProjectedRecurringItem } from '@/types/finance';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 const financeStore = useFinanceStore();
 const { settleRecurringCommitment } = useFinanceSync();

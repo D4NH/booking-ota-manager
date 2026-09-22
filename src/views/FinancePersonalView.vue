@@ -4,10 +4,10 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
-import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
-import CardTitle from '@/components/ui/CardTitle.vue';
-import PageTitle from '@/components/ui/PageTitle.vue';
-import MonthSelector from '@/components/ui/MonthSelector.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
+import CardTitle from '@/components/CardTitle.vue';
+import PageTitle from '@/components/PageTitle.vue';
+import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePersonalMetrics from '@/features/finance/PersonalMetrics.vue';
 import FinancePersonalTable from '@/features/finance/PersonalTable.vue';
 import SbnInvestment from '@/features/finance/SbnInvestment.vue';

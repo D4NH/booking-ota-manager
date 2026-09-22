@@ -13,7 +13,7 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 
-import AppSidebar from '@/components/ui/AppSidebar.vue';
+import AppSidebar from '@/components/AppSidebar.vue';
 import BookingModal from '@/features/bookings/BookingModal.vue';
 import PropertyModal from '@/features/properties/PropertyModal.vue';
 

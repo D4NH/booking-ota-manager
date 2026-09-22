@@ -17,7 +17,7 @@ import { Line } from 'vue-chartjs';
 import { formatIDR } from '@/utils/money';
 import type { WeeklyData, MonthlyData } from '@/composables/useRevenueData';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 ChartJS.register(
     CategoryScale,

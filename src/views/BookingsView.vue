@@ -9,10 +9,10 @@ import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatDate } from '@/utils/date';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
-import PageTitle from '@/components/ui/PageTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
+import PageTitle from '@/components/PageTitle.vue';
 import CurrentWeekView from '@/features/bookings/CurrentWeekView.vue';
-import PropertySelector from '@/components/ui/PropertySelector.vue';
+import PropertySelector from '@/components/PropertySelector.vue';
 import BookingsTable from '@/features/bookings/BookingsTable.vue';
 
 const modalStore = useModalStore();

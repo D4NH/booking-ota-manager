@@ -4,7 +4,7 @@ import type { Property } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { getCurrentDate, getDaysInMonth, parseISODate } from '@/utils/date';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 interface Props {
     currentRevenue: number;

@@ -11,9 +11,9 @@ import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 
-import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
-import PageTitle from '@/components/ui/PageTitle.vue';
-import CardTitle from '@/components/ui/CardTitle.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
+import PageTitle from '@/components/PageTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 import PropertyDataBackup from '@/features/settings/PropertyDataBackup.vue';
 
 const bookingStore = useBookingStore();
@@ -83,7 +83,6 @@ const handleClearFinance = async (): Promise<void> => {
     await db.goldAssets.clear();
     await db.recurringTemplates.clear();
     await financeStore.loadLocalFinanceData();
-    await financeStore.fetchRecurringTemplates();
     toast.success({
         title: 'Finance Cleared',
         description: 'IndexedDB finance table has been cleared.',

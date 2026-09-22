@@ -4,7 +4,7 @@ import { MONTH_NAMES as monthsList } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
 
 import {
     Chart as ChartJS,

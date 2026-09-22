@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { PropertyId } from '@/types/property';
 
-import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
+import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 
 interface Props {
     modelValue: PropertyId | 'all';

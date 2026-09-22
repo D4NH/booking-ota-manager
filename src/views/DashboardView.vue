@@ -9,8 +9,8 @@ import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 import { getCurrentMonth, formatDate } from '@/utils/date';
 
-import CardTitle from '@/components/ui/CardTitle.vue';
-import PageTitle from '@/components/ui/PageTitle.vue';
+import CardTitle from '@/components/CardTitle.vue';
+import PageTitle from '@/components/PageTitle.vue';
 import PropertyCard from '@/features/properties/PropertyCard.vue';
 import RevenuePerformance from '@/features/dashboard/RevenuePerformance.vue';
 import UpcomingBookings from '@/features/bookings/UpcomingBookings.vue';
