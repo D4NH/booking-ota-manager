@@ -17,14 +17,26 @@ const { addPropertyTransaction, editPropertyTransaction, removePropertyTransacti
 const { filteredPropertyFinances, isLoading } = storeToRefs(financeStore);
 
 const categories = [
-    'Payout',
+    // Operations & Guest Amenities
     'Cleaning',
-    'Maintenance',
-    'Electricity',
-    'Internet',
-    'Other',
-    'Supplies',
+    'Guest Amenities & Toiletries',
+    'Food & Beverages',
+    'Linens & Soft Goods',
+
+    // Utilities & Recurring Costs
+    'Utilities', // Electricity, Water, Gas
+    'Connectivity & Media',
     'Garbage Disposal',
+
+    // Maintenance & Upkeep
+    'Property Maintenance',
+
+    // Administrative & Platform
+    'Payout',
+
+    // Capital & Legal
+    'Furniture',
+    'Taxes, Permits & Insurance',
 ];
 
 const isModalOpen = ref(false);
