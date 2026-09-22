@@ -11,16 +11,15 @@ import type { PropertyId } from '@/types/property';
 import { formatDate, getCurrentWeekNumber } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/CardTitle.vue';
-import PageTitle from '@/components/PageTitle.vue';
-import OccupiedTag from '@/components/OccupiedTag.vue';
-import PropertyLocationMap from '@/components/PropertyLocationMap.vue';
-import PropertySelector from '@/components/PropertySelector.vue';
-import UpcomingBookings from '@/components/UpcomingBookings.vue';
-import CurrentWeekView from '@/components/CurrentWeekView.vue';
-
-import MonthlyRevenuePacing from '@/components/MonthlyRevenuePacing.vue';
-import ForwardBookingHorizon from '@/components/ForwardBookingHorizon.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import PageTitle from '@/components/ui/PageTitle.vue';
+import OccupiedTag from '@/components/ui/OccupiedTag.vue';
+import PropertyLocationMap from '@/features/properties/PropertyLocationMap.vue';
+import PropertySelector from '@/components/ui/PropertySelector.vue';
+import UpcomingBookings from '@/features/bookings/UpcomingBookings.vue';
+import CurrentWeekView from '@/features/bookings/CurrentWeekView.vue';
+import MonthlyRevenuePacing from '@/features/properties/MonthlyRevenuePacing.vue';
+import ForwardBookingHorizon from '@/features/properties/ForwardBookingHorizon.vue';
 
 interface Props {
     id: PropertyId;
@@ -103,7 +102,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                         class="font-medium"
                         :class="
                             totalPayout > 0
-                                ? 'text-lime-400'
+                                ? 'text-emerald-400'
                                 : totalPayout < 0
                                   ? 'text-rose-400'
                                   : 'text-mist-400'
@@ -131,7 +130,7 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                         class="font-medium"
                         :class="
                             revenueGrowthPercent > 0
-                                ? 'text-lime-400'
+                                ? 'text-emerald-400'
                                 : revenueGrowthPercent < 0
                                   ? 'text-rose-400'
                                   : 'text-mist-400'

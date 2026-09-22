@@ -11,10 +11,10 @@ import type { Property, PropertyId } from '@/types/property';
 import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-import PageTitle from '@/components/PageTitle.vue';
-import CardTitle from '@/components/CardTitle.vue';
-import PropertyDataBackup from '@/components/PropertyDataBackup.vue';
+import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
+import PageTitle from '@/components/ui/PageTitle.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import PropertyDataBackup from '@/features/settings/PropertyDataBackup.vue';
 
 const bookingStore = useBookingStore();
 const financeStore = useFinanceStore();

@@ -39,7 +39,7 @@ const monthsRemaining = computed(() => {
             <!-- Header Tag -->
             <div class="flex items-center justify-between gap-2 mb-4 h-7">
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-lime-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         SBN SR022 6.45%
                     </h3>
@@ -61,7 +61,7 @@ const monthsRemaining = computed(() => {
                         </span>
                     </div>
                     <div
-                        class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-lime-400/10 text-lime-400">
+                        class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-emerald-400/10 text-emerald-400">
                         100% APBN Guaranteed
                     </div>
                 </div>
@@ -77,7 +77,7 @@ const monthsRemaining = computed(() => {
                     class="grid grid-cols-2 gap-2 pt-3 mt-3 border-t border-mist-750/70 text-[11px] font-mono">
                     <div>
                         <span class="text-mist-400 text-xs block"> Net Passive Income: </span>
-                        <span class="text-lime-400 font-bold">
+                        <span class="text-emerald-400 font-bold">
                             +{{ formatIDR(sbnMonthlyNetYield) }} / month
                         </span>
                     </div>
@@ -102,7 +102,7 @@ const monthsRemaining = computed(() => {
                 </div>
                 <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden">
                     <div
-                        class="h-full rounded-full bg-linear-to-r from-lime-500 to-lime-400 transition-all duration-500"
+                        class="h-full rounded-full bg-linear-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
                         :style="{ width: `${maturityProgress}%` }"></div>
                 </div>
             </div>
@@ -116,7 +116,7 @@ const monthsRemaining = computed(() => {
             </span>
             <span class="text-mist-400">
                 Collected:
-                <strong class="text-lime-400 font-mono">
+                <strong class="text-mist-200 font-mono">
                     {{ formatIDR(sbnTotalCollectedYield) }}
                 </strong>
             </span>

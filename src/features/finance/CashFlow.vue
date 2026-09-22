@@ -5,7 +5,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import { normalizeDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/CardTitle.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
 
 const financeStore = useFinanceStore();
 const { unifiedPropertyFinances, selectedMonth } = storeToRefs(financeStore);

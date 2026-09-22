@@ -8,7 +8,7 @@ import type { Property } from '@/types/property';
 import { formatDate, getCurrentDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
-import OccupiedTag from '@/components/OccupiedTag.vue';
+import OccupiedTag from '@/components/ui/OccupiedTag.vue';
 
 const {
     bookings,

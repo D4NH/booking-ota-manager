@@ -1,4 +1,3 @@
-<!-- Inside src/components/finance/AddSavingGoalModal.vue -->
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useFinanceSync } from '@/composables/useFinanceSync';

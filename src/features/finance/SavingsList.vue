@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
-import SavingGoalModal from '@/components/modal/SavingGoalModal.vue';
+import SavingGoalModal from '@/features/finance/SavingGoalModal.vue';
 
 const financeStore = useFinanceStore();
 const { dynamicSavingsAccounts, dynamicAllocatedGoals } = storeToRefs(financeStore);

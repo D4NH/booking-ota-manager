@@ -5,7 +5,7 @@ import { formatIDR } from '@/utils/money';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
 
-import CardTitle from '@/components/CardTitle.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
 
 interface Props {
     bookings: Booking[];

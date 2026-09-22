@@ -11,8 +11,8 @@ import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
 
-import PageTitle from '@/components/PageTitle.vue';
-import PropertySelector from '@/components/PropertySelector.vue';
+import PageTitle from '@/components/ui/PageTitle.vue';
+import PropertySelector from '@/components/ui/PropertySelector.vue';
 
 const route = useRoute();
 const modalStore = useModalStore();

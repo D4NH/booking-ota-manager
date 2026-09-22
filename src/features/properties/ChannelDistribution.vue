@@ -13,7 +13,7 @@ import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/CardTitle.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

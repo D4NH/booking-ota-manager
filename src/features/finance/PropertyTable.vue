@@ -7,9 +7,9 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/CardTitle.vue';
-import TransactionNote from '@/components/finance/TransactionNote.vue';
-import TransferModal from '@/components/modal/TransferModal.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import TransactionNote from '@/components/ui/TransactionNote.vue';
+import TransferModal from '@/features/finance/TransferModal.vue';
 
 const financeStore = useFinanceStore();
 const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =

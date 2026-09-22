@@ -10,15 +10,15 @@ import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { PropertyId } from '@/types/property';
 
-import CardTitle from '@/components/CardTitle.vue';
-import PageTitle from '@/components/PageTitle.vue';
-import ChannelDistribution from '@/components/charts/ChannelDistribution.vue';
-import PortfolioMetrics from '@/components/PortfolioMetrics.vue';
-import PropertyCard from '@/components/PropertyCard.vue';
-import PropertyPerformance from '@/components/PropertyPerformance.vue';
-import PropertySelector from '@/components/PropertySelector.vue';
-import MonthlyEarnings from '@/components/charts/MonthlyEarnings.vue';
-import AnnualRevenue from '@/components/charts/AnnualRevenue.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import PageTitle from '@/components/ui/PageTitle.vue';
+import PropertySelector from '@/components/ui/PropertySelector.vue';
+import ChannelDistribution from '@/features/properties/ChannelDistribution.vue';
+import PortfolioMetrics from '@/features/properties/PortfolioMetrics.vue';
+import PropertyCard from '@/features/properties/PropertyCard.vue';
+import PropertyPerformance from '@/features/properties/PropertyPerformance.vue';
+import MonthlyEarnings from '@/features/properties/MonthlyEarnings.vue';
+import AnnualRevenue from '@/features/properties/AnnualRevenue.vue';
 
 const router = useRouter();
 const modalStore = useModalStore();

@@ -6,9 +6,9 @@ import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { TransactionType, PersonalFinance, SharedFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
-import CardTitle from '@/components/CardTitle.vue';
-import RecurringChecklist from '@/components/finance/RecurringChecklist.vue';
-import TransactionNote from '@/components/finance/TransactionNote.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import TransactionNote from '@/components/ui/TransactionNote.vue';
+import RecurringChecklist from '@/features/finance/RecurringChecklist.vue';
 
 const financeStore = useFinanceStore();
 const {

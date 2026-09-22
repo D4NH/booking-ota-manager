@@ -4,17 +4,17 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-import CardTitle from '@/components/CardTitle.vue';
-import PageTitle from '@/components/PageTitle.vue';
-import MonthSelector from '@/components/finance/MonthSelector.vue';
-import FinancePersonalMetrics from '@/components/finance/FinancePersonalMetrics.vue';
-import FinancePersonalTable from '@/components/finance/FinancePersonalTable.vue';
-import SbnInvestment from '@/components/finance/SbnInvestment.vue';
-import GoldInvestment from '@/components/finance/GoldInvestment.vue';
-import InvestmentChart from '@/components/finance/InvestmentChart.vue';
-import SavingsList from '@/components/finance/SavingsList.vue';
-import TransferModal from '@/components/modal/TransferModal.vue';
+import GoogleSyncButton from '@/components/ui/GoogleSyncButton.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import PageTitle from '@/components/ui/PageTitle.vue';
+import MonthSelector from '@/components/ui/MonthSelector.vue';
+import FinancePersonalMetrics from '@/features/finance/PersonalMetrics.vue';
+import FinancePersonalTable from '@/features/finance/PersonalTable.vue';
+import SbnInvestment from '@/features/finance/SbnInvestment.vue';
+import GoldInvestment from '@/features/finance/GoldInvestment.vue';
+import InvestmentChart from '@/features/finance/InvestmentChart.vue';
+import SavingsList from '@/features/finance/SavingsList.vue';
+import TransferModal from '@/features/finance/TransferModal.vue';
 
 const financeStore = useFinanceStore();
 const { danhNetBalance, danhMonthlyRevenue, danhMonthlyExpenses } = storeToRefs(financeStore);

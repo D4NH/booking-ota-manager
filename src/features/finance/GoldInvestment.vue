@@ -78,7 +78,7 @@ const handleSaveGold = async (): Promise<void> => {
         <!-- Header Tag -->
         <div class="flex items-center justify-between gap-2 mb-4 h-7">
             <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-300"></span>
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Gold Reserve
                 </h3>
@@ -169,7 +169,7 @@ const handleSaveGold = async (): Promise<void> => {
                         <span class="text-mist-400 text-xs block"> Unrealized P&L: </span>
                         <span
                             class="font-bold"
-                            :class="goldUnrealizedPnL >= 0 ? 'text-mist-200' : 'text-rose-400'">
+                            :class="goldUnrealizedPnL >= 0 ? 'text-amber-300' : 'text-rose-400'">
                             {{ goldUnrealizedPnL >= 0 ? '+' : ''
                             }}{{ formatIDR(goldUnrealizedPnL) }} ({{ goldPnLPct }}%)
                         </span>

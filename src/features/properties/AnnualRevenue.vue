@@ -21,7 +21,7 @@ import {
     type ChartEvent,
 } from 'chart.js';
 
-import CardTitle from '@/components/CardTitle.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

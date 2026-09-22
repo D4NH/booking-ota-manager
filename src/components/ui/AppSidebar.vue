@@ -11,7 +11,7 @@ import type { Booking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
-import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
+import NotificationsDrawer from '@/components/ui/NotificationsDrawer.vue';
 
 const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
