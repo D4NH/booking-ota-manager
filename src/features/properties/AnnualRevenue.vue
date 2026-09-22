@@ -5,25 +5,7 @@ import { PROPERTY_LIST } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 import { formatIDR } from '@/utils/money';
-
-import { Bar } from 'vue-chartjs';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
-    type ChartData,
-    type ChartOptions,
-    type ActiveElement,
-    type ChartEvent,
-} from 'chart.js';
-
 import CardTitle from '@/components/CardTitle.vue';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface Props {
     selectedProperty?: PropertyId | 'all';
@@ -65,7 +47,7 @@ const yearOptions = computed<number[]>(() => {
         years.add(new Date().getFullYear());
     }
 
-    return Array.from(years).sort((a, b) => b - a); // Descending (newest first)
+    return Array.from(years).sort((a, b) => b - a);
 });
 
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
@@ -96,6 +78,7 @@ const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
 
     return months;
 });
+
 const activeConfigs = computed(() => {
     return PROPERTY_LIST.filter((config) => {
         if (selectedProperty !== 'all') return config.id === selectedProperty;
@@ -108,6 +91,7 @@ const activeConfigs = computed(() => {
         return totalEarned > 0;
     });
 });
+
 const totalAnnualRevenue = computed(() => {
     return monthlyData.value.reduce((sum, row) => {
         return (
@@ -119,6 +103,7 @@ const totalAnnualRevenue = computed(() => {
         );
     }, 0);
 });
+
 const displayHeaderMonth = computed(() => {
     if (hoveredIndex.value !== null) {
         const item = monthlyData.value[hoveredIndex.value];
@@ -126,6 +111,7 @@ const displayHeaderMonth = computed(() => {
     }
     return `Total ${selectedYear.value}`;
 });
+
 const displayHeaderValue = computed(() => {
     if (hoveredIndex.value !== null && monthlyData.value.length > 0) {
         const item = monthlyData.value[hoveredIndex.value];
@@ -139,66 +125,39 @@ const displayHeaderValue = computed(() => {
 
     return totalAnnualRevenue.value;
 });
-const chartData = computed<ChartData<'bar'>>(() => {
-    const datasets = activeConfigs.value.map((config) => ({
-        label: `${config.id.charAt(0).toUpperCase()}${config.id.slice(1)}`,
-        data: monthlyData.value.map((d) => d[config.id] || 0),
-        backgroundColor: config.color,
-        borderRadius: 4,
-        maxBarThickness: 24,
-    }));
 
-    return {
-        labels: monthlyData.value.map((d) => d.label),
-        datasets,
-    };
+// Chart calculations: maximum monthly stacked value for Y-axis bounds
+const maxMonthlyTotal = computed<number>(() => {
+    let highest = 0;
+    for (const row of monthlyData.value) {
+        const monthSum = activeConfigs.value.reduce((sum, config) => {
+            const val = row[config.id];
+            return sum + (typeof val === 'number' ? val : 0);
+        }, 0);
+        if (monthSum > highest) highest = monthSum;
+    }
+    if (highest <= 0) return 10_000_000;
+    // Round ceiling up to nearest 5jt
+    return Math.ceil(highest / 5_000_000) * 5_000_000;
 });
-const chartOptions = computed<ChartOptions<'bar'>>(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    onHover: (_event: ChartEvent, elements: ActiveElement[] | null) => {
-        if (!elements?.[0] || typeof elements[0].index !== 'number') {
-            hoveredIndex.value = null;
-            return;
-        }
-        hoveredIndex.value = elements[0].index;
-    },
-    plugins: {
-        legend: { display: false },
-        tooltip: {
-            backgroundColor: '#121820',
-            titleColor: '#e6edf8',
-            bodyColor: '#8b9bb0',
-            borderColor: '#1e2632',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: {
-                label: (context) =>
-                    ` ${context.dataset.label}: ${formatIDR(context.parsed.y || 0)}`,
-            },
-        },
-    },
-    scales: {
-        x: {
-            stacked: true,
-            grid: { display: false },
-            ticks: { color: '#71717a', font: { size: 12, weight: 'bold' } },
-        },
-        y: {
-            stacked: true,
-            grid: { color: '#1e2632' },
-            ticks: {
-                color: '#71717a',
-                font: { size: 12 },
-                callback: (val) => {
-                    const num = Number(val);
-                    if (!num || num < 1_000_000) return `${num}`;
-                    return `${(num / 1_000_000).toFixed(0)}jt`;
-                },
-            },
-        },
-    },
-}));
+
+const yAxisTicks = computed(() => {
+    const max = maxMonthlyTotal.value;
+    const step = max / 4;
+    return [
+        { value: max, label: `${(max / 1_000_000).toFixed(0)}jt` },
+        { value: step * 3, label: `${((step * 3) / 1_000_000).toFixed(0)}jt` },
+        { value: step * 2, label: `${((step * 2) / 1_000_000).toFixed(0)}jt` },
+        { value: step, label: `${(step / 1_000_000).toFixed(0)}jt` },
+        { value: 0, label: '0' },
+    ];
+});
+
+// Calculate stacked segment percentage height relative to max ceiling
+const getSegmentHeightPct = (value: number): number => {
+    if (maxMonthlyTotal.value <= 0 || !value) return 0;
+    return (value / maxMonthlyTotal.value) * 100;
+};
 
 watch(yearOptions, (available) => {
     if (!available.includes(selectedYear.value) && available.length > 0) {
@@ -234,9 +193,11 @@ watch(yearOptions, (available) => {
                 </div>
             </div>
         </div>
+
         <div
             class="h-full flex flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
+            <!-- Summary & Legend -->
             <div class="flex justify-between items-center">
                 <div class="flex flex-col space-y-1">
                     <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
@@ -246,7 +207,6 @@ watch(yearOptions, (available) => {
                         {{ formatIDR(displayHeaderValue) }}
                     </div>
                 </div>
-                <!-- Legend -->
                 <div class="flex items-center gap-4">
                     <div
                         class="hidden sm:flex items-center gap-4 text-xs font-medium text-mist-300">
@@ -256,7 +216,7 @@ watch(yearOptions, (available) => {
                             class="flex items-center">
                             <div class="flex items-center space-x-2.5">
                                 <span
-                                    class="h-2.5 w-2.5 shrink-0 rounded-md"
+                                    class="h-2.5 w-2.5 shrink-0 rounded-sm"
                                     :style="{ backgroundColor: item.color }" />
                                 <span class="text-sm text-mist-200 capitalize">{{ item.id }}</span>
                             </div>
@@ -264,10 +224,76 @@ watch(yearOptions, (available) => {
                     </div>
                 </div>
             </div>
-            <div class="mt-4 h-full w-full min-h-55">
-                <Bar
-                    :data="chartData"
-                    :options="chartOptions" />
+
+            <div class="relative mt-6 h-55 w-full flex items-end">
+                <!-- Background Horizontal Gridlines -->
+                <div
+                    class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
+                    <div
+                        v-for="tick in yAxisTicks"
+                        :key="tick.value"
+                        class="w-full flex items-center border-b border-mist-800/60 text-[10px] font-mono text-mist-500">
+                        <span class="w-10 text-right pr-2 select-none">{{ tick.label }}</span>
+                        <div class="flex-1 border-b border-mist-800/40" />
+                    </div>
+                </div>
+
+                <!-- Bars Columns -->
+                <div class="relative w-full h-full flex items-end justify-between pl-12 pr-2 pb-6">
+                    <div
+                        v-for="(row, idx) in monthlyData"
+                        :key="row.label"
+                        class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer px-1"
+                        @mouseenter="hoveredIndex = idx">
+                        <!-- Custom Tooltip -->
+                        <div
+                            v-if="hoveredIndex === idx"
+                            class="absolute -top-20 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md p-2 text-xs font-mono whitespace-nowrap space-y-1">
+                            <div
+                                class="font-bold text-mist-100 text-[11px] pb-1 border-b border-mist-800">
+                                {{ row.label }} {{ selectedYear }}
+                            </div>
+                            <div
+                                v-for="config in activeConfigs"
+                                :key="config.id"
+                                class="flex items-center justify-between gap-3 text-[10px]">
+                                <span class="flex items-center gap-1.5 text-mist-400 capitalize">
+                                    <span
+                                        class="w-2 h-2 rounded-xs"
+                                        :style="{ backgroundColor: config.color }" />
+                                    {{ config.id }}:
+                                </span>
+                                <span class="text-mist-100 font-semibold">
+                                    {{ formatIDR(Number(row[config.id]) || 0) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Stacked Bar Column -->
+                        <div
+                            class="w-full max-w-6 flex flex-col-reverse items-center h-full justify-start">
+                            <div
+                                v-for="config in activeConfigs"
+                                :key="config.id"
+                                class="w-full transition-all duration-300 first:rounded-b-sm last:rounded-t-sm"
+                                :style="{
+                                    height: `${getSegmentHeightPct(Number(row[config.id]) || 0)}%`,
+                                    backgroundColor: config.color,
+                                }" />
+                        </div>
+
+                        <!-- X-Axis Month Label -->
+                        <span
+                            class="absolute -bottom-5 text-[11px] font-mono transition-colors"
+                            :class="
+                                hoveredIndex === idx
+                                    ? 'font-bold text-lime-400'
+                                    : 'text-mist-400 group-hover:text-mist-200'
+                            ">
+                            {{ row.label }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

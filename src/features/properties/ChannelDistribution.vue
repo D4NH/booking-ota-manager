@@ -1,33 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import {
-    Chart as ChartJS,
-    ArcElement,
-    Tooltip,
-    Legend,
-    type ChartOptions,
-    type ChartData,
-} from 'chart.js';
-import { Doughnut } from 'vue-chartjs';
 import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
-
 import CardTitle from '@/components/CardTitle.vue';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface Props {
     bookings: Booking[];
 }
 
-interface DoughnutChartRef {
-    chart: ChartJS<'doughnut'> | null;
-}
-
 const { bookings } = defineProps<Props>();
 
-const chartRef = ref<DoughnutChartRef | null>(null);
 const hoveredIndex = ref<number | null>(null);
 
 const yearOptions = computed<number[]>(() => {
@@ -65,63 +48,45 @@ const channelStats = computed(() => {
         totalRevenue += payout;
     }
 
-    const sourceMap = counts;
     const total = totalCount;
 
-    const entries = Array.from(sourceMap.entries()).map(([name, value]) => ({
+    const entries = Array.from(counts.entries()).map(([name, value]) => ({
         name,
-        count: counts.get(name) ?? 0,
+        count: value,
         revenue: revenues.get(name) ?? 0,
         value,
         percentage: total > 0 ? Math.round((value / total) * 100) : 0,
-        color: CHANNEL_COLORS[name] ?? CHANNEL_COLORS.Other,
+        color: CHANNEL_COLORS[name] ?? CHANNEL_COLORS.Other ?? '#71717a',
     }));
 
     entries.sort((a, b) => b.value - a.value);
     return { entries, totalCount, totalRevenue, total };
 });
-const chartData = computed<ChartData<'doughnut'>>(() => ({
-    labels: channelStats.value.entries.map((e) => e.name),
-    datasets: [
-        {
-            data: channelStats.value.entries.map((e) => e.value),
-            backgroundColor: channelStats.value.entries.map((e) => e.color),
-            borderColor: '#18181b',
-            borderWidth: 2,
-            hoverOffset: 20,
-        },
-    ],
-}));
-const chartOptions = computed<ChartOptions<'doughnut'>>(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '75%',
-    layout: { padding: 5 },
-    onHover: (_event, activeElements) => {
-        hoveredIndex.value = activeElements[0]?.index ?? null;
-    },
-    plugins: {
-        legend: { display: false },
-        tooltip: {
-            backgroundColor: '#18181b',
-            titleColor: '#e4e4e7',
-            borderColor: '#27272a',
-            borderWidth: 1,
-            padding: 8,
-            callbacks: {
-                label: (ctx) => {
-                    const val = Number(ctx.raw) || 0;
-                    return ` ${ctx.label}: ${val} stays`;
-                },
-            },
-        },
-    },
-}));
+
+// SVG Donut Math: radius = 38, circumference = 2 * PI * 38 ≈ 238.76
+const circumference = 238.76;
+
+const donutSegments = computed(() => {
+    const total = channelStats.value.total || 1;
+    let accumulatedOffset = 0;
+
+    return channelStats.value.entries.map((entry, idx) => {
+        const length = (entry.value / total) * circumference;
+        const strokeDasharray = `${length} ${circumference - length}`;
+        const strokeDashoffset = -accumulatedOffset;
+        accumulatedOffset += length;
+
+        return {
+            ...entry,
+            strokeDasharray,
+            strokeDashoffset,
+            isHovered: hoveredIndex.value === idx,
+        };
+    });
+});
 
 const clearHighlight = (): void => {
     hoveredIndex.value = null;
-    chartRef.value?.chart?.setActiveElements([]);
-    chartRef.value?.chart?.update();
 };
 
 watch(yearOptions, (available) => {
@@ -172,61 +137,104 @@ watch(yearOptions, (available) => {
                     class="text-xl" />
                 <p class="mt-2">No data recorded for {{ selectedYear }}</p>
             </div>
-
             <div
                 v-else
-                class="flex flex-1 items-center gap-4">
+                class="flex flex-1 flex-col sm:flex-row items-center gap-6">
                 <div
-                    class="relative h-60 w-60 shrink-0"
+                    class="relative h-56 w-56 shrink-0 flex items-center justify-center"
                     @mouseleave="clearHighlight">
-                    <Doughnut
-                        ref="chartRef"
-                        :data="chartData"
-                        :options="chartOptions" />
+                    <svg
+                        class="w-full h-full transform -rotate-90"
+                        viewBox="0 0 100 100">
+                        <!-- Background track -->
+                        <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            stroke="#1c2731"
+                            stroke-width="11"
+                            fill="transparent" />
+
+                        <!-- Dynamic Segments -->
+                        <circle
+                            v-for="(seg, idx) in donutSegments"
+                            :key="seg.name"
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            :stroke="seg.color"
+                            :stroke-width="seg.isHovered ? 14 : 11"
+                            fill="transparent"
+                            :stroke-dasharray="seg.strokeDasharray"
+                            :stroke-dashoffset="seg.strokeDashoffset"
+                            class="cursor-pointer transition-all duration-300"
+                            :class="{
+                                'opacity-100': hoveredIndex === null || seg.isHovered,
+                                'opacity-40': hoveredIndex !== null && !seg.isHovered,
+                            }"
+                            @mouseenter="hoveredIndex = idx" />
+                    </svg>
+
+                    <!-- Center KPI -->
                     <div
                         class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
-                        <span class="font-mono text-lg font-semibold text-mist-100">
-                            {{ channelStats.totalCount }}
+                        <span class="font-mono text-xl font-bold text-mist-100">
+                            {{
+                                hoveredIndex !== null && channelStats.entries[hoveredIndex]
+                                    ? channelStats.entries[hoveredIndex]?.count
+                                    : channelStats.totalCount
+                            }}
                         </span>
                         <span
-                            class="text-xs font-semibold uppercase tracking-wider text-mist-400 mt-1">
-                            Total Stays
+                            class="text-[10px] font-semibold uppercase tracking-wider text-mist-400 mt-0.5">
+                            {{
+                                hoveredIndex !== null && channelStats.entries[hoveredIndex]
+                                    ? channelStats.entries[hoveredIndex]?.name
+                                    : 'Total Bookings'
+                            }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Breakdown List -->
-                <div class="flex-1 overflow-y-auto">
+                <div class="flex-1 w-full overflow-y-auto space-y-1">
                     <div
                         v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
-                        class="text-xs px-2 py-1.5 rounded-md transition"
-                        :class="{ 'bg-mist-800/60': hoveredIndex === index }">
+                        class="text-xs px-2.5 py-2 rounded-md transition cursor-pointer"
+                        :class="
+                            hoveredIndex === index
+                                ? 'bg-mist-800/80 shadow-xs'
+                                : 'hover:bg-mist-800/40'
+                        "
+                        @mouseenter="hoveredIndex = index"
+                        @mouseleave="clearHighlight">
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-2">
                                 <span
                                     class="h-2 w-2 rounded-full shrink-0"
                                     :style="{ backgroundColor: ch.color }" />
-                                <span class="font-medium text-mist-200 py-0.5">
+                                <span class="font-medium text-mist-200">
                                     {{ ch.name }}
                                 </span>
-                                <span class="text-xs text-mist-400">&bull;</span>
-                                <span class="text-xs text-mist-400">
-                                    {{ `${ch.count} stays` }}
+                                <span class="text-xs text-mist-500">&bull;</span>
+                                <span class="text-[11px] text-mist-400 font-mono">
+                                    {{ ch.count }} stays
                                 </span>
                             </span>
                             <div class="flex items-center gap-2 font-mono">
-                                <span class="text-mist-400">
+                                <span class="text-mist-400 text-[11px]">
                                     {{ formatIDR(ch.revenue) }}
                                 </span>
-                                <span class="font-semibold text-mist-200 min-w-8 text-right">
+                                <span
+                                    class="font-semibold text-mist-200 min-w-8 text-right text-[11px]">
                                     {{ ch.percentage }}%
                                 </span>
                             </div>
                         </div>
 
-                        <div class="mt-2 space-y-2">
-                            <div class="h-1.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
+                        <div class="mt-1.5">
+                            <div class="h-1.5 w-full rounded-full bg-mist-950/60 overflow-hidden">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
                                     :style="{

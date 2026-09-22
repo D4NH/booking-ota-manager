@@ -185,7 +185,6 @@ const hoveredBar = ref<MonthlyDataPoint | null>(null);
                 </div>
             </div>
 
-            <!-- Interactive Bar Chart Area -->
             <div class="relative flex flex-1 items-end pt-5 pb-2">
                 <!-- Background Horizontal Gridlines -->
                 <div
@@ -217,7 +216,7 @@ const hoveredBar = ref<MonthlyDataPoint | null>(null);
                             <div class="font-bold text-mist-100 text-xs mb-1">
                                 {{ point.label }} {{ point.monthStr.slice(0, 4) }}
                             </div>
-                            <div class="flex justify-between gap-3 text-emerald-400">
+                            <div class="flex justify-between gap-3 text-emerald-400 mt-2">
                                 <span>Rev:</span>
                                 <span>{{ formatIDR(point.revenue) }}</span>
                             </div>
@@ -226,12 +225,9 @@ const hoveredBar = ref<MonthlyDataPoint | null>(null);
                                 <span>{{ formatIDR(point.expenses) }}</span>
                             </div>
                             <div
-                                class="flex justify-between gap-3 text-mist-300 pt-0.5 border-t border-mist-800">
+                                class="flex justify-between gap-3 text-mist-300 py-1 mt-1.5 border-t border-mist-800">
                                 <span>Net:</span>
-                                <span
-                                    :class="
-                                        point.netMargin >= 0 ? 'text-lime-400' : 'text-rose-400'
-                                    ">
+                                <span class="text-mist-200">
                                     {{ formatIDR(point.netMargin) }}
                                 </span>
                             </div>
