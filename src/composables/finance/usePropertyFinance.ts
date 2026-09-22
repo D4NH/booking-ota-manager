@@ -31,7 +31,7 @@ export function usePropertyFinance(
                 bookingId: b.bookingId,
                 propertyId: b.propertyId,
                 type: 'income',
-                category: 'Payout',
+                category: 'Property Payout',
                 amount: Number(b.payout),
                 date: normalizeDate(b.checkIn),
                 notes: `${b.listing} | ${b.guestName}`,

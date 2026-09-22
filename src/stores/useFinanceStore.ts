@@ -196,10 +196,22 @@ export const useFinanceStore = defineStore('finance', () => {
 
     // Recurring Templates
     const monthlyProjectedRecurring = computed<ProjectedRecurringItem[]>(() => {
-        const cycle = selectedMonth.value;
-        const templates = recurringTemplates.value.filter((t) => t.active);
-        if (!templates.length) return [];
+        const cycle = selectedMonth.value; // e.g. "2026-09"
+        const currentMonthNumber = Number(cycle.split('-')[1]); // 9
 
+        // Filter active templates that apply to THIS month
+        const applicableTemplates = recurringTemplates.value.filter((t) => {
+            if (!t.active) return false;
+            if (t.frequency === 'yearly') {
+                // Only include if dueMonthOfYear matches active selectedMonth
+                return Number(t.dueMonthOfYear) === currentMonthNumber;
+            }
+            return true; // 'monthly' items apply to all months
+        });
+
+        if (!applicableTemplates.length) return [];
+
+        // Pre-indexed sets for O(1) matching
         const propSet = new Set(
             propertyDomain.filteredPropertyFinances.value.map(
                 (p) => `${p.category.toLowerCase().trim()}_${Math.round(p.amount)}`
@@ -216,7 +228,7 @@ export const useFinanceStore = defineStore('finance', () => {
             )
         );
 
-        return templates.map((template) => {
+        return applicableTemplates.map((template) => {
             const dayStr = String(Math.min(Math.max(template.dueDayOfMonth, 1), 28)).padStart(
                 2,
                 '0'
@@ -577,7 +589,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 "'Shared_Transactions'!A2:F",
                 "'Transfers'!A2:F",
                 "'Gold_Assets'!A2:G",
-                "'Recurring_Templates'!A2:K",
+                "'Recurring_Templates'!A2:L",
                 "'Saving_Goals'!A2:G",
             ];
 
@@ -667,6 +679,7 @@ export const useFinanceStore = defineStore('finance', () => {
                     frequency: (r[8] as RecurringTemplate['frequency']) || 'monthly',
                     active: String(r[9]).toUpperCase() === 'TRUE',
                     notes: String(r[10] || '').trim(),
+                    dueMonthOfYear: r[11] ? Number(r[11]) : undefined,
                 }));
 
             const parsedGoals: SavingGoal[] = (batchResults[7] || [])

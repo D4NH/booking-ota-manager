@@ -142,6 +142,7 @@ export interface RecurringTemplate {
     category: string;
     amount: number;
     dueDayOfMonth: number;
+    dueMonthOfYear?: number;
     frequency: RecurrenceFrequency;
     active: boolean;
     notes?: string;

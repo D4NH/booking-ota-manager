@@ -366,7 +366,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                             v-model="formType"
                             name="property"
                             required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="expense">Expense</option>
                             <option value="income">Income</option>
                         </select>

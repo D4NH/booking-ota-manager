@@ -324,7 +324,7 @@ watch(
                             <label class="block text-xs font-medium text-mist-400"> Channel </label>
                             <select
                                 v-model="form.listing"
-                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                                 <option
                                     value=""
                                     disabled>
@@ -350,7 +350,7 @@ watch(
                             <select
                                 v-model="form.status"
                                 name="status"
-                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                                 <option value="Booked">Booked</option>
                                 <option value="Checked-in">Checked-in</option>
                                 <option value="Waiting for payment">Waiting for payment</option>

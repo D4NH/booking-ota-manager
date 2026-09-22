@@ -97,6 +97,11 @@ const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
                                     {{ item.notes }}
                                 </span>
                                 <span
+                                    v-if="item.frequency === 'yearly'"
+                                    class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                                    Annual
+                                </span>
+                                <span
                                     class="text-[11px] px-1.5 py-0.2 rounded font-mono font-semibold uppercase"
                                     :class="
                                         item.type === 'income'
