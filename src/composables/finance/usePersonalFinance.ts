@@ -84,7 +84,7 @@ export function usePersonalFinance(
         dynamicSavingsAccounts.value.reduce((sum, acc) => sum + acc.balance, 0)
     );
 
-    // 3. Current Month Income & Expense Resolvers
+    // Current Month Income & Expense Resolvers
     const calculateRevenueForOwner = (
         ownerName: PersonalFinance['owner'],
         targetMonth: string

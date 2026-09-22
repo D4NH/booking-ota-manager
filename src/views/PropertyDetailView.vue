@@ -32,7 +32,13 @@ const router = useRouter();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
-const { totalPayout, revenueGrowthPercent } = useMonthlyMetrics(() => bookings.value, {
+const {
+    totalPayout,
+    revenueGrowthPercent,
+    occupancyPercentage,
+    totalCapacityNights,
+    occupiedNights,
+} = useMonthlyMetrics(() => bookings.value, {
     propertyId: () => id,
 });
 const {
@@ -40,8 +46,6 @@ const {
     unitBookings,
     totalYearRevenue,
     adr,
-    totalNights,
-    annualOccupancy,
     nextUpcoming,
     lockboxPin,
     isOccupied,
@@ -95,14 +99,25 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 </p>
                 <p class="flex items-center gap-1 text-xs">
                     <span
+                        v-if="totalPayout !== 0"
                         class="font-medium"
-                        :class="totalPayout >= 0 ? 'text-lime-400' : 'text-rose-400'">
-                        {{ totalPayout >= 0 ? '+' : '' }}{{ formatIDR(totalPayout) }}
+                        :class="
+                            totalPayout > 0
+                                ? 'text-lime-400'
+                                : totalPayout < 0
+                                  ? 'text-rose-400'
+                                  : 'text-mist-400'
+                        ">
+                        {{ totalPayout >= 0 ? '+' : '-' }}{{ formatIDR(totalPayout) }}
+                    </span>
+                    <span
+                        v-else
+                        class="font-medium text-mist-500">
+                        No payout
                     </span>
                     <span class="text-mist-500">this month</span>
                 </p>
             </div>
-
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Monthly Revenue
@@ -112,14 +127,26 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                 </p>
                 <p class="flex items-center gap-1 text-xs">
                     <span
+                        v-if="revenueGrowthPercent !== 0"
                         class="font-medium"
-                        :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
-                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                        :class="
+                            revenueGrowthPercent > 0
+                                ? 'text-lime-400'
+                                : revenueGrowthPercent < 0
+                                  ? 'text-rose-400'
+                                  : 'text-mist-400'
+                        ">
+                        {{ revenueGrowthPercent >= 0 ? '+' : '-' }}{{ revenueGrowthPercent }}%
                     </span>
+                    <span
+                        v-else
+                        class="font-medium text-mist-500">
+                        0%
+                    </span>
+
                     <span class="text-mist-500">vs last month</span>
                 </p>
             </div>
-
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Average Daily Rate
@@ -130,19 +157,162 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
 
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Annual Occupancy
+                    Monthly Occupancy
                 </h3>
-                <p class="font-mono text-lg font-semibold text-lime-400">{{ annualOccupancy }}%</p>
-                <p class="text-xs text-mist-500">{{ totalNights }} / 365 nights booked</p>
+                <p class="font-mono text-lg font-semibold text-lime-400">
+                    {{ occupancyPercentage }}%
+                </p>
+                <p class="text-xs text-mist-500">
+                    {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
+                </p>
             </div>
         </div>
 
-        <!-- Photo & Property Specs -->
         <div class="grid grid-cols-1 lg:grid-cols-4 space-y-4 lg:space-y-0 lg:gap-4">
+            <!-- Live Operations Sidebar -->
             <div
-                class="col-span-3 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl grid grid-cols-1 lg:grid-cols-12">
+                class="flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-xl p-4 space-y-4">
+                <div class="flex items-center justify-between border-b border-mist-800 pb-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                        Daily Operations
+                    </span>
+                </div>
+
+                <!-- Same-Day Turnover Alert Badge -->
                 <div
-                    class="relative lg:col-span-8 flex flex-col justify-between p-4 overflow-hidden">
+                    v-if="todayTurnover"
+                    class="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs space-y-0.5">
+                    <div
+                        class="flex items-center gap-1.5 font-semibold text-amber-400 text-[11px] uppercase">
+                        <fa-icon icon="bolt" />
+                        <span>Same-Day Turnover Today</span>
+                    </div>
+                    <p class="text-mist-300 text-[11px]">
+                        {{ todayTurnover.departing }} (Out 11 AM) &rarr;
+                        {{ todayTurnover.arriving }} (In 2 PM)
+                    </p>
+                </div>
+
+                <div class="flex-1 flex flex-col justify-center">
+                    <div
+                        v-if="staySections.length"
+                        class="space-y-4">
+                        <div
+                            v-for="section in staySections"
+                            :key="section.label">
+                            <span
+                                class="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold"
+                                :class="[
+                                    section.label === 'Arriving Today'
+                                        ? 'text-lime-400'
+                                        : 'text-amber-400',
+                                ]">
+                                {{ section.label }}
+                            </span>
+
+                            <div
+                                v-for="b in section.items"
+                                :key="b.id || b.bookingId"
+                                class="rounded-md hover:bg-mist-800/40 -mx-2 -mt-0.5 -mb-1 px-2 pt-0.5 pb-1 transition cursor-pointer"
+                                @click="handleEditBooking(b)">
+                                <div class="flex justify-between space-y-1">
+                                    <div class="flex flex-col items-start space-y-1">
+                                        <span class="text-sm font-semibold text-mist-100 truncate">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <span class="text-xs text-mist-400">
+                                            {{
+                                                formatDate(b.checkIn, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
+                                            &rarr;
+                                            {{
+                                                formatDate(b.checkOut, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
+                                            &bull; {{ b.nights }} night(s)
+                                        </span>
+                                        <span class="text-xs text-mist-500 font-medium">
+                                            via {{ b.listing }}
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col items-end space-y-1">
+                                        <span
+                                            class="text-xs font-semibold font-mono text-mist-100 text-nowrap">
+                                            {{ formatIDR(b.payout) }}
+                                        </span>
+                                        <span
+                                            class="mt-0.5 text-xs"
+                                            :class="getStatusStyle(b.status)">
+                                            {{ b.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        v-else
+                        class="text-center text-xs text-mist-500">
+                        <fa-icon
+                            icon="house-circle-check"
+                            class="text-xl text-mist-700" />
+                        <span class="ml-2 font-medium text-mist-400">
+                            No active in-house guest
+                        </span>
+                        <p
+                            v-if="nextUpcoming"
+                            class="text-[11px] mt-1">
+                            Next: {{ formatDate(nextUpcoming.checkIn) }} -
+                            {{ nextUpcoming.guestName }}
+                        </p>
+                        <p
+                            v-else
+                            class="text-[11px] mt-1">
+                            Unit is vacant and ready for check-in
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Lockbox & Wi-Fi Access -->
+                <div
+                    class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
+                    <div class="px-1">
+                        <span
+                            class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
+                            <fa-icon
+                                icon="key"
+                                class="text-xs" />
+                            Lockbox
+                        </span>
+                        <span class="font-mono text-sm font-semibold text-mist-100">
+                            {{ lockboxPin || '----' }}
+                        </span>
+                    </div>
+                    <div class="px-1">
+                        <span
+                            class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
+                            <fa-icon
+                                icon="wifi"
+                                class="text-xs" />
+                            {{ selectedProperty.wifi?.ssid }}
+                        </span>
+                        <span class="font-mono text-sm font-semibold text-mist-100">
+                            {{ selectedProperty.wifi?.pwd || '----' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo & Property Specs -->
+            <div
+                class="col-span-2 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl">
+                <div class="relative flex flex-col h-full justify-between p-4 overflow-hidden">
                     <img
                         :src="`/images/${id}.jpg`"
                         :alt="selectedProperty.name"
@@ -202,147 +372,6 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                 </span>
                                 <span class="text-[11px] text-mist-500"> / night</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live Operations Sidebar -->
-                <div
-                    class="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-mist-800 bg-mist-900/95 p-4 space-y-4">
-                    <div class="flex items-center justify-between border-b border-mist-800 pb-3">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                            Daily Operations
-                        </span>
-                    </div>
-
-                    <!-- Same-Day Turnover Alert Badge -->
-                    <div
-                        v-if="todayTurnover"
-                        class="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs space-y-0.5">
-                        <div
-                            class="flex items-center gap-1.5 font-semibold text-amber-400 text-[11px] uppercase">
-                            <fa-icon icon="bolt" />
-                            <span>Same-Day Turnover Today</span>
-                        </div>
-                        <p class="text-mist-300 text-[11px]">
-                            {{ todayTurnover.departing }} (Out 11 AM) &rarr;
-                            {{ todayTurnover.arriving }} (In 2 PM)
-                        </p>
-                    </div>
-
-                    <div class="flex-1 flex flex-col justify-center">
-                        <div
-                            v-if="staySections.length"
-                            class="space-y-4">
-                            <div
-                                v-for="section in staySections"
-                                :key="section.label">
-                                <span
-                                    class="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold"
-                                    :class="[
-                                        section.label === 'Arriving Today'
-                                            ? 'text-lime-400'
-                                            : 'text-amber-400',
-                                    ]">
-                                    {{ section.label }}
-                                </span>
-
-                                <div
-                                    v-for="b in section.items"
-                                    :key="b.id || b.bookingId"
-                                    class="rounded-md hover:bg-mist-800/40 -mx-2 -mt-0.5 -mb-1 px-2 pt-0.5 pb-1 transition cursor-pointer"
-                                    @click="handleEditBooking(b)">
-                                    <div class="flex justify-between space-y-1">
-                                        <div class="flex flex-col items-start space-y-1">
-                                            <span
-                                                class="text-sm font-semibold text-mist-100 truncate">
-                                                {{ b.guestName }}
-                                            </span>
-                                            <span class="text-xs text-mist-400">
-                                                {{
-                                                    formatDate(b.checkIn, {
-                                                        shortWeekday: true,
-                                                        shortMonth: true,
-                                                    })
-                                                }}
-                                                &rarr;
-                                                {{
-                                                    formatDate(b.checkOut, {
-                                                        shortWeekday: true,
-                                                        shortMonth: true,
-                                                    })
-                                                }}
-                                                &bull; {{ b.nights }} night(s)
-                                            </span>
-                                            <span class="text-xs text-mist-500 font-medium">
-                                                via {{ b.listing }}
-                                            </span>
-                                        </div>
-                                        <div class="flex flex-col items-end space-y-1">
-                                            <span
-                                                class="text-xs font-semibold font-mono text-mist-100 text-nowrap">
-                                                {{ formatIDR(b.payout) }}
-                                            </span>
-                                            <span
-                                                class="mt-0.5 text-xs"
-                                                :class="getStatusStyle(b.status)">
-                                                {{ b.status }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            v-else
-                            class="text-center text-xs text-mist-500">
-                            <fa-icon
-                                icon="house-circle-check"
-                                class="text-xl text-mist-700" />
-                            <span class="ml-2 font-medium text-mist-400">
-                                No active in-house guest
-                            </span>
-                            <p
-                                v-if="nextUpcoming"
-                                class="text-[11px] mt-1">
-                                Next: {{ formatDate(nextUpcoming.checkIn) }} -
-                                {{ nextUpcoming.guestName }}
-                            </p>
-                            <p
-                                v-else
-                                class="text-[11px] mt-1">
-                                Unit is vacant and ready for check-in
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Lockbox & Wi-Fi Access -->
-                    <div
-                        class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
-                        <div class="px-1">
-                            <span
-                                class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
-                                <fa-icon
-                                    icon="key"
-                                    class="text-xs" />
-                                Lockbox
-                            </span>
-                            <span class="font-mono text-sm font-semibold text-mist-100">
-                                {{ lockboxPin || '----' }}
-                            </span>
-                        </div>
-                        <div class="px-1">
-                            <span
-                                class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
-                                <fa-icon
-                                    icon="wifi"
-                                    class="text-xs" />
-                                {{ selectedProperty.wifi?.ssid }}
-                            </span>
-                            <span class="font-mono text-sm font-semibold text-mist-100">
-                                {{ selectedProperty.wifi?.pwd || '----' }}
-                            </span>
                         </div>
                     </div>
                 </div>

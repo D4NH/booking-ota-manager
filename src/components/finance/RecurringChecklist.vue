@@ -154,7 +154,7 @@ const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
                 <div
                     v-for="item in visibleList"
                     :key="item.id"
-                    class="p-3.5 rounded-md border border-mist-800 bg-mist-850 transition flex items-center justify-between">
+                    class="p-3.5 rounded-md border border-mist-800 bg-mist-800 transition flex items-center justify-between">
                     <div class="pr-2 min-w-0">
                         <div class="flex items-center gap-1.5 mb-1 flex-wrap">
                             <span
@@ -214,7 +214,7 @@ const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
             <!-- All Clear State -->
             <div
                 v-if="visibleList.length === 0"
-                class="py-8 text-center bg-mist-850/40 rounded-md border border-mist-800">
+                class="py-8 text-center bg-mist-800/40 rounded-md border border-mist-800">
                 <p class="text-xs font-semibold text-lime-400 mb-1">
                     {{
                         totalSettledCount > 0 && !showSettled

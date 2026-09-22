@@ -27,7 +27,7 @@ const {
     monthlyProjectedExpenses,
 } = storeToRefs(financeStore);
 
-const DEFAULT_PERSONAL_CATEGORY = 'BCA';
+const DEFAULT_PERSONAL_CATEGORY = '';
 const DEFAULT_SHARED_CATEGORY = 'House';
 
 const categoriesPersonal = [
@@ -185,6 +185,15 @@ const submitRecord = async (): Promise<void> => {
         }, 1000);
     }
 };
+const triggerDatePicker = (event: MouseEvent): void => {
+    const target = event.currentTarget as HTMLInputElement | null;
+
+    try {
+        target?.showPicker();
+    } catch {
+        target?.focus();
+    }
+};
 
 watch(activeTab, () => {
     if (!isModalOpen.value) {
@@ -262,7 +271,7 @@ watch(formCategory, (newCat) => {
                     <tr
                         v-for="item in currentList"
                         :key="item.id"
-                        class="hover:bg-mist-850/50 group">
+                        class="hover:bg-mist-800/50 group">
                         <td class="px-4 py-2.5 align-middle text-mist-400 font-mono">
                             {{ item.date }}
                         </td>
@@ -291,7 +300,9 @@ watch(formCategory, (newCat) => {
                         </td>
                         <td class="px-4 py-2.5 align-middle text-right font-semibold font-mono">
                             <span
-                                :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
+                                :class="
+                                    item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
+                                ">
                                 {{ item.type === 'income' ? '+' : '-' }}
                             </span>
                             {{ formatIDR(item.amount) }}
@@ -331,44 +342,57 @@ watch(formCategory, (newCat) => {
             </table>
         </div>
 
+        <!-- TODO: move to modals.vue -->
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
             <div
-                class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h4 class="font-semibold text-mist-100 text-sm">
+                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+                <div
+                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                    <h2 class="text-base font-semibold text-mist-100">
                         {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ activeTab }}
-                    </h4>
+                    </h2>
                     <button
                         type="button"
                         class="text-mist-400 hover:text-mist-200 text-sm"
                         @click="isModalOpen = false">
-                        ✕
+                        <fa-icon icon="xmark" />
                     </button>
                 </div>
 
                 <form
                     class="space-y-4"
                     @submit.prevent="submitRecord">
-                    <div>
+                    <div class="relative">
                         <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
                         <select
-                            v-model="formType"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            v-model.number="formType"
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
                             <option value="income">Income</option>
                             <option value="expense">Expense</option>
                             <option value="fixed_cost">Fixed Cost</option>
                         </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 top-6 right-2 flex items-center text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
 
-                    <div>
+                    <div class="relative">
                         <label class="text-xs font-semibold text-mist-400 block mb-1">
                             Category
                         </label>
                         <select
-                            v-model="formCategory"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            v-model.number="formCategory"
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                            <option
+                                value=""
+                                disabled>
+                                --
+                            </option>
                             <option
                                 v-for="cat in availableCategories"
                                 :key="cat"
@@ -376,11 +400,17 @@ watch(formCategory, (newCat) => {
                                 {{ cat }}
                             </option>
                         </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 top-6 right-2 flex items-center text-mist-400">
+                            <fa-icon
+                                class="text-xs"
+                                icon="angle-down" />
+                        </div>
                     </div>
 
                     <div
                         v-if="formCategory === 'Savings'"
-                        class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
+                        class="bg-mist-800 border border-mist-800 p-3 rounded-md space-y-2">
                         <label class="text-xs font-semibold text-lime-400 block">
                             Destination Savings Account
                         </label>
@@ -399,34 +429,22 @@ watch(formCategory, (newCat) => {
                         </p>
                     </div>
 
-                    <div
-                        v-if="formCategory === 'Gold'"
-                        class="bg-mist-850 border border-mist-800 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-semibold text-amber-400 block">
-                            Weight in Grams
-                        </label>
-                        <input
-                            v-model="formGoldWeightGrams"
-                            type="number"
-                            step="0.01"
-                            placeholder="Auto-calculated if blank"
-                            class="w-full text-xs border border-mist-800 bg-mist-900 text-mist-100 rounded-lg p-2 font-mono" />
-                        <p class="text-[11px] text-mist-400">
-                            Benchmark rate: {{ formatIDR(currentGoldPricePerGram) }}/g.
-                            Automatically estimated from total amount.
-                        </p>
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
+                    <div class="relative">
+                        <label class="block text-xs font-medium text-mist-400">
                             Amount (IDR)
                         </label>
+                        <div
+                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                            <fa-icon
+                                icon="rupiah-sign"
+                                class="text-xs" />
+                        </div>
                         <input
-                            v-model="formAmount"
+                            :value="formAmount"
                             type="number"
+                            placeholder="100000"
+                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 font-mono pt-1.5 pb-1.5 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
                             required
-                            placeholder="0"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono"
                             @input="handleAmountChange" />
                     </div>
 
@@ -438,7 +456,8 @@ watch(formCategory, (newCat) => {
                                     v-model="formDate"
                                     type="date"
                                     class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required />
+                                    required
+                                    @click="triggerDatePicker" />
                                 <div
                                     class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
                                     <fa-icon
@@ -450,15 +469,15 @@ watch(formCategory, (newCat) => {
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Notes</label>
+                        <label class="text-xs font-semibold text-mist-400 block">Notes</label>
                         <input
                             v-model="formNotes"
                             type="text"
-                            placeholder="e.g. Monthly emergency fund deposit"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5" />
+                            placeholder="e.g. Dividend share distribution"
+                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
 
-                    <div class="flex justify-end space-x-2 pt-3">
+                    <div class="flex justify-end space-x-2">
                         <button
                             type="button"
                             class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"

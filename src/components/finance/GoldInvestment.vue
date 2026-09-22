@@ -196,7 +196,7 @@ const handleSaveGold = async (): Promise<void> => {
             class="overflow-x-auto">
             <table class="w-full text-left text-xs text-mist-200">
                 <thead
-                    class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
+                    class="bg-mist-800 text-mist-400 uppercase font-semibold border-y border-mist-800">
                     <tr>
                         <th class="py-2.5 px-3">Date</th>
                         <th class="py-2.5 px-3">Type</th>
@@ -209,7 +209,7 @@ const handleSaveGold = async (): Promise<void> => {
                     <tr
                         v-for="g in goldAssets"
                         :key="g.id"
-                        class="hover:bg-mist-850/50">
+                        class="hover:bg-mist-800/50">
                         <td class="py-2.5 px-3 text-mist-400">{{ g.purchaseDate }}</td>
                         <td class="py-2.5 px-3 font-semibold text-mist-100">
                             {{ g.type }}
@@ -265,7 +265,7 @@ const handleSaveGold = async (): Promise<void> => {
                         <label class="text-xs font-semibold text-mist-400 block mb-1">Owner</label>
                         <select
                             v-model="goldOwner"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5">
                             <option value="Danh Nguyen">Danh Nguyen</option>
                             <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
                             <option value="Shared">Shared</option>
@@ -275,7 +275,7 @@ const handleSaveGold = async (): Promise<void> => {
                         <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
                         <select
                             v-model="goldType"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5">
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5">
                             <option value="Antam">Antam</option>
                             <option value="UBS">UBS</option>
                             <option value="Galeri 24">Galeri 24</option>
@@ -292,7 +292,7 @@ const handleSaveGold = async (): Promise<void> => {
                             step="0.01"
                             required
                             placeholder="10"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-mist-400 block mb-1">
@@ -303,7 +303,7 @@ const handleSaveGold = async (): Promise<void> => {
                             type="number"
                             required
                             placeholder="24500000"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-mist-400 block mb-1">
@@ -313,7 +313,7 @@ const handleSaveGold = async (): Promise<void> => {
                             v-model="goldDate"
                             type="date"
                             required
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-mist-400 block mb-1">
@@ -323,7 +323,7 @@ const handleSaveGold = async (): Promise<void> => {
                             v-model="goldCert"
                             type="text"
                             placeholder="CERT-12345"
-                            class="w-full text-xs border border-mist-800 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono" />
+                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
                     </div>
                     <div class="flex justify-end space-x-2 pt-3">
                         <button

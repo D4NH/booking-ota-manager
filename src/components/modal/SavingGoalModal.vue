@@ -88,7 +88,7 @@ async function handleSubmit(): Promise<void> {
                         type="text"
                         required
                         placeholder="e.g. Emergency Fund 6 Months"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
+                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -98,7 +98,7 @@ async function handleSubmit(): Promise<void> {
                         >
                         <select
                             v-model="owner"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none">
+                            class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none">
                             <option value="Shared">Shared Household</option>
                             <option value="Danh Nguyen">Danh Nguyen</option>
                             <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
@@ -111,7 +111,7 @@ async function handleSubmit(): Promise<void> {
                         >
                         <select
                             v-model="priority"
-                            class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none font-mono">
+                            class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none font-mono">
                             <option :value="1">1 (Highest)</option>
                             <option :value="2">2 (Medium)</option>
                             <option :value="3">3 (Low)</option>
@@ -129,7 +129,7 @@ async function handleSubmit(): Promise<void> {
                         required
                         min="1"
                         placeholder="50000000"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
+                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
                 </div>
 
                 <div>
@@ -139,7 +139,7 @@ async function handleSubmit(): Promise<void> {
                     <input
                         v-model="deadline"
                         type="date"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
+                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
                 </div>
 
                 <div>
@@ -150,7 +150,7 @@ async function handleSubmit(): Promise<void> {
                         v-model="notes"
                         type="text"
                         placeholder="e.g. Baseline survival cushion"
-                        class="w-full text-xs border border-mist-700 bg-mist-850 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
+                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
                 </div>
 
                 <div class="flex justify-end space-x-2 pt-3">

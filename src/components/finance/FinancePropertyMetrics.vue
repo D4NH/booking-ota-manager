@@ -41,7 +41,7 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                     class="font-medium"
                     :class="
                         propertyRevenueGrowthPct > 0
-                            ? 'text-lime-400'
+                            ? 'text-emerald-400'
                             : propertyRevenueGrowthPct < 0
                               ? 'text-rose-400'
                               : 'text-mist-400'
@@ -76,7 +76,7 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                         propertyExpenseGrowthPct > 0
                             ? 'text-rose-400'
                             : propertyExpenseGrowthPct < 0
-                              ? 'text-lime-400'
+                              ? 'text-emerald-400'
                               : 'text-mist-400'
                     ">
                     {{ propertyExpenseGrowthPct >= 0 ? '↑' : '↓'
@@ -115,7 +115,7 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                 {{ formatIDR(totalYearRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
-                <span class="font-medium text-lime-400">
+                <span class="font-medium text-emerald-400">
                     {{ totalPayout >= 0 ? '+' : '' }}{{ formatIDR(totalPayout) }}
                 </span>
                 <span class="text-mist-500">as latest payout</span>

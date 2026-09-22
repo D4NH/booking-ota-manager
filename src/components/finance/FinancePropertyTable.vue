@@ -146,7 +146,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
 </script>
 
 <template>
-    <div class="min-h-165 flex flex-col">
+    <div class="min-h-0 flex flex-col">
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Transaction Overview</template>
@@ -221,7 +221,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
-                                    class="text-[9px] bg-lime-400/10 text-lime-400 border border-lime-400/30 px-1.5 py-0.5 rounded-md font-mono font-bold shrink-0">
+                                    class="text-[9px] bg-lime-400/10 text-lime-400 px-1.5 py-0.5 rounded-xs font-mono font-bold shrink-0">
                                     DEXIE
                                 </span>
                                 <TransactionNote :notes="item.notes" />
@@ -229,7 +229,9 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                         </td>
                         <td class="px-4 py-2.5 text-right font-bold font-mono text-xs">
                             <span
-                                :class="item.type === 'income' ? 'text-lime-400' : 'text-rose-400'">
+                                :class="
+                                    item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
+                                ">
                                 {{ item.type === 'expense' ? '-' : '+' }}
                             </span>
                             {{ formatIDR(item.amount) }}
@@ -295,7 +297,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                     <select
                         id="page-size"
                         v-model="pageSize"
-                        class="bg-mist-850 border border-mist-800 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
+                        class="bg-mist-800 border border-mist-800 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
                         <option
                             v-for="opt in [5, 10, 20, 50]"
                             :key="opt"
@@ -309,7 +311,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             <div class="flex items-center gap-1 font-mono">
                 <button
                     :disabled="currentPage <= 1"
-                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-850 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition"
                     @click="goToPage(currentPage - 1)">
                     <fa-icon
                         class="text-[10px]"
@@ -324,7 +326,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
 
                 <button
                     :disabled="currentPage >= totalPages"
-                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-850 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-850 transition"
+                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition"
                     @click="goToPage(currentPage + 1)">
                     Next
                     <fa-icon
@@ -465,7 +467,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                         <button
                             type="submit"
                             :disabled="isLoading"
-                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition">
+                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition">
                             {{ isEditing ? 'Update' : 'Add Record' }}
                         </button>
                     </div>

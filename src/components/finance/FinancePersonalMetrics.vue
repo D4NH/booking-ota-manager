@@ -6,9 +6,9 @@ import { formatIDR } from '@/utils/money';
 const financeStore = useFinanceStore();
 const {
     netPropertyProfit,
-    danhNetBalance,
+    danhMonthlyRevenue,
     danhRevenueGrowthPct,
-    citraNetBalance,
+    citraMonthlyRevenue,
     sharedNetBalance,
 } = storeToRefs(financeStore);
 </script>
@@ -37,8 +37,8 @@ const {
             </div>
             <p
                 class="font-mono text-lg font-semibold text-white"
-                :class="danhNetBalance >= 0 ? 'text-mist-100' : 'text-rose-400'">
-                {{ formatIDR(danhNetBalance) }}
+                :class="danhMonthlyRevenue >= 0 ? 'text-mist-100' : 'text-rose-400'">
+                {{ formatIDR(danhMonthlyRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span
@@ -46,7 +46,7 @@ const {
                     class="font-medium"
                     :class="
                         danhRevenueGrowthPct > 0
-                            ? 'text-lime-400'
+                            ? 'text-emerald-400'
                             : danhRevenueGrowthPct < 0
                               ? 'text-rose-400'
                               : 'text-mist-400'
@@ -71,10 +71,10 @@ const {
             </div>
             <p
                 class="font-mono text-lg font-semibold text-white"
-                :class="citraNetBalance >= 0 ? 'text-mist-100' : 'text-rose-400'">
-                {{ formatIDR(citraNetBalance) }}
+                :class="citraMonthlyRevenue >= 0 ? 'text-mist-100' : 'text-rose-400'">
+                {{ formatIDR(citraMonthlyRevenue) }}
             </p>
-            <p class="text-xs text-mist-500">Discretionary Net</p>
+            <p class="text-xs text-mist-500">Monthly Revenue</p>
         </div>
 
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">

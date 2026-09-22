@@ -29,7 +29,7 @@ const isGoalModalOpen = ref(false);
         <div class="overflow-x-auto mb-6">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
-                    class="bg-mist-850 text-mist-400 uppercase font-semibold border-y border-mist-800">
+                    class="bg-mist-800 text-mist-400 uppercase font-semibold border-y border-mist-800">
                     <tr>
                         <th class="w-25 py-2.5 px-3">Last Active</th>
                         <th class="w-26 py-2.5 px-3">Owner</th>
@@ -41,7 +41,7 @@ const isGoalModalOpen = ref(false);
                     <tr
                         v-for="acc in dynamicSavingsAccounts"
                         :key="acc.key"
-                        class="hover:bg-mist-850/50 transition-colors">
+                        class="hover:bg-mist-800/50 transition-colors">
                         <td class="py-2.5 px-3 text-mist-400">{{ acc.lastUpdated }}</td>
                         <td class="py-2.5 px-3 font-medium text-mist-100">
                             {{ acc.owner }}
@@ -78,7 +78,7 @@ const isGoalModalOpen = ref(false);
 
             <button
                 type="button"
-                class="bg-mist-800 hover:bg-mist-750 text-blue-400 border border-mist-700 rounded text-xs font-semibold px-2 py-1 transition cursor-pointer"
+                class="bg-mist-800 hover:bg-mist-800 text-blue-400 border border-mist-700 rounded text-xs font-semibold px-2 py-1 transition cursor-pointer"
                 @click="isGoalModalOpen = true">
                 + Add Goal
             </button>
