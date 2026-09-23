@@ -46,8 +46,11 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                               ? 'text-rose-400'
                               : 'text-mist-400'
                     ">
-                    {{ propertyRevenueGrowthPct >= 0 ? '↑' : '↓'
-                    }}{{ Math.abs(propertyRevenueGrowthPct) }}%
+                    <fa-icon
+                        :icon="
+                            propertyRevenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                        " />
+                    {{ Math.abs(propertyRevenueGrowthPct) }}%
                 </span>
                 <span
                     v-else
@@ -79,8 +82,11 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
                               ? 'text-emerald-400'
                               : 'text-mist-400'
                     ">
-                    {{ propertyExpenseGrowthPct >= 0 ? '↑' : '↓'
-                    }}{{ Math.abs(propertyExpenseGrowthPct) }}%
+                    <fa-icon
+                        :icon="
+                            propertyExpenseGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                        " />
+                    {{ Math.abs(propertyExpenseGrowthPct) }}%
                 </span>
                 <span
                     v-else

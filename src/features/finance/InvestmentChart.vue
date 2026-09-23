@@ -75,8 +75,7 @@ const cashFlowBars = computed(() => {
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <!-- Asset Diversification Donut -->
-            <div
-                class="bg-mist-800 border border-mist-800 p-4 rounded-md flex flex-col justify-between">
+            <div class="border border-mist-800 p-4 rounded-md flex flex-col justify-between">
                 <span class="text-xs font-semibold uppercase tracking-wider text-mist-400 mb-2">
                     Portfolio Diversification
                 </span>
@@ -149,7 +148,7 @@ const cashFlowBars = computed(() => {
 
             <!-- SBN 12-Month Projected Cash Flow Bar Chart -->
             <div
-                class="lg:col-span-2 bg-mist-800 border border-mist-800 p-4 rounded-md flex flex-col justify-between">
+                class="lg:col-span-2 border border-mist-800 p-4 rounded-md flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         SBN SR022 Annual Passive Cash Flow

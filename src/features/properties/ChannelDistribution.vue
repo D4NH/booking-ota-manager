@@ -139,9 +139,9 @@ watch(yearOptions, (available) => {
             </div>
             <div
                 v-else
-                class="flex flex-1 flex-col sm:flex-row items-center gap-6">
+                class="flex flex-1 flex-col sm:flex-row items-center gap-4">
                 <div
-                    class="relative h-56 w-56 shrink-0 flex items-center justify-center"
+                    class="relative h-60 w-60 shrink-0 flex items-center justify-center"
                     @mouseleave="clearHighlight">
                     <svg
                         class="w-full h-full transform -rotate-90"

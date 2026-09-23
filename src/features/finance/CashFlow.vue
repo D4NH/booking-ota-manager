@@ -136,52 +136,55 @@ const hoveredBar = ref<MonthlyDataPoint | null>(null);
 <template>
     <div class="flex flex-col min-h-0">
         <!-- Header & Range Switcher -->
-        <CardTitle>
-            <template #title>Property Cash Flow</template>
-            <template #subtitle>
-                Rental Revenue vs Operational Expenses &bull;
-                {{ viewRange === '6M' ? '6-Month Rolling' : `Year ${activeYear}` }}
-            </template>
-        </CardTitle>
+        <div class="flex items-center justify-between">
+            <CardTitle>
+                <template #title>Property Cash Flow</template>
+                <template #subtitle>
+                    Rental Revenue vs Operational Expenses &bull;
+                    {{ viewRange === '6M' ? '6-Month Rolling' : `Year ${activeYear}` }}
+                </template>
+            </CardTitle>
+
+            <!-- Range Selector Toggle -->
+            <div
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                    :class="
+                        viewRange === '6M'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="viewRange = '6M'">
+                    6 Months
+                </button>
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                    :class="
+                        viewRange === 'YTD'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="viewRange = 'YTD'">
+                    Full Year
+                </button>
+            </div>
+        </div>
 
         <div class="h-full border border-mist-800 p-4 rounded-md flex flex-col justify-between">
             <!-- Legend -->
-            <div class="flex items-center justify-between gap-3 mb-4">
-                <div class="flex items-center gap-3 font-mono text-xs">
+            <div class="flex items-center justify-end gap-3 mb-4 text-xs font-medium text-mist-300">
+                <div class="flex items-center gap-3">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                        <span class="text-mist-300">Revenue</span>
+                        <span>Revenue</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-rose-400"></span>
-                        <span class="text-mist-300">Expenses</span>
+                        <span>Expenses</span>
                     </div>
-                </div>
-
-                <!-- Range Selector Toggle -->
-                <div class="flex space-x-0.5 border border-mist-750 p-0.5 rounded-lg bg-mist-900">
-                    <button
-                        type="button"
-                        class="px-2 py-0.5 text-[10px] font-bold rounded transition cursor-pointer"
-                        :class="
-                            viewRange === '6M'
-                                ? 'bg-mist-800 text-mist-100 shadow-xs'
-                                : 'text-mist-400 hover:text-mist-200'
-                        "
-                        @click="viewRange = '6M'">
-                        6M
-                    </button>
-                    <button
-                        type="button"
-                        class="px-2 py-0.5 text-[10px] font-bold rounded transition cursor-pointer"
-                        :class="
-                            viewRange === 'YTD'
-                                ? 'bg-mist-800 text-mist-100 shadow-xs'
-                                : 'text-mist-400 hover:text-mist-200'
-                        "
-                        @click="viewRange = 'YTD'">
-                        Full Year
-                    </button>
                 </div>
             </div>
 

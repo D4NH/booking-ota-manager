@@ -190,7 +190,10 @@ const currentAreaPath = computed(() => {
                         <span
                             class="font-medium"
                             :class="growthPercentage >= 0 ? 'text-lime-400' : 'text-rose-400'">
-                            {{ growthPercentage >= 0 ? '↑' : '↓' }}
+                            <fa-icon
+                                :icon="
+                                    growthPercentage >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                                " />
                             {{ Math.abs(growthPercentage) }}%
                         </span>
                         <span class="text-mist-500">
@@ -215,13 +218,12 @@ const currentAreaPath = computed(() => {
                 </div>
             </div>
 
-            <div class="relative flex-1 min-h-0 w-full flex items-center justify-center">
-                <!-- Tooltip Overlay -->
+            <div class="relative w-full flex items-center justify-center">
+                <!-- Tooltip -->
                 <div
                     v-if="hoveredIndex !== null && currentCoords[hoveredIndex]"
                     class="absolute -top-3 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md px-3 py-2 text-xs font-mono whitespace-nowrap space-y-1">
-                    <div
-                        class="text-[11px] text-mist-400 font-sans pb-0.5 border-b border-mist-800">
+                    <div class="text-[11px] text-mist-400 pb-0.5 border-b border-mist-800">
                         {{ activeLabels[hoveredIndex] }}
                     </div>
                     <div class="flex justify-between gap-3 text-lime-400">
@@ -351,8 +353,8 @@ const currentAreaPath = computed(() => {
                             :y="SVG_HEIGHT - 6"
                             fill="#71717a"
                             font-size="11"
-                            font-weight="bold"
-                            font-family="monospace"
+                            font-weight="600"
+                            font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
                             text-anchor="middle"
                             class="pointer-events-none"
                             :class="{ 'fill-lime-400 font-black': hoveredIndex === idx }">

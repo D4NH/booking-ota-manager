@@ -209,30 +209,30 @@ watch(yearOptions, (available) => {
                 </div>
                 <div class="flex items-center gap-4">
                     <div
-                        class="hidden sm:flex items-center gap-4 text-xs font-medium text-mist-300">
+                        class="hidden sm:flex items-center gap-4 text-xs font-medium text-mist-200">
                         <div
                             v-for="item in activeConfigs"
                             :key="item.id"
                             class="flex items-center">
-                            <div class="flex items-center space-x-2.5">
+                            <div class="flex items-center gap-1.5">
                                 <span
-                                    class="h-2.5 w-2.5 shrink-0 rounded-sm"
+                                    class="h-2 w-2 shrink-0 rounded-full"
                                     :style="{ backgroundColor: item.color }" />
-                                <span class="text-sm text-mist-200 capitalize">{{ item.id }}</span>
+                                <span class="capitalize">{{ item.id }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="relative mt-6 h-55 w-full flex items-end">
+            <div class="relative mt-6 mb-4 h-full w-full flex items-end">
                 <!-- Background Horizontal Gridlines -->
                 <div
                     class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
                     <div
                         v-for="tick in yAxisTicks"
                         :key="tick.value"
-                        class="w-full flex items-center border-b border-mist-800/60 text-[10px] font-mono text-mist-500">
+                        class="w-full flex items-center text-xs font-mono text-mist-500">
                         <span class="w-10 text-right pr-2 select-none">{{ tick.label }}</span>
                         <div class="flex-1 border-b border-mist-800/40" />
                     </div>
@@ -256,7 +256,7 @@ watch(yearOptions, (available) => {
                             <div
                                 v-for="config in activeConfigs"
                                 :key="config.id"
-                                class="flex items-center justify-between gap-3 text-[10px]">
+                                class="flex items-center justify-between gap-3 text-xs">
                                 <span class="flex items-center gap-1.5 text-mist-400 capitalize">
                                     <span
                                         class="w-2 h-2 rounded-xs"
@@ -278,16 +278,22 @@ watch(yearOptions, (available) => {
                                 class="w-full transition-all duration-300 first:rounded-b-sm last:rounded-t-sm"
                                 :style="{
                                     height: `${getSegmentHeightPct(Number(row[config.id]) || 0)}%`,
-                                    backgroundColor: config.color,
-                                }" />
+                                    backgroundColor:
+                                        hoveredIndex === idx ? '#9AE600' : config.color,
+                                }"
+                                :class="
+                                    hoveredIndex === idx
+                                        ? 'bg-lime-400'
+                                        : 'text-mist-400 group-hover:text-mist-200'
+                                " />
                         </div>
 
                         <!-- X-Axis Month Label -->
                         <span
-                            class="absolute -bottom-5 text-[11px] font-mono transition-colors"
+                            class="absolute -bottom-7 text-xs transition-colors"
                             :class="
                                 hoveredIndex === idx
-                                    ? 'font-bold text-lime-400'
+                                    ? 'font-semibold text-lime-400'
                                     : 'text-mist-400 group-hover:text-mist-200'
                             ">
                             {{ row.label }}

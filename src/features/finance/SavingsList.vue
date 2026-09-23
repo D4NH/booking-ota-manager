@@ -29,7 +29,7 @@ const isGoalModalOpen = ref(false);
         <div class="overflow-x-auto mb-6">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
-                    class="bg-mist-800 text-mist-400 uppercase font-semibold border-y border-mist-800">
+                    class="bg-mist-950/50 text-mist-400 uppercase font-semibold border-y border-mist-800">
                     <tr>
                         <th class="w-25 py-2.5 px-3">Last Active</th>
                         <th class="w-26 py-2.5 px-3">Owner</th>

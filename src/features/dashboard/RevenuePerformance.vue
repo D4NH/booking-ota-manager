@@ -185,39 +185,36 @@ const getBarHeightPct = (amount: number): number => {
                 </div>
             </div>
 
-            <!-- Native Lightweight CSS Bar Chart -->
             <div class="relative mt-6 h-55 w-full flex items-end">
-                <!-- Background Horizontal Gridlines -->
+                <!-- Horizontal Gridlines -->
                 <div
                     class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
                     <div
                         v-for="tick in yAxisTicks"
                         :key="tick.value"
-                        class="w-full flex items-center border-b border-mist-800/60 text-[10px] font-mono text-mist-500">
+                        class="w-full flex items-center text-[10px] font-mono text-mist-500">
                         <span class="w-10 text-right pr-2 select-none">{{ tick.label }}</span>
                         <div class="flex-1 border-b border-mist-800/40" />
                     </div>
                 </div>
-
-                <!-- Monthly Bars Column Area -->
+                <!-- Bars Columns -->
                 <div class="relative w-full h-full flex items-end justify-between pl-12 pr-4 pb-6">
                     <div
                         v-for="(item, idx) in fourMonthSequence"
                         :key="item.monthName"
                         class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer px-2"
                         @mouseenter="hoveredIndex = idx">
-                        <!-- Custom Tooltip -->
+                        <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
                             class="absolute -top-14 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md px-2.5 py-1.5 text-xs font-mono whitespace-nowrap space-y-0.5">
-                            <div class="text-[10px] text-mist-400 font-sans">
+                            <div class="text-xs text-mist-400 font-sans">
                                 {{ item.monthName }} {{ item.year }}
                             </div>
-                            <div class="text-lime-400 font-semibold">
+                            <div class="text-mist-200 font-semibold">
                                 {{ formatIDR(item.revenue) }}
                             </div>
                         </div>
-
                         <!-- Bar Column -->
                         <div class="w-full max-w-12 flex items-end justify-center h-full">
                             <div
@@ -229,13 +226,12 @@ const getBarHeightPct = (amount: number): number => {
                                 ]"
                                 :style="{ height: `${getBarHeightPct(item.revenue)}%` }" />
                         </div>
-
                         <!-- X-Axis Month Label -->
                         <span
-                            class="absolute -bottom-5 text-xs font-mono transition-colors"
+                            class="absolute -bottom-7 text-xs transition-colors"
                             :class="
                                 item.isHighlighted || hoveredIndex === idx
-                                    ? 'font-bold text-lime-400'
+                                    ? 'font-semibold text-lime-400'
                                     : 'text-mist-400 group-hover:text-mist-200'
                             ">
                             {{ item.monthName }}

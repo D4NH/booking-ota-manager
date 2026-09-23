@@ -51,7 +51,9 @@ const {
                               ? 'text-rose-400'
                               : 'text-mist-400'
                     ">
-                    {{ danhRevenueGrowthPct >= 0 ? '↑' : '↓' }}{{ Math.abs(danhRevenueGrowthPct) }}%
+                    <fa-icon
+                        :icon="danhRevenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'" />
+                    {{ Math.abs(danhRevenueGrowthPct) }}%
                 </span>
                 <span
                     v-else
