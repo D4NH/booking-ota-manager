@@ -13,8 +13,12 @@ import router from './router';
 
 import {
     faAngleDown,
+    faArrowDown,
     faArrowLeft,
     faArrowsRotate,
+    faArrowTrendDown,
+    faArrowTrendUp,
+    faArrowUp,
     faArrowUpRightFromSquare,
     faBath,
     faBed,
@@ -63,7 +67,11 @@ import {
 
 library.add(
     faAngleDown,
+    faArrowDown,
     faArrowLeft,
+    faArrowTrendDown,
+    faArrowTrendUp,
+    faArrowUp,
     faArrowsRotate,
     faArrowUpRightFromSquare,
     faBath,

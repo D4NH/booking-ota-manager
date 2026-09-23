@@ -13,11 +13,11 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
-import OccupiedTag from '@/components/OccupiedTag.vue';
-import PropertyLocationMap from '@/features/properties/PropertyLocationMap.vue';
 import PropertySelector from '@/components/PropertySelector.vue';
+import OccupiedTag from '@/components/OccupiedTag.vue';
 import UpcomingBookings from '@/features/bookings/UpcomingBookings.vue';
 import CurrentWeekView from '@/features/bookings/CurrentWeekView.vue';
+import PropertyLocationMap from '@/features/properties/PropertyLocationMap.vue';
 import MonthlyRevenuePacing from '@/features/properties/MonthlyRevenuePacing.vue';
 import ForwardBookingHorizon from '@/features/properties/ForwardBookingHorizon.vue';
 
@@ -135,15 +135,22 @@ const handleNavigate = (target: PropertyId | 'all'): void => {
                                   ? 'text-rose-400'
                                   : 'text-mist-400'
                         ">
-                        {{ revenueGrowthPercent >= 0 ? '+' : '-' }}{{ revenueGrowthPercent }}%
+                        <fa-icon
+                            :icon="
+                                revenueGrowthPercent >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                            " />
+                        {{ Math.abs(revenueGrowthPercent) }}%
                     </span>
                     <span
                         v-else
                         class="font-medium text-mist-500">
-                        0%
+                        No data for last month
                     </span>
-
-                    <span class="text-mist-500">vs last month</span>
+                    <span
+                        v-if="revenueGrowthPercent !== 0"
+                        class="text-mist-500">
+                        vs last month
+                    </span>
                 </p>
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">

@@ -59,7 +59,11 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                     <span
                         class="font-medium"
                         :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
-                        {{ revenueGrowthPercent >= 0 ? '+' : '' }}{{ revenueGrowthPercent }}%
+                        <fa-icon
+                            :icon="
+                                revenueGrowthPercent >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                            " />
+                        {{ Math.abs(revenueGrowthPercent) }}%
                     </span>
                     <span class="text-mist-500">vs last month</span>
                 </p>
@@ -82,7 +86,7 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
             </div>
             <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Total Month Bookings
+                    Monthly Bookings
                 </h3>
                 <p class="font-mono text-lg font-semibold text-mist-100">
                     {{ totalBookingsCount }}
@@ -93,12 +97,18 @@ const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ bo
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                     Today's Turnover
                 </h3>
-                <p class="text-lg font-semibold text-mist-100">
-                    <span class="text-lime-400 mr-3">
-                        ↓ <span class="font-mono">{{ todaysTurnover.in }}</span> In
+                <p class="text-lg font-semibold text-mist-100 flex gap-3">
+                    <span class="text-lime-400 flex items-center gap-1">
+                        <fa-icon
+                            class="text-sm"
+                            icon="arrow-down" />
+                        <span class="font-mono">{{ todaysTurnover.in }}</span> In
                     </span>
-                    <span class="text-amber-400">
-                        ↑ <span class="font-mono">{{ todaysTurnover.out }}</span> Out
+                    <span class="text-amber-400 flex items-center gap-1">
+                        <fa-icon
+                            class="text-sm"
+                            icon="arrow-up" />
+                        <span class="font-mono">{{ todaysTurnover.out }}</span> Out
                     </span>
                 </p>
                 <p class="text-xs text-mist-500">Scheduled for today</p>
