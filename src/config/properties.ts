@@ -2,8 +2,8 @@ import type { Property, PropertyId } from '@/types/property';
 
 export interface PropertyConfig extends Property {
     defaultRange: string;
-    spreadsheetId: string;
-    calendarId: string;
+    spreadsheetId?: string;
+    calendarId?: string;
 }
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
@@ -35,7 +35,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         price: 1499000,
         codePrefix: 'MHW',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
-        defaultRange: 'A2:J',
+        defaultRange: 'A2:K',
         bedrooms: 2,
         bathrooms: 1,
         plotSize: 80,
@@ -51,7 +51,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#fbbf24',
         price: 1499000,
         codePrefix: 'MHB',
-        defaultRange: 'A2:J',
+        defaultRange: 'A2:K',
         bedrooms: 3,
         bathrooms: 2,
         plotSize: 110,
@@ -67,7 +67,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#e879f9',
         price: 1499000,
         codePrefix: 'MHN',
-        defaultRange: 'A2:J',
+        defaultRange: 'A2:K',
         bedrooms: 2,
         bathrooms: 2,
         plotSize: 105,

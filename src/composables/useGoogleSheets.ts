@@ -216,9 +216,13 @@ export function useGoogleSheets() {
             method: 'DELETE',
         });
 
-        if (!res.ok && res.status !== 404) {
+        // 204 = Successfully deleted
+        // 404 / 410 = Event is already deleted/trashed or does not exist (Safe to ignore)
+        if (!res.ok && res.status !== 404 && res.status !== 410) {
             const error = await res.json().catch(() => null);
             console.warn('Calendar API DELETE error:', error);
+        } else {
+            console.log(`Calendar event confirmed deleted: ${cleanId}`);
         }
     };
 

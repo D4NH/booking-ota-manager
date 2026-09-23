@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { formatIDR } from '@/utils/money';
 import { getPropertyStyle } from '@/config/properties';
 import type { Booking, StagedBooking } from '@/types/booking';
+import { formatDate } from '@/utils/date';
 
 interface Props {
     isCollapsed: boolean;
@@ -64,16 +65,17 @@ const totalCount = computed(
                 <p>No incoming bookings, pending payments, or unsettled payouts.</p>
             </div>
 
-            <!-- Incoming Bookings Awaiting Approval -->
+            <!-- Incoming Bookings Approval -->
             <div
                 v-for="staged in stagedBookings"
                 :key="staged.id || staged.bookingId"
-                class="rounded-xs border-l-2 border-l-purple-500 border-b-0 p-3 bg-purple-950/10 hover:bg-mist-800/50 transition group">
+                class="cursor-pointer rounded-xs border-l-2 border-l-purple-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
+                @click.stop="emit('open-staging', staged)">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-purple-400">
                         <span class="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-                        New Booking Staged
+                        New Booking
                     </span>
                     <span
                         class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
@@ -87,27 +89,24 @@ const totalCount = computed(
                         {{ staged.guestName }}
                     </p>
                     <p class="text-xs text-mist-400 font-mono">
-                        {{ staged.checkIn }} &bull; {{ staged.nights }} night(s)
+                        {{ formatDate(staged.checkIn, { shortWeekday: true, shortMonth: true }) }}
+                        &bull; {{ staged.nights }} night(s)
                     </p>
                     <p class="text-xs text-mist-400">
                         {{ staged.listing }} &bull;
-                        <span class="font-mono text-mist-500">Ref: {{ staged.bookingId }}</span>
+                        <span class="font-mono text-mist-500">{{ staged.bookingId }}</span>
                     </p>
                 </div>
 
                 <div
                     class="mt-2.5 flex items-center justify-between border-t border-mist-800/80 pt-2">
-                    <span class="text-xs font-mono font-bold text-lime-400 shrink-0">
+                    <span class="text-xs font-mono font-bold text-mist-200 shrink-0">
                         {{ formatIDR(staged.payout) }}
                     </span>
-                    <button
-                        type="button"
-                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-[11px] font-bold px-2.5 py-1 rounded transition shadow-sm cursor-pointer flex items-center gap-1"
-                        title="Review and approve booking"
-                        @click.stop="emit('open-staging', staged)">
+                    <div class="flex items-center text-xs text-mist-300 gap-1.5">
+                        <fa-icon icon="pen-to-square" />
                         <span>Review</span>
-                        <span class="font-mono">&rarr;</span>
-                    </button>
+                    </div>
                 </div>
             </div>
 
@@ -115,8 +114,8 @@ const totalCount = computed(
             <div
                 v-for="b in pendingPayments"
                 :key="b.id || b.bookingId"
-                class="rounded-xs border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
-                @click="emit('edit', b)">
+                class="cursor-pointer rounded-xs border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
+                @click.stop="emit('edit', b)">
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
@@ -133,7 +132,8 @@ const totalCount = computed(
                         {{ b.guestName }}
                     </p>
                     <p class="text-xs text-mist-400 font-mono">
-                        {{ b.checkIn }} &bull; {{ b.nights }} night(s)
+                        {{ formatDate(b.checkIn, { shortWeekday: true, shortMonth: true }) }} &bull;
+                        {{ b.nights }} night(s)
                     </p>
                     <p class="text-xs text-mist-400">
                         {{ b.listing }}
@@ -143,14 +143,9 @@ const totalCount = computed(
                     <span class="text-xs font-mono font-semibold shrink-0">
                         {{ formatIDR(b.payout) }}
                     </span>
-                    <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="cursor-pointer text-xs text-mist-400 hover:text-mist-200"
-                            title="Edit booking details"
-                            @click.stop="emit('edit', b)">
-                            <fa-icon icon="pen-to-square" />
-                        </button>
+                    <div class="flex items-center text-xs text-mist-300 gap-1.5">
+                        <fa-icon icon="pen-to-square" />
+                        <span>Review</span>
                     </div>
                 </div>
             </div>
@@ -176,7 +171,8 @@ const totalCount = computed(
                         {{ b.guestName }}
                     </p>
                     <p class="text-xs text-mist-400 font-mono">
-                        {{ b.checkIn }} &bull; {{ b.nights }} night(s)
+                        {{ formatDate(b.checkIn, { shortWeekday: true, shortMonth: true }) }} &bull;
+                        {{ b.nights }} night(s)
                     </p>
                     <p class="text-xs text-mist-400">
                         {{ b.listing }}

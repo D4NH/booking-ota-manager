@@ -1,165 +1,143 @@
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import type { Booking } from '@/types/booking';
-
 import { toast } from 'vue-toastflow';
+
+interface ToastMessages {
+    loadingTitle: string;
+    loadingDesc?: string;
+    successTitle: string;
+    successDesc: string | ((result: unknown) => string);
+    errorTitle: string;
+}
 
 export function useBookingSync() {
     const bookingStore = useBookingStore();
     const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
 
+    /**
+     * Internal helper to execute async booking mutations with toast notifications.
+     */
+    const runWithToast = async <T>(
+        action: () => Promise<T>,
+        messages: ToastMessages
+    ): Promise<boolean> => {
+        try {
+            await toast.loading(action, {
+                loading: {
+                    title: messages.loadingTitle,
+                    description: messages.loadingDesc,
+                },
+                success: (result: T) => ({
+                    title: messages.successTitle,
+                    description:
+                        typeof messages.successDesc === 'function'
+                            ? messages.successDesc(result)
+                            : messages.successDesc,
+                }),
+                error: (err: unknown) => ({
+                    title: messages.errorTitle,
+                    description: err instanceof Error ? err.message : 'Google Sheets sync failed.',
+                }),
+            });
+            return true;
+        } catch (err: unknown) {
+            console.error(`${messages.errorTitle}:`, err);
+            return false;
+        }
+    };
+
     const saveBooking = async (
         payload: Omit<Booking, 'id' | 'createdAt'>,
         bookingToEdit?: Booking | null
     ): Promise<boolean> => {
-        try {
-            await toast.loading(
-                async () => {
-                    if (bookingToEdit) {
-                        await bookingStore.updateBookingWithRemoteSync(
-                            { ...bookingToEdit, ...payload },
-                            { updateSheetRowByBookingId }
-                        );
-                    } else {
-                        await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-                    }
-                },
-                {
-                    loading: {
-                        title: bookingToEdit ? 'Updating booking...' : 'Saving booking...',
-                        description: 'Syncing with Google Sheets and database.',
-                    },
-                    success: {
-                        title: 'Success',
-                        description: bookingToEdit
-                            ? 'Booking updated successfully.'
-                            : 'Booking saved successfully.',
-                    },
-                    error: (err) => ({
-                        title: 'Save failed',
-                        description:
-                            err instanceof Error ? err.message : 'Google Sheets sync failed.',
-                    }),
-                }
-            );
+        const isEditing = Boolean(bookingToEdit);
 
-            return true;
-        } catch (err: unknown) {
-            console.error('Save aborted due to sync failure:', err);
-            return false;
-        }
+        return runWithToast(
+            async () => {
+                if (bookingToEdit) {
+                    await bookingStore.updateBookingWithRemoteSync(
+                        { ...bookingToEdit, ...payload },
+                        { updateSheetRowByBookingId }
+                    );
+                } else {
+                    await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
+                }
+            },
+            {
+                loadingTitle: isEditing ? 'Updating booking...' : 'Saving booking...',
+                loadingDesc: 'Syncing with Google Sheets and database.',
+                successTitle: 'Success',
+                successDesc: isEditing
+                    ? 'Booking updated successfully.'
+                    : 'Booking saved successfully.',
+                errorTitle: 'Save failed',
+            }
+        );
     };
 
     const updateBookingStatus = async (
         booking: Booking,
         newStatus: Booking['status']
     ): Promise<boolean> => {
-        try {
-            await toast.loading(
-                async () => {
-                    // Merge new status into existing booking and trigger remote sync
-                    await bookingStore.updateBookingWithRemoteSync(
-                        { ...booking, status: newStatus },
-                        { updateSheetRowByBookingId }
-                    );
-                },
-                {
-                    loading: {
-                        title: `Marking as ${newStatus}...`,
-                        description: 'Syncing with Google Sheets and database.',
-                    },
-                    success: {
-                        title: 'Status Updated',
-                        description: `${booking.guestName} marked as ${newStatus}.`,
-                    },
-                    error: (err) => ({
-                        title: 'Update failed',
-                        description:
-                            err instanceof Error ? err.message : 'Google Sheets sync failed.',
-                    }),
-                }
-            );
-
-            return true;
-        } catch (err: unknown) {
-            console.error('Status update failed due to sync error:', err);
-            return false;
-        }
+        return runWithToast(
+            async () => {
+                await bookingStore.updateBookingWithRemoteSync(
+                    { ...booking, status: newStatus },
+                    { updateSheetRowByBookingId }
+                );
+            },
+            {
+                loadingTitle: `Marking as ${newStatus}...`,
+                loadingDesc: 'Syncing with Google Sheets and database.',
+                successTitle: 'Status Updated',
+                successDesc: `${booking.guestName} marked as ${newStatus}.`,
+                errorTitle: 'Update failed',
+            }
+        );
     };
 
-    const markBookingComplete = async (booking: Booking): Promise<boolean> => {
-        return updateBookingStatus(booking, 'Completed');
-    };
+    const markBookingComplete = (booking: Booking): Promise<boolean> =>
+        updateBookingStatus(booking, 'Completed');
 
     const deleteBooking = async (booking: Booking): Promise<boolean> => {
         const confirmed = window.confirm(
-            `Are you sure you want to delete booking ${booking.bookingId} (${booking.guestName})? This will remove it from Google Sheets first.`
+            `Are you sure you want to delete booking ${booking.bookingId} (${booking.guestName})? This will remove it from Google Sheets & Calendar first.`
         );
 
         if (!confirmed) return false;
 
-        try {
-            await toast.loading(
-                async () => {
-                    await bookingStore.deleteBookingWithRemoteSync(booking, {
-                        deleteSheetRowById,
-                    });
-                },
-                {
-                    loading: {
-                        title: 'Deleting booking...',
-                        description: `Deleting reservation ${booking.bookingId} from Google Sheets...`,
-                    },
-                    success: {
-                        title: 'Success',
-                        description: `Booking ${booking.bookingId} deleted from Google Sheets & local database.`,
-                    },
-                    error: (err) => ({
-                        title: 'Save failed',
-                        description:
-                            err instanceof Error ? err.message : 'Google Sheets sync failed.',
-                    }),
-                }
-            );
-
-            return true;
-        } catch (err: unknown) {
-            console.error('Delete aborted due to sync failure:', err);
-            return false;
-        }
+        return runWithToast(
+            async () => {
+                await bookingStore.deleteBookingWithRemoteSync(booking, {
+                    deleteSheetRowByBookingId: (spreadsheetId, bookingId, calendarId) =>
+                        deleteSheetRowById(spreadsheetId, bookingId, { calendarId }),
+                });
+            },
+            {
+                loadingTitle: 'Deleting booking...',
+                loadingDesc: `Deleting reservation ${booking.bookingId} from Google Sheets & Calendar...`,
+                successTitle: 'Success',
+                successDesc: `Booking ${booking.bookingId} deleted from Google Sheets & local database.`,
+                errorTitle: 'Delete failed',
+            }
+        );
     };
 
-    const clearAllLocalBookings = async (): Promise<void> => {
+    const clearAllLocalBookings = async (): Promise<boolean> => {
         const confirmed = window.confirm(
             'Are you sure you want to delete ALL local bookings? This cannot be undone.'
         );
 
-        if (!confirmed) return;
+        if (!confirmed) return false;
 
-        try {
-            await toast.loading(
-                async () => {
-                    await bookingStore.clearAllLocalBookings();
-                },
-                {
-                    loading: {
-                        title: 'Clearing local data...',
-                        description: 'Removing all local-only bookings.',
-                    },
-                    success: {
-                        title: 'Cleared',
-                        description: 'All local bookings have been deleted successfully.',
-                    },
-                    error: (err) => ({
-                        title: 'Request failed',
-                        description:
-                            err instanceof Error ? err.message : 'Something went horrible wrong.',
-                    }),
-                }
-            );
-        } catch (err: unknown) {
-            console.error('Delete aborted due to sync failure:', err);
-        }
+        return runWithToast(() => bookingStore.clearAllLocalBookings(), {
+            loadingTitle: 'Clearing local data...',
+            loadingDesc: 'Removing all local-only bookings.',
+            successTitle: 'Cleared',
+            successDesc: 'All local bookings have been deleted successfully.',
+            errorTitle: 'Clear failed',
+        });
     };
 
     return {

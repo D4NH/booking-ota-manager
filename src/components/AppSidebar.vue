@@ -10,12 +10,12 @@ import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { useStagingStore } from '@/stores/useStagingStore';
-import type { Booking } from '@/types/booking';
+import type { Booking, StagedBooking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
 import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
-import IncomingBookingsModal from '@/features/bookings/IncomingBookingsModal.vue';
+import ReviewBookingModal from '@/features/bookings/ReviewBookingModal.vue';
 
 const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
@@ -38,7 +38,8 @@ const { stagedBookings } = storeToRefs(stagingStore);
 
 const stagingSpreadsheetId = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
 
-const isStagingModalOpen = ref(false);
+const activeStagedBooking = ref<StagedBooking | null>(null);
+const isReviewModalOpen = ref(false);
 const isPropertiesOpen = ref(true);
 const isFinanceOpen = ref(true);
 
@@ -80,6 +81,12 @@ const toggleSidebar = () => {
     isFinanceOpen.value = false;
 };
 const toggleNotifications = () => (isNotificationCollapsed.value = !isNotificationCollapsed.value);
+const handleOpenStaging = (stagedItem?: StagedBooking): void => {
+    if (stagedItem) {
+        activeStagedBooking.value = stagedItem;
+        isReviewModalOpen.value = true;
+    }
+};
 
 watch(
     () => route.path,
@@ -287,7 +294,7 @@ watch(
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
             :staged-bookings="stagedBookings"
-            @open-staging="isStagingModalOpen = true"
+            @open-staging="handleOpenStaging"
             @close="toggleNotifications"
             @edit="handleEditBooking"
             @mark-complete="handleInstantComplete" />
@@ -312,8 +319,9 @@ watch(
                 :class="{ 'rotate-180': isSidebarCollapsed }" />
         </button>
 
-        <IncomingBookingsModal
-            v-model="isStagingModalOpen"
+        <ReviewBookingModal
+            v-model="isReviewModalOpen"
+            :booking="activeStagedBooking"
             :staging-spreadsheet-id="stagingSpreadsheetId" />
     </aside>
 </template>
