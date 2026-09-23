@@ -239,6 +239,24 @@ export function useFinanceSync() {
             errorTitle: 'Failed to Save Goal',
         });
 
+    const removeSavingGoal = async (id: string, name: string): Promise<boolean> => {
+        const confirmed = window.confirm(`Delete savings goal "${name}"?`);
+        if (!confirmed) return false;
+
+        return runWithToast(
+            async () => {
+                await financeStore.deleteSavingGoal(id);
+            },
+            {
+                loadingTitle: 'Deleting Goal...',
+                loadingDesc: `Removing "${name}" from Google Sheets & local cache.`,
+                successTitle: 'Goal Deleted',
+                successDesc: `Successfully deleted target "${name}".`,
+                errorTitle: 'Delete Failed',
+            }
+        );
+    };
+
     return {
         syncAllFinancialData,
         addPropertyTransaction,
@@ -254,5 +272,6 @@ export function useFinanceSync() {
         executeOwnerTransfer,
         settleRecurringCommitment,
         createSavingGoal,
+        removeSavingGoal,
     };
 }

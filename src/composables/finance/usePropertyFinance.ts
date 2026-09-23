@@ -20,7 +20,7 @@ export function usePropertyFinance(
     previousMonth: Ref<string>
 ) {
     const bookingStore = useBookingStore();
-    const { appendSheetRow, updateSheetRowByBookingId } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
 
     const bookingIncomeRecords = computed<PropertyFinance[]>(() => {
         const eligibleStatuses = new Set(['Completed', 'Waiting for payout', 'Checked-in']);
@@ -37,7 +37,7 @@ export function usePropertyFinance(
                 notes: `${b.listing} | ${b.guestName}`,
             }));
     });
-    // Deduplicate Sheet Rows against Dexie Records
+
     const unifiedPropertyFinances = computed<PropertyFinance[]>(() => {
         const existingBookingIds = new Set<string>();
         const sheetsList = sheetPropertyFinances.value;
@@ -59,13 +59,13 @@ export function usePropertyFinance(
 
         return [...sheetsList, ...syntheticEntries];
     });
+
     const filteredPropertyFinances = computed(() =>
         unifiedPropertyFinances.value
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
             .sort(sortNewestFirst)
     );
 
-    // Monthly Property Revenue & Expense Aggregations
     const monthlyPropertyRevenue = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -74,7 +74,7 @@ export function usePropertyFinance(
             if (!item) continue;
             if (
                 item.type === 'income' &&
-                item.category !== 'Owner Payout' &&
+                item.category !== 'Owner Payout Outflow' &&
                 item.category !== 'Mai House Jogja Share'
             ) {
                 sum += Number(item.amount);
@@ -82,6 +82,7 @@ export function usePropertyFinance(
         }
         return sum;
     });
+
     const monthlyPropertyExpenses = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -94,6 +95,7 @@ export function usePropertyFinance(
         }
         return sum;
     });
+
     const monthlyOwnerDraws = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -108,7 +110,6 @@ export function usePropertyFinance(
         () => monthlyPropertyRevenue.value - monthlyPropertyExpenses.value
     );
 
-    // Growth Percentages
     const previousMonthPropertyRevenue = computed<number>(() => {
         let sum = 0;
         const list = unifiedPropertyFinances.value;
@@ -118,7 +119,7 @@ export function usePropertyFinance(
             if (
                 isDateInMonth(item.date, previousMonth.value) &&
                 item.type === 'income' &&
-                item.category !== 'Owner Payout' &&
+                item.category !== 'Owner Payout Outflow' &&
                 item.category !== 'Mai House Jogja Share'
             ) {
                 sum += Number(item.amount);
@@ -126,6 +127,7 @@ export function usePropertyFinance(
         }
         return sum;
     });
+
     const previousMonthPropertyExpenses = computed<number>(() => {
         let sum = 0;
         const list = unifiedPropertyFinances.value;
@@ -142,6 +144,7 @@ export function usePropertyFinance(
         }
         return sum;
     });
+
     const propertyRevenueGrowthPct = computed<number | null>(() =>
         calculateGrowthPct(monthlyPropertyRevenue.value, previousMonthPropertyRevenue.value)
     );
@@ -162,6 +165,7 @@ export function usePropertyFinance(
         sheetPropertyFinances.value = [...sheetPropertyFinances.value, item];
         await db.propertyFinances.put(item);
     }
+
     async function updatePropertyTransaction(
         id: string,
         payload: Omit<PropertyFinance, 'id'>
@@ -193,6 +197,17 @@ export function usePropertyFinance(
         );
         await db.propertyFinances.put(updatedRecord);
     }
+
+    async function deletePropertyTransaction(id: string): Promise<void> {
+        if (id.startsWith('dexie-')) {
+            throw new Error('This transaction is auto-populated from Dexie bookings.');
+        }
+
+        await deleteSheetRowById(SPREADSHEET_ID, id, { sheetName: 'Property_Finances' });
+        sheetPropertyFinances.value = sheetPropertyFinances.value.filter((i) => i.id !== id);
+        await db.propertyFinances.delete(id);
+    }
+
     async function persistDexieBookingsToRemoteSheet(): Promise<number> {
         const existingIds = new Set<string>();
         const finances = sheetPropertyFinances.value;
@@ -251,6 +266,7 @@ export function usePropertyFinance(
         propertyExpenseGrowthPct,
         addPropertyTransaction,
         updatePropertyTransaction,
+        deletePropertyTransaction,
         persistDexieBookingsToRemoteSheet,
     };
 }

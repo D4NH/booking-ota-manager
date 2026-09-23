@@ -549,6 +549,13 @@ export const useFinanceStore = defineStore('finance', () => {
                 .catch((e) => console.warn('Dexie goal save error:', e));
         }
     }
+    async function deleteSavingGoal(id: string): Promise<void> {
+        await deleteSheetRowById(SPREADSHEET_ID, id, { sheetName: 'Saving_Goals' });
+        savingGoals.value = savingGoals.value.filter((g) => g.id !== id);
+        if (db.savingGoals) {
+            await db.savingGoals.delete(id).catch(() => {});
+        }
+    }
 
     // Data Synchronization
     const loadLocalFinanceData = async (): Promise<void> => {
@@ -834,6 +841,7 @@ export const useFinanceStore = defineStore('finance', () => {
         // Savinfs
         savingGoals,
         addSavingGoal,
+        deleteSavingGoal,
         dynamicAllocatedGoals,
 
         // Recurring

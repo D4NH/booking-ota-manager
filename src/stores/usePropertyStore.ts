@@ -22,9 +22,8 @@ const toastConfig = {
 
 export const usePropertyStore = defineStore('property', () => {
     const properties = ref<Property[]>([]);
-    const preferredOrder = ['piyungan', 'wonosari', 'bantul'];
+    const preferredOrder: PropertyId[] = ['piyungan', 'wonosari', 'bantul', 'nusadua'];
 
-    // Load all properties from IndexedDB
     const loadProperties = async (): Promise<void> => {
         properties.value = await db.properties.toArray();
     };
