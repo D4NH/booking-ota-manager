@@ -351,7 +351,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
         <!-- Manual Expense/Income Modal -->
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
             <div
                 class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
                 <div

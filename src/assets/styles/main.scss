@@ -18,3 +18,9 @@ a {
         background-color 0.1s ease-in-out,
         border-color 0.1s ease-in-out;
 }
+
+input[type='date']::-webkit-inner-spin-button,
+input[type='date']::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}

@@ -144,7 +144,7 @@ watch(
 <template>
     <Teleport to="body">
         <div
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
             <div
                 class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
                 <!-- Modal Header -->
@@ -179,41 +179,47 @@ watch(
                     class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="handleSubmit">
                     <!-- Property Selection -->
-                    <div class="relative">
+                    <div class="w-full">
                         <label
                             for="property"
-                            class="block text-xs font-medium text-mist-400">
+                            class="block text-sm font-medium text-slate-700 mb-1">
                             Property
                         </label>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
-                            <fa-icon
-                                class="text-xs"
-                                icon="house" />
-                        </div>
-                        <select
-                            id="property"
-                            v-model="form.propertyId"
-                            name="property"
-                            required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                            <option
-                                value=""
-                                disabled>
-                                Select property
-                            </option>
-                            <option
-                                v-for="prop in sortedProperties"
-                                :key="prop.id"
-                                :value="prop.id">
-                                {{ prop.name }}
-                            </option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
-                            <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
+                        <div class="relative rounded-md shadow-sm">
+                            <!-- Front Icon -->
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="house" />
+                            </div>
+
+                            <!-- Select Element -->
+                            <select
+                                id="property"
+                                v-model="form.propertyId"
+                                name="property"
+                                class="block w-full py-2 pl-10 pr-10 rounded-md border border-mist-800 bg-mist-950/50 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer appearance-none">
+                                <option
+                                    value=""
+                                    disabled>
+                                    Select property
+                                </option>
+                                <option
+                                    v-for="prop in sortedProperties"
+                                    :key="prop.id"
+                                    :value="prop.id">
+                                    {{ prop.name }}
+                                </option>
+                            </select>
+
+                            <!-- Custom Trailing Dropdown Arrow -->
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="angle-down" />
+                            </div>
                         </div>
                     </div>
 

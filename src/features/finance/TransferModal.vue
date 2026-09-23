@@ -69,7 +69,7 @@ const handleTransfer = async (): Promise<void> => {
 <template>
     <div
         v-if="modelValue"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
         <div
             class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
             <div
@@ -112,7 +112,7 @@ const handleTransfer = async (): Promise<void> => {
                         <option value="piyungan">Mai House Jogja</option>
                     </select>
                     <div
-                        class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
+                        class="pointer-events-none absolute inset-y-0 top-5 right-3 flex items-center text-mist-400">
                         <fa-icon
                             class="text-xs"
                             icon="angle-down" />
