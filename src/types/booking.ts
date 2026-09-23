@@ -27,3 +27,21 @@ export interface Booking {
     notes?: string;
     createdAt: string;
 }
+
+export type StagingStatus = 'Pending Approval' | 'Approved' | 'Rejected';
+
+export interface StagedBooking {
+    id: string;
+    propertyId: PropertyId;
+    bookingId: string;
+    listing: BookingChannel;
+    guestName: string;
+    checkIn: string;
+    checkOut: string;
+    nights: number;
+    payout: number;
+    status: StagingStatus;
+    notes?: string;
+    calendarEventId?: string; // Column L
+    hasConflict?: boolean;
+}

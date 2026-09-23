@@ -30,7 +30,7 @@ import type {
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
 
 export const useFinanceStore = defineStore('finance', () => {
-    const { appendSheetRow, deleteSheetRowByBookingId, batchFetchSheetRows } = useGoogleSheets();
+    const { appendSheetRow, deleteSheetRowById, batchFetchSheetRows } = useGoogleSheets();
     const bookingStore = useBookingStore();
 
     const properties = shallowRef<Property[]>([]);
@@ -399,7 +399,7 @@ export const useFinanceStore = defineStore('finance', () => {
         const targetItem = sheetPropertyFinances.value.find((i) => i.id === id);
         if (!targetItem) return;
 
-        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Property_Finances');
+        await deleteSheetRowById(SPREADSHEET_ID, id, 'Property_Finances');
         sheetPropertyFinances.value = sheetPropertyFinances.value.filter((i) => i.id !== id);
         await db.propertyFinances.delete(id);
 
@@ -419,7 +419,7 @@ export const useFinanceStore = defineStore('finance', () => {
             );
 
             if (matchingTransfer) {
-                await deleteSheetRowByBookingId(SPREADSHEET_ID, matchingTransfer.id, 'Transfers');
+                await deleteSheetRowById(SPREADSHEET_ID, matchingTransfer.id, 'Transfers');
                 transfers.value = transfers.value.filter((t) => t.id !== matchingTransfer.id);
                 await db.transfers.delete(matchingTransfer.id);
 
@@ -431,7 +431,7 @@ export const useFinanceStore = defineStore('finance', () => {
                             Math.abs(Number(s.amount) - targetAmount) < 100
                     );
                     if (matchingShared) {
-                        await deleteSheetRowByBookingId(
+                        await deleteSheetRowById(
                             SPREADSHEET_ID,
                             matchingShared.id,
                             'Shared_Transactions'
@@ -450,7 +450,7 @@ export const useFinanceStore = defineStore('finance', () => {
                             Math.abs(Number(p.amount) - targetAmount) < 100
                     );
                     if (matchingPersonal) {
-                        await deleteSheetRowByBookingId(
+                        await deleteSheetRowById(
                             SPREADSHEET_ID,
                             matchingPersonal.id,
                             'Personal_Transactions'

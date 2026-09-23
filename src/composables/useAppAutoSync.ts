@@ -1,9 +1,10 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useDocumentVisibility, useWindowFocus, useOnline } from '@vueuse/core';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS } from '@/config/properties';
+import { useBookingStore } from '@/stores/useBookingStore';
+import { useStagingStore } from '@/stores/useStagingStore';
 import type { PropertyId } from '@/types/property';
 
 const LAST_SYNC_KEY = 'app_global_last_sync';
@@ -11,6 +12,7 @@ const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 export function useAppAutoSync() {
     const bookingStore = useBookingStore();
+    const stagingStore = useStagingStore(); // <── Integrated
     const { syncAllFinancialData } = useFinanceSync();
     const { fetchSheetRows, isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 
@@ -56,27 +58,32 @@ export function useAppAutoSync() {
         try {
             const propertyIds = Object.keys(PROPERTY_CONFIGS) as PropertyId[];
 
+            // 1. Sync Bookings
             const bookingsTask = Promise.all(
                 propertyIds.map(async (propId) => {
                     const spreadsheetId = PROPERTY_CONFIGS[propId]?.spreadsheetId;
                     if (!spreadsheetId) return;
 
-                    const rows = await fetchSheetRows(spreadsheetId, 'A2:J');
+                    const rows = await fetchSheetRows(spreadsheetId, 'A2:K');
                     if (rows && rows.length > 0) {
                         await bookingStore.importBookingsFromGoogleSheets(propId, rows);
                     }
                 })
             );
 
+            // 2. Sync Financial System
             const financeTask = syncAllFinancialData({
                 silent: options.silent ?? true,
             });
 
-            await Promise.all([bookingsTask, financeTask]);
+            // 3. Sync Incoming Staging Queue (Single quota window)
+            const stagingTask = stagingStore.pollStagingQueue({ force: options.force });
+
+            // Run all 3 in parallel
+            await Promise.all([bookingsTask, financeTask, stagingTask]);
 
             const now = Date.now();
             lastSyncTime.value = now;
-            nowTimestamp.value = now;
             localStorage.setItem(LAST_SYNC_KEY, String(now));
             return true;
         } catch (err: unknown) {

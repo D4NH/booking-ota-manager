@@ -20,7 +20,9 @@ const modalStore = useModalStore();
 const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const selectedCheckInDate = ref<string>('');
 
-const { unitBookings: filteredBookings } = usePropertyDetails(selectedProperty);
+const { unitBookings: filteredBookings } = usePropertyDetails(selectedProperty, {
+    includeUnavailable: true,
+});
 
 const {
     selectedMonth,

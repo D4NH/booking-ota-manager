@@ -10,6 +10,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
+import { useStagingStore } from '@/stores/useStagingStore';
 import type { Booking } from '@/types/booking';
 import type { Property } from '@/types/property';
 
@@ -41,6 +42,7 @@ const {
     propertyToEdit,
 } = storeToRefs(modalStore);
 const propertyStore = usePropertyStore();
+const stagingStore = useStagingStore();
 
 const handleSaveBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<void> => {
     const success = await saveBooking(payload, bookingToEdit.value);
@@ -58,6 +60,7 @@ onMounted(async () => {
         bookingStore.loadBookings(),
         financeStore.loadLocalFinanceData(),
         propertyStore.loadProperties(),
+        stagingStore.loadLocalStagingData(),
     ]);
 
     if (refreshAuthStatus() || isAuthenticated.value) {

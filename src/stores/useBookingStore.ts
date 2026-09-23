@@ -14,7 +14,9 @@ export const useBookingStore = defineStore('booking', () => {
         bookings.value = await db.bookings.toArray();
     };
 
-    const formatSheetRow = (b: Omit<Booking, 'id' | 'createdAt'>): (string | number)[] => [
+    const formatSheetRow = (
+        b: Omit<Booking, 'id' | 'createdAt'> & { calendarEventId?: string }
+    ): (string | number)[] => [
         b.bookingId,
         b.listing,
         b.guestName,
@@ -22,9 +24,10 @@ export const useBookingStore = defineStore('booking', () => {
         b.checkOut,
         b.nights,
         b.payout,
-        '',
+        '', // Column H: Owner Payout
         b.status,
         b.notes || '',
+        b.calendarEventId || '',
     ];
 
     const hasDateConflict = (
@@ -62,7 +65,7 @@ export const useBookingStore = defineStore('booking', () => {
         };
 
         await db.bookings.add(newBooking);
-        await loadBookings();
+        bookings.value = [...bookings.value, newBooking];
         return newBooking;
     };
 
@@ -76,35 +79,33 @@ export const useBookingStore = defineStore('booking', () => {
             const existing = bookings.value.find(
                 (b) => b.bookingId === updated.bookingId && b.propertyId === updated.propertyId
             );
-            if (existing?.id) {
-                recordToPut.id = existing.id;
-            } else {
-                recordToPut.id =
-                    typeof crypto !== 'undefined' && crypto.randomUUID
-                        ? crypto.randomUUID()
-                        : `${updated.propertyId}-${updated.bookingId}-${Date.now()}`;
-            }
+            recordToPut.id =
+                existing?.id || `${updated.propertyId}-${updated.bookingId}-${Date.now()}`;
         }
 
         await db.bookings.put(recordToPut);
-        await loadBookings();
+
+        const index = bookings.value.findIndex((b) => b.id === recordToPut.id);
+        if (index !== -1) {
+            bookings.value[index] = recordToPut;
+        } else {
+            bookings.value.push(recordToPut);
+        }
     };
 
     const deleteBooking = async (idOrBookingId: string): Promise<void> => {
         if (!idOrBookingId) return;
 
-        let targetId = idOrBookingId;
-        const matchByPrimary = bookings.value.find((b) => b.id === idOrBookingId);
+        const target = bookings.value.find(
+            (b) => b.id === idOrBookingId || b.bookingId === idOrBookingId
+        );
 
-        if (!matchByPrimary) {
-            const matchByBookingId = bookings.value.find((b) => b.bookingId === idOrBookingId);
-            if (matchByBookingId?.id) {
-                targetId = matchByBookingId.id;
-            }
-        }
-
+        const targetId = target?.id || idOrBookingId;
         await db.bookings.delete(targetId);
-        await loadBookings();
+
+        bookings.value = bookings.value.filter(
+            (b) => b.id !== targetId && b.bookingId !== targetId
+        );
     };
 
     const clearAllLocalBookings = async (): Promise<void> => {
@@ -115,21 +116,38 @@ export const useBookingStore = defineStore('booking', () => {
     const addBookingWithRemoteSync = async (
         payload: Omit<Booking, 'id' | 'createdAt'>,
         sheetsApi: {
-            appendSheetRow: (spreadsheetId: string, values: (string | number)[]) => Promise<void>;
+            appendSheetRow: (
+                spreadsheetId: string,
+                values: (string | number)[],
+                range?: string,
+                calendarId?: string
+            ) => Promise<string>;
         }
     ): Promise<void> => {
-        const targetId = PROPERTY_CONFIGS[payload.propertyId as PropertyId]?.spreadsheetId;
-        if (!targetId) {
+        const config = PROPERTY_CONFIGS[payload.propertyId as PropertyId];
+        const targetSheetId = config?.spreadsheetId;
+        const targetCalendarId = config?.calendarId;
+
+        if (!targetSheetId || !targetSheetId.trim()) {
             throw new Error(
-                `Missing Google Sheet configuration for property: ${payload.propertyId}`
+                `Operation rejected: Missing Google Sheets configuration for property "${payload.propertyId}".`
             );
         }
 
         const nights = calculateNights(payload.checkIn, payload.checkOut);
         const payloadWithNights = { ...payload, nights };
 
-        await sheetsApi.appendSheetRow(targetId, formatSheetRow(payloadWithNights));
-        await addBooking(payloadWithNights);
+        const calendarEventId = await sheetsApi.appendSheetRow(
+            targetSheetId,
+            formatSheetRow(payloadWithNights),
+            'A1',
+            targetCalendarId || undefined
+        );
+
+        await addBooking({
+            ...payloadWithNights,
+            ...(calendarEventId ? { calendarEventId } : {}),
+        });
     };
 
     const updateBookingWithRemoteSync = async (
@@ -138,14 +156,19 @@ export const useBookingStore = defineStore('booking', () => {
             updateSheetRowByBookingId: (
                 spreadsheetId: string,
                 bookingId: string,
-                values: (string | number)[]
+                values: (string | number)[],
+                sheetName?: string,
+                calendarId?: string
             ) => Promise<void>;
         }
     ): Promise<void> => {
-        const targetId = PROPERTY_CONFIGS[updated.propertyId as PropertyId]?.spreadsheetId;
-        if (!targetId) {
+        const config = PROPERTY_CONFIGS[updated.propertyId as PropertyId];
+        const targetSheetId = config?.spreadsheetId;
+        const targetCalendarId = config?.calendarId;
+
+        if (!targetSheetId || !targetSheetId.trim()) {
             throw new Error(
-                `Missing Google Sheet configuration for property: ${updated.propertyId}`
+                `Operation rejected: Missing Google Sheets configuration for property "${updated.propertyId}".`
             );
         }
 
@@ -153,11 +176,49 @@ export const useBookingStore = defineStore('booking', () => {
         const updatedWithNights = { ...updated, nights };
 
         await sheetsApi.updateSheetRowByBookingId(
-            targetId,
+            targetSheetId,
             updatedWithNights.bookingId,
-            formatSheetRow(updatedWithNights)
+            formatSheetRow(updatedWithNights),
+            '',
+            targetCalendarId || undefined
         );
+
         await updateBooking(updatedWithNights);
+    };
+
+    const deleteBookingWithRemoteSync = async (
+        booking: Booking,
+        sheetsApi: {
+            deleteSheetRowByBookingId: (
+                spreadsheetId: string,
+                bookingId: string,
+                calendarId?: string
+            ) => Promise<void>;
+        }
+    ): Promise<void> => {
+        const config = PROPERTY_CONFIGS[booking.propertyId as PropertyId];
+        const targetSheetId = config?.spreadsheetId;
+        const targetCalendarId = config?.calendarId;
+
+        if (!targetSheetId || !targetSheetId.trim()) {
+            throw new Error(
+                `Operation rejected: Missing Google Sheets configuration for property "${booking.propertyId}".`
+            );
+        }
+
+        // Clear row from Google Sheets first
+        await sheetsApi.deleteSheetRowByBookingId(
+            targetSheetId,
+            booking.bookingId,
+            targetCalendarId || undefined
+        );
+
+        // Remove from local Dexie only after remote confirms deletion
+        if (booking.id) {
+            await deleteBooking(booking.id);
+        } else {
+            await deleteBooking(booking.bookingId);
+        }
     };
 
     const updateBookingStatusWithSync = async (
@@ -178,28 +239,6 @@ export const useBookingStore = defineStore('booking', () => {
         sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
     ): Promise<void> => {
         await updateBookingStatusWithSync(booking, 'Completed', sheetsApi);
-    };
-
-    const deleteBookingWithRemoteSync = async (
-        booking: Booking,
-        sheetsApi: {
-            deleteSheetRowByBookingId: (spreadsheetId: string, bookingId: string) => Promise<void>;
-        }
-    ): Promise<void> => {
-        const targetId = PROPERTY_CONFIGS[booking.propertyId as PropertyId]?.spreadsheetId;
-        if (!targetId) {
-            throw new Error(
-                `Missing Google Sheet configuration for property: ${booking.propertyId}`
-            );
-        }
-
-        await sheetsApi.deleteSheetRowByBookingId(targetId, booking.bookingId);
-
-        if (booking.id) {
-            await deleteBooking(booking.id);
-        } else {
-            await deleteBooking(booking.bookingId);
-        }
     };
 
     /**
@@ -272,11 +311,11 @@ export const useBookingStore = defineStore('booking', () => {
             const status: Booking['status'] = isUnavailable
                 ? 'Unavailable'
                 : (rawStatus as Booking['status']) || 'Booked';
-
             const notes = String(row[9] || '').trim();
+            const calendarEventId = String(row[10] || '').trim();
 
             const existing = existingMap.get(bookingId);
-            const payload: Booking = {
+            const payload: Booking & { calendarEventId?: string } = {
                 id: existing?.id || `${propertyId}-${bookingId}`,
                 propertyId,
                 bookingId,
@@ -288,6 +327,7 @@ export const useBookingStore = defineStore('booking', () => {
                 payout,
                 status,
                 notes: notes || undefined,
+                calendarEventId: calendarEventId || undefined, // Preserves Google Calendar link
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 

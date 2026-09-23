@@ -3,6 +3,11 @@ export const CHANNEL_WARNINGS: Record<string, string> = {
     'Trip.com': 'Bookings from Trip.com need to be blocked in Tiket.com',
 };
 
+// • Airbnb syncs and pulls from booking.com and trip.com
+// • Booking.com syncs and pulls from airbnb, trip.com. only syncs to tiket.com, agoda.com
+// • tiket.com syncs and pulls from airbnb and booking.com
+// • Trip.com syncs and pulls from airbnb and booking.com
+
 export const MONTH_NAMES = [
     'January',
     'February',

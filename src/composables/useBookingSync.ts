@@ -6,8 +6,7 @@ import { toast } from 'vue-toastflow';
 
 export function useBookingSync() {
     const bookingStore = useBookingStore();
-    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } =
-        useGoogleSheets();
+    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
 
     const saveBooking = async (
         payload: Omit<Booking, 'id' | 'createdAt'>,
@@ -103,7 +102,7 @@ export function useBookingSync() {
             await toast.loading(
                 async () => {
                     await bookingStore.deleteBookingWithRemoteSync(booking, {
-                        deleteSheetRowByBookingId,
+                        deleteSheetRowById,
                     });
                 },
                 {

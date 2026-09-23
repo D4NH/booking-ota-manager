@@ -25,8 +25,7 @@ export function usePersonalFinance(
     selectedMonth: Ref<string>,
     previousMonth: Ref<string>
 ) {
-    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowByBookingId } =
-        useGoogleSheets();
+    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
 
     const filteredPersonalFinances = computed(() =>
         personalFinances.value
@@ -231,6 +230,10 @@ export function usePersonalFinance(
     );
 
     async function addPersonalTransaction(payload: Omit<PersonalFinance, 'id'>): Promise<void> {
+        if (!SPREADSHEET_ID) {
+            throw new Error('Missing Google Sheets database configuration. Operation aborted.');
+        }
+
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
         const item: PersonalFinance = { ...payload, id, date: cleanDate };
@@ -251,41 +254,9 @@ export function usePersonalFinance(
             "'Personal_Transactions'!A1"
         );
 
+        // Write to local replica only after Google Sheets returns 200 OK
         personalFinances.value = [...personalFinances.value, item];
         await db.personalFinances.put(item);
-
-        if (payload.category === 'Gold') {
-            const grams =
-                payload.goldWeightGrams && payload.goldWeightGrams > 0
-                    ? payload.goldWeightGrams
-                    : Number((Number(payload.amount) / currentGoldPricePerGram.value).toFixed(2));
-
-            const goldRecord: GoldAsset = {
-                id: crypto.randomUUID(),
-                owner: payload.owner,
-                type: 'Antam',
-                weightGrams: grams,
-                buyPriceTotal: Number(payload.amount),
-                purchaseDate: cleanDate,
-                notes: payload.notes,
-            };
-
-            await appendSheetRow(
-                SPREADSHEET_ID,
-                [
-                    goldRecord.id,
-                    goldRecord.owner,
-                    goldRecord.type,
-                    goldRecord.weightGrams,
-                    goldRecord.buyPriceTotal,
-                    cleanDate,
-                    goldRecord.certificateNumber || '',
-                ],
-                "'Gold_Assets'!A1"
-            );
-            goldAssets.value = [...goldAssets.value, goldRecord];
-            await db.goldAssets.put(goldRecord);
-        }
     }
     async function addSharedTransaction(payload: Omit<SharedFinance, 'id'>): Promise<void> {
         const id = crypto.randomUUID();
@@ -354,12 +325,12 @@ export function usePersonalFinance(
         await db.sharedFinances.put(updatedRecord);
     }
     async function deletePersonalTransaction(id: string): Promise<void> {
-        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Personal_Transactions');
+        await deleteSheetRowById(SPREADSHEET_ID, id, 'Personal_Transactions');
         personalFinances.value = personalFinances.value.filter((i) => i.id !== id);
         await db.personalFinances.delete(id);
     }
     async function deleteSharedTransaction(id: string): Promise<void> {
-        await deleteSheetRowByBookingId(SPREADSHEET_ID, id, 'Shared_Transactions');
+        await deleteSheetRowById(SPREADSHEET_ID, id, 'Shared_Transactions');
         sharedFinances.value = sharedFinances.value.filter((i) => i.id !== id);
         await db.sharedFinances.delete(id);
     }

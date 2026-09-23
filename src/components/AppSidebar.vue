@@ -9,11 +9,13 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
+import { useStagingStore } from '@/stores/useStagingStore';
 import type { Booking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
 import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
+import IncomingBookingsModal from '@/features/bookings/IncomingBookingsModal.vue';
 
 const navLinks: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
@@ -31,7 +33,12 @@ const { markBookingComplete } = useBookingSync();
 const { isAuthenticated } = useGoogleSheets();
 const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
 const isNotificationCollapsed = useStorage('notifications-collapsed', false);
+const stagingStore = useStagingStore();
+const { stagedBookings } = storeToRefs(stagingStore);
 
+const stagingSpreadsheetId = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
+
+const isStagingModalOpen = ref(false);
 const isPropertiesOpen = ref(true);
 const isFinanceOpen = ref(true);
 
@@ -279,6 +286,8 @@ watch(
             :is-collapsed="isNotificationCollapsed"
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
+            :staged-bookings="stagedBookings"
+            @open-staging="isStagingModalOpen = true"
             @close="toggleNotifications"
             @edit="handleEditBooking"
             @mark-complete="handleInstantComplete" />
@@ -302,5 +311,9 @@ watch(
                 class="transition-transform duration-300"
                 :class="{ 'rotate-180': isSidebarCollapsed }" />
         </button>
+
+        <IncomingBookingsModal
+            v-model="isStagingModalOpen"
+            :staging-spreadsheet-id="stagingSpreadsheetId" />
     </aside>
 </template>

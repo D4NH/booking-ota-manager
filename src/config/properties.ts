@@ -2,7 +2,8 @@ import type { Property, PropertyId } from '@/types/property';
 
 export interface PropertyConfig extends Property {
     defaultRange: string;
-    spreadsheetId?: string;
+    spreadsheetId: string;
+    calendarId: string;
 }
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
@@ -16,7 +17,8 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         price: 1499000,
         codePrefix: 'MHJ',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2026,
-        defaultRange: 'A2:J',
+        calendarId: import.meta.env.VITE_PROPERTY_CALENDAR_ID as string,
+        defaultRange: 'A2:K',
         bedrooms: 2,
         bathrooms: 3,
         plotSize: 123,
