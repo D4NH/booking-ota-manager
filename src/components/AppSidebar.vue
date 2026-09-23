@@ -3,7 +3,9 @@ import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useStorage } from '@vueuse/core';
+import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useBookingSync } from '@/composables/useBookingSync';
+import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -24,11 +26,12 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
+const { isEligibleToAutoSync, formattedCountdown } = useAppAutoSync();
 const { markBookingComplete } = useBookingSync();
+const { isAuthenticated } = useGoogleSheets();
 const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
 const isNotificationCollapsed = useStorage('notifications-collapsed', false);
 
-// const isNotificationCollapsed = ref(true);
 const isPropertiesOpen = ref(true);
 const isFinanceOpen = ref(true);
 
@@ -220,7 +223,6 @@ watch(
                             :class="{ 'rotate-180': isFinanceOpen }" />
                     </button>
                 </div>
-
                 <!-- Finance Subitems -->
                 <div
                     v-show="!isSidebarCollapsed && isFinanceOpen"
@@ -239,23 +241,38 @@ watch(
                 </div>
             </div>
             <!-- Settings -->
-            <RouterLink
-                to="/settings"
-                :class="[
-                    'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
-                    isLinkActive('/settings')
-                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
-                        : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
-                ]">
-                <fa-icon
-                    icon="gear"
-                    class="w-4 h-4 shrink-0 text-center py-2" />
-                <span
-                    v-show="!isSidebarCollapsed"
-                    class="truncate">
-                    Settings
-                </span>
-            </RouterLink>
+            <div class="space-y-1 pt-0.5">
+                <RouterLink
+                    to="/settings"
+                    :class="[
+                        'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
+                        isLinkActive('/settings')
+                            ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                            : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
+                    ]">
+                    <fa-icon
+                        icon="gear"
+                        class="w-4 h-4 shrink-0 text-center py-2" />
+                    <span
+                        v-show="!isSidebarCollapsed"
+                        class="truncate">
+                        Settings
+                    </span>
+                </RouterLink>
+                <div
+                    v-if="isAuthenticated"
+                    class="flex items-center rounded-md font-mono text-xs gap-2 border-l ml-4 pl-6.5 bg-mist-900 text-mist-400">
+                    <span
+                        class="w-1.5 h-1.5 rounded-full"
+                        :class="
+                            isEligibleToAutoSync ? 'bg-lime-400 animate-ping' : 'bg-mist-600'
+                        " />
+                    <span class="font-medium text-[10px] text-mist-400">Auto Sync:</span>
+                    <span class="font-bold">
+                        {{ isEligibleToAutoSync ? 'READY' : formattedCountdown }}
+                    </span>
+                </div>
+            </div>
         </nav>
 
         <NotificationsDrawer
