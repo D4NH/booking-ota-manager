@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSlots } from 'vue';
+import { ref, computed, useSlots } from 'vue';
 
 interface Props {
     inputLabel?: string;
@@ -29,6 +29,7 @@ const [modelValue, modifiers] = defineModel<string | number | null>({
         }
 
         if ((modifiers.number || type === 'number') && typeof processedValue === 'string') {
+            if (processedValue === '' || processedValue === '-') return processedValue;
             const parsed = parseFloat(processedValue);
             return isNaN(parsed) ? '' : parsed;
         }
@@ -38,38 +39,83 @@ const [modelValue, modifiers] = defineModel<string | number | null>({
 });
 
 const slots = useSlots();
+const isFocused = ref(false);
 
-const handleInputScrubbing = (event: Event): void => {
-    if (type !== 'number') return;
+// Formatter for dot notation only (e.g. 1500000 -> "1.500.000")
+const dotFormatter = new Intl.NumberFormat('id-ID', {
+    maximumFractionDigits: 0,
+});
 
+/**
+ * Switch HTML input type to 'text' for numbers to permit
+ * dot notation ("1.500.000") when blurred without browser errors.
+ */
+const effectiveType = computed(() => {
+    if (type === 'number') return 'text';
+    return type;
+});
+
+/**
+ * Display dot-separated number when blurred, and raw digits when focused.
+ */
+const displayValue = computed(() => {
+    if (type !== 'number') {
+        return modelValue.value ?? '';
+    }
+
+    // When focused: display raw number without dots
+    if (isFocused.value) {
+        if (
+            modelValue.value === null ||
+            modelValue.value === undefined ||
+            modelValue.value === ''
+        ) {
+            return '';
+        }
+        return String(modelValue.value).replace(/[^0-9-]/g, '');
+    }
+
+    // When blurred: display dot notation only (e.g. "1.500.000")
+    if (modelValue.value !== null && modelValue.value !== undefined && modelValue.value !== '') {
+        const num = Number(modelValue.value);
+        return isNaN(num) ? '' : dotFormatter.format(num);
+    }
+
+    return '';
+});
+
+const handleInput = (event: Event): void => {
     const inputElement = event.target as HTMLInputElement;
-    const rawValue = inputElement.value;
 
-    const sanitizedValue = rawValue.replace(/[^0-9-]/g, '');
-
-    if (inputElement.value !== sanitizedValue) {
-        inputElement.value = sanitizedValue;
-        modelValue.value = sanitizedValue;
+    if (type === 'number') {
+        const sanitized = inputElement.value.replace(/[^0-9-]/g, '');
+        inputElement.value = sanitized;
+        modelValue.value = sanitized;
+    } else {
+        modelValue.value = inputElement.value;
     }
 };
-const handlePasteScrubbing = (event: ClipboardEvent): void => {
+
+const handleFocus = (): void => {
+    isFocused.value = true;
+};
+
+const handleBlur = (): void => {
+    isFocused.value = false;
+};
+
+const handlePaste = (event: ClipboardEvent): void => {
     if (type !== 'number') return;
 
-    // Prevent default drop event cycle values from flashing visually
     event.preventDefault();
-
-    // Standard ClipboardEvent natively includes a type-safe DataTransfer object
     const clipboardData = event.clipboardData;
-
-    // Guard clause handling edge contexts where clipboard access might be restricted
     if (!clipboardData) return;
 
     const pastedText = clipboardData.getData('text');
-
-    // Filter out all non-integers from clipboard contents string data
     const sanitizedPaste = pastedText.replace(/[^0-9-]/g, '');
 
-    // Pipe the sanitized results straight into the component models layer
+    const target = event.target as HTMLInputElement;
+    target.value = sanitizedPaste;
     modelValue.value = sanitizedPaste;
 };
 </script>
@@ -77,30 +123,36 @@ const handlePasteScrubbing = (event: ClipboardEvent): void => {
 <template>
     <div class="relative">
         <label
+            v-if="inputLabel.length"
             :for="id"
             class="block font-medium text-xs text-mist-400 mb-1">
             {{ inputLabel }}
         </label>
+
         <div
             v-if="slots.icon"
-            class="absolute inset-y-0 left-0 top-5 flex items-center pl-3.5 pointer-events-none text-mist-500 group-focus-within:text-lime-400 transition-colors">
+            class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500 group-focus-within:text-lime-400 transition-colors"
+            :class="[inputLabel.length ? 'top-5' : 'top-0.5']">
             <slot name="icon"></slot>
         </div>
 
         <input
             :id="id"
-            v-model="modelValue"
-            :type="type"
+            :type="effectiveType"
+            :inputmode="type === 'number' ? 'numeric' : undefined"
+            :value="displayValue"
             :placeholder="placeholder"
-            class="w-full flex items-center justify-between pl-4 pr-3 py-1.5 bg-mist-950/50 border border-mist-800 rounded-md shadow-md text-sm text-mist-300 hover:bg-mist-850 focus:outline-none focus:ring-lime-500 focus:border-lime-500 transition-colors"
+            class="w-full flex items-center justify-between py-1.5 bg-mist-950/50 border border-mist-800 hover:border-mist-700 rounded-md shadow-md text-sm text-mist-300 focus:outline-none focus:ring-lime-500 focus:border-lime-500 transition-colors"
             :class="[
-                slots.icon ? 'pl-9 py-2' : 'pl-4',
-                { 'font-mono': type === 'number' || id === 'bookingId' },
+                slots.icon ? 'pl-9 pr-3 ' : 'px-3',
+                { 'font-mono': type === 'number' || id === 'bookingId' || id === 'goldCert' },
                 { 'cursor-not-allowed disabled:bg-mist-900': disabled },
             ]"
             :disabled="disabled"
             :required="required"
-            @input="handleInputScrubbing"
-            @paste="handlePasteScrubbing" />
+            @input="handleInput"
+            @focus="handleFocus"
+            @blur="handleBlur"
+            @paste="handlePaste" />
     </div>
 </template>
