@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { toast } from 'vue-toastflow';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import type { PersonalOwner, GoldType } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
-import DatePicker from '@/components/ui/DatePicker.vue';
-import SelectDropdown from '@/components/ui/SelectDropdown.vue';
-import TextInput from '@/components/ui/TextInput.vue';
+import AddGoldModal from '@/features/finance/AddGoldModal.vue';
 
 const financeStore = useFinanceStore();
 const {
@@ -21,71 +17,12 @@ const {
     currentGoldPricePerGram,
 } = storeToRefs(financeStore);
 
-const ownerOptions = [
-    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
-    { label: 'Danh Nguyen', value: 'Danh Nguyen' },
-    { label: 'Shared', value: 'Shared' },
-];
-const goldOptions = [
-    { label: 'Antam', value: 'Antam' },
-    { label: 'Galeri 24', value: 'Galeri 24' },
-    { label: 'Semar', value: 'Semar' },
-    { label: 'UBS', value: 'UBS' },
-];
-
 const isGoldModalOpen = ref(false);
 const activeView = ref<'info' | 'logs'>('info');
-const goldOwner = ref<PersonalOwner | 'Shared'>('Danh Nguyen');
-const goldType = ref<GoldType>('Antam');
-const goldGrams = ref<number | null>(null);
-const goldTotalCost = ref<number | null>(null);
-const goldDate = ref(new Date().toISOString().slice(0, 10));
-const goldCert = ref('');
 
 const goldBrands = computed(() =>
     [...new Set(goldAssets.value.map((g) => g.type))].sort().join(' / ')
 );
-
-const handleSaveGold = async (): Promise<void> => {
-    if (!goldGrams.value || !goldTotalCost.value) return;
-
-    try {
-        await toast.loading(
-            async () => {
-                await financeStore.addGoldPurchase({
-                    owner: goldOwner.value,
-                    type: goldType.value,
-                    weightGrams: Number(goldGrams.value),
-                    buyPriceTotal: Number(goldTotalCost.value),
-                    purchaseDate: goldDate.value,
-                    certificateNumber: goldCert.value,
-                });
-            },
-            {
-                loading: {
-                    title: 'Saving Gold Asset...',
-                    description: 'Adding holding to precious metals ledger & local cache.',
-                },
-                success: {
-                    title: 'Gold Holding Added',
-                    description: `Logged ${goldGrams.value}g of ${goldType.value} for ${goldOwner.value}.`,
-                },
-                error: (err: unknown) => ({
-                    title: 'Save Failed',
-                    description:
-                        err instanceof Error ? err.message : 'Failed to write to Google Sheets.',
-                }),
-            }
-        );
-
-        goldGrams.value = null;
-        goldTotalCost.value = null;
-        goldCert.value = '';
-        isGoldModalOpen.value = false;
-    } catch (err: unknown) {
-        console.error('Failed to add gold holding:', err);
-    }
-};
 </script>
 
 <template>
@@ -195,14 +132,8 @@ const handleSaveGold = async (): Promise<void> => {
 
             <!-- Gram Weight Distribution Indicators -->
             <div class="space-y-1.5 mb-3">
-                <div class="flex justify-between text-[11px] font-mono text-mist-400">
-                    <span>Reserve Density</span>
+                <div class="flex justify-end text-[11px] font-mono text-mist-400">
                     <span class="text-mist-200">Total Net Weight: {{ totalGoldGrams }}g</span>
-                </div>
-                <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
-                    <div
-                        class="h-full rounded-full bg-amber-300 transition-all duration-500"
-                        :style="{ width: `${Math.min(100, (totalGoldGrams / 50) * 100)}%` }"></div>
                 </div>
             </div>
         </div>
@@ -268,111 +199,6 @@ const handleSaveGold = async (): Promise<void> => {
         </div>
 
         <!-- Add Gold Modal -->
-        <div
-            v-if="isGoldModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
-            <div
-                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
-                <div
-                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                    <h2 class="font-semibold text-mist-100">Add Gold Holding</h2>
-                    <button
-                        type="button"
-                        class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
-                        @click="isGoldModalOpen = false">
-                        <fa-icon
-                            class="text-xs"
-                            icon="xmark" />
-                    </button>
-                </div>
-
-                <form
-                    class="max-h-[80vh] overflow-y-auto space-y-4"
-                    @submit.prevent="handleSaveGold">
-                    <SelectDropdown
-                        v-model="goldOwner"
-                        input-label="Owner"
-                        :options="ownerOptions">
-                        <template #icon>
-                            <fa-icon
-                                icon="id-card"
-                                class="text-xs" />
-                        </template>
-                    </SelectDropdown>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <SelectDropdown
-                            v-model="goldType"
-                            input-label="Type"
-                            :options="goldOptions" />
-
-                        <TextInput
-                            id="payout"
-                            v-model.number="goldGrams"
-                            input-label="Weight (Grams)"
-                            type="number"
-                            min="1"
-                            placeholder="10"
-                            required>
-                            <template #icon>
-                                <fa-icon
-                                    icon="weight-hanging"
-                                    class="text-xs" />
-                            </template>
-                        </TextInput>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <DatePicker
-                            v-model="goldDate"
-                            input-label="Purchase Date"
-                            :width="311"
-                            :select-today-by-default="true" />
-
-                        <TextInput
-                            id="payout"
-                            v-model.number="goldTotalCost"
-                            input-label="Total Cost"
-                            type="number"
-                            min="1"
-                            placeholder="1000000"
-                            required>
-                            <template #icon>
-                                <fa-icon
-                                    icon="rupiah-sign"
-                                    class="text-xs" />
-                            </template>
-                        </TextInput>
-                    </div>
-
-                    <TextInput
-                        id="goldCert"
-                        v-model.trim="goldCert"
-                        input-label="Certificate / Serial Number (Optional)"
-                        type="text"
-                        placeholder="CERT-12345">
-                        <template #icon>
-                            <fa-icon
-                                icon="hashtag"
-                                class="text-xs" />
-                        </template>
-                    </TextInput>
-
-                    <div class="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
-                            @click="isGoldModalOpen = false">
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
-                            Save
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <AddGoldModal v-model="isGoldModalOpen" />
     </div>
 </template>
