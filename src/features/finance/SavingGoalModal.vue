@@ -135,25 +135,27 @@ const handleSubmit = async (): Promise<void> => {
                     </SelectDropdown>
                 </div>
 
-                <TextInput
-                    id="payout"
-                    v-model.number="targetAmount"
-                    input-label="Target Amount"
-                    type="number"
-                    min="1"
-                    placeholder="100.000"
-                    required>
-                    <template #icon>
-                        <fa-icon
-                            icon="rupiah-sign"
-                            class="text-xs" />
-                    </template>
-                </TextInput>
+                <div class="grid grid-cols-2 gap-3">
+                    <TextInput
+                        id="payout"
+                        v-model.number="targetAmount"
+                        input-label="Target Amount"
+                        type="number"
+                        min="1"
+                        placeholder="100.000"
+                        required>
+                        <template #icon>
+                            <fa-icon
+                                icon="rupiah-sign"
+                                class="text-xs" />
+                        </template>
+                    </TextInput>
 
-                <DatePicker
-                    v-model="deadline"
-                    input-label="Target Deadline (Optional)"
-                    :width="311" />
+                    <DatePicker
+                        v-model="deadline"
+                        input-label="Target Deadline (Optional)"
+                        :width="311" />
+                </div>
 
                 <TextInput
                     id="amount"

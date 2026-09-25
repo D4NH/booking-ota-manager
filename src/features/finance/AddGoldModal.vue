@@ -107,9 +107,7 @@ const handleSaveGold = async (): Promise<void> => {
                     <!-- Header -->
                     <div
                         class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
-                        <h2 class="text-sm font-semibold text-mist-100 uppercase tracking-wider">
-                            Add Gold Holding
-                        </h2>
+                        <h2 class="font-semibold text-mist-100">Add Gold Holding</h2>
                         <button
                             type="button"
                             class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
@@ -121,7 +119,7 @@ const handleSaveGold = async (): Promise<void> => {
                     </div>
 
                     <form
-                        class="max-h-[80vh] overflow-y-auto space-y-3.5 text-xs"
+                        class="max-h-[80vh] overflow-y-auto space-y-4 text-xs"
                         @submit.prevent="handleSaveGold">
                         <SelectDropdown
                             v-model="goldOwner"
