@@ -4,71 +4,47 @@ import { storeToRefs } from 'pinia';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { getPropertyStyle } from '@/config/properties';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
+import type { PropertyFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
-import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
-import TextInput from '@/components/ui/TextInput.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
+import PropertyTransactionModal from '@/features/finance/PropertyTransactionModal.vue';
 
 const financeStore = useFinanceStore();
-const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
-    useFinanceSync();
-const { filteredPropertyFinances, isLoading } = storeToRefs(financeStore);
+const { removePropertyTransaction } = useFinanceSync();
+const { filteredPropertyFinances } = storeToRefs(financeStore);
 
 const categoryOptions = [
     'All categories',
-    // Operations & Guest Amenities
     'Cleaning',
     'Guest Amenities & Toiletries',
     'Food & Beverages',
     'Linens & Soft Goods',
-
-    // Utilities & Recurring Costs
-    'Utilities', // Electricity, Water, Gas
+    'Utilities',
     'Connectivity & Media',
     'Garbage Disposal',
-
-    // Maintenance & Upkeep
     'Property Maintenance',
-
-    // Administrative & Platform
     'Payout',
-
-    // Capital & Legal
     'Furniture',
     'Taxes, Permits & Insurance',
-].map((status) => ({
-    label: status,
-    value: status,
-}));
-const transactionOptions = [
-    { label: 'Expense', value: 'expense' },
-    { label: 'Income', value: 'income' },
 ];
 
 const isModalOpen = ref(false);
 const isTransferModalOpen = ref(false);
-const isSubmitting = ref(false);
 const filterCategory = ref<string>('All categories');
 const editingItem = ref<PropertyFinance | null>(null);
+
 const currentPage = ref(1);
 const pageSize = ref(10);
-const formPropertyId = ref('piyungan');
-const formType = ref<PropertyFinanceType>('income');
-const formCategory = ref<PropertyCategory>('Supplies');
-const formAmount = ref<number | null>(null);
-const formDate = ref(new Date().toISOString().slice(0, 10));
-const formNotes = ref('');
 
-const isEditing = computed(() => editingItem.value !== null);
 const displayedTransactions = computed(() => {
     if (filterCategory.value === 'All categories') return filteredPropertyFinances.value;
     return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
 });
+
 const totalItems = computed(() => displayedTransactions.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value) || 1);
 const paginatedTransactions = computed(() => {
@@ -86,65 +62,16 @@ const goToPage = (page: number): void => {
         currentPage.value = page;
     }
 };
+
 const openAddModal = (): void => {
     editingItem.value = null;
-    formPropertyId.value = 'piyungan';
-    formType.value = 'expense';
-    formCategory.value = '';
-    formAmount.value = null;
-    formDate.value = new Date().toISOString().slice(0, 10);
-    formNotes.value = '';
     isModalOpen.value = true;
 };
+
 const openEditModal = (item: PropertyFinance): void => {
     if (item.id.startsWith('dexie-')) return;
     editingItem.value = item;
-    formPropertyId.value = item.propertyId;
-    formType.value = item.type;
-    formCategory.value = item.category;
-    formAmount.value = item.amount;
-    formDate.value = item.date;
-    formNotes.value = item.notes || '';
     isModalOpen.value = true;
-};
-const submitTransaction = async (): Promise<void> => {
-    if (isSubmitting.value || !formAmount.value || !formDate.value) return;
-
-    isSubmitting.value = true;
-    try {
-        let success = false;
-
-        if (isEditing.value && editingItem.value) {
-            success = await editPropertyTransaction(editingItem.value.id, {
-                propertyId: formPropertyId.value,
-                type: formType.value,
-                category: formCategory.value,
-                amount: Number(formAmount.value),
-                date: formDate.value,
-                notes: formNotes.value,
-            });
-        } else {
-            success = await addPropertyTransaction({
-                propertyId: formPropertyId.value,
-                type: formType.value,
-                category: formCategory.value,
-                amount: Number(formAmount.value),
-                date: formDate.value,
-                notes: formNotes.value,
-            });
-        }
-
-        if (success) {
-            isModalOpen.value = false;
-            editingItem.value = null;
-            formAmount.value = null;
-            formNotes.value = '';
-        }
-    } finally {
-        setTimeout(() => {
-            isSubmitting.value = false;
-        }, 1000);
-    }
 };
 
 watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
@@ -166,12 +93,12 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                     class="w-60"
                     :options="categoryOptions" />
                 <button
-                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
+                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm cursor-pointer"
                     @click="openAddModal">
                     + Add Entry
                 </button>
                 <button
-                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow"
+                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow cursor-pointer"
                     @click="isTransferModalOpen = true">
                     Transfer Funds
                 </button>
@@ -234,7 +161,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Edit Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition"
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
                                     @click="openEditModal(item)">
                                     <fa-icon
                                         icon="pen-to-square"
@@ -249,7 +176,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Delete Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition"
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
                                     @click="removePropertyTransaction(item.id, item.category)">
                                     <fa-icon
                                         icon="trash-can"
@@ -274,7 +201,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             v-if="totalItems > 0"
             class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-xs text-mist-400">
             <div class="flex items-center gap-3">
-                <span class="">
+                <span>
                     Showing
                     <strong class="text-mist-200 font-mono">{{ startItemIndex }}</strong>
                     to
@@ -303,7 +230,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             <div class="flex items-center gap-1 font-mono">
                 <button
                     :disabled="currentPage <= 1"
-                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition"
+                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition cursor-pointer"
                     @click="goToPage(currentPage - 1)">
                     <fa-icon
                         class="text-[10px]"
@@ -318,7 +245,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
 
                 <button
                     :disabled="currentPage >= totalPages"
-                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition"
+                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition cursor-pointer"
                     @click="goToPage(currentPage + 1)">
                     Next
                     <fa-icon
@@ -328,86 +255,11 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
             </div>
         </div>
 
-        <!-- Manual Expense/Income Modal -->
-        <div
-            v-if="isModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
-            <div
-                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
-                <div
-                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                    <h2 class="text-base font-bold text-mist-100">
-                        {{ isEditing ? 'Edit Property Record' : 'Add Property Record' }}
-                    </h2>
-                    <button
-                        type="button"
-                        class="cursor-pointer text-mist-400 hover:text-mist-200"
-                        @click="isModalOpen = false">
-                        <fa-icon icon="xmark" />
-                    </button>
-                </div>
-                <form
-                    class="max-h-[80vh] overflow-y-auto space-y-4"
-                    @submit.prevent="submitTransaction">
-                    <SelectDropdown
-                        v-model="formType"
-                        input-label="Transaction"
-                        placeholder="Select transaction"
-                        :options="transactionOptions" />
-
-                    <SelectDropdown
-                        v-model="formCategory"
-                        input-label="Category"
-                        placeholder="Select category"
-                        :options="categoryOptions" />
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <DatePicker
-                            v-model="formDate"
-                            input-label="Date"
-                            :width="311"
-                            :select-today-by-default="true" />
-
-                        <TextInput
-                            id="payout"
-                            v-model.number="formAmount"
-                            input-label="Amount"
-                            type="number"
-                            min="1"
-                            placeholder="100000"
-                            required>
-                            <template #icon>
-                                <fa-icon
-                                    icon="rupiah-sign"
-                                    class="text-xs" />
-                            </template>
-                        </TextInput>
-                    </div>
-
-                    <TextInput
-                        id="notes"
-                        v-model.trim="formNotes"
-                        input-label="Notes"
-                        type="text"
-                        placeholder="..." />
-
-                    <div class="flex justify-end space-x-2 pt-3">
-                        <button
-                            type="button"
-                            class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
-                            @click="isModalOpen = false">
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="isLoading"
-                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition">
-                            {{ isEditing ? 'Update' : 'Add Record' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <!-- External Modals -->
+        <PropertyTransactionModal
+            v-model="isModalOpen"
+            :item-to-edit="editingItem"
+            @closed="editingItem = null" />
 
         <TransferModal v-model="isTransferModalOpen" />
     </div>
