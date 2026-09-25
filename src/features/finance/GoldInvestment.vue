@@ -6,6 +6,10 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { PersonalOwner, GoldType } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
+import DatePicker from '@/components/ui/DatePicker.vue';
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import TextInput from '@/components/ui/TextInput.vue';
+
 const financeStore = useFinanceStore();
 const {
     goldAssets,
@@ -16,6 +20,18 @@ const {
     goldPnLPct,
     currentGoldPricePerGram,
 } = storeToRefs(financeStore);
+
+const ownerOptions = [
+    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
+    { label: 'Danh Nguyen', value: 'Danh Nguyen' },
+    { label: 'Shared', value: 'Shared' },
+];
+const goldOptions = [
+    { label: 'Antam', value: 'Antam' },
+    { label: 'Galeri 24', value: 'Galeri 24' },
+    { label: 'Semar', value: 'Semar' },
+    { label: 'UBS', value: 'UBS' },
+];
 
 const isGoldModalOpen = ref(false);
 const activeView = ref<'info' | 'logs'>('info');
@@ -93,7 +109,7 @@ const handleSaveGold = async (): Promise<void> => {
                         class="cursor-pointer rounded-md px-3 py-1.5 transition"
                         :class="[
                             activeView === 'info'
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                ? 'bg-mist-800 text-amber-300 shadow-sm'
                                 : 'text-mist-400 hover:text-mist-200',
                         ]"
                         @click="activeView = 'info'">
@@ -104,7 +120,7 @@ const handleSaveGold = async (): Promise<void> => {
                         class="cursor-pointer rounded-md px-3 py-1.5 transition"
                         :class="[
                             activeView === 'logs'
-                                ? 'bg-mist-800 text-lime-400 shadow-sm'
+                                ? 'bg-mist-800 text-amber-300 shadow-sm'
                                 : 'text-mist-400 hover:text-mist-200',
                         ]"
                         @click="activeView = 'logs'">
@@ -113,7 +129,7 @@ const handleSaveGold = async (): Promise<void> => {
                 </div>
                 <button
                     v-if="activeView === 'logs'"
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition"
+                    class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition"
                     @click="isGoldModalOpen = true">
                     + Add Gold
                 </button>
@@ -215,7 +231,7 @@ const handleSaveGold = async (): Promise<void> => {
                             {{ g.type }}
                         </td>
                         <td class="py-2.5 px-3">{{ g.owner }}</td>
-                        <td class="py-2.5 px-3 text-right font-semibold text-lime-400">
+                        <td class="py-2.5 px-3 text-right font-semibold text-amber-300">
                             {{ g.weightGrams }}g
                         </td>
                         <td class="py-2.5 px-3 text-right text-mist-300">
@@ -247,85 +263,102 @@ const handleSaveGold = async (): Promise<void> => {
                 </strong>
             </span>
             <span class="text-mist-400">
-                Status: <strong class="text-lime-400 font-mono">Secured</strong>
+                Status: <strong class="text-amber-300 font-mono">Secured</strong>
             </span>
         </div>
 
         <!-- Add Gold Modal -->
         <div
             v-if="isGoldModalOpen"
-            class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
             <div
-                class="bg-mist-900 border border-mist-800 rounded-md shadow-2xl w-full max-w-md p-6">
-                <h4 class="font-semibold text-mist-100 text-sm mb-4">Add Gold Holding</h4>
+                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+                <div
+                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                    <h2 class="font-semibold text-mist-100">Add Gold Holding</h2>
+                    <button
+                        type="button"
+                        class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
+                        @click="isGoldModalOpen = false">
+                        <fa-icon
+                            class="text-xs"
+                            icon="xmark" />
+                    </button>
+                </div>
+
                 <form
-                    class="space-y-4"
+                    class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="handleSaveGold">
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Owner</label>
-                        <select
-                            v-model="goldOwner"
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5">
-                            <option value="Danh Nguyen">Danh Nguyen</option>
-                            <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
-                            <option value="Shared">Shared</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
-                        <select
+                    <SelectDropdown
+                        v-model="goldOwner"
+                        input-label="Owner"
+                        :options="ownerOptions">
+                        <template #icon>
+                            <fa-icon
+                                icon="id-card"
+                                class="text-xs" />
+                        </template>
+                    </SelectDropdown>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <SelectDropdown
                             v-model="goldType"
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5">
-                            <option value="Antam">Antam</option>
-                            <option value="UBS">UBS</option>
-                            <option value="Galeri 24">Galeri 24</option>
-                            <option value="Semar">Semar</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Weight (Grams)
-                        </label>
-                        <input
-                            v-model="goldGrams"
+                            input-label="Type"
+                            :options="goldOptions" />
+
+                        <TextInput
+                            id="payout"
+                            v-model.number="goldGrams"
+                            input-label="Weight (Grams)"
                             type="number"
-                            step="0.01"
-                            required
+                            min="1"
                             placeholder="10"
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
+                            required>
+                            <template #icon>
+                                <fa-icon
+                                    icon="weight-hanging"
+                                    class="text-xs" />
+                            </template>
+                        </TextInput>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Total Cost (IDR)
-                        </label>
-                        <input
-                            v-model="goldTotalCost"
-                            type="number"
-                            required
-                            placeholder="24500000"
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Purchase Date
-                        </label>
-                        <input
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <DatePicker
                             v-model="goldDate"
-                            type="date"
-                            required
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
+                            input-label="Purchase Date"
+                            :width="311"
+                            :select-today-by-default="true" />
+
+                        <TextInput
+                            id="payout"
+                            v-model.number="goldTotalCost"
+                            input-label="Total Cost"
+                            type="number"
+                            min="1"
+                            placeholder="1000000"
+                            required>
+                            <template #icon>
+                                <fa-icon
+                                    icon="rupiah-sign"
+                                    class="text-xs" />
+                            </template>
+                        </TextInput>
                     </div>
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Certificate / Serial Number (Optional)
-                        </label>
-                        <input
-                            v-model="goldCert"
-                            type="text"
-                            placeholder="CERT-12345"
-                            class="w-full text-xs border border-mist-800 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono" />
-                    </div>
-                    <div class="flex justify-end space-x-2 pt-3">
+
+                    <TextInput
+                        id="goldCert"
+                        v-model.trim="goldCert"
+                        input-label="Certificate / Serial Number (Optional)"
+                        type="text"
+                        placeholder="CERT-12345">
+                        <template #icon>
+                            <fa-icon
+                                icon="hashtag"
+                                class="text-xs" />
+                        </template>
+                    </TextInput>
+
+                    <div class="flex justify-end space-x-2">
                         <button
                             type="button"
                             class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
@@ -334,7 +367,7 @@ const handleSaveGold = async (): Promise<void> => {
                         </button>
                         <button
                             type="submit"
-                            class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
+                            class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
                             Save
                         </button>
                     </div>

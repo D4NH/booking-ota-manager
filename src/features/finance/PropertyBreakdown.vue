@@ -106,7 +106,7 @@ const operatingMarginPct = computed<number>(() => {
                         <div
                             v-for="item in categoryExpenses"
                             :key="item.category"
-                            class="py-1.5">
+                            class="-mx-2 mb-1.5 px-2 pb-2 pt-0.5 hover:bg-mist-800/40 rounded-md transition cursor-pointer">
                             <div class="flex justify-between items-center">
                                 <span
                                     class="capitalize font-medium text-mist-200 py-0.5 flex items-center gap-2">

@@ -8,6 +8,9 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import DatePicker from '@/components/ui/DatePicker.vue';
+import TextInput from '@/components/ui/TextInput.vue';
 import RecurringChecklist from '@/features/finance/RecurringChecklist.vue';
 
 const financeStore = useFinanceStore();
@@ -50,6 +53,11 @@ const categoriesShared = [
     'Subscription',
 ] as const;
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
+const entryType = [
+    { label: 'Income', value: 'income' },
+    { label: 'Expense', value: 'expense' },
+    { label: 'Fixed Cost', value: 'fixed_cost' },
+];
 
 const activeTab = ref<'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared'>('Danh Nguyen');
 const isModalOpen = ref(false);
@@ -65,9 +73,15 @@ const formDate = ref(new Date().toISOString().slice(0, 10));
 const formNotes = ref('');
 
 const isEditing = computed(() => editingItem.value !== null);
-const availableCategories = computed<readonly string[]>(() =>
-    activeTab.value === 'Shared' ? categoriesShared : categoriesPersonal
-);
+const availableCategories = computed(() => {
+    const activeSource = activeTab.value === 'Shared' ? categoriesShared : categoriesPersonal;
+
+    return activeSource.map((category) => ({
+        label: category,
+        value: category,
+    }));
+});
+
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (activeTab.value === 'Shared') return filteredSharedFinances.value;
     return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
@@ -186,15 +200,6 @@ const submitRecord = async (): Promise<void> => {
         setTimeout(() => {
             isSubmitting.value = false;
         }, 500);
-    }
-};
-const triggerDatePicker = (event: MouseEvent): void => {
-    const target = event.currentTarget as HTMLInputElement | null;
-
-    try {
-        target?.showPicker();
-    } catch {
-        target?.focus();
     }
 };
 
@@ -345,7 +350,7 @@ watch(formCategory, (newCat) => {
             </table>
         </div>
 
-        <!-- TODO: move to modals.vue -->
+        <!-- TODO: move to modals -->
         <div
             v-if="isModalOpen"
             class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
@@ -365,55 +370,20 @@ watch(formCategory, (newCat) => {
                 </div>
 
                 <form
-                    class="space-y-4"
+                    class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="submitRecord">
-                    <div class="relative">
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">Type</label>
-                        <select
-                            v-model="formType"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
-                            <option value="fixed_cost">Fixed Cost</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-6 right-2 flex items-center text-mist-400">
-                            <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
-                        </div>
-                    </div>
+                    <SelectDropdown
+                        v-model="formType"
+                        input-label="Type"
+                        :options="entryType" />
 
-                    <div class="relative">
-                        <label class="text-xs font-semibold text-mist-400 block mb-1">
-                            Category
-                        </label>
-                        <select
-                            v-model="formCategory"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer"
-                            required>
-                            <option
-                                value=""
-                                disabled>
-                                -- Select Category --
-                            </option>
-                            <option
-                                v-for="cat in availableCategories"
-                                :key="cat"
-                                :value="cat">
-                                {{ cat }}
-                            </option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-6 right-2 flex items-center text-mist-400">
-                            <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
-                        </div>
-                    </div>
+                    <SelectDropdown
+                        v-model="formCategory"
+                        input-label="Category"
+                        :options="availableCategories" />
 
                     <div
-                        v-if="formCategory === 'Savings'"
+                        v-if="formCategory === 'savings'"
                         class="bg-mist-800 border border-mist-800 p-3 rounded-md space-y-2">
                         <label class="text-xs font-semibold text-lime-400 block">
                             Destination Savings Account
@@ -433,54 +403,33 @@ watch(formCategory, (newCat) => {
                         </p>
                     </div>
 
-                    <div class="relative">
-                        <label class="block text-xs font-medium text-mist-400">
-                            Amount (IDR)
-                        </label>
-                        <div
-                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                    <TextInput
+                        id="amount"
+                        v-model.number="formAmount"
+                        input-label="Amount"
+                        type="number"
+                        min="1"
+                        placeholder="100000"
+                        required>
+                        <template #icon>
                             <fa-icon
                                 icon="rupiah-sign"
                                 class="text-xs" />
-                        </div>
-                        <input
-                            v-model.number="formAmount"
-                            type="number"
-                            placeholder="100000"
-                            min="1"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 font-mono pt-1.5 pb-1.5 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                            required
-                            @input="handleAmountChange" />
-                    </div>
+                        </template>
+                    </TextInput>
 
-                    <div>
-                        <label class="block text-xs font-medium text-mist-400">
-                            Date
-                            <div class="relative mt-1">
-                                <input
-                                    v-model="formDate"
-                                    type="date"
-                                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
-                                    required
-                                    @click="triggerDatePicker" />
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
-                                    <fa-icon
-                                        class="text-sm"
-                                        icon="calendar-days" />
-                                </div>
-                            </div>
-                        </label>
-                    </div>
+                    <DatePicker
+                        v-model="formDate"
+                        select-today-by-default
+                        input-label="Date" />
 
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block">Notes</label>
-                        <input
-                            v-model="formNotes"
-                            type="text"
-                            placeholder="e.g. Dividend share distribution"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
-                    </div>
+                    <TextInput
+                        id="amount"
+                        v-model="formNotes"
+                        input-label="Notes"
+                        type="text"
+                        placeholder="...">
+                    </TextInput>
 
                     <div class="flex justify-end space-x-2">
                         <button

@@ -23,6 +23,15 @@ const shiftMonth = (offset: number): void => {
 
     financeStore.selectedMonth = `${newYear}-${newMonth}`;
 };
+const triggerDatePicker = (event: MouseEvent): void => {
+    const target = event.currentTarget as HTMLInputElement | null;
+
+    try {
+        target?.showPicker();
+    } catch {
+        target?.focus();
+    }
+};
 </script>
 
 <template>
@@ -32,7 +41,7 @@ const shiftMonth = (offset: number): void => {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 border border-mist-800 hover:border-mist-700"
                 @click="shiftMonth(-1)">
                 <fa-icon icon="chevron-left" />
             </button>
@@ -41,9 +50,10 @@ const shiftMonth = (offset: number): void => {
                 <input
                     :value="financeStore.selectedMonth"
                     type="month"
-                    class="cursor-pointer w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1 py-1.5 text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                    class="cursor-pointer w-full appearance-none rounded-md border border-mist-800 hover:border-mist-700 bg-mist-950/50 pl-3 pr-1 py-1.5 text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
                     required
-                    @change="handleMonthChange" />
+                    @change="handleMonthChange"
+                    @click="triggerDatePicker" />
                 <div
                     class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-500">
                     <fa-icon
@@ -55,7 +65,7 @@ const shiftMonth = (offset: number): void => {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 hover:text-mist-200"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 border border-mist-800 hover:border-mist-700"
                 @click="shiftMonth(1)">
                 <fa-icon icon="chevron-right" />
             </button>

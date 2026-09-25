@@ -9,6 +9,8 @@ import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { formatDate } from '@/utils/date';
 
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import TextInput from '@/components/ui/TextInput.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import CurrentWeekView from '@/features/bookings/CurrentWeekView.vue';
@@ -16,7 +18,7 @@ import PropertySelector from '@/components/PropertySelector.vue';
 import BookingsTable from '@/features/bookings/BookingsTable.vue';
 
 const modalStore = useModalStore();
-const { deleteBooking, clearAllLocalBookings } = useBookingSync();
+const { deleteBooking } = useBookingSync();
 
 const selectedProperty = ref<PropertyId | 'all'>('all');
 const selectedMonth = ref<string>('all');
@@ -57,6 +59,14 @@ const {
     autoCollapsePast: true,
 });
 
+const monthOptions = computed(() => [
+    { label: 'All Months', value: 'all' },
+    ...availableMonths.value.map((month) => ({
+        label: formatDate(month, { monthHeader: true }),
+        value: month,
+    })),
+]);
+
 const scrollToCurrentMonth = (): void =>
     void nextTick(() => {
         requestAnimationFrame(() => {
@@ -80,7 +90,6 @@ const handleAddBooking = (): void =>
 const handleEditBooking = (booking: Booking): void => modalStore.openBookingModal({ booking });
 const handleDeleteBooking = async (booking: Booking): Promise<void> =>
     void (await deleteBooking(booking));
-const handleClearAllLocal = async (): Promise<void> => await clearAllLocalBookings();
 
 watch(selectedMonth, (newMonth) => {
     if (newMonth !== 'all') {
@@ -130,47 +139,29 @@ onActivated(() => {
                 class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <div class="flex items-center gap-2">
                     <!-- Text Search -->
-                    <div class="w-52">
-                        <div class="relative w-full max-w-xs">
-                            <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500">
-                                <fa-icon
-                                    icon="magnifying-glass"
-                                    class="text-xs" />
-                            </div>
-                            <input
-                                v-model="searchQuery"
-                                type="text"
-                                placeholder="Search guest, ID, notes..."
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 pl-9 pr-3 py-1.5 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
-                        </div>
-                    </div>
-
-                    <!-- Month Dropdown -->
-                    <div class="relative w-44">
-                        <select
-                            v-model="selectedMonth"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                            <option value="all">All Months</option>
-                            <option
-                                v-for="mKey in availableMonths"
-                                :key="mKey"
-                                :value="mKey">
-                                {{ formatDate(mKey, { monthHeader: true }) }}
-                            </option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-mist-400">
+                    <TextInput
+                        id="searchQuery"
+                        v-model.number="searchQuery"
+                        input-label=""
+                        type="text"
+                        placeholder="Search guest, ID, notes..."
+                        required>
+                        <template #icon>
                             <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
-                        </div>
-                    </div>
-
+                                icon="magnifying-glass"
+                                class="text-xs" />
+                        </template>
+                    </TextInput>
+                    <!-- Month Dropdown -->
+                    <SelectDropdown
+                        v-model="selectedMonth"
+                        input-label=""
+                        class="w-44"
+                        :options="monthOptions" />
                     <!-- Status Filters -->
                     <button
                         type="button"
-                        class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                        class="rounded-md border border-mist-800 pl-2.5 pr-3 py-2 text-xs text-mist-300 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
                         :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-950/50']"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
@@ -228,15 +219,5 @@ onActivated(() => {
             :show-property-column="selectedProperty === 'all'"
             @edit="handleEditBooking"
             @delete="handleDeleteBooking" />
-
-        <!-- Local Database Reset Action -->
-        <div class="flex shrink-0 justify-end">
-            <button
-                type="button"
-                class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
-                @click="handleClearAllLocal">
-                Clear Local DB
-            </button>
-        </div>
     </div>
 </template>

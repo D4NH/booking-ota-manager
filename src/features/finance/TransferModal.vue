@@ -5,6 +5,10 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { TransferTargetAccount } from '@/types/finance';
 
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import DatePicker from '@/components/ui/DatePicker.vue';
+import TextInput from '@/components/ui/TextInput.vue';
+
 interface Props {
     modelValue?: boolean;
 }
@@ -19,6 +23,14 @@ const financeStore = useFinanceStore();
 const { executeOwnerTransfer } = useFinanceSync();
 const { isLoading } = storeToRefs(financeStore);
 
+const sourceOptions = [{ label: 'Mai House Jogja', value: 'piyungan' }];
+const targetOptions = [
+    { label: 'Shared Household', value: 'Shared' },
+    { label: 'Citra / Danh', value: 'Split' },
+    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
+    { label: 'Danh Nguyen', value: 'Danh Nguyen' },
+];
+
 const sourcePropertyId = ref('piyungan');
 const targetAccount = ref<TransferTargetAccount>('Split');
 const amount = ref<number | null>(null);
@@ -28,12 +40,6 @@ const isSubmitting = ref(false);
 
 const isBothMode = computed(() => targetAccount.value === 'Split');
 
-const sanitizeAmount = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const cleanedString = target.value.replace(/\D/g, '');
-    amount.value = cleanedString ? parseInt(cleanedString, 10) : 0;
-    target.value = cleanedString;
-};
 const closeModal = (): void => {
     emit('update:modelValue', false);
 };
@@ -91,108 +97,47 @@ const handleTransfer = async (): Promise<void> => {
             <form
                 class="max-h-[80vh] overflow-y-auto space-y-4"
                 @submit.prevent="handleTransfer">
-                <div class="relative">
-                    <label
-                        for="property"
-                        class="block text-xs font-medium text-mist-400">
-                        Source Entity
-                    </label>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
-                        <fa-icon
-                            class="text-xs"
-                            icon="house" />
-                    </div>
-                    <select
-                        id="property"
-                        v-model="sourcePropertyId"
-                        name="property"
-                        required
-                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                        <option value="piyungan">Mai House Jogja</option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 top-5 right-3 flex items-center text-mist-400">
-                        <fa-icon
-                            class="text-xs"
-                            icon="angle-down" />
-                    </div>
-                </div>
+                <SelectDropdown
+                    v-model="sourcePropertyId"
+                    input-label="Source Entity"
+                    placeholder="Select source"
+                    :options="sourceOptions" />
 
-                <div class="relative">
-                    <label
-                        for="property"
-                        class="block text-xs font-medium text-mist-400">
-                        Target Account
-                    </label>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 top-5 left-3 flex items-center text-mist-500">
-                        <fa-icon
-                            class="text-xs"
-                            icon="id-card" />
-                    </div>
-                    <select
-                        id="property"
-                        v-model="targetAccount"
-                        name="property"
-                        required
-                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                        <option value="Shared">Shared Household</option>
-                        <option value="Split">Danh / Citra</option>
-                        <option value="Danh Nguyen">Danh Nguyen</option>
-                        <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
-                        <fa-icon
-                            class="text-xs"
-                            icon="angle-down" />
-                    </div>
-                </div>
+                <SelectDropdown
+                    v-model="targetAccount"
+                    input-label="Target Account"
+                    placeholder="Select account"
+                    :options="targetOptions" />
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="relative">
-                        <label class="block text-xs font-medium text-mist-400">Date</label>
-                        <input
-                            v-model="date"
-                            type="date"
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
-                            required />
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
-                            <fa-icon
-                                class="text-sm"
-                                icon="calendar-days" />
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <label class="text-xs font-semibold text-mist-400 block">
-                            {{ isBothMode ? 'Payout Amount' : 'Amount' }}
-                        </label>
-                        <div
-                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                    <DatePicker
+                        v-model="date"
+                        input-label="Date"
+                        :width="311"
+                        :select-today-by-default="true" />
+
+                    <TextInput
+                        id="payout"
+                        v-model.number="amount"
+                        :input-label="isBothMode ? 'Payout Amount' : 'Amount'"
+                        type="number"
+                        min="1"
+                        placeholder="100000"
+                        required>
+                        <template #icon>
                             <fa-icon
                                 icon="rupiah-sign"
                                 class="text-xs" />
-                        </div>
-                        <input
-                            :value="amount"
-                            type="number"
-                            placeholder="1000000"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                            required
-                            @input="sanitizeAmount" />
-                    </div>
+                        </template>
+                    </TextInput>
                 </div>
 
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block"> Transfer Memo </label>
-                    <input
-                        v-model="notes"
-                        type="text"
-                        placeholder="Dividend share distribution"
-                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
-                </div>
+                <TextInput
+                    id="notes"
+                    v-model.trim="notes"
+                    input-label="Transfer Memo"
+                    type="text"
+                    placeholder="..." />
 
                 <div class="flex justify-end space-x-2">
                     <button

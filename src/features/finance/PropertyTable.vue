@@ -7,6 +7,9 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
+import DatePicker from '@/components/ui/DatePicker.vue';
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import TextInput from '@/components/ui/TextInput.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
@@ -16,7 +19,8 @@ const { addPropertyTransaction, editPropertyTransaction, removePropertyTransacti
     useFinanceSync();
 const { filteredPropertyFinances, isLoading } = storeToRefs(financeStore);
 
-const categories = [
+const categoryOptions = [
+    'All categories',
     // Operations & Guest Amenities
     'Cleaning',
     'Guest Amenities & Toiletries',
@@ -37,16 +41,22 @@ const categories = [
     // Capital & Legal
     'Furniture',
     'Taxes, Permits & Insurance',
+].map((status) => ({
+    label: status,
+    value: status,
+}));
+const transactionOptions = [
+    { label: 'Expense', value: 'expense' },
+    { label: 'Income', value: 'income' },
 ];
 
 const isModalOpen = ref(false);
 const isTransferModalOpen = ref(false);
 const isSubmitting = ref(false);
-const filterCategory = ref<string>('ALL');
+const filterCategory = ref<string>('All categories');
 const editingItem = ref<PropertyFinance | null>(null);
 const currentPage = ref(1);
 const pageSize = ref(10);
-
 const formPropertyId = ref('piyungan');
 const formType = ref<PropertyFinanceType>('income');
 const formCategory = ref<PropertyCategory>('Supplies');
@@ -56,7 +66,7 @@ const formNotes = ref('');
 
 const isEditing = computed(() => editingItem.value !== null);
 const displayedTransactions = computed(() => {
-    if (filterCategory.value === 'ALL') return filteredPropertyFinances.value;
+    if (filterCategory.value === 'All categories') return filteredPropertyFinances.value;
     return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
 });
 const totalItems = computed(() => displayedTransactions.value.length);
@@ -71,12 +81,6 @@ const startItemIndex = computed(() => {
 });
 const endItemIndex = computed(() => Math.min(currentPage.value * pageSize.value, totalItems.value));
 
-const sanitizeAmount = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const cleanedString = target.value.replace(/\D/g, '');
-    formAmount.value = cleanedString ? parseInt(cleanedString, 10) : 0;
-    target.value = cleanedString;
-};
 const goToPage = (page: number): void => {
     if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
@@ -142,15 +146,6 @@ const submitTransaction = async (): Promise<void> => {
         }, 1000);
     }
 };
-const triggerDatePicker = (event: MouseEvent): void => {
-    const target = event.currentTarget as HTMLInputElement | null;
-
-    try {
-        target?.showPicker();
-    } catch {
-        target?.focus();
-    }
-};
 
 watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
     currentPage.value = 1;
@@ -165,33 +160,18 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                 <template #subtitle> Bookings auto populated from DexieDB and expenses </template>
             </CardTitle>
             <div class="flex items-center gap-2">
-                <div class="relative">
-                    <select
-                        v-model="filterCategory"
-                        class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                        <option value="ALL">All Categories</option>
-                        <option
-                            v-for="cat in categories"
-                            :key="cat"
-                            :value="cat">
-                            {{ cat }}
-                        </option>
-                        <option value="Owner Payout Outflow">Owner Payout Outflow</option>
-                    </select>
-                    <div
-                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
-                        <fa-icon
-                            class="text-xs"
-                            icon="angle-down" />
-                    </div>
-                </div>
+                <SelectDropdown
+                    v-model="filterCategory"
+                    input-label=""
+                    class="w-60"
+                    :options="categoryOptions" />
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
+                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
                     @click="openAddModal">
                     + Add Entry
                 </button>
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow"
+                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow"
                     @click="isTransferModalOpen = true">
                     Transfer Funds
                 </button>
@@ -369,106 +349,48 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                 <form
                     class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="submitTransaction">
-                    <div class="relative">
-                        <label
-                            for="property"
-                            class="block text-xs font-medium text-mist-400">
-                            Transaction
-                        </label>
-                        <select
-                            id="property"
-                            v-model="formType"
-                            name="property"
-                            required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-1.5 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
-                            <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
-                        </div>
-                    </div>
+                    <SelectDropdown
+                        v-model="formType"
+                        input-label="Transaction"
+                        placeholder="Select transaction"
+                        :options="transactionOptions" />
 
-                    <div class="relative">
-                        <label
-                            for="property"
-                            class="block text-xs font-medium text-mist-400">
-                            Category
-                        </label>
-                        <select
-                            id="property"
-                            v-model="formCategory"
-                            name="property"
-                            required
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 px-3 py-2 text-sm focus:border-lime-500 focus:outline-none transition-colors cursor-pointer"
-                            :class="[formCategory === '' ? 'text-mist-600' : 'text-mist-200']">
-                            <option
-                                value=""
-                                disabled>
-                                Select a category
-                            </option>
-                            <option
-                                v-for="cat in categories"
-                                :key="cat"
-                                :value="cat">
-                                {{ cat }}
-                            </option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-400">
-                            <fa-icon
-                                class="text-xs"
-                                icon="angle-down" />
-                        </div>
-                    </div>
+                    <SelectDropdown
+                        v-model="formCategory"
+                        input-label="Category"
+                        placeholder="Select category"
+                        :options="categoryOptions" />
 
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="relative">
-                            <label class="block text-xs font-medium text-mist-400">Date</label>
-                            <input
-                                v-model="formDate"
-                                type="date"
-                                class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 font-mono focus:border-lime-500 focus:outline-none transition-colors"
-                                required
-                                @click="triggerDatePicker" />
-                            <div
-                                class="pointer-events-none absolute inset-y-0 top-5 right-2 flex items-center text-mist-500">
-                                <fa-icon
-                                    class="text-sm"
-                                    icon="calendar-days" />
-                            </div>
-                        </div>
-                        <div class="relative">
-                            <label class="block text-xs font-medium text-mist-400">
-                                Amount (IDR)
-                            </label>
-                            <div
-                                class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
+                        <DatePicker
+                            v-model="formDate"
+                            input-label="Date"
+                            :width="311"
+                            :select-today-by-default="true" />
+
+                        <TextInput
+                            id="payout"
+                            v-model.number="formAmount"
+                            input-label="Amount"
+                            type="number"
+                            min="1"
+                            placeholder="100000"
+                            required>
+                            <template #icon>
                                 <fa-icon
                                     icon="rupiah-sign"
                                     class="text-xs" />
-                            </div>
-                            <input
-                                :value="formAmount"
-                                type="number"
-                                placeholder="100000"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 font-mono placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                                required
-                                @input="sanitizeAmount" />
-                        </div>
+                            </template>
+                        </TextInput>
                     </div>
 
-                    <div>
-                        <label class="text-xs font-bold text-mist-400 block mb-1">Notes</label>
-                        <input
-                            v-model="formNotes"
-                            type="text"
-                            placeholder="Notes.."
-                            class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none placeholder-mist-600 transition-colors" />
-                    </div>
+                    <TextInput
+                        id="notes"
+                        v-model.trim="formNotes"
+                        input-label="Notes"
+                        type="text"
+                        placeholder="..." />
+
                     <div class="flex justify-end space-x-2 pt-3">
                         <button
                             type="button"

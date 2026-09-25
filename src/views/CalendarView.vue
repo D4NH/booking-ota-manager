@@ -78,28 +78,28 @@ watch(
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 font-semibold hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 font-semibold hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 bg-mist-800 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 bg-mist-800 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
             </div>
-            <div class="flex items-center justify-center gap-2 text-mist-300 font-semibold">
+            <div class="flex items-center justify-center gap-2 font-semibold">
                 <select
                     name="month-selector"
                     :value="selectedMonth"
-                    class="appearance-none cursor-pointer outline-none w-32 text-right text-mist-200 bg-mist-900 text-lg"
+                    class="appearance-none cursor-pointer outline-none w-32 text-right text-mist-300 hover:text-mist-100 bg-mist-900 text-lg"
                     @change="handleMonthChange">
                     <option
                         v-for="(name, index) in MONTH_NAMES"
@@ -112,7 +112,7 @@ watch(
                 <select
                     name="year-selector"
                     :value="selectedYear"
-                    class="appearance-none cursor-pointer outline-none w-24 text-mist-200 bg-mist-900 text-lg"
+                    class="appearance-none cursor-pointer outline-none w-24 text-mist-300 hover:text-mist-100 bg-mist-900 text-lg"
                     @change="handleYearChange">
                     <option
                         v-for="year in yearOptions"

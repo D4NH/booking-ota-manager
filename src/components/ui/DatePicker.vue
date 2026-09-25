@@ -302,9 +302,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="relative w-full">
+    <div class="relative">
         <span
-            v-if="inputLabel"
+            v-if="inputLabel.length"
             class="block font-medium text-xs text-mist-400 mb-1">
             {{ inputLabel }}
         </span>
@@ -333,7 +333,7 @@ onUnmounted(() => {
                 <div
                     v-if="isOpen"
                     ref="popoverRef"
-                    class="fixed z-999 bg-mist-950/90 backdrop-blur-xl border border-mist-800 rounded-lg shadow-2xl p-3.5 select-none box-border text-mist-100 font-sans"
+                    class="fixed z-999 bg-mist-950/90 backdrop-blur-xl border border-mist-800 rounded-lg shadow-2xl p-3.5 select-none box-border text-mist-100"
                     :style="{
                         top: `${coords.top + 6}px`,
                         left: `${coords.left}px`,

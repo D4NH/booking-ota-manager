@@ -136,7 +136,7 @@ const getBarHeightPct = (amount: number): number => {
             <div class="relative w-23">
                 <select
                     v-model.number="activeQuarterIndex"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer hover:border-mist-700">
                     <option
                         v-for="q in quartersList"
                         :key="q.id"
@@ -208,7 +208,7 @@ const getBarHeightPct = (amount: number): number => {
                         <div
                             v-if="hoveredIndex === idx"
                             class="absolute -top-14 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md px-2.5 py-1.5 text-xs font-mono whitespace-nowrap space-y-0.5">
-                            <div class="text-xs text-mist-400 font-sans">
+                            <div class="text-xs text-mist-400">
                                 {{ item.monthName }} {{ item.year }}
                             </div>
                             <div class="text-mist-200 font-semibold">

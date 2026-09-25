@@ -36,8 +36,8 @@ const createFormData = (source?: Partial<Property> | null): PropertyFormState =>
     color: source?.color || '#a3e635',
     price: source?.price ?? 0,
     codePrefix: source?.codePrefix || '',
-    bedrooms: source?.bedrooms ?? 1,
-    bathrooms: source?.bathrooms ?? 1,
+    bedrooms: source?.bedrooms ?? 0,
+    bathrooms: source?.bathrooms ?? 0,
     plotSize: source?.plotSize ?? 0,
     wifi: {
         ssid: source?.wifi?.ssid || '',
@@ -128,22 +128,26 @@ watch(
                 @submit.prevent="handleSubmit">
                 <!-- Name & Code Prefix -->
                 <div class="grid grid-cols-9 items-end">
-                    <div class="col-span-8 relative">
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
-                            Property Name
+                    <div class="w-full col-span-8">
+                        <label
+                            for="property"
+                            class="block font-medium text-xs text-mist-400 mb-1">
+                            Property
                         </label>
-                        <div
-                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
-                            <fa-icon
-                                icon="house"
-                                class="text-xs" />
+                        <div class="relative rounded-md shadow-sm">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="house" />
+                            </div>
+                            <input
+                                v-model.trim="form.name"
+                                type="text"
+                                placeholder="Mai House Jogja - Piyungan"
+                                required
+                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6" />
                         </div>
-                        <input
-                            v-model.trim="form.name"
-                            type="text"
-                            placeholder="Mai House Jogja - Piyungan"
-                            required
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-9 pr-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
                     </div>
                     <div class="text-center">
                         <label class="cursor-pointer block text-xs font-semibold text-mist-400">
@@ -159,63 +163,81 @@ watch(
 
                 <!-- Code Prefix & Theme Color -->
                 <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                    <div class="w-full">
+                        <label
+                            for="prefix"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Prefix
                         </label>
-                        <input
-                            v-model.trim="form.codePrefix"
-                            type="text"
-                            placeholder="MHJ"
-                            required
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="relative rounded-md shadow-sm">
+                            <input
+                                id="prefix"
+                                v-model.trim="form.codePrefix"
+                                type="text"
+                                name="prefix"
+                                class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                placeholder="MHJ" />
+                        </div>
                     </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                    <div class="w-full">
+                        <label
+                            for="color"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Color
                         </label>
-                        <div class="flex items-center">
+                        <div class="relative flex items-center gap-0.5">
                             <input
                                 v-model="form.color"
                                 type="color"
-                                class="h-9 w-12 cursor-pointer rounded-md border border-mist-800 bg-mist-950/50 p-1" />
+                                class="h-8.5 w-12 py-1 px-1 cursor-pointer rounded-md border border-mist-800 bg-mist-950/50" />
                             <input
+                                id="color"
                                 v-model="form.color"
-                                type="text"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                                name="color"
+                                class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6" />
                         </div>
                     </div>
-
-                    <div class="relative">
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                    <div class="w-full">
+                        <label
+                            for="price"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Base Price (IDR)
                         </label>
-                        <div
-                            class="absolute inset-y-0 top-5 left-3 flex items-center pointer-events-none text-mist-500">
-                            <fa-icon
-                                icon="rupiah-sign"
-                                class="text-xs" />
+                        <div class="relative rounded-md shadow-sm">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="rupiah-sign" />
+                            </div>
+                            <input
+                                id="price"
+                                :value="form.price"
+                                type="number"
+                                name="price"
+                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                placeholder="1000000"
+                                @input="sanitizePrice" />
                         </div>
-                        <input
-                            :value="form.price"
-                            type="number"
-                            placeholder="1000000"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 pl-8 pr-4 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors"
-                            required
-                            @input="sanitizePrice" />
                     </div>
                 </div>
 
                 <!-- Address -->
-                <div>
-                    <label class="block text-xs font-semibold text-mist-400 ml-1"> Address </label>
-                    <input
-                        v-model.trim="form.address"
-                        type="text"
-                        placeholder="Street, subdistrict, city..."
-                        required
-                        class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                <div class="w-full">
+                    <label
+                        for="address"
+                        class="block font-medium text-xs text-mist-400 mb-1">
+                        Address
+                    </label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input
+                            id="address"
+                            v-model="form.address"
+                            type="text"
+                            name="address"
+                            class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6"
+                            placeholder="Street, subdistrict, city" />
+                    </div>
                 </div>
 
                 <!-- GPS Coordinates -->
@@ -225,59 +247,113 @@ watch(
                         GPS Coordinates
                     </span>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[11px] text-mist-500 block ml-1"> Latitude </label>
-                            <input
-                                v-model.number="form.coordinates.lat"
-                                type="number"
-                                step="any"
-                                placeholder="-7.8385"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="w-full">
+                            <label
+                                for="lat"
+                                class="block text-xs text-mist-400 mb-1">
+                                Latitude
+                            </label>
+                            <div class="relative rounded-md shadow-sm">
+                                <input
+                                    id="lat"
+                                    v-model.number="form.coordinates.lat"
+                                    type="number"
+                                    name="lat"
+                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    placeholder="Relocating funds" />
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-[11px] text-mist-500 block ml-1"> Longitude </label>
-                            <input
-                                v-model.number="form.coordinates.lng"
-                                type="number"
-                                step="any"
-                                placeholder="110.4632"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 font-mono text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="w-full">
+                            <label
+                                for="lng"
+                                class="block text-xs text-mist-400 mb-1">
+                                Longitude
+                            </label>
+                            <div class="relative rounded-md shadow-sm">
+                                <input
+                                    id="lng"
+                                    v-model.number="form.coordinates.lng"
+                                    type="number"
+                                    name="lng"
+                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    placeholder="Relocating funds" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bedrooms & Bathrooms -->
                 <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+                    <div class="w-full">
+                        <label
+                            for="bedroom"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Bedrooms
                         </label>
-                        <input
-                            v-model.number="form.bedrooms"
-                            type="number"
-                            min="0"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="relative rounded-md shadow-sm">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="bed" />
+                            </div>
+                            <input
+                                id="bedroom"
+                                v-model.number="form.bedrooms"
+                                type="text"
+                                name="bedroom"
+                                min="0"
+                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                placeholder="3" />
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+
+                    <div class="w-full">
+                        <label
+                            for="shower"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Bathrooms
                         </label>
-                        <input
-                            v-model.number="form.bathrooms"
-                            type="number"
-                            min="0"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="relative rounded-md shadow-sm">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="shower" />
+                            </div>
+                            <input
+                                id="shower"
+                                v-model.number="form.bathrooms"
+                                type="text"
+                                min="0"
+                                name="shower"
+                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                placeholder="2" />
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-mist-400 ml-1">
+
+                    <div class="w-full">
+                        <label
+                            for="size"
+                            class="block font-medium text-xs text-mist-400 mb-1">
                             Plot Size m²
                         </label>
-                        <input
-                            v-model.number="form.plotSize"
-                            type="number"
-                            min="0"
-                            placeholder="120"
-                            class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                        <div class="relative rounded-md shadow-sm">
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="ruler-combined" />
+                            </div>
+                            <input
+                                id="shower"
+                                v-model.number="form.plotSize"
+                                type="text"
+                                min="0"
+                                name="shower"
+                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                placeholder="120" />
+                        </div>
                     </div>
                 </div>
 
@@ -288,23 +364,38 @@ watch(
                         Guest Wi-Fi Details
                     </span>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[11px] text-mist-500 block ml-1">
+                        <div class="w-full">
+                            <label
+                                for="ssid"
+                                class="block text-xs text-mist-400 mb-1">
                                 Network (SSID)
                             </label>
-                            <input
-                                v-model.trim="form.wifi.ssid"
-                                type="text"
-                                placeholder="network-ssid"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+                            <div class="relative rounded-md shadow-sm">
+                                <input
+                                    id="ssid"
+                                    v-model.trim="form.wifi.ssid"
+                                    type="text"
+                                    name="ssid"
+                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6"
+                                    placeholder="SSID" />
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-[11px] text-mist-500 block ml-1"> Password </label>
-                            <input
-                                v-model.trim="form.wifi.pwd"
-                                type="text"
-                                placeholder="wifi-passwd"
-                                class="w-full rounded-md bg-mist-950/50 border border-mist-800 mt-1 px-3 py-2 text-sm text-mist-200 placeholder-mist-600 focus:border-lime-500 focus:outline-none transition-colors" />
+
+                        <div class="w-full">
+                            <label
+                                for="pwd"
+                                class="block text-xs text-mist-400 mb-1">
+                                Password
+                            </label>
+                            <div class="relative rounded-md shadow-sm">
+                                <input
+                                    id="pwd"
+                                    v-model.trim="form.wifi.pwd"
+                                    type="text"
+                                    name="pwd"
+                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    placeholder="P4ssW0rd!" />
+                            </div>
                         </div>
                     </div>
                 </div>

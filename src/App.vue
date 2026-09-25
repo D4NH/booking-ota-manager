@@ -33,14 +33,8 @@ const bookingStore = useBookingStore();
 const financeStore = useFinanceStore();
 const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 const modalStore = useModalStore();
-const {
-    isBookingModalOpen,
-    bookingToEdit,
-    initialCheckInDate,
-    currentProperty,
-    isPropertyModalOpen,
-    propertyToEdit,
-} = storeToRefs(modalStore);
+const { isBookingModalOpen, bookingToEdit, currentProperty, isPropertyModalOpen, propertyToEdit } =
+    storeToRefs(modalStore);
 const propertyStore = usePropertyStore();
 const stagingStore = useStagingStore();
 
@@ -82,7 +76,6 @@ onMounted(async () => {
         <BookingModal
             v-if="isBookingModalOpen"
             :booking-to-edit="bookingToEdit"
-            :initial-check-in-date="initialCheckInDate"
             :current-property="currentProperty"
             @close="modalStore.closeBookingModal"
             @save="handleSaveBooking" />

@@ -176,7 +176,7 @@ watch(yearOptions, (available) => {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer">
+                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none hover:border-mist-700 transition-colors cursor-pointer">
                     <option
                         v-for="year in yearOptions"
                         :key="year"

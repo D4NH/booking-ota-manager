@@ -3,6 +3,10 @@ import { ref } from 'vue';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { PersonalOwner } from '@/types/finance';
 
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
+import DatePicker from '@/components/ui/DatePicker.vue';
+import TextInput from '@/components/ui/TextInput.vue';
+
 interface Props {
     modelValue?: boolean;
 }
@@ -12,6 +16,17 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 
 const { createSavingGoal } = useFinanceSync();
 
+const ownerOptions = [
+    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
+    { label: 'Danh Nguyen', value: 'Danh Nguyen' },
+    { label: 'Shared', value: 'Shared' },
+];
+const priorityOptions = [
+    { label: 'High', value: 1 },
+    { label: 'Medium', value: 2 },
+    { label: 'Low', value: 3 },
+];
+
 const name = ref('');
 const owner = ref<PersonalOwner | 'Shared'>('Shared');
 const targetAmount = ref<number | null>(null);
@@ -20,11 +35,10 @@ const deadline = ref('');
 const notes = ref('');
 const isSubmitting = ref(false);
 
-function closeModal(): void {
+const closeModal = (): void => {
     emit('update:modelValue', false);
-}
-
-async function handleSubmit(): Promise<void> {
+};
+const handleSubmit = async (): Promise<void> => {
     if (isSubmitting.value || !name.value || !targetAmount.value) return;
 
     isSubmitting.value = true;
@@ -51,25 +65,28 @@ async function handleSubmit(): Promise<void> {
             isSubmitting.value = false;
         }, 1000);
     }
-}
+};
 </script>
 
 <template>
     <div
         v-if="modelValue"
-        class="fixed inset-0 z-50 bg-mist-950/80 backdrop-blur-sm flex items-center justify-center p-4"
-        @click.self="closeModal">
-        <div class="bg-mist-900 border border-mist-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-lime-400"></span>
-                    <h4 class="font-bold text-mist-100 text-sm">New Savings Target</h4>
+        class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
+        <div
+            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+            <!-- Modal Header -->
+            <div
+                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                <div>
+                    <h2 class="text-base font-semibold text-mist-100">New Savings Goal</h2>
                 </div>
                 <button
                     type="button"
                     class="text-mist-400 hover:text-mist-200 cursor-pointer"
                     @click="closeModal">
-                    ✕
+                    <fa-icon
+                        icon="xmark"
+                        class="text-sm" />
                 </button>
             </div>
 
@@ -78,91 +95,85 @@ async function handleSubmit(): Promise<void> {
             </p>
 
             <form
-                class="space-y-3.5"
+                class="max-h-[80vh] overflow-y-auto space-y-4"
                 @submit.prevent="handleSubmit">
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1">Goal Title</label>
-                    <input
-                        v-model="name"
-                        type="text"
-                        required
-                        placeholder="e.g. Emergency Fund 6 Months"
-                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
-                </div>
+                <TextInput
+                    id="goalTitle"
+                    v-model="name"
+                    input-label="Goal Title"
+                    type="text"
+                    placeholder="Relocating funds"
+                    required>
+                    <template #icon>
+                        <fa-icon
+                            icon="box-archive"
+                            class="text-xs" />
+                    </template>
+                </TextInput>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Owner / Pool</label
-                        >
-                        <select
-                            v-model="owner"
-                            class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none">
-                            <option value="Shared">Shared Household</option>
-                            <option value="Danh Nguyen">Danh Nguyen</option>
-                            <option value="Citra Ayu Wardani">Citra Ayu Wardani</option>
-                        </select>
-                    </div>
+                    <SelectDropdown
+                        v-model="owner"
+                        input-label="Owner"
+                        :options="ownerOptions">
+                        <template #icon>
+                            <fa-icon
+                                icon="id-card"
+                                class="text-xs" />
+                        </template>
+                    </SelectDropdown>
 
-                    <div>
-                        <label class="text-xs font-semibold text-mist-400 block mb-1"
-                            >Funding Priority</label
-                        >
-                        <select
-                            v-model="priority"
-                            class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none font-mono">
-                            <option :value="1">1 (Highest)</option>
-                            <option :value="2">2 (Medium)</option>
-                            <option :value="3">3 (Low)</option>
-                        </select>
-                    </div>
+                    <SelectDropdown
+                        v-model="priority"
+                        input-label="Funding Priority"
+                        :options="priorityOptions">
+                        <template #icon>
+                            <fa-icon
+                                icon="arrow-up-1-9"
+                                class="text-xs" />
+                        </template>
+                    </SelectDropdown>
                 </div>
 
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1"
-                        >Target Amount (IDR)</label
-                    >
-                    <input
-                        v-model="targetAmount"
-                        type="number"
-                        required
-                        min="1"
-                        placeholder="50000000"
-                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
-                </div>
+                <TextInput
+                    id="payout"
+                    v-model.number="targetAmount"
+                    input-label="Target Amount"
+                    type="number"
+                    min="1"
+                    placeholder="100.000"
+                    required>
+                    <template #icon>
+                        <fa-icon
+                            icon="rupiah-sign"
+                            class="text-xs" />
+                    </template>
+                </TextInput>
 
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1"
-                        >Target Deadline (Optional)</label
-                    >
-                    <input
-                        v-model="deadline"
-                        type="date"
-                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 font-mono focus:border-lime-400 focus:outline-none" />
-                </div>
+                <DatePicker
+                    v-model="deadline"
+                    input-label="Target Deadline (Optional)"
+                    :width="311" />
 
-                <div>
-                    <label class="text-xs font-semibold text-mist-400 block mb-1"
-                        >Memo / Description</label
-                    >
-                    <input
-                        v-model="notes"
-                        type="text"
-                        placeholder="e.g. Baseline survival cushion"
-                        class="w-full text-xs border border-mist-700 bg-mist-800 text-mist-100 rounded-md p-2.5 focus:border-lime-400 focus:outline-none" />
-                </div>
+                <TextInput
+                    id="amount"
+                    v-model="notes"
+                    input-label="Description"
+                    type="text"
+                    placeholder="...">
+                </TextInput>
 
-                <div class="flex justify-end space-x-2 pt-3">
+                <div class="flex justify-end space-x-2">
                     <button
                         type="button"
-                        class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200 cursor-pointer"
+                        class="text-xs px-3 py-2 font-medium text-mist-400 hover:text-mist-200 cursor-pointer"
                         @click="closeModal">
                         Cancel
                     </button>
                     <button
                         type="submit"
                         :disabled="isSubmitting"
-                        class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition cursor-pointer">
+                        class="bg-blue-400 hover:bg-blue-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition cursor-pointer">
                         {{ isSubmitting ? 'Creating...' : 'Create Goal' }}
                     </button>
                 </div>
