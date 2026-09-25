@@ -76,7 +76,7 @@ const displaySections = computed<MonthSection[]>(() => {
             </div>
             <div
                 v-else
-                class="flex-1 flex flex-col">
+                class="flex flex-col">
                 <template
                     v-for="section in displaySections"
                     :key="section.key">

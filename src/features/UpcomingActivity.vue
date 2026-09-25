@@ -26,7 +26,6 @@ const upcomingEvents = computed(() => {
 
     bookings.forEach((b) => {
         if (b.status === 'Unavailable') return;
-
         // Arrivals
         if (b.checkIn >= today && b.checkIn <= maxDateStr) {
             events.push({
@@ -36,7 +35,6 @@ const upcomingEvents = computed(() => {
                 isToday: b.checkIn === today,
             });
         }
-
         // Departures
         if (b.checkOut >= today && b.checkOut <= maxDateStr) {
             events.push({

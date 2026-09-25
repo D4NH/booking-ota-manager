@@ -108,7 +108,7 @@ function isCurrentBooking(b: Booking): boolean {
                         :key="b.id || b.bookingId"
                         class="transition align-middle"
                         :class="[
-                            isCurrentBooking(b)
+                            isCurrentBooking(b) && b.status === 'Booked'
                                 ? 'bg-lime-500/5 text-lime-400 ring-1 ring-lime-500/30 hover:bg-lime-500/15'
                                 : 'hover:bg-mist-800/40',
                         ]"

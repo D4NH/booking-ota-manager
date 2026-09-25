@@ -126,7 +126,7 @@ export function useMonthlyMetrics(
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (!b || b.status === 'Unavailable' || b.status === 'No show') continue;
+            if (!b || b.status === 'Unavailable') continue;
 
             if (activePropertyId && b.propertyId !== activePropertyId) continue;
 
@@ -206,12 +206,7 @@ export function useMonthlyMetrics(
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (
-                !b ||
-                !b.checkIn?.startsWith(currentYear) ||
-                b.status === 'Unavailable' ||
-                b.status === 'No show'
-            ) {
+            if (!b || !b.checkIn?.startsWith(currentYear) || b.status === 'Unavailable') {
                 continue;
             }
 

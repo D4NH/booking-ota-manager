@@ -49,7 +49,6 @@ const {
     lockboxPin,
     isOccupied,
     staySections,
-    todayTurnover,
 } = usePropertyDetails(() => id);
 
 function handleAddBooking(propertyId: PropertyId): void {
@@ -188,21 +187,6 @@ function handleNavigate(target: PropertyId | 'all'): void {
                     <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
                         Daily Operations
                     </span>
-                </div>
-
-                <!-- Same-Day Turnover Alert Badge -->
-                <div
-                    v-if="todayTurnover"
-                    class="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs space-y-0.5">
-                    <div
-                        class="flex items-center gap-1.5 font-semibold text-amber-400 text-[11px] uppercase">
-                        <fa-icon icon="bolt" />
-                        <span>Same-Day Turnover Today</span>
-                    </div>
-                    <p class="text-mist-300 text-[11px]">
-                        {{ todayTurnover.departing }} (Out 11 AM) &rarr;
-                        {{ todayTurnover.arriving }} (In 2 PM)
-                    </p>
                 </div>
 
                 <div class="flex-1 flex flex-col justify-center">

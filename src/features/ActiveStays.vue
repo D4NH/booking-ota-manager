@@ -22,15 +22,12 @@ const emit = defineEmits<{
 const inHouseGuests = computed(() =>
     bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
-
         // Mid-stay
         if (b.checkIn < getCurrentDate() && b.checkOut > getCurrentDate()) return true;
-
         // Today's departure: STAYS in-house ONLY if before 12:00 and not marked checked-out
         if (b.checkOut === getCurrentDate()) {
             return getCurrentHour() < 12 && b.status !== 'Checking-out';
         }
-
         // Today's arrival: MOVES to in-house after 15:00 or if already checked-in
         if (b.checkIn === getCurrentDate()) {
             return getCurrentHour() >= 15 || b.status === 'Checked-in';
@@ -44,7 +41,6 @@ const inHouseGuests = computed(() =>
 const departedGuests = computed(() =>
     bookings.filter((b) => {
         if (b.status === 'Unavailable') return false;
-
         if (b.checkOut === getCurrentDate()) {
             // Moves here if past noon OR if manually checked-out
             return getCurrentHour() >= 12 || b.status === 'Checking-out';

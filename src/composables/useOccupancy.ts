@@ -168,7 +168,7 @@ export function calculateYearlyOccupancy(
     let ytdAvailableNights = 0;
 
     const eligibleBookings = bookings.filter((b) => {
-        if (b.status === 'Unavailable' || b.status === 'No show') return false;
+        if (b.status === 'Unavailable') return false;
         if (selectedProperty !== 'all' && b.propertyId !== selectedProperty) return false;
         return b.checkIn < `${year + 1}-01-01` && b.checkOut > `${year}-01-01`;
     });

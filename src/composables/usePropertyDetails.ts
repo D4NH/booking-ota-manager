@@ -75,11 +75,7 @@ export function usePropertyDetails(
 
             validBookings.push(b);
 
-            if (
-                b.status !== 'Unavailable' &&
-                b.status !== 'No show' &&
-                b.checkIn.startsWith(currentYearStr)
-            ) {
+            if (b.status !== 'Unavailable' && b.checkIn.startsWith(currentYearStr)) {
                 revenue += b.payout || 0;
                 nights += b.nights || 0;
             }
