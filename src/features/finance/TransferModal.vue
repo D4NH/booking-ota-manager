@@ -89,7 +89,7 @@ const handleTransfer = async (): Promise<void> => {
             </p>
 
             <form
-                class="space-y-4"
+                class="max-h-[80vh] overflow-y-auto space-y-4"
                 @submit.prevent="handleTransfer">
                 <div class="relative">
                     <label
@@ -190,7 +190,7 @@ const handleTransfer = async (): Promise<void> => {
                     <input
                         v-model="notes"
                         type="text"
-                        placeholder="e.g. Dividend share distribution"
+                        placeholder="Dividend share distribution"
                         class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
                 </div>
 

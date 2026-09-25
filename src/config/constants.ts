@@ -8,7 +8,7 @@ export const CHANNEL_WARNINGS: Record<string, string> = {
 // • tiket.com syncs and pulls from airbnb and booking.com
 // • Trip.com syncs and pulls from airbnb and booking.com
 
-export const MONTH_NAMES = [
+export const MONTH_NAMES: string[] = [
     'January',
     'February',
     'March',
@@ -23,7 +23,7 @@ export const MONTH_NAMES = [
     'December',
 ];
 
-export const SHORT_MONTH_NAMES = [
+export const SHORT_MONTH_NAMES: string[] = [
     'Jan',
     'Feb',
     'Mar',
@@ -37,3 +37,5 @@ export const SHORT_MONTH_NAMES = [
     'Nov',
     'Dec',
 ];
+
+export const DAYS_OF_WEEK: string[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

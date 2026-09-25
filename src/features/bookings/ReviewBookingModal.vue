@@ -385,7 +385,7 @@ watch(
                     <input
                         v-model="formNotes"
                         type="text"
-                        placeholder="e.g. Early check-in requested / Special breakfast request"
+                        placeholder="Early check-in requested / Special breakfast request"
                         class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 mt-1 py-2 px-3 text-sm text-mist-200 focus:border-lime-500 focus:outline-none transition-colors" />
                 </div>
                 <!-- Overlap Conflict Alert -->

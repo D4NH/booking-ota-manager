@@ -113,7 +113,7 @@ const maxVal = computed<number>(() => {
     return Math.ceil(ceiling / 5000000) * 5000000;
 });
 
-// Generate 4 Y-Axis scale marks (e.g. 20M, 15M, 10M, 5M, 0)
+// Generate 4 Y-Axis scale marks (20M, 15M, 10M, 5M, 0)
 const yAxisMarks = computed(() => {
     const step = maxVal.value / 4;
     return [

@@ -8,20 +8,13 @@ import {
     sortNewestFirst,
     calculateGrowthPct,
 } from '@/utils/financeCalculators';
-import type {
-    PersonalFinance,
-    SharedFinance,
-    AggregatedSavingsAccount,
-    GoldAsset,
-} from '@/types/finance';
+import type { PersonalFinance, SharedFinance, AggregatedSavingsAccount } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
 
 export function usePersonalFinance(
     personalFinances: ShallowRef<PersonalFinance[]>,
     sharedFinances: ShallowRef<SharedFinance[]>,
-    goldAssets: ShallowRef<GoldAsset[]>,
-    currentGoldPricePerGram: Ref<number>,
     selectedMonth: Ref<string>,
     previousMonth: Ref<string>
 ) {

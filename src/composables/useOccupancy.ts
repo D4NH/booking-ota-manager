@@ -1,6 +1,5 @@
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
-import { getDaysInMonth, getCurrentMonth } from '@/utils/date';
 
 export interface MonthlyStats {
     percentage: number;
@@ -38,7 +37,7 @@ export function useOccupancy() {
         selectedProperty?: PropertyId | 'all',
         totalPropertiesCount: number = 3
     ) => {
-        const daysInMonth = getDaysInMonth(getCurrentMonth());
+        const daysInMonth = new Date(year, month, 0).getDate();
         const activeUnitsCount = selectedProperty === 'all' ? totalPropertiesCount : 1;
         const totalAvailableNights = daysInMonth * activeUnitsCount;
 
@@ -135,7 +134,7 @@ export function getBookedPropertiesCount(bookings: Booking[], year?: number): nu
 
 /**
  * Calculates complete annual occupancy statistics.
- * Capacity dynamically scales to only properties that had bookings.
+ * Capacity dynamically scales to properties that had bookings.
  */
 export function calculateYearlyOccupancy(
     bookings: Booking[],
@@ -144,83 +143,100 @@ export function calculateYearlyOccupancy(
     referenceDate: Date = new Date()
 ): YearOccupancyResult {
     const bookedPropertiesCount = getBookedPropertiesCount(bookings, year);
-
-    // If 'all' is selected: use only properties with >= 1 booking. If a single property is selected: 1.
     const activeUnits = selectedProperty === 'all' ? bookedPropertiesCount : 1;
 
-    // Days in year (handles leap years)
     const isLeapYear = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
     const daysInYear = isLeapYear(year) ? 366 : 365;
-
-    // Total available capacity (0 if no properties have bookings)
     const totalAvailableNights = daysInYear * activeUnits;
 
-    // Filter eligible bookings for this year & property
-    const eligibleBookings = bookings.filter((b) => {
-        if (b.status === 'Unavailable') return false;
-        if (selectedProperty !== 'all' && b.propertyId !== selectedProperty) return false;
-        return b.checkIn < `${year + 1}-01-01` && b.checkOut > `${year}-01-01`;
-    });
-
-    let totalBookedNights = 0;
-    let ytdBookedNights = 0;
-    let ytdAvailableNights = 0;
-
-    // Track monthly data
-    const monthlyData = Array.from({ length: 12 }, (_, monthIdx) => {
-        const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+    const monthlyData = Array.from({ length: 12 }, (_, idx) => {
+        const daysInMonth = new Date(year, idx + 1, 0).getDate();
         return {
-            daysInMonth,
             booked: 0,
             available: daysInMonth * activeUnits,
         };
     });
 
-    const todayStr = `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, '0')}-${String(referenceDate.getDate()).padStart(2, '0')}`;
-    const isTargetYearCurrent = referenceDate.getFullYear() === year;
+    const yearStartMs = Date.UTC(year, 0, 1);
+    const yearEndMs = Date.UTC(year + 1, 0, 1);
+    const refMs = Date.UTC(
+        referenceDate.getFullYear(),
+        referenceDate.getMonth(),
+        referenceDate.getDate()
+    );
 
-    for (let day = 0; day < daysInYear; day++) {
-        const currentDate = new Date(year, 0, 1 + day);
-        const y = currentDate.getFullYear();
-        const m = currentDate.getMonth(); // 0 to 11
-        const d = String(currentDate.getDate()).padStart(2, '0');
-        const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${d}`;
+    let totalBookedNights = 0;
+    let ytdBookedNights = 0;
+    let ytdAvailableNights = 0;
 
-        const bookedOnThisDay = eligibleBookings.filter(
-            (b) => dateStr >= b.checkIn && dateStr < b.checkOut
-        ).length;
+    const eligibleBookings = bookings.filter((b) => {
+        if (b.status === 'Unavailable' || b.status === 'No show') return false;
+        if (selectedProperty !== 'all' && b.propertyId !== selectedProperty) return false;
+        return b.checkIn < `${year + 1}-01-01` && b.checkOut > `${year}-01-01`;
+    });
 
-        totalBookedNights += bookedOnThisDay;
+    // Calculation across 12 months
+    for (let i = 0; i < eligibleBookings.length; i++) {
+        const b = eligibleBookings[i];
+        if (!b) continue;
 
-        const targetMonth = monthlyData[m];
-        if (targetMonth) {
-            targetMonth.booked += bookedOnThisDay;
+        const [y1, m1, d1] = b.checkIn.split('-').map(Number);
+        const [y2, m2, d2] = b.checkOut.split('-').map(Number);
+        if (!y1 || !m1 || !d1 || !y2 || !m2 || !d2) continue;
+
+        const bInMs = Date.UTC(y1, m1 - 1, d1);
+        const bOutMs = Date.UTC(y2, m2 - 1, d2);
+
+        // Clamped year range
+        const startMs = Math.max(bInMs, yearStartMs);
+        const endMs = Math.min(bOutMs, yearEndMs);
+        if (startMs >= endMs) continue;
+
+        const stayNights = Math.round((endMs - startMs) / 86_400_000);
+        totalBookedNights += stayNights;
+
+        // YTD Nights
+        if (referenceDate.getFullYear() === year) {
+            const ytdEndMs = Math.min(endMs, refMs + 86_400_000);
+            if (startMs < ytdEndMs) {
+                ytdBookedNights += Math.round((ytdEndMs - startMs) / 86_400_000);
+            }
         }
 
-        // YTD calculations
-        if (isTargetYearCurrent) {
-            if (dateStr <= todayStr) {
-                ytdBookedNights += bookedOnThisDay;
-                ytdAvailableNights += activeUnits;
+        // Allocate to monthly buckets
+        for (let m = 0; m < 12; m++) {
+            const mStart = Date.UTC(year, m, 1);
+            const mEnd = Date.UTC(year, m + 1, 1);
+            const overlapStart = Math.max(bInMs, mStart);
+            const overlapEnd = Math.min(bOutMs, mEnd);
+
+            const targetMonth = monthlyData[m];
+            if (targetMonth && overlapStart < overlapEnd) {
+                targetMonth.booked += Math.round((overlapEnd - overlapStart) / 86_400_000);
             }
-        } else if (year < referenceDate.getFullYear()) {
-            ytdBookedNights = totalBookedNights;
-            ytdAvailableNights = totalAvailableNights;
         }
     }
 
-    // Monthly percentage
+    if (referenceDate.getFullYear() === year) {
+        const dayOfYear = Math.ceil((refMs - yearStartMs) / 86_400_000) + 1;
+        ytdAvailableNights = Math.min(daysInYear, Math.max(0, dayOfYear)) * activeUnits;
+    } else if (year < referenceDate.getFullYear()) {
+        ytdBookedNights = totalBookedNights;
+        ytdAvailableNights = totalAvailableNights;
+    }
+
     const monthlyOccupancy = monthlyData.map((m) =>
-        m.available > 0 ? Math.round((m.booked / m.available) * 100) : 0
+        m.available > 0 ? Math.min(100, Math.round((m.booked / m.available) * 100)) : 0
     );
 
-    // Safe division (prevents NaN / Division by zero if activeUnits is 0)
     const fullYearPercentage =
-        totalAvailableNights > 0 ? Math.round((totalBookedNights / totalAvailableNights) * 100) : 0;
+        totalAvailableNights > 0
+            ? Math.min(100, Math.round((totalBookedNights / totalAvailableNights) * 100))
+            : 0;
 
     const ytdPercentage =
         ytdAvailableNights > 0
-            ? Math.round((ytdBookedNights / ytdAvailableNights) * 100)
+            ? Math.min(100, Math.round((ytdBookedNights / ytdAvailableNights) * 100))
             : fullYearPercentage;
 
     return {

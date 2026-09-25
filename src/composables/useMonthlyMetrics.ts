@@ -32,8 +32,13 @@ function calculateOverlappingNights(
     monthStartMs: number,
     monthEndMs: number
 ): number {
-    const checkInMs = parseISODate(checkInStr).getTime();
-    const checkOutMs = parseISODate(checkOutStr).getTime();
+    const [y1, m1, d1] = checkInStr.split('-').map(Number);
+    const [y2, m2, d2] = checkOutStr.split('-').map(Number);
+    if (!y1 || !m1 || !d1 || !y2 || !m2 || !d2) return 0;
+
+    // Use pure UTC milliseconds to prevent 7-hour WIB timezone offsets
+    const checkInMs = Date.UTC(y1, m1 - 1, d1);
+    const checkOutMs = Date.UTC(y2, m2 - 1, d2);
 
     const start = Math.max(checkInMs, monthStartMs);
     const end = Math.min(checkOutMs, monthEndMs);
@@ -139,7 +144,7 @@ export function useMonthlyMetrics(
             }
 
             // Check if stay spans any portion of target month
-            if (checkIn <= monthEndStr && checkOut >= monthStartStr) {
+            if (checkIn <= monthEndStr && checkOut > monthStartStr) {
                 occupiedNights += calculateOverlappingNights(
                     checkIn,
                     checkOut,

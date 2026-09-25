@@ -367,7 +367,7 @@ watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], (
                     </button>
                 </div>
                 <form
-                    class="space-y-4"
+                    class="max-h-[80vh] overflow-y-auto space-y-4"
                     @submit.prevent="submitTransaction">
                     <div class="relative">
                         <label

@@ -8,7 +8,7 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
     const selectedMonth = ref<number>(currentDate.value.getMonth());
     const selectedYear = ref<number>(currentDate.value.getFullYear());
 
-    // Synchronize dropdown selectors whenever currentDate shifts
+    // Sync dropdown selectors when currentDate shifts
     watch(
         currentDate,
         (d) => {
@@ -74,7 +74,7 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
         return days;
     });
 
-    // Dynamic years extracted strictly from current bookings
+    // Years extracted from bookings
     const yearOptions = computed<number[]>(() => {
         const list = toValue(bookingsSource);
         const years = new Set<number>();
@@ -99,11 +99,32 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
         return Array.from(years).sort((a, b) => a - b);
     });
 
-    function getStaysForDate(dateStr: string): Booking[] {
-        const list = toValue(bookingsSource);
-        return list
-            .filter((b) => dateStr >= b.checkIn && dateStr < b.checkOut)
-            .sort((a, b) => {
+    const staysByDateMap = computed<Map<string, Booking[]>>(() => {
+        const list = toValue(bookingsSource) || [];
+        const map = new Map<string, Booking[]>();
+
+        for (let i = 0; i < list.length; i++) {
+            const b = list[i];
+            if (!b?.checkIn || !b?.checkOut) continue;
+
+            const [y1, m1, d1] = b.checkIn.split('-').map(Number);
+            const [y2, m2, d2] = b.checkOut.split('-').map(Number);
+            if (!y1 || !m1 || !d1 || !y2 || !m2 || !d2) continue;
+
+            const cur = new Date(Date.UTC(y1, m1 - 1, d1));
+            const end = new Date(Date.UTC(y2, m2 - 1, d2));
+
+            while (cur < end) {
+                const dateStr = cur.toISOString().slice(0, 10);
+                const bucket = map.get(dateStr) ?? [];
+                bucket.push(b);
+                map.set(dateStr, bucket);
+                cur.setUTCDate(cur.getUTCDate() + 1);
+            }
+        }
+
+        for (const stays of map.values()) {
+            stays.sort((a, b) => {
                 const aIsMulti = a.nights > 1 ? 1 : 0;
                 const bIsMulti = b.nights > 1 ? 1 : 0;
                 if (aIsMulti !== bIsMulti) return bIsMulti - aIsMulti;
@@ -111,6 +132,13 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
                 if (a.nights !== b.nights) return b.nights - a.nights;
                 return (a.id || a.bookingId).localeCompare(b.id || b.bookingId);
             });
+        }
+
+        return map;
+    });
+
+    function getStaysForDate(dateStr: string): Booking[] {
+        return staysByDateMap.value.get(dateStr) || [];
     }
 
     function multiDayStyling(b: Booking, dateStr: string, dayIndex: number): string {

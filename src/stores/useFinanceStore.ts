@@ -53,8 +53,6 @@ export const useFinanceStore = defineStore('finance', () => {
     const personalDomain = usePersonalFinance(
         personalFinances,
         sharedFinances,
-        goldAssets,
-        currentGoldPricePerGram,
         selectedMonth,
         previousMonth
     );
@@ -196,7 +194,7 @@ export const useFinanceStore = defineStore('finance', () => {
 
     // Recurring Templates
     const monthlyProjectedRecurring = computed<ProjectedRecurringItem[]>(() => {
-        const cycle = selectedMonth.value; // e.g. "2026-09"
+        const cycle = selectedMonth.value; // "2026-09"
         const currentMonthNumber = Number(cycle.split('-')[1]); // 9
 
         // Filter active templates that apply to THIS month
@@ -281,46 +279,52 @@ export const useFinanceStore = defineStore('finance', () => {
 
         if (payload.targetAccount === 'Split') {
             const owners: PersonalFinance['owner'][] = ['Danh Nguyen', 'Citra Ayu Wardani'];
+            const tasks: Promise<unknown>[] = [];
+
             for (const owner of owners) {
                 const outflowId = crypto.randomUUID();
                 const transferId = crypto.randomUUID();
                 const entryId = crypto.randomUUID();
                 const noteText = [`Payout to ${owner}`, payload.notes].filter(Boolean).join(' | ');
 
-                await appendSheetRow(
-                    SPREADSHEET_ID,
-                    [
-                        outflowId,
-                        payload.sourcePropertyId,
-                        'expense',
-                        'Owner Payout Outflow',
-                        amount,
-                        cleanDate,
-                        noteText,
-                    ],
-                    "'Property_Finances'!A1"
-                );
-                await appendSheetRow(
-                    SPREADSHEET_ID,
-                    [transferId, payload.sourcePropertyId, owner, amount, cleanDate, noteText],
-                    "'Transfers'!A1"
-                );
-                await appendSheetRow(
-                    SPREADSHEET_ID,
-                    [
-                        entryId,
-                        owner,
-                        'income',
-                        'Owner Payout',
-                        amount,
-                        cleanDate,
-                        `Payout from ${sourceProperty}`,
-                        '',
-                        '',
-                    ],
-                    "'Personal_Transactions'!A1"
+                tasks.push(
+                    appendSheetRow(
+                        SPREADSHEET_ID,
+                        [
+                            outflowId,
+                            payload.sourcePropertyId,
+                            'expense',
+                            'Owner Payout Outflow',
+                            amount,
+                            cleanDate,
+                            noteText,
+                        ],
+                        "'Property_Finances'!A1"
+                    ),
+                    appendSheetRow(
+                        SPREADSHEET_ID,
+                        [transferId, payload.sourcePropertyId, owner, amount, cleanDate, noteText],
+                        "'Transfers'!A1"
+                    ),
+                    appendSheetRow(
+                        SPREADSHEET_ID,
+                        [
+                            entryId,
+                            owner,
+                            'income',
+                            'Owner Payout',
+                            amount,
+                            cleanDate,
+                            `Payout from ${sourceProperty}`,
+                            '',
+                            '',
+                        ],
+                        "'Personal_Transactions'!A1"
+                    )
                 );
             }
+
+            await Promise.all(tasks);
             await fetchFinancialData();
             return;
         }

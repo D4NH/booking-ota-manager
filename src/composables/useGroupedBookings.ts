@@ -1,6 +1,6 @@
 import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue';
-import type { Booking } from '@/types/booking';
-import type { BookingGroup } from '@/components/BookingsTable.vue';
+import type { Booking, BookingGroup } from '@/types/booking';
+import type {} from '@/components/BookingsTable.vue';
 import { formatDate, getCurrentMonth } from '@/utils/date';
 
 interface UseGroupedBookingsOptions {

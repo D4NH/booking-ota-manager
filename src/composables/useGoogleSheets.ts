@@ -306,9 +306,8 @@ export function useGoogleSheets() {
         sheetName: string = '',
         calendarId?: string
     ): Promise<void> => {
-        // OPTIMIZATION: Only scan Column A (ID) and Column K (Calendar Event ID)
-        const idRange = sheetName ? `'${sheetName}'!A2:A` : 'A2:A';
-        const rows = await fetchSheetRows(spreadsheetId, idRange);
+        const searchRange = sheetName ? `'${sheetName}'!A2:K` : 'A2:K';
+        const rows = await fetchSheetRows(spreadsheetId, searchRange);
         const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
 
         if (rowIndex === -1) {
@@ -318,16 +317,7 @@ export function useGoogleSheets() {
         }
 
         const targetRowNumber = rowIndex + 2;
-
-        // If calendar syncing is enabled, fetch existing Event ID from Column K of that single row
-        let existingCalEventId = '';
-        if (calendarId) {
-            const calRange = sheetName
-                ? `'${sheetName}'!K${targetRowNumber}`
-                : `K${targetRowNumber}`;
-            const calRows = await fetchSheetRows(spreadsheetId, calRange).catch(() => []);
-            existingCalEventId = calRows[0]?.[0] ? String(calRows[0][0]).trim() : '';
-        }
+        const existingCalEventId = calendarId ? String(rows[rowIndex]?.[10] || '').trim() : '';
 
         const finalValues = [...values];
 
@@ -358,7 +348,8 @@ export function useGoogleSheets() {
             }
         }
 
-        const endColLetter = String.fromCharCode(64 + Math.max(finalValues.length, 11));
+        const endColIndex = Math.min(26, Math.max(finalValues.length, 11));
+        const endColLetter = String.fromCharCode(64 + endColIndex);
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:${endColLetter}${targetRowNumber}`
             : `A${targetRowNumber}:${endColLetter}${targetRowNumber}`;

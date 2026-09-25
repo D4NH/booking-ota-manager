@@ -28,6 +28,13 @@ export interface Booking {
     createdAt: string;
 }
 
+export interface BookingGroup {
+    key: string;
+    label: string;
+    count: number;
+    bookings: Booking[];
+}
+
 export type StagingStatus = 'Pending Approval' | 'Approved' | 'Rejected';
 
 export interface StagedBooking {

@@ -3,16 +3,9 @@ import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { getPropertyStyle } from '@/config/properties';
 import { getStatusStyle } from '@/config/status';
-import type { Booking } from '@/types/booking';
+import type { Booking, BookingGroup } from '@/types/booking';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
-
-export interface BookingGroup {
-    key: string;
-    label: string;
-    count: number;
-    bookings: Booking[];
-}
 
 interface Props {
     groups: BookingGroup[];

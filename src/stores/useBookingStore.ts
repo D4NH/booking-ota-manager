@@ -419,15 +419,21 @@ export const useBookingStore = defineStore('booking', () => {
             await db.bookings.bulkPut(recordsToPut);
         }
 
-        if (processedBookingIds.size > 0 && minCheckIn <= maxCheckIn) {
+        if (processedBookingIds.size > 0) {
             const localDbBookings = await db.bookings
                 .where('propertyId')
                 .equals(propertyId)
-                .filter((b) => b.checkIn >= minCheckIn && b.checkIn <= maxCheckIn)
                 .toArray();
 
+            // Detect active operational year from imported rows (fallback to current year)
+            const activeYear =
+                minCheckIn !== '9999-12-31'
+                    ? minCheckIn.slice(0, 4)
+                    : new Date().getFullYear().toString();
+
+            // Only purge deleted bookings from the active operational year so historical years remain preserved
             const staleBookings = localDbBookings.filter(
-                (b) => !processedBookingIds.has(b.bookingId)
+                (b) => b.checkIn.startsWith(activeYear) && !processedBookingIds.has(b.bookingId)
             );
             if (staleBookings.length > 0) {
                 const staleIds = staleBookings.map((b) => b.id);

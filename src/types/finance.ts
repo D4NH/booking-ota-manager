@@ -162,8 +162,8 @@ export interface SbnInvestment {
     series: SbnSeries;
     owner: PersonalOwner | 'Shared';
     principalAmount: number;
-    couponRatePct: number; // e.g. 6.45
-    taxRatePct: number; // e.g. 10
+    couponRatePct: number; // 6.45
+    taxRatePct: number; // 10
     issueDate: string; // "2025-06-25"
     maturityDate: string; // "2028-06-10"
     payoutDayOfMonth: number; // 10

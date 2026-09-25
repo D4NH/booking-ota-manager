@@ -71,8 +71,8 @@ export interface FormatDateOptions {
     shortMonth?: boolean;
     monthHeader?: boolean;
     monthOnly?: boolean;
-    includeWeekday?: boolean; // e.g. "Saturday" (or "Sat" if shortWeekday: true)
-    shortWeekday?: boolean; // e.g. "Sat"
+    includeWeekday?: boolean; // "Saturday" (or "Sat" if shortWeekday: true)
+    shortWeekday?: boolean; // "Sat"
     weekday?: 'short' | 'long'; // explicit format override
 }
 
@@ -152,7 +152,7 @@ export const normalizeDate = (raw: unknown): string => {
         return str.slice(0, 10);
     }
 
-    // Google Sheets serial number (e.g. 46282)
+    // Google Sheets serial number (46282)
     if (
         typeof raw === 'number' ||
         (!isNaN(Number(str)) && !str.includes('-') && !str.includes('/'))

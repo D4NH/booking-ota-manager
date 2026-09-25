@@ -130,4 +130,8 @@
     th {
         vertical-align: middle;
     }
+    input::placeholder,
+    textarea::placeholder {
+        @apply text-mist-600 opacity-100;
+    }
 }

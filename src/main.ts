@@ -15,6 +15,7 @@ import {
     faAngleDown,
     faArrowDown,
     faArrowLeft,
+    faArrowRightArrowLeft,
     faArrowsRotate,
     faArrowTrendDown,
     faArrowTrendUp,
@@ -39,6 +40,7 @@ import {
     faDownload,
     faFilter,
     faGear,
+    faHardDrive,
     faHashtag,
     faHouse,
     faHouseCircleCheck,
@@ -61,6 +63,7 @@ import {
     faTrashCan,
     faTriangleExclamation,
     faUpload,
+    faWeightHanging,
     faWifi,
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
@@ -69,6 +72,7 @@ library.add(
     faAngleDown,
     faArrowDown,
     faArrowLeft,
+    faArrowRightArrowLeft,
     faArrowTrendDown,
     faArrowTrendUp,
     faArrowUp,
@@ -93,6 +97,7 @@ library.add(
     faDownload,
     faFilter,
     faGear,
+    faHardDrive,
     faHashtag,
     faHouse,
     faHouseCircleCheck,
@@ -115,6 +120,7 @@ library.add(
     faTrashCan,
     faTriangleExclamation,
     faUpload,
+    faWeightHanging,
     faWifi,
     faXmark
 );

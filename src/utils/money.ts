@@ -28,7 +28,7 @@ export function formatChartCurrency(value: number): string {
     // Millions (Juta)
     if (Math.abs(value) >= 1_000_000) {
         const formatted = (value / 1_000_000).toFixed(1);
-        // Replace .0 with nothing (e.g. "10.0" -> "10")
+        // Replace .0 with nothing ("10.0" -> "10")
         return `${formatted.replace(/\.0$/, '')}jt`;
     }
 
