@@ -34,9 +34,9 @@ const nextUpcoming = computed(
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0]
 );
 
-const handleImageError = (e: Event) => {
+function handleImageError(e: Event): void {
     (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
-};
+}
 </script>
 
 <template>

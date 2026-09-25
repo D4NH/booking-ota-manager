@@ -6,6 +6,21 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+const PALETTE = [
+    '#F43F5E', // Rose (Electricity)
+    '#38BDF8', // Sky (Biznet / Wi-Fi)
+    '#F59E0B', // Amber (Maintenance)
+    '#A855F7', // Purple (Cleaning)
+    '#64748B', // Slate (General / Overhead)
+];
+
+interface CategoryBreakdown {
+    category: string;
+    amount: number;
+    pct: number;
+    color: string;
+}
+
 const financeStore = useFinanceStore();
 const {
     filteredPropertyFinances,
@@ -14,22 +29,6 @@ const {
     netPropertyProfit,
     selectedMonth,
 } = storeToRefs(financeStore);
-
-// 1. Group & Aggregate Operational Expenses by Category
-interface CategoryBreakdown {
-    category: string;
-    amount: number;
-    pct: number;
-    color: string;
-}
-
-const PALETTE = [
-    '#F43F5E', // Rose (Electricity)
-    '#38BDF8', // Sky (Biznet / Wi-Fi)
-    '#F59E0B', // Amber (Maintenance)
-    '#A855F7', // Purple (Cleaning)
-    '#64748B', // Slate (General / Overhead)
-];
 
 const categoryExpenses = computed<CategoryBreakdown[]>(() => {
     const total = monthlyPropertyExpenses.value;
@@ -62,8 +61,6 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
 
     return result.sort((a, b) => b.amount - a.amount);
 });
-
-// Margin Metrics
 const operatingMarginPct = computed<number>(() => {
     const rev = monthlyPropertyRevenue.value;
     if (rev <= 0) return 0;

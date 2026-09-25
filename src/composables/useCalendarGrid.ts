@@ -8,16 +8,6 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
     const selectedMonth = ref<number>(currentDate.value.getMonth());
     const selectedYear = ref<number>(currentDate.value.getFullYear());
 
-    // Sync dropdown selectors when currentDate shifts
-    watch(
-        currentDate,
-        (d) => {
-            selectedMonth.value = d.getMonth();
-            selectedYear.value = d.getFullYear();
-        },
-        { immediate: true }
-    );
-
     // 42-cell matrix (6 weeks) including previous and next month padding
     const calendarDays = computed<CalendarDay[]>(() => {
         const year = selectedYear.value;
@@ -73,7 +63,6 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
 
         return days;
     });
-
     // Years extracted from bookings
     const yearOptions = computed<number[]>(() => {
         const list = toValue(bookingsSource);
@@ -98,7 +87,6 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
 
         return Array.from(years).sort((a, b) => a - b);
     });
-
     const staysByDateMap = computed<Map<string, Booking[]>>(() => {
         const list = toValue(bookingsSource) || [];
         const map = new Map<string, Booking[]>();
@@ -136,6 +124,16 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
 
         return map;
     });
+
+    // Sync dropdown selectors when currentDate shifts
+    watch(
+        currentDate,
+        (d) => {
+            selectedMonth.value = d.getMonth();
+            selectedYear.value = d.getFullYear();
+        },
+        { immediate: true }
+    );
 
     function getStaysForDate(dateStr: string): Booking[] {
         return staysByDateMap.value.get(dateStr) || [];

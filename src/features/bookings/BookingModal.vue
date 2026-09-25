@@ -34,7 +34,6 @@ const { bookingToEdit = null, currentProperty = 'all' } = defineProps<{
     bookingToEdit?: Booking | null;
     currentProperty?: PropertyId | 'all';
 }>();
-
 const emit = defineEmits<{
     close: [];
     save: [payload: Omit<Booking, 'id' | 'createdAt'>];
@@ -101,12 +100,12 @@ const propertyType = computed(() =>
     }))
 );
 
-const handleDeleteBooking = async (): Promise<void> => {
+async function handleDeleteBooking(): Promise<void> {
     if (!bookingToEdit) return;
     await deleteBooking(bookingToEdit);
     emit('close');
-};
-const handleSubmit = () => {
+}
+function handleSubmit(): void {
     if (validationError.value) return;
 
     const propertyId = form.value.propertyId;
@@ -126,7 +125,7 @@ const handleSubmit = () => {
         notes: form.value.notes?.trim(),
     });
     emit('close');
-};
+}
 </script>
 
 <template>

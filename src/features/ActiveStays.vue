@@ -11,8 +11,8 @@ const { bookings, today = getCurrentDate() } = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'checkout', booking: Booking): void;
-    (e: 'edit', booking: Booking): void;
+    checkout: [booking: Booking];
+    edit: [booking: Booking];
 }>();
 
 // GUESTS CURRENTLY IN-HOUSE

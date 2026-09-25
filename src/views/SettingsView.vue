@@ -26,9 +26,15 @@ const { properties, sortedProperties } = storeToRefs(propertyStore);
 
 const { isAuthenticated, refreshAuthStatus } = useGoogleSheets();
 
-const handleAddProperty = (): void => modalStore.openPropertyModal();
-const handleEditProperty = (property: Property): void => modalStore.openPropertyModal({ property });
-const handleDeleteProperty = async (id: PropertyId): Promise<void> => {
+onMounted(() => refreshAuthStatus());
+
+function handleAddProperty(): void {
+    modalStore.openPropertyModal();
+}
+function handleEditProperty(property: Property): void {
+    modalStore.openPropertyModal({ property });
+}
+async function handleDeleteProperty(id: PropertyId): Promise<void> {
     const confirmed = window.confirm(
         `Are you sure you want to delete property "${id}"? This will not delete associated bookings in Google Sheets.`
     );
@@ -54,8 +60,8 @@ const handleDeleteProperty = async (id: PropertyId): Promise<void> => {
             description: err instanceof Error ? err.message : 'Database write error.',
         });
     }
-};
-const handleClearBookings = async (): Promise<void> => {
+}
+async function handleClearBookings(): Promise<void> {
     const confirmed = window.confirm(
         'Are you sure you want to clear all local bookings? You can re-import them anytime from Google Sheets.'
     );
@@ -67,8 +73,8 @@ const handleClearBookings = async (): Promise<void> => {
         title: 'Bookings Cleared',
         description: 'IndexedDB bookings table has been cleared.',
     });
-};
-const handleClearFinance = async (): Promise<void> => {
+}
+async function handleClearFinance(): Promise<void> {
     const confirmed = window.confirm(
         'Are you sure you want to clear all local finance? You can re-import them anytime from Google Sheets.'
     );
@@ -87,8 +93,8 @@ const handleClearFinance = async (): Promise<void> => {
         title: 'Finance Cleared',
         description: 'IndexedDB finance table has been cleared.',
     });
-};
-const handleWipeDatabase = async (): Promise<void> => {
+}
+async function handleWipeDatabase(): Promise<void> {
     const confirmed = window.confirm(
         'WARNING: This will erase ALL local properties and bookings. This cannot be undone unless you have a JSON backup.'
     );
@@ -110,9 +116,7 @@ const handleWipeDatabase = async (): Promise<void> => {
         title: 'Database Wiped',
         description: 'All local IndexedDB records have been erased.',
     });
-};
-
-onMounted(() => refreshAuthStatus());
+}
 </script>
 
 <template>

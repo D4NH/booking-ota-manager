@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, useSlots } from 'vue';
 
+// Formatter for dot notation only (1500000 -> "1.500.000")
+const dotFormatter = new Intl.NumberFormat('id-ID', {
+    maximumFractionDigits: 0,
+});
+
 interface Props {
     inputLabel?: string;
     disabled?: boolean;
@@ -18,7 +23,6 @@ const {
     disabled = false,
     required = false,
 } = defineProps<Props>();
-
 const [modelValue, modifiers] = defineModel<string | number | null>({
     default: '',
     set(value) {
@@ -39,12 +43,8 @@ const [modelValue, modifiers] = defineModel<string | number | null>({
 });
 
 const slots = useSlots();
-const isFocused = ref(false);
 
-// Formatter for dot notation only (e.g. 1500000 -> "1.500.000")
-const dotFormatter = new Intl.NumberFormat('id-ID', {
-    maximumFractionDigits: 0,
-});
+const isFocused = ref(false);
 
 /**
  * Switch HTML input type to 'text' for numbers to permit
@@ -54,7 +54,6 @@ const effectiveType = computed(() => {
     if (type === 'number') return 'text';
     return type;
 });
-
 /**
  * Display dot-separated number when blurred, and raw digits when focused.
  */
@@ -62,7 +61,6 @@ const displayValue = computed(() => {
     if (type !== 'number') {
         return modelValue.value ?? '';
     }
-
     // When focused: display raw number without dots
     if (isFocused.value) {
         if (
@@ -74,8 +72,7 @@ const displayValue = computed(() => {
         }
         return String(modelValue.value).replace(/[^0-9-]/g, '');
     }
-
-    // When blurred: display dot notation only (e.g. "1.500.000")
+    // When blurred: display dot notation only ("1.500.000")
     if (modelValue.value !== null && modelValue.value !== undefined && modelValue.value !== '') {
         const num = Number(modelValue.value);
         return isNaN(num) ? '' : dotFormatter.format(num);
@@ -84,7 +81,7 @@ const displayValue = computed(() => {
     return '';
 });
 
-const handleInput = (event: Event): void => {
+function handleInput(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
 
     if (type === 'number') {
@@ -94,17 +91,14 @@ const handleInput = (event: Event): void => {
     } else {
         modelValue.value = inputElement.value;
     }
-};
-
-const handleFocus = (): void => {
+}
+function handleFocus(): void {
     isFocused.value = true;
-};
-
-const handleBlur = (): void => {
+}
+function handleBlur(): void {
     isFocused.value = false;
-};
-
-const handlePaste = (event: ClipboardEvent): void => {
+}
+function handlePaste(event: ClipboardEvent): void {
     if (type !== 'number') return;
 
     event.preventDefault();
@@ -117,7 +111,7 @@ const handlePaste = (event: ClipboardEvent): void => {
     const target = event.target as HTMLInputElement;
     target.value = sanitizedPaste;
     modelValue.value = sanitizedPaste;
-};
+}
 </script>
 
 <template>

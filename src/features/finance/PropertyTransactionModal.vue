@@ -8,24 +8,6 @@ import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface Props {
-    itemToEdit?: PropertyFinance | null;
-    defaultPropertyId?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    itemToEdit: null,
-    defaultPropertyId: 'piyungan',
-});
-
-const emit = defineEmits<{
-    (e: 'closed'): void;
-}>();
-
-const isOpen = defineModel<boolean>({ default: false });
-
-const { addPropertyTransaction, editPropertyTransaction } = useFinanceSync();
-
 const transactionOptions = [
     { label: 'Expense', value: 'expense' },
     { label: 'Income', value: 'income' },
@@ -56,7 +38,20 @@ const categoryOptions = [
     'Other',
 ];
 
-const formPropertyId = ref(props.defaultPropertyId);
+interface Props {
+    itemToEdit?: PropertyFinance | null;
+    defaultPropertyId?: string;
+}
+
+const { itemToEdit = null, defaultPropertyId = 'piyungan' } = defineProps<Props>();
+const emit = defineEmits<{
+    closed: [];
+}>();
+const isOpen = defineModel<boolean>({ default: false });
+
+const { addPropertyTransaction, editPropertyTransaction } = useFinanceSync();
+
+const formPropertyId = ref(defaultPropertyId);
 const formType = ref<PropertyFinanceType>('expense');
 const formCategory = ref<PropertyCategory>('Supplies');
 const formAmount = ref<number | null>(null);
@@ -64,11 +59,11 @@ const formDate = ref(getCurrentDate());
 const formNotes = ref('');
 const isSubmitting = ref(false);
 
-const isEditing = computed(() => Boolean(props.itemToEdit));
+const isEditing = computed(() => Boolean(itemToEdit));
 
 // Populate form when opening or changing edit item
 watch(
-    () => [isOpen.value, props.itemToEdit] as const,
+    () => [isOpen.value, itemToEdit] as const,
     ([open, item]) => {
         if (!open) return;
 
@@ -80,7 +75,7 @@ watch(
             formDate.value = item.date;
             formNotes.value = item.notes || '';
         } else {
-            formPropertyId.value = props.defaultPropertyId;
+            formPropertyId.value = defaultPropertyId;
             formType.value = 'expense';
             formCategory.value = 'Supplies';
             formAmount.value = null;
@@ -91,20 +86,19 @@ watch(
     { immediate: true }
 );
 
-const closeModal = () => {
+function closeModal(): void {
     isOpen.value = false;
     emit('closed');
-};
-
-const submitTransaction = async (): Promise<void> => {
+}
+async function submitTransaction(): Promise<void> {
     if (isSubmitting.value || !formAmount.value || !formDate.value) return;
 
     isSubmitting.value = true;
     try {
         let success = false;
 
-        if (isEditing.value && props.itemToEdit) {
-            success = await editPropertyTransaction(props.itemToEdit.id, {
+        if (isEditing.value && itemToEdit) {
+            success = await editPropertyTransaction(itemToEdit.id, {
                 propertyId: formPropertyId.value,
                 type: formType.value,
                 category: formCategory.value,
@@ -129,7 +123,7 @@ const submitTransaction = async (): Promise<void> => {
     } finally {
         isSubmitting.value = false;
     }
-};
+}
 </script>
 
 <template>
@@ -189,7 +183,7 @@ const submitTransaction = async (): Promise<void> => {
                                 v-model.number="formAmount"
                                 input-label="Amount"
                                 type="number"
-                                placeholder="e.g. 150000"
+                                placeholder="150000"
                                 required>
                                 <template #icon>
                                     <fa-icon

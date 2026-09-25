@@ -18,10 +18,10 @@ export function useBookingSync() {
     /**
      * Internal helper to execute async booking mutations with toast notifications.
      */
-    const runWithToast = async <T>(
+    async function runWithToast<T>(
         action: () => Promise<T>,
         messages: ToastMessages
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         try {
             await toast.loading(action, {
                 loading: {
@@ -45,12 +45,11 @@ export function useBookingSync() {
             console.error(`${messages.errorTitle}:`, err);
             return false;
         }
-    };
-
-    const saveBooking = async (
+    }
+    async function saveBooking(
         payload: Omit<Booking, 'id' | 'createdAt'>,
         bookingToEdit?: Booking | null
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         const isEditing = Boolean(bookingToEdit);
 
         return runWithToast(
@@ -74,12 +73,11 @@ export function useBookingSync() {
                 errorTitle: 'Save failed',
             }
         );
-    };
-
-    const updateBookingStatus = async (
+    }
+    async function updateBookingStatus(
         booking: Booking,
         newStatus: Booking['status']
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         return runWithToast(
             async () => {
                 await bookingStore.updateBookingWithRemoteSync(
@@ -95,12 +93,11 @@ export function useBookingSync() {
                 errorTitle: 'Update failed',
             }
         );
-    };
-
-    const markBookingComplete = (booking: Booking): Promise<boolean> =>
-        updateBookingStatus(booking, 'Completed');
-
-    const deleteBooking = async (booking: Booking): Promise<boolean> => {
+    }
+    function markBookingComplete(booking: Booking): Promise<boolean> {
+        return updateBookingStatus(booking, 'Completed');
+    }
+    async function deleteBooking(booking: Booking): Promise<boolean> {
         const confirmed = window.confirm(
             `Are you sure you want to delete booking ${booking.bookingId} (${booking.guestName})? This will remove it from Google Sheets & Calendar first.`
         );
@@ -122,9 +119,8 @@ export function useBookingSync() {
                 errorTitle: 'Delete failed',
             }
         );
-    };
-
-    const clearAllLocalBookings = async (): Promise<boolean> => {
+    }
+    async function clearAllLocalBookings(): Promise<boolean> {
         const confirmed = window.confirm(
             'Are you sure you want to delete ALL local bookings? This cannot be undone.'
         );
@@ -138,7 +134,7 @@ export function useBookingSync() {
             successDesc: 'All local bookings have been deleted successfully.',
             errorTitle: 'Clear failed',
         });
-    };
+    }
 
     return {
         saveBooking,

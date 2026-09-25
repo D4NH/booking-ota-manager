@@ -23,7 +23,7 @@ export const MONTH_NAMES: string[] = [
     'December',
 ];
 
-export const SHORT_MONTH_NAMES: string[] = [
+export const MONTH_NAMES_SHORT: string[] = [
     'Jan',
     'Feb',
     'Mar',

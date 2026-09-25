@@ -13,10 +13,6 @@ import TransactionNote from '@/components/TransactionNote.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
 import PropertyTransactionModal from '@/features/finance/PropertyTransactionModal.vue';
 
-const financeStore = useFinanceStore();
-const { removePropertyTransaction } = useFinanceSync();
-const { filteredPropertyFinances } = storeToRefs(financeStore);
-
 const categoryOptions = [
     'All categories',
     'Cleaning',
@@ -32,11 +28,14 @@ const categoryOptions = [
     'Taxes, Permits & Insurance',
 ];
 
+const financeStore = useFinanceStore();
+const { removePropertyTransaction } = useFinanceSync();
+const { filteredPropertyFinances } = storeToRefs(financeStore);
+
 const isModalOpen = ref(false);
 const isTransferModalOpen = ref(false);
 const filterCategory = ref<string>('All categories');
 const editingItem = ref<PropertyFinance | null>(null);
-
 const currentPage = ref(1);
 const pageSize = ref(10);
 
@@ -44,7 +43,6 @@ const displayedTransactions = computed(() => {
     if (filterCategory.value === 'All categories') return filteredPropertyFinances.value;
     return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
 });
-
 const totalItems = computed(() => displayedTransactions.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value) || 1);
 const paginatedTransactions = computed(() => {
@@ -57,26 +55,24 @@ const startItemIndex = computed(() => {
 });
 const endItemIndex = computed(() => Math.min(currentPage.value * pageSize.value, totalItems.value));
 
-const goToPage = (page: number): void => {
-    if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
-    }
-};
-
-const openAddModal = (): void => {
-    editingItem.value = null;
-    isModalOpen.value = true;
-};
-
-const openEditModal = (item: PropertyFinance): void => {
-    if (item.id.startsWith('dexie-')) return;
-    editingItem.value = item;
-    isModalOpen.value = true;
-};
-
 watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
     currentPage.value = 1;
 });
+
+function goToPage(page: number): void {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+}
+function openAddModal(): void {
+    editingItem.value = null;
+    isModalOpen.value = true;
+}
+function openEditModal(item: PropertyFinance): void {
+    if (item.id.startsWith('dexie-')) return;
+    editingItem.value = item;
+    isModalOpen.value = true;
+}
 </script>
 
 <template>

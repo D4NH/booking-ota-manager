@@ -29,9 +29,9 @@ const visibleList = computed<ProjectedRecurringItem[]>(() => {
 const totalPendingCount = computed(() => baseList.value.filter((i) => !i.isSettled).length);
 const totalSettledCount = computed(() => baseList.value.filter((i) => i.isSettled).length);
 
-const handleSettle = async (item: ProjectedRecurringItem): Promise<void> => {
+async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
     await settleRecurringCommitment(item);
-};
+}
 </script>
 
 <template>

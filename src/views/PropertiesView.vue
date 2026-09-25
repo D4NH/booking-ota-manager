@@ -21,11 +21,10 @@ import MonthlyEarnings from '@/features/properties/MonthlyEarnings.vue';
 import AnnualRevenue from '@/features/properties/AnnualRevenue.vue';
 
 const router = useRouter();
+const bookingStore = useBookingStore();
+const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
-const bookingStore = useBookingStore();
-
-const { bookings } = storeToRefs(bookingStore);
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
@@ -38,11 +37,13 @@ const visibleProperties = computed(() =>
     isPropertiesExpanded.value ? sortedProperties.value : sortedProperties.value.slice(0, 2)
 );
 
-const handleNavigate = (target: PropertyId | 'all'): void => {
+function handleNavigate(target: PropertyId | 'all'): void {
     if (target === 'all') return;
     router.push({ name: 'property-detail', params: { id: target } });
-};
-const handleAddProperty = () => modalStore.openPropertyModal();
+}
+function handleAddProperty(): void {
+    modalStore.openPropertyModal();
+}
 </script>
 
 <template>

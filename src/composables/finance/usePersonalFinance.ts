@@ -76,36 +76,6 @@ export function usePersonalFinance(
         dynamicSavingsAccounts.value.reduce((sum, acc) => sum + acc.balance, 0)
     );
 
-    // Current Month Income & Expense Resolvers
-    const calculateRevenueForOwner = (
-        ownerName: PersonalFinance['owner'],
-        targetMonth: string
-    ): number => {
-        let sum = 0;
-        const list = personalFinances.value;
-        for (let i = 0; i < list.length; i++) {
-            const item = list[i];
-            if (!item || item.owner !== ownerName || !isDateInMonth(item.date, targetMonth))
-                continue;
-            if (item.type === 'income') sum += Number(item.amount);
-        }
-        return sum;
-    };
-    const calculateExpensesForOwner = (
-        ownerName: PersonalFinance['owner'],
-        targetMonth: string
-    ): number => {
-        let sum = 0;
-        const list = personalFinances.value;
-        for (let i = 0; i < list.length; i++) {
-            const item = list[i];
-            if (!item || item.owner !== ownerName || !isDateInMonth(item.date, targetMonth))
-                continue;
-            if (item.type === 'expense' || item.type === 'fixed_cost') sum += Number(item.amount);
-        }
-        return sum;
-    };
-
     // Current Month Metrics
     const danhMonthlyRevenue = computed<number>(() =>
         calculateRevenueForOwner('Danh Nguyen', selectedMonth.value)
@@ -222,6 +192,35 @@ export function usePersonalFinance(
         calculateGrowthPct(sharedMonthlyExpenses.value, sharedPreviousMonthExpenses.value)
     );
 
+    // Current Month Income & Expense Resolvers
+    function calculateRevenueForOwner(
+        ownerName: PersonalFinance['owner'],
+        targetMonth: string
+    ): number {
+        let sum = 0;
+        const list = personalFinances.value;
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            if (!item || item.owner !== ownerName || !isDateInMonth(item.date, targetMonth))
+                continue;
+            if (item.type === 'income') sum += Number(item.amount);
+        }
+        return sum;
+    }
+    function calculateExpensesForOwner(
+        ownerName: PersonalFinance['owner'],
+        targetMonth: string
+    ): number {
+        let sum = 0;
+        const list = personalFinances.value;
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            if (!item || item.owner !== ownerName || !isDateInMonth(item.date, targetMonth))
+                continue;
+            if (item.type === 'expense' || item.type === 'fixed_cost') sum += Number(item.amount);
+        }
+        return sum;
+    }
     async function addPersonalTransaction(payload: Omit<PersonalFinance, 'id'>): Promise<void> {
         if (!SPREADSHEET_ID) {
             throw new Error('Missing Google Sheets database configuration. Operation aborted.');

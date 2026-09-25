@@ -3,28 +3,6 @@ import { ref, watch, computed } from 'vue';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Property, PropertyId } from '@/types/property';
 
-interface PropertyFormState extends Omit<Property, 'coordinates' | 'wifi'> {
-    coordinates: {
-        lat: number;
-        lng: number;
-    };
-    wifi: {
-        ssid: string;
-        pwd: string;
-    };
-}
-
-const { propertyToEdit = null } = defineProps<{
-    propertyToEdit?: Property | null;
-}>();
-
-const emit = defineEmits<{
-    close: [];
-    save: [payload: Property];
-}>();
-
-const propertyStore = usePropertyStore();
-
 const createFormData = (source?: Partial<Property> | null): PropertyFormState => ({
     id: source?.id || ('' as PropertyId),
     name: source?.name || '',
@@ -46,24 +24,53 @@ const createFormData = (source?: Partial<Property> | null): PropertyFormState =>
     available: source?.available || false,
 });
 
+interface PropertyFormState extends Omit<Property, 'coordinates' | 'wifi'> {
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
+    wifi: {
+        ssid: string;
+        pwd: string;
+    };
+}
+
+const { propertyToEdit = null } = defineProps<{
+    propertyToEdit?: Property | null;
+}>();
+const emit = defineEmits<{
+    close: [];
+    save: [payload: Property];
+}>();
+
+const propertyStore = usePropertyStore();
+
 const form = ref<PropertyFormState>(createFormData());
 
 const isEditing = computed(() => Boolean(propertyToEdit?.id));
 
-const sanitizePrice = (event: Event) => {
+watch(
+    () => propertyToEdit,
+    (newVal) => {
+        form.value = createFormData(newVal);
+    },
+    { immediate: true }
+);
+
+function sanitizePrice(event: Event): void {
     const target = event.target as HTMLInputElement;
     const cleanedString = target.value.replace(/\D/g, '');
     form.value.price = cleanedString ? parseInt(cleanedString, 10) : 0;
     target.value = cleanedString;
-};
-const handleDeleteProperty = async (): Promise<void> => {
+}
+async function handleDeleteProperty(): Promise<void> {
     if (!propertyToEdit) return;
     if (window.confirm(`Delete property ${propertyToEdit}?`)) {
         await propertyStore.deleteProperty(propertyToEdit?.id);
         emit('close');
     }
-};
-const handleSubmit = () => {
+}
+function handleSubmit(): void {
     if (!form.value.name || !form.value.codePrefix) return;
 
     const generatedId = (form.value.id ||
@@ -79,15 +86,7 @@ const handleSubmit = () => {
 
     emit('save', payload);
     emit('close');
-};
-
-watch(
-    () => propertyToEdit,
-    (newVal) => {
-        form.value = createFormData(newVal);
-    },
-    { immediate: true }
-);
+}
 </script>
 
 <template>

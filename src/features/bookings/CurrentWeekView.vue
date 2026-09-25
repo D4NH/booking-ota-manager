@@ -15,7 +15,6 @@ interface Props {
 }
 
 const { selectedProperty = 'all', showHeader = true } = defineProps<Props>();
-
 const modalStore = useModalStore();
 
 const { unitBookings: filteredBookings } = usePropertyDetails(() => selectedProperty);
@@ -50,15 +49,16 @@ const weekRangeLabel = computed(() => {
     return `${formatDate(first.dateStr, { shortMonth: true })} → ${formatDate(last.dateStr, { shortMonth: true })}`;
 });
 
-const handleCellClick = (dateStr: string) =>
+function handleCellClick(dateStr: string) {
     modalStore.openBookingModal({
         checkInDate: dateStr,
         propertyId: selectedProperty !== 'all' ? selectedProperty : undefined,
     });
-const handleBookingClick = (booking: Booking, event: Event) => {
+}
+function handleBookingClick(booking: Booking, event: Event) {
     event.stopPropagation();
     modalStore.openBookingModal({ booking });
-};
+}
 </script>
 
 <template>

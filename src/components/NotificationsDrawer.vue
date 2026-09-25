@@ -18,7 +18,6 @@ const {
     pendingPayouts = [],
     stagedBookings = [],
 } = defineProps<Props>();
-
 const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'mark-complete', booking: Booking): void;

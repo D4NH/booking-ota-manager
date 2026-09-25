@@ -1,4 +1,3 @@
-// src/utils/lockbox.ts
 import type { Booking } from '@/types/booking';
 
 export interface LockboxContext {

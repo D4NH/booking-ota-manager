@@ -10,6 +10,14 @@ import type { PropertyId } from '@/types/property';
 import { calculateNights } from '@/utils/date';
 import { toast } from 'vue-toastflow';
 
+const listingChannels: BookingChannel[] = [
+    'Airbnb',
+    'Booking.com',
+    'Tiket.com',
+    'Trip.com',
+    'Whatsapp',
+];
+
 interface Props {
     modelValue?: boolean;
     booking?: StagedBooking | null;
@@ -17,7 +25,6 @@ interface Props {
 }
 
 const { modelValue = false, booking = null, stagingSpreadsheetId } = defineProps<Props>();
-
 const emit = defineEmits<{
     'update:modelValue': [val: boolean];
     approved: [bookingId: string];
@@ -30,7 +37,6 @@ const { saveBooking } = useBookingSync();
 const { deleteSheetRowById, updateCalendarEventSummary } = useGoogleSheets();
 
 const isProcessing = ref(false);
-
 const formPropertyId = ref<PropertyId>('piyungan');
 const formBookingId = ref('');
 const formListing = ref<BookingChannel>('Airbnb');
@@ -39,14 +45,6 @@ const formCheckIn = ref('');
 const formCheckOut = ref('');
 const formPayout = ref<number | null>(null);
 const formNotes = ref('');
-
-const listingChannels: BookingChannel[] = [
-    'Airbnb',
-    'Booking.com',
-    'Tiket.com',
-    'Trip.com',
-    'Whatsapp',
-];
 
 const computedNights = computed(() => {
     if (!formCheckIn.value || !formCheckOut.value) return 1;
@@ -64,10 +62,27 @@ const formHasConflict = computed(() => {
     );
 });
 
-const closeModal = (): void => {
+watch(
+    () => booking,
+    (item) => {
+        if (item) {
+            formPropertyId.value = item.propertyId || 'piyungan';
+            formBookingId.value = item.bookingId || '';
+            formListing.value = item.listing || 'Airbnb';
+            formGuestName.value = item.guestName || '';
+            formCheckIn.value = item.checkIn || '';
+            formCheckOut.value = item.checkOut || '';
+            formPayout.value = item.payout || 0;
+            formNotes.value = item.notes || '';
+        }
+    },
+    { immediate: true }
+);
+
+function closeModal(): void {
     emit('update:modelValue', false);
-};
-const handleApprove = async (): Promise<void> => {
+}
+async function handleApprove(): Promise<void> {
     if (isProcessing.value || !booking) return;
 
     if (!formCheckIn.value || !formCheckOut.value || !formGuestName.value) {
@@ -139,8 +154,8 @@ const handleApprove = async (): Promise<void> => {
             isProcessing.value = false;
         }, 500);
     }
-};
-const handleReject = async (): Promise<void> => {
+}
+async function handleReject(): Promise<void> {
     if (!booking) return;
 
     const confirmed = window.confirm(
@@ -183,24 +198,7 @@ const handleReject = async (): Promise<void> => {
     } catch (e) {
         console.error('Rejection failed:', e);
     }
-};
-
-watch(
-    () => booking,
-    (item) => {
-        if (item) {
-            formPropertyId.value = item.propertyId || 'piyungan';
-            formBookingId.value = item.bookingId || '';
-            formListing.value = item.listing || 'Airbnb';
-            formGuestName.value = item.guestName || '';
-            formCheckIn.value = item.checkIn || '';
-            formCheckOut.value = item.checkOut || '';
-            formPayout.value = item.payout || 0;
-            formNotes.value = item.notes || '';
-        }
-    },
-    { immediate: true }
-);
+}
 </script>
 
 <template>
@@ -399,7 +397,7 @@ watch(
                 <div class="flex justify-between items-center pt-3 border-t border-mist-800">
                     <button
                         type="button"
-                        class="text-xs text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                        class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition cursor-pointer"
                         @click="handleReject">
                         Reject
                     </button>
@@ -407,14 +405,14 @@ watch(
                     <div class="flex items-center gap-2">
                         <button
                             type="button"
-                            class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200 cursor-pointer"
+                            class="text-xs px-3 py-2 font-semibold text-mist-400 hover:text-mist-200 cursor-pointer"
                             @click="closeModal">
                             Cancel
                         </button>
                         <button
                             type="submit"
                             :disabled="isProcessing"
-                            class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5 cursor-pointer">
+                            class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5 cursor-pointer">
                             <span
                                 v-if="isProcessing"
                                 class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin" />

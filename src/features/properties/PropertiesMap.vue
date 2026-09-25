@@ -6,23 +6,29 @@ import { getPropertyStyle } from '@/config/properties';
 import { formatIDR } from '@/utils/money';
 import type { Property, PropertyId } from '@/types/property';
 
+let map: L.Map | null = null;
+const markersMap = new Map<PropertyId, L.Marker>();
+const INITIAL_CENTER: [number, number] = [-7.8385 - 0.06, 110.4632];
+const INITIAL_ZOOM = 11;
+
 const { properties } = defineProps<{
     properties: Property[];
 }>();
-
 const emit = defineEmits<{
-    (e: 'select-property', id: PropertyId | 'all'): void;
+    'select-property': [id: PropertyId | 'all'];
 }>();
 
 const mapContainer = ref<HTMLElement | null>(null);
 
-let map: L.Map | null = null;
-const markersMap = new Map<PropertyId, L.Marker>();
+onMounted(() => initMap());
+onBeforeUnmount(() => {
+    if (map) {
+        map.remove();
+        map = null;
+    }
+});
 
-const INITIAL_CENTER: [number, number] = [-7.8385 - 0.06, 110.4632];
-const INITIAL_ZOOM = 11;
-
-const createPropertyPin = (prop: Property) => {
+function createPropertyPin(prop: Property) {
     const theme = getPropertyStyle(prop.id);
     const propPrice = formatIDR(prop.price);
 
@@ -41,8 +47,8 @@ const createPropertyPin = (prop: Property) => {
         iconAnchor: [50, 15],
         popupAnchor: [0, -18],
     });
-};
-const initMap = async () => {
+}
+async function initMap() {
     if (!mapContainer.value) return;
 
     await nextTick();
@@ -99,8 +105,8 @@ const initMap = async () => {
     });
 
     renderMarkers();
-};
-const renderMarkers = () => {
+}
+function renderMarkers(): void {
     if (!map) return;
 
     markersMap.clear();
@@ -135,16 +141,7 @@ const renderMarkers = () => {
         marker.addTo(map);
         markersMap.set(prop.id, marker);
     });
-};
-
-onMounted(() => initMap());
-
-onBeforeUnmount(() => {
-    if (map) {
-        map.remove();
-        map = null;
-    }
-});
+}
 </script>
 
 <template>

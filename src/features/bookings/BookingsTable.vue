@@ -14,43 +14,37 @@ interface Props {
     currentDateKey?: string;
 }
 
-interface Emits {
-    (e: 'update:collapsedMonths', value: string[]): void;
-    (e: 'edit', booking: Booking): void;
-    (e: 'delete', booking: Booking): void;
-}
-
 const {
     groups,
     showPropertyColumn = false,
     currentMonthKey = '',
     currentDateKey = '',
 } = defineProps<Props>();
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+    'update:collapsedMonths': [value: string[]];
+    edit: [booking: Booking];
+    delete: [booking: Booking];
+}>();
 
 const collapsedMonths = defineModel<string[]>('collapsedMonths', { default: () => [] });
-
 const collapsedSet = computed(() => new Set(collapsedMonths.value));
-
 const colSpan = computed(() => (showPropertyColumn ? 7 : 6));
 
-const toggleMonth = (key: string): void => {
+function toggleMonth(key: string): void {
     if (collapsedSet.value.has(key)) {
         collapsedMonths.value = collapsedMonths.value.filter((m) => m !== key);
     } else {
         collapsedMonths.value = [...collapsedMonths.value, key];
     }
-};
-
-const isCurrentBooking = (b: Booking): boolean => {
+}
+function isCurrentBooking(b: Booking): boolean {
     if (!currentDateKey) return false;
     return (
         currentDateKey >= b.checkIn &&
         currentDateKey <= b.checkOut &&
         b.status !== 'Waiting for payout'
     );
-};
+}
 </script>
 
 <template>

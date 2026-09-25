@@ -42,14 +42,14 @@ export function usePropertyDetails(
     const { bookings } = storeToRefs(bookingStore);
     const { properties } = storeToRefs(propertyStore);
 
+    const dailyOps = useDailyOperations(bookings, {
+        propertyId: () => id.value,
+    });
+
     const id = computed(() => toValue(propertyIdSource));
     const selectedProperty = computed<Property | undefined>(() =>
         id.value === 'all' ? undefined : properties.value.find((p) => p.id === id.value)
     );
-
-    const dailyOps = useDailyOperations(bookings, {
-        propertyId: () => id.value,
-    });
 
     const lockboxInfo = computed(() =>
         getActiveLockboxBooking({
@@ -105,7 +105,6 @@ export function usePropertyDetails(
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0];
     });
     const currentDay = computed(() => getCurrentDate());
-
     const todayTurnover = computed(() => {
         const departures = dailyOps.todaysDepartures.value;
         const arrivals = dailyOps.todaysArrivals.value;

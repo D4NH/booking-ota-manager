@@ -8,12 +8,6 @@ import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { calculateNights } from '@/utils/date';
 
 export const useBookingStore = defineStore('booking', () => {
-    const bookings = ref<Booking[]>([]);
-
-    const loadBookings = async (): Promise<void> => {
-        bookings.value = await db.bookings.toArray();
-    };
-
     const formatSheetRow = (
         b: Omit<Booking, 'id' | 'createdAt'> & { calendarEventId?: string }
     ): (string | number)[] => [
@@ -30,12 +24,18 @@ export const useBookingStore = defineStore('booking', () => {
         b.calendarEventId || '',
     ];
 
-    const hasDateConflict = (
+    const bookings = ref<Booking[]>([]);
+
+    async function loadBookings(): Promise<void> {
+        bookings.value = await db.bookings.toArray();
+    }
+
+    function hasDateConflict(
         propertyId: PropertyId,
         checkIn: string,
         checkOut: string,
         excludeBookingId?: string
-    ): Booking | null => {
+    ): Booking | null {
         if (!checkIn || !checkOut || checkIn >= checkOut) return null;
 
         const targetBookings = bookings.value.filter(
@@ -47,9 +47,9 @@ export const useBookingStore = defineStore('booking', () => {
 
         const conflict = targetBookings.find((b) => checkIn < b.checkOut && checkOut > b.checkIn);
         return conflict || null;
-    };
+    }
 
-    const addBooking = async (payload: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking> => {
+    async function addBooking(payload: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking> {
         const newId =
             typeof crypto !== 'undefined' && crypto.randomUUID
                 ? crypto.randomUUID()
@@ -67,9 +67,8 @@ export const useBookingStore = defineStore('booking', () => {
         await db.bookings.add(newBooking);
         bookings.value = [...bookings.value, newBooking];
         return newBooking;
-    };
-
-    const updateBooking = async (updated: Booking): Promise<void> => {
+    }
+    async function updateBooking(updated: Booking): Promise<void> {
         const recordToPut = {
             ...updated,
             nights: calculateNights(updated.checkIn, updated.checkOut),
@@ -91,9 +90,8 @@ export const useBookingStore = defineStore('booking', () => {
         } else {
             bookings.value.push(recordToPut);
         }
-    };
-
-    const deleteBooking = async (idOrBookingId: string): Promise<void> => {
+    }
+    async function deleteBooking(idOrBookingId: string): Promise<void> {
         if (!idOrBookingId) return;
 
         const target = bookings.value.find(
@@ -106,14 +104,14 @@ export const useBookingStore = defineStore('booking', () => {
         bookings.value = bookings.value.filter(
             (b) => b.id !== targetId && b.bookingId !== targetId
         );
-    };
+    }
 
-    const clearAllLocalBookings = async (): Promise<void> => {
+    async function clearAllLocalBookings(): Promise<void> {
         await db.bookings.clear();
         await loadBookings();
-    };
+    }
 
-    const addBookingWithRemoteSync = async (
+    async function addBookingWithRemoteSync(
         payload: Omit<Booking, 'id' | 'createdAt'>,
         sheetsApi: {
             appendSheetRow: (
@@ -123,7 +121,7 @@ export const useBookingStore = defineStore('booking', () => {
                 calendarId?: string
             ) => Promise<string>;
         }
-    ): Promise<void> => {
+    ): Promise<void> {
         const config = PROPERTY_CONFIGS[payload.propertyId as PropertyId];
         const targetSheetId = config?.spreadsheetId;
         const targetCalendarId = config?.calendarId;
@@ -148,9 +146,8 @@ export const useBookingStore = defineStore('booking', () => {
             ...payloadWithNights,
             ...(calendarEventId ? { calendarEventId } : {}),
         });
-    };
-
-    const updateBookingWithRemoteSync = async (
+    }
+    async function updateBookingWithRemoteSync(
         updated: Booking,
         sheetsApi: {
             updateSheetRowByBookingId: (
@@ -161,7 +158,7 @@ export const useBookingStore = defineStore('booking', () => {
                 calendarId?: string
             ) => Promise<void>;
         }
-    ): Promise<void> => {
+    ): Promise<void> {
         const config = PROPERTY_CONFIGS[updated.propertyId as PropertyId];
         const targetSheetId = config?.spreadsheetId;
         const targetCalendarId = config?.calendarId;
@@ -184,9 +181,8 @@ export const useBookingStore = defineStore('booking', () => {
         );
 
         await updateBooking(updatedWithNights);
-    };
-
-    const deleteBookingWithRemoteSync = async (
+    }
+    async function deleteBookingWithRemoteSync(
         booking: Booking,
         sheetsApi: {
             deleteSheetRowByBookingId: (
@@ -195,7 +191,7 @@ export const useBookingStore = defineStore('booking', () => {
                 calendarId?: string
             ) => Promise<void>;
         }
-    ): Promise<void> => {
+    ): Promise<void> {
         const config = PROPERTY_CONFIGS[booking.propertyId as PropertyId];
         const targetSheetId = config?.spreadsheetId;
         const targetCalendarId = config?.calendarId;
@@ -219,35 +215,34 @@ export const useBookingStore = defineStore('booking', () => {
         } else {
             await deleteBooking(booking.bookingId);
         }
-    };
-
-    const updateBookingStatusWithSync = async (
+    }
+    async function updateBookingStatusWithSync(
         booking: Booking,
         newStatus: BookingStatus,
         sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
-    ): Promise<void> => {
+    ): Promise<void> {
         const updatedBooking: Booking = {
             ...booking,
             status: newStatus,
         };
 
         await updateBookingWithRemoteSync(updatedBooking, sheetsApi);
-    };
+    }
 
-    const markBookingComplete = async (
+    async function markBookingComplete(
         booking: Booking,
         sheetsApi: Parameters<typeof updateBookingWithRemoteSync>[1]
-    ): Promise<void> => {
+    ): Promise<void> {
         await updateBookingStatusWithSync(booking, 'Completed', sheetsApi);
-    };
+    }
 
     /**
      * Imports and synchronizes bookings from Google Sheets rows into local Dexie database.
      */
-    const importBookingsFromGoogleSheets = async (
+    async function importBookingsFromGoogleSheets(
         propertyId: PropertyId,
         rows: (string | number)[][]
-    ): Promise<SyncResult> => {
+    ): Promise<SyncResult> {
         let importedCount = 0;
         let updatedCount = 0;
         let deletedCount = 0;
@@ -453,7 +448,7 @@ export const useBookingStore = defineStore('booking', () => {
 
         await loadBookings();
         return { importedCount, updatedCount, deletedCount, logs };
-    };
+    }
 
     return {
         bookings,

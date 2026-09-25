@@ -37,7 +37,12 @@ const buttonLabel = computed(() => {
     return 'Sync All';
 });
 
-const handleSync = async (): Promise<void> => {
+onMounted(() => {
+    refreshAuthStatus();
+    window.addEventListener('focus', refreshAuthStatus);
+});
+
+async function handleSync(): Promise<void> {
     if (isSyncing.value) return;
 
     refreshAuthStatus();
@@ -150,12 +155,7 @@ const handleSync = async (): Promise<void> => {
     } finally {
         isSyncing.value = false;
     }
-};
-
-onMounted(() => {
-    refreshAuthStatus();
-    window.addEventListener('focus', refreshAuthStatus);
-});
+}
 </script>
 
 <template>

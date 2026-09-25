@@ -12,34 +12,28 @@ import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface Props {
-    preselectedKey?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    preselectedKey: '',
-});
-
-const emit = defineEmits<{
-    (e: 'closed'): void;
-}>();
-
-const isOpen = defineModel<boolean>({ default: false });
-
-const financeStore = useFinanceStore();
-const { dynamicSavingsAccounts } = storeToRefs(financeStore);
-const { addPersonalTransaction, addSharedTransaction } = useFinanceSync();
-
 const SAVINGS_INSTITUTIONS = ['BCA', 'Bank Jago', 'Blu by BCA', 'Seabank', 'Mandiri', 'Bibit'];
-
 const targetOptions = [
     { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
     { label: 'Shared', value: 'Shared' },
 ];
 
-const isSubmitting = ref(false);
+interface Props {
+    preselectedKey?: string;
+}
 
+const { preselectedKey = '' } = defineProps<Props>();
+const emit = defineEmits<{
+    closed: [];
+}>();
+const isOpen = defineModel<boolean>({ default: false });
+
+const financeStore = useFinanceStore();
+const { dynamicSavingsAccounts } = storeToRefs(financeStore);
+const { addPersonalTransaction, addSharedTransaction } = useFinanceSync();
+
+const isSubmitting = ref(false);
 const transferForm = ref({
     sourceKey: '',
     destinationType: 'checking' as 'savings' | 'checking',
@@ -56,18 +50,16 @@ const accountOptions = computed(() =>
         value: account.key,
     }))
 );
-
 const selectedSourceAccount = computed(() =>
     dynamicSavingsAccounts.value.find((acc) => acc.key === transferForm.value.sourceKey)
 );
 
-// Reset & initialize form whenever modal opens
 watch(
     () => isOpen.value,
     (open) => {
         if (!open) return;
 
-        const defaultSource = props.preselectedKey || dynamicSavingsAccounts.value[0]?.key || '';
+        const defaultSource = preselectedKey || dynamicSavingsAccounts.value[0]?.key || '';
         const firstAcc = dynamicSavingsAccounts.value.find((a) => a.key === defaultSource);
 
         transferForm.value = {
@@ -84,12 +76,11 @@ watch(
     { immediate: true }
 );
 
-const closeModal = () => {
+function closeModal(): void {
     isOpen.value = false;
     emit('closed');
-};
-
-const executeSavingsTransfer = async () => {
+}
+async function executeSavingsTransfer(): Promise<void> {
     const source = selectedSourceAccount.value;
     const amountNum = Number(transferForm.value.amount);
 
@@ -218,7 +209,7 @@ const executeSavingsTransfer = async () => {
     } finally {
         isSubmitting.value = false;
     }
-};
+}
 </script>
 
 <template>

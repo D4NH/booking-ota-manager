@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-const { text, characters = '!@#$%^&*()_+-=~0123456789' } = defineProps<{
+interface Props {
     text: string | undefined;
     characters?: string;
-}>();
+}
+
+const { text, characters = '!@#$%^&*()_+-=~0123456789' } = defineProps<Props>();
 
 const isHovered = ref(false);
 

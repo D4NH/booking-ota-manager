@@ -2,12 +2,10 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, useSlots } from 'vue';
 
 export type DropdownValue = string | number | boolean | null;
-
 export interface DropdownOption<V = DropdownValue> {
     label: string;
     value: V;
 }
-
 export type DropdownItem<V = DropdownValue> = DropdownOption<V> | string | number;
 
 interface Props {
@@ -17,8 +15,6 @@ interface Props {
 }
 
 const { inputLabel = '', options = [], placeholder = '--' } = defineProps<Props>();
-
-// ✅ Allows numbers (like priority), strings, or unions
 const modelValue = defineModel<T | DropdownValue | undefined>();
 
 const slots = useSlots();
@@ -49,42 +45,6 @@ const selectedLabel = computed<string>(() => {
     return placeholder;
 });
 
-const updateCoordinates = (): void => {
-    if (!triggerButtonRef.value) return;
-    const rect = triggerButtonRef.value.getBoundingClientRect();
-
-    coords.value = {
-        top: rect.bottom,
-        left: rect.left,
-        width: rect.width,
-    };
-};
-
-const toggleDropdown = async (): Promise<void> => {
-    isOpen.value = !isOpen.value;
-    if (isOpen.value) {
-        await nextTick();
-        updateCoordinates();
-    }
-};
-
-const selectOption = (option: DropdownOption<T | DropdownValue>): void => {
-    modelValue.value = option.value as T;
-    isOpen.value = false;
-};
-
-const handleClickOutside = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    if (
-        triggerButtonRef.value &&
-        !triggerButtonRef.value.contains(target) &&
-        dropdownMenuRef.value &&
-        !dropdownMenuRef.value.contains(target)
-    ) {
-        isOpen.value = false;
-    }
-};
-
 onMounted(() => {
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('resize', updateCoordinates);
@@ -96,6 +56,39 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateCoordinates);
     window.removeEventListener('scroll', updateCoordinates, { capture: true });
 });
+
+function updateCoordinates(): void {
+    if (!triggerButtonRef.value) return;
+    const rect = triggerButtonRef.value.getBoundingClientRect();
+
+    coords.value = {
+        top: rect.bottom,
+        left: rect.left,
+        width: rect.width,
+    };
+}
+async function toggleDropdown(): Promise<void> {
+    isOpen.value = !isOpen.value;
+    if (isOpen.value) {
+        await nextTick();
+        updateCoordinates();
+    }
+}
+function selectOption(option: DropdownOption<T | DropdownValue>): void {
+    modelValue.value = option.value as T;
+    isOpen.value = false;
+}
+function handleClickOutside(event: MouseEvent): void {
+    const target = event.target as Node;
+    if (
+        triggerButtonRef.value &&
+        !triggerButtonRef.value.contains(target) &&
+        dropdownMenuRef.value &&
+        !dropdownMenuRef.value.contains(target)
+    ) {
+        isOpen.value = false;
+    }
+}
 </script>
 
 <template>

@@ -8,9 +8,8 @@ const { bookings, today = getCurrentDate() } = defineProps<{
     bookings: Booking[];
     today?: string;
 }>();
-
 const emit = defineEmits<{
-    (e: 'select-booking', booking: Booking): void;
+    'select-booking': [booking: Booking];
 }>();
 
 const upcomingEvents = computed(() => {

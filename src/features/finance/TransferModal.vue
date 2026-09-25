@@ -9,20 +9,6 @@ import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface Props {
-    modelValue?: boolean;
-}
-
-const { modelValue = false } = defineProps<Props>();
-
-const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
-}>();
-
-const financeStore = useFinanceStore();
-const { executeOwnerTransfer } = useFinanceSync();
-const { isLoading } = storeToRefs(financeStore);
-
 const sourceOptions = [{ label: 'Mai House Jogja', value: 'piyungan' }];
 const targetOptions = [
     { label: 'Shared Household', value: 'Shared' },
@@ -30,6 +16,19 @@ const targetOptions = [
     { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
 ];
+
+interface Props {
+    modelValue?: boolean;
+}
+
+const { modelValue = false } = defineProps<Props>();
+const emit = defineEmits<{
+    'update:modelValue': [value: boolean];
+}>();
+
+const financeStore = useFinanceStore();
+const { executeOwnerTransfer } = useFinanceSync();
+const { isLoading } = storeToRefs(financeStore);
 
 const sourcePropertyId = ref('piyungan');
 const targetAccount = ref<TransferTargetAccount>('Split');
@@ -40,10 +39,10 @@ const isSubmitting = ref(false);
 
 const isBothMode = computed(() => targetAccount.value === 'Split');
 
-const closeModal = (): void => {
+function closeModal(): void {
     emit('update:modelValue', false);
-};
-const handleTransfer = async (): Promise<void> => {
+}
+async function handleTransfer(): Promise<void> {
     if (isSubmitting.value || !amount.value || !date.value) return;
 
     isSubmitting.value = true;
@@ -69,7 +68,7 @@ const handleTransfer = async (): Promise<void> => {
             isSubmitting.value = false;
         }, 1000);
     }
-};
+}
 </script>
 
 <template>

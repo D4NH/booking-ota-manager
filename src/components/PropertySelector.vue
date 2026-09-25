@@ -10,22 +10,20 @@ interface Props {
     showAll?: boolean;
 }
 
-interface Emits {
-    (e: 'update:modelValue', value: PropertyId | 'all'): void;
-    (e: 'change', value: PropertyId | 'all'): void;
-}
-
 const { modelValue, showAll = true } = defineProps<Props>();
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+    'update:modelValue': [value: PropertyId | 'all'];
+    change: [value: PropertyId | 'all'];
+}>();
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const handleSelect = (id: PropertyId | 'all'): void => {
+function handleSelect(id: PropertyId | 'all'): void {
     if (id === modelValue) return;
     emit('update:modelValue', id);
     emit('change', id);
-};
+}
 </script>
 
 <template>

@@ -23,10 +23,10 @@ export function useFinanceSync() {
     /**
      * Internal DRY helper to execute async store actions with toast lifecycle.
      */
-    const runWithToast = async <T>(
+    async function runWithToast<T>(
         action: () => Promise<T>,
         messages: ToastMessages
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         try {
             await toast.loading(action, {
                 loading: {
@@ -50,13 +50,12 @@ export function useFinanceSync() {
             console.error(`${messages.errorTitle}:`, err);
             return false;
         }
-    };
-
+    }
     /**
      * Synchronizes finance data.
      * Pass `{ silent: true }` in onMounted to prevent popup toasts during page navigation.
      */
-    const syncAllFinancialData = async (options: { silent?: boolean } = {}): Promise<boolean> => {
+    async function syncAllFinancialData(options: { silent?: boolean } = {}): Promise<boolean> {
         if (options.silent) {
             try {
                 await financeStore.fetchFinancialData();
@@ -79,28 +78,29 @@ export function useFinanceSync() {
                 errorTitle: 'Sync Interrupted',
             }
         );
-    };
-
-    const addPropertyTransaction = (payload: Omit<PropertyFinance, 'id'>): Promise<boolean> =>
-        runWithToast(() => financeStore.addPropertyTransaction(payload), {
+    }
+    function addPropertyTransaction(payload: Omit<PropertyFinance, 'id'>): Promise<boolean> {
+        return runWithToast(() => financeStore.addPropertyTransaction(payload), {
             loadingTitle: 'Recording Property Entry...',
             loadingDesc: 'Syncing ledger row with Google Sheets & local storage.',
             successTitle: 'Property Ledger Updated',
             successDesc: `Saved ${payload.category} transaction.`,
             errorTitle: 'Save Failed',
         });
-    const editPropertyTransaction = (
+    }
+    function editPropertyTransaction(
         id: string,
         payload: Omit<PropertyFinance, 'id'>
-    ): Promise<boolean> =>
-        runWithToast(() => financeStore.updatePropertyTransaction(id, payload), {
+    ): Promise<boolean> {
+        return runWithToast(() => financeStore.updatePropertyTransaction(id, payload), {
             loadingTitle: 'Updating Property Entry...',
             loadingDesc: 'Syncing ledger changes to Google Sheets & Dexie.',
             successTitle: 'Property Ledger Updated',
             successDesc: `Saved changes to ${payload.category}.`,
             errorTitle: 'Update Failed',
         });
-    const removePropertyTransaction = async (id: string, category: string): Promise<boolean> => {
+    }
+    async function removePropertyTransaction(id: string, category: string): Promise<boolean> {
         const confirmed = window.confirm(`Are you sure you want to delete this ${category} entry?`);
         if (!confirmed) return false;
 
@@ -111,10 +111,9 @@ export function useFinanceSync() {
             successDesc: `Successfully deleted ${category} record.`,
             errorTitle: 'Delete Failed',
         });
-    };
-
-    const persistDexieBookings = (): Promise<boolean> =>
-        runWithToast(() => financeStore.persistDexieBookingsToRemoteSheet(), {
+    }
+    function persistDexieBookings(): Promise<boolean> {
+        return runWithToast(() => financeStore.persistDexieBookingsToRemoteSheet(), {
             loadingTitle: 'Persisting Bookings...',
             loadingDesc: 'Pushing reservations into Property_Finances Google Sheet.',
             successTitle: 'Bookings Synchronized',
@@ -122,8 +121,8 @@ export function useFinanceSync() {
                 `Pushed ${Number(count) || 0} reservation(s) to remote sheets.`,
             errorTitle: 'Persistence Failed',
         });
-
-    const addPersonalTransaction = (payload: Omit<PersonalFinance, 'id'>): Promise<boolean> => {
+    }
+    function addPersonalTransaction(payload: Omit<PersonalFinance, 'id'>): Promise<boolean> {
         const isSavings = payload.category === 'Savings';
         const isGold = payload.category === 'Gold';
 
@@ -148,19 +147,20 @@ export function useFinanceSync() {
                   : `Recorded ${payload.category} successfully.`,
             errorTitle: 'Transaction Failed',
         });
-    };
-    const editPersonalTransaction = (
+    }
+    function editPersonalTransaction(
         id: string,
         payload: Omit<PersonalFinance, 'id'>
-    ): Promise<boolean> =>
-        runWithToast(() => financeStore.updatePersonalTransaction(id, payload), {
+    ): Promise<boolean> {
+        return runWithToast(() => financeStore.updatePersonalTransaction(id, payload), {
             loadingTitle: 'Updating Record...',
             loadingDesc: `Syncing changes for ${payload.owner} to Google Sheets.`,
             successTitle: 'Record Updated',
             successDesc: `Successfully updated ${payload.category} transaction.`,
             errorTitle: 'Update Failed',
         });
-    const removePersonalTransaction = async (id: string, category: string): Promise<boolean> => {
+    }
+    async function removePersonalTransaction(id: string, category: string): Promise<boolean> {
         const confirmed = window.confirm(`Are you sure you want to delete this ${category} entry?`);
         if (!confirmed) return false;
 
@@ -171,28 +171,29 @@ export function useFinanceSync() {
             successDesc: `Successfully deleted ${category} transaction.`,
             errorTitle: 'Delete Failed',
         });
-    };
-
-    const addSharedTransaction = (payload: Omit<SharedFinance, 'id'>): Promise<boolean> =>
-        runWithToast(() => financeStore.addSharedTransaction(payload), {
+    }
+    function addSharedTransaction(payload: Omit<SharedFinance, 'id'>): Promise<boolean> {
+        return runWithToast(() => financeStore.addSharedTransaction(payload), {
             loadingTitle: 'Recording Household Entry...',
             loadingDesc: 'Appending transaction to Shared Household ledger.',
             successTitle: 'Shared Ledger Updated',
             successDesc: `Logged household entry: ${payload.category}.`,
             errorTitle: 'Save Failed',
         });
-    const editSharedTransaction = (
+    }
+    function editSharedTransaction(
         id: string,
         payload: Omit<SharedFinance, 'id'>
-    ): Promise<boolean> =>
-        runWithToast(() => financeStore.updateSharedTransaction(id, payload), {
+    ): Promise<boolean> {
+        return runWithToast(() => financeStore.updateSharedTransaction(id, payload), {
             loadingTitle: 'Updating Household Entry...',
             loadingDesc: 'Syncing changes to Shared Household ledger.',
             successTitle: 'Entry Updated',
             successDesc: `Successfully updated ${payload.category} entry.`,
             errorTitle: 'Update Failed',
         });
-    const removeSharedTransaction = async (id: string, category: string): Promise<boolean> => {
+    }
+    async function removeSharedTransaction(id: string, category: string): Promise<boolean> {
         const confirmed = window.confirm(
             `Are you sure you want to delete this ${category} shared entry?`
         );
@@ -205,9 +206,8 @@ export function useFinanceSync() {
             successDesc: `Successfully deleted ${category} entry.`,
             errorTitle: 'Delete Failed',
         });
-    };
-
-    const executeOwnerTransfer = (payload: Omit<OwnerTransfer, 'id'>): Promise<boolean> => {
+    }
+    function executeOwnerTransfer(payload: Omit<OwnerTransfer, 'id'>): Promise<boolean> {
         const isBoth = payload.targetAccount === 'Split';
         return runWithToast(() => financeStore.recordOwnerTransfer(payload), {
             loadingTitle: isBoth ? 'Processing Dual Payout...' : 'Executing Transfer...',
@@ -220,26 +220,26 @@ export function useFinanceSync() {
                 : `Successfully allocated funds to ${payload.targetAccount}.`,
             errorTitle: 'Transfer Failed',
         });
-    };
-    const settleRecurringCommitment = (item: ProjectedRecurringItem): Promise<boolean> =>
-        runWithToast(() => financeStore.settleRecurringItem(item), {
+    }
+    function settleRecurringCommitment(item: ProjectedRecurringItem): Promise<boolean> {
+        return runWithToast(() => financeStore.settleRecurringItem(item), {
             loadingTitle: 'Posting Recurring Bill...',
             loadingDesc: `Logging ${item.category} to ${item.targetLedger} ledger.`,
             successTitle: 'Bill Posted',
             successDesc: `${item.category} recorded as settled for ${item.cycleMonth}.`,
             errorTitle: 'Failed to Post',
         });
-
-    const createSavingGoal = (payload: Omit<SavingGoal, 'id'>): Promise<boolean> =>
-        runWithToast(() => financeStore.addSavingGoal(payload), {
+    }
+    function createSavingGoal(payload: Omit<SavingGoal, 'id'>): Promise<boolean> {
+        return runWithToast(() => financeStore.addSavingGoal(payload), {
             loadingTitle: 'Creating Savings Goal...',
             loadingDesc: `Setting up target "${payload.name}" for ${payload.owner}.`,
             successTitle: 'Goal Created',
             successDesc: `Successfully added ${payload.name} target.`,
             errorTitle: 'Failed to Save Goal',
         });
-
-    const removeSavingGoal = async (id: string, name: string): Promise<boolean> => {
+    }
+    async function removeSavingGoal(id: string, name: string): Promise<boolean> {
         const confirmed = window.confirm(`Delete savings goal "${name}"?`);
         if (!confirmed) return false;
 
@@ -255,7 +255,7 @@ export function useFinanceSync() {
                 errorTitle: 'Delete Failed',
             }
         );
-    };
+    }
 
     return {
         syncAllFinancialData,

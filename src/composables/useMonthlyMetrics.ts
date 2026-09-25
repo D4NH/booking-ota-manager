@@ -55,7 +55,7 @@ function calculateOverlappingNights(
  *
  * @param bookings - A reactive `Ref`, getter function, or raw array of Booking records.
  * @param options - Configuration options for scoping the calculation.
- * @param options.targetMonth - Target month in 'YYYY-MM' format (e.g., '2026-09'). Defaults to the current month.
+ * @param options.targetMonth - Target month in 'YYYY-MM' format ('2026-09'). Defaults to the current month.
  * @param options.propertyId - Property filter. Accepts a static PropertyId, 'all', a `Ref`, or a getter function. Defaults to 'all'.
  *
  * @returns An object containing reactive computed values:
@@ -70,11 +70,11 @@ function calculateOverlappingNights(
  * - `monthlyPropertyData`: 12-month (Jan–Dec) per-property revenue matrix for the current calendar year.
  *
  * @example
- * // 1. Portfolio-wide metrics for the active month:
+ * // Portfolio-wide metrics for the active month:
  * const { totalPayout, occupancyPercentage, averageDailyRate } = useMonthlyMetrics(bookings);
  *
  * @example
- * // 2. Reactive single-property metrics bound to route params or component props:
+ * // Reactive single-property metrics bound to route params or component props:
  * const { occupancyPercentage, totalBookingsCount } = useMonthlyMetrics(
  *   () => bookingStore.bookings,
  *   {
@@ -83,7 +83,7 @@ function calculateOverlappingNights(
  * );
  *
  * @example
- * // 3. Historical month audit (e.g., August 2026 for a specific villa):
+ * // Historical month audit (August 2026 for a specific villa):
  * const { metrics } = useMonthlyMetrics(bookings, {
  *   targetMonth: '2026-08',
  *   propertyId: 'piyungan',
@@ -176,7 +176,6 @@ export function useMonthlyMetrics(
             revenueGrowthPercent,
         };
     });
-
     // 12-Month Annual Breakdown per Property
     const monthlyPropertyData = computed<MonthlyPropertyRevenue[]>(() => {
         const currentYear = new Date().getFullYear().toString();

@@ -16,14 +16,13 @@ const isGoalModalOpen = ref(false);
 const isTransferModalOpen = ref(false);
 const selectedAccountKey = ref('');
 
-const openTransferModal = (preselectedKey?: string) => {
+function openTransferModal(preselectedKey?: string): void {
     selectedAccountKey.value = preselectedKey || '';
     isTransferModalOpen.value = true;
-};
-
-const handleDeleteGoal = async (id: string, name: string) => {
+}
+async function handleDeleteGoal(id: string, name: string): Promise<void> {
     await removeSavingGoal(id, name);
-};
+}
 </script>
 
 <template>

@@ -5,7 +5,7 @@ const rupiahFormatter = new Intl.NumberFormat('id-ID', {
 });
 
 /**
- * Formats a number to Indonesian Rupiah (e.g., 7460057 -> "Rp 7.460.057")
+ * Formats a number to Indonesian Rupiah (7460057 -> "Rp 7.460.057")
  */
 export function formatIDR(value: number): string {
     // \u00A0 is the non-breaking space Intl outputs between "Rp" and the digits;

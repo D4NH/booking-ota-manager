@@ -3,13 +3,13 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 
 const financeStore = useFinanceStore();
 
-const handleMonthChange = (event: Event): void => {
+function handleMonthChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (target?.value) {
         financeStore.selectedMonth = target.value;
     }
-};
-const shiftMonth = (offset: number): void => {
+}
+function shiftMonth(offset: number): void {
     const [yearStr, monthStr] = financeStore.selectedMonth.split('-');
     const year = Number(yearStr);
     const month = Number(monthStr);
@@ -22,8 +22,8 @@ const shiftMonth = (offset: number): void => {
     const newMonth = String(date.getMonth() + 1).padStart(2, '0');
 
     financeStore.selectedMonth = `${newYear}-${newMonth}`;
-};
-const triggerDatePicker = (event: MouseEvent): void => {
+}
+function triggerDatePicker(event: MouseEvent): void {
     const target = event.currentTarget as HTMLInputElement | null;
 
     try {
@@ -31,7 +31,7 @@ const triggerDatePicker = (event: MouseEvent): void => {
     } catch {
         target?.focus();
     }
-};
+}
 </script>
 
 <template>

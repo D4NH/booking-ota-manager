@@ -9,10 +9,6 @@ import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-const isOpen = defineModel<boolean>({ default: false });
-
-const financeStore = useFinanceStore();
-
 const ownerOptions = [
     { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
@@ -26,6 +22,10 @@ const goldOptions = [
     { label: 'UBS', value: 'UBS' },
 ];
 
+const isOpen = defineModel<boolean>({ default: false });
+
+const financeStore = useFinanceStore();
+
 const goldOwner = ref<PersonalOwner | 'Shared'>('Danh Nguyen');
 const goldType = ref<GoldType>('Antam');
 const goldGrams = ref<number | null>(null);
@@ -34,21 +34,19 @@ const goldDate = ref(getCurrentDate());
 const goldCert = ref('');
 const isSubmitting = ref(false);
 
-const resetForm = () => {
+function resetForm() {
     goldOwner.value = 'Danh Nguyen';
     goldType.value = 'Antam';
     goldGrams.value = null;
     goldTotalCost.value = null;
     goldDate.value = getCurrentDate();
     goldCert.value = '';
-};
-
-const closeModal = () => {
+}
+function closeModal(): void {
     isOpen.value = false;
     resetForm();
-};
-
-const handleSaveGold = async (): Promise<void> => {
+}
+async function handleSaveGold(): Promise<void> {
     if (!goldGrams.value || !goldTotalCost.value) return;
 
     isSubmitting.value = true;
@@ -87,7 +85,7 @@ const handleSaveGold = async (): Promise<void> => {
     } finally {
         isSubmitting.value = false;
     }
-};
+}
 </script>
 
 <template>
@@ -143,7 +141,7 @@ const handleSaveGold = async (): Promise<void> => {
                                 v-model.number="goldGrams"
                                 input-label="Weight (Grams)"
                                 type="number"
-                                placeholder="e.g. 10"
+                                placeholder="10"
                                 required>
                                 <template #icon>
                                     <fa-icon
@@ -164,7 +162,7 @@ const handleSaveGold = async (): Promise<void> => {
                                 v-model.number="goldTotalCost"
                                 input-label="Total Purchase Cost"
                                 type="number"
-                                placeholder="e.g. 15000000"
+                                placeholder="15000000"
                                 required>
                                 <template #icon>
                                     <fa-icon
@@ -179,7 +177,7 @@ const handleSaveGold = async (): Promise<void> => {
                             v-model.trim="goldCert"
                             input-label="Certificate / Serial Number (Optional)"
                             type="text"
-                            placeholder="e.g. CERT-12345">
+                            placeholder="CERT-12345">
                             <template #icon>
                                 <fa-icon
                                     icon="hashtag"

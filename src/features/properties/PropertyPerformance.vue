@@ -30,7 +30,6 @@ const yearOptions = computed<number[]>(() => {
 
     return Array.from(years).sort((a, b) => b - a);
 });
-
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
 const propertyStats = computed(() => {

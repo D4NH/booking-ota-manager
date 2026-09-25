@@ -5,23 +5,22 @@ import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 import CardTitle from '@/components/CardTitle.vue';
 
-const { bookings } = defineProps<{
-    bookings: Booking[];
-}>();
-
-const now = new Date();
-const currentActualMonthIdx = now.getUTCMonth();
-const currentActualQuarterIdx = Math.floor(currentActualMonthIdx / 3);
-
-const activeQuarterIndex = ref<number>(currentActualQuarterIdx);
-const hoveredIndex = ref<number | null>(null);
-
 const quartersList = [
     { id: 0, label: 'Q1 2026', startMonthIdx: 0 },
     { id: 1, label: 'Q2 2026', startMonthIdx: 3 },
     { id: 2, label: 'Q3 2026', startMonthIdx: 6 },
     { id: 3, label: 'Q4 2026', startMonthIdx: 9 },
 ];
+const now = new Date();
+const currentActualMonthIdx = now.getUTCMonth();
+const currentActualQuarterIdx = Math.floor(currentActualMonthIdx / 3);
+
+const { bookings } = defineProps<{
+    bookings: Booking[];
+}>();
+
+const activeQuarterIndex = ref<number>(currentActualQuarterIdx);
+const hoveredIndex = ref<number | null>(null);
 
 const fourMonthSequence = computed(() => {
     const currentQuarter = quartersList[activeQuarterIndex.value] ?? quartersList[0]!;
@@ -67,7 +66,6 @@ const fourMonthSequence = computed(() => {
         };
     });
 });
-
 const summaryStats = computed(() => {
     const data = fourMonthSequence.value;
     const highlightedItem = data.find((item) => item.isHighlighted) ?? data[data.length - 1]!;
@@ -96,7 +94,6 @@ const summaryStats = computed(() => {
         rangeLabel: firstLabel && lastLabel ? `${firstLabel} - ${lastLabel}` : '',
     };
 });
-
 const maxRevenue = computed<number>(() => {
     let highest = 0;
     for (const item of fourMonthSequence.value) {
@@ -105,7 +102,6 @@ const maxRevenue = computed<number>(() => {
     if (highest <= 0) return 10_000_000;
     return Math.ceil(highest / 5_000_000) * 5_000_000;
 });
-
 const yAxisTicks = computed(() => {
     const max = maxRevenue.value;
     const step = max / 4;
@@ -118,10 +114,10 @@ const yAxisTicks = computed(() => {
     ];
 });
 
-const getBarHeightPct = (amount: number): number => {
+function getBarHeightPct(amount: number): number {
     if (maxRevenue.value <= 0 || !amount) return 0;
     return Math.min(100, (amount / maxRevenue.value) * 100);
-};
+}
 </script>
 
 <template>

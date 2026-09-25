@@ -34,7 +34,6 @@ export function useRevenueComparison() {
                 return sum + nightlyRate;
             }, 0);
     };
-
     /**
      * Generates Weekly Dataset (Mon -> Sun for This Week vs Last Week)
      */
@@ -76,7 +75,6 @@ export function useRevenueComparison() {
 
         return { labels, currentWeek, lastWeek };
     };
-
     /**
      * Generates Monthly Dataset (4 Weeks breakdown for This Month vs Last Month)
      */

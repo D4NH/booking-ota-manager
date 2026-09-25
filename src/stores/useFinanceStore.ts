@@ -40,12 +40,29 @@ export const useFinanceStore = defineStore('finance', () => {
     const transfers = shallowRef<OwnerTransfer[]>([]);
     const goldAssets = shallowRef<GoldAsset[]>([]);
     const recurringTemplates = shallowRef<RecurringTemplate[]>([]);
-    const savingGoals = ref<SavingGoal[]>([]);
 
+    const savingGoals = ref<SavingGoal[]>([]);
     const currentGoldPricePerGram = ref<number>(2450000);
     const selectedMonth = ref<string>(getCurrentMonth());
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
+
+    // Investments (SBN & Gold)
+    const sbnInvestments = ref<SbnInvestment[]>([
+        {
+            id: 'SBN-SR022-01',
+            series: 'SR022-T3',
+            owner: 'Shared',
+            principalAmount: Number(import.meta.env.VITE_SBN_AMOUNT) || 0,
+            couponRatePct: 6.45,
+            taxRatePct: 10,
+            issueDate: '2025-06-25',
+            maturityDate: '2028-06-10',
+            payoutDayOfMonth: 10,
+            active: true,
+            notes: 'Kemenkeu Sukuk Ritel Syariah via BCA',
+        },
+    ]);
 
     const previousMonth = computed<string>(() => getPreviousMonthStr(selectedMonth.value));
 
@@ -66,28 +83,9 @@ export const useFinanceStore = defineStore('finance', () => {
     const totalOwnerDraws = computed<number>(() =>
         filteredTransfers.value.reduce((sum, item) => sum + Number(item.amount), 0)
     );
-
-    // Investments (SBN & Gold)
-    const sbnInvestments = ref<SbnInvestment[]>([
-        {
-            id: 'SBN-SR022-01',
-            series: 'SR022-T3',
-            owner: 'Shared',
-            principalAmount: Number(import.meta.env.VITE_SBN_AMOUNT) || 0,
-            couponRatePct: 6.45,
-            taxRatePct: 10,
-            issueDate: '2025-06-25',
-            maturityDate: '2028-06-10',
-            payoutDayOfMonth: 10,
-            active: true,
-            notes: 'Kemenkeu Sukuk Ritel Syariah via BCA',
-        },
-    ]);
-
     const sbnTotalPrincipal = computed<number>(() =>
         sbnInvestments.value.filter((s) => s.active).reduce((sum, s) => sum + s.principalAmount, 0)
     );
-
     const sbnMonthlyGrossYield = computed<number>(() =>
         sbnInvestments.value
             .filter((s) => s.active)
@@ -191,7 +189,6 @@ export const useFinanceStore = defineStore('finance', () => {
             };
         });
     });
-
     // Recurring Templates
     const monthlyProjectedRecurring = computed<ProjectedRecurringItem[]>(() => {
         const cycle = selectedMonth.value; // "2026-09"
@@ -560,9 +557,8 @@ export const useFinanceStore = defineStore('finance', () => {
             await db.savingGoals.delete(id).catch(() => {});
         }
     }
-
     // Data Synchronization
-    const loadLocalFinanceData = async (): Promise<void> => {
+    async function loadLocalFinanceData(): Promise<void> {
         try {
             if (!db.propertyFinances) return;
             const [pFin, persFin, sFin, trans, gold, rec, goals] = await Promise.all([
@@ -585,7 +581,7 @@ export const useFinanceStore = defineStore('finance', () => {
         } catch (err) {
             console.error('Failed to load local finance storage:', err);
         }
-    };
+    }
     async function fetchFinancialData(): Promise<void> {
         isLoading.value = true;
         error.value = null;

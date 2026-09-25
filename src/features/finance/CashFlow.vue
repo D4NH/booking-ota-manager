@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { normalizeDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
-
-const financeStore = useFinanceStore();
-const { unifiedPropertyFinances, selectedMonth } = storeToRefs(financeStore);
-
-const viewRange = ref<'6M' | 'YTD'>('6M');
 
 interface MonthlyDataPoint {
     monthStr: string; // "YYYY-MM"
@@ -21,8 +17,13 @@ interface MonthlyDataPoint {
     isActive: boolean;
 }
 
-const activeYear = computed(() => selectedMonth.value.slice(0, 4));
+const financeStore = useFinanceStore();
+const { unifiedPropertyFinances, selectedMonth } = storeToRefs(financeStore);
 
+const hoveredBar = ref<MonthlyDataPoint | null>(null);
+const viewRange = ref<'6M' | 'YTD'>('6M');
+
+const activeYear = computed(() => selectedMonth.value.slice(0, 4));
 const monthsToInspect = computed<string[]>(() => {
     if (viewRange.value === 'YTD') {
         // Full Year Jan to Dec for the active year
@@ -46,22 +47,6 @@ const monthsToInspect = computed<string[]>(() => {
     }
     return list;
 });
-
-const monthShortNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-];
-
 const chartData = computed<MonthlyDataPoint[]>(() => {
     const all = unifiedPropertyFinances.value;
 
@@ -88,7 +73,7 @@ const chartData = computed<MonthlyDataPoint[]>(() => {
         }
 
         const monthIdx = Number(cycle.split('-')[1]) - 1;
-        const label = monthShortNames[monthIdx] || cycle;
+        const label = MONTH_NAMES_SHORT[monthIdx] || cycle;
 
         return {
             monthStr: cycle,
@@ -100,7 +85,6 @@ const chartData = computed<MonthlyDataPoint[]>(() => {
         };
     });
 });
-
 // Dynamic Y-Axis Scaling & Guidelines
 const maxVal = computed<number>(() => {
     let highest = 0;
@@ -112,7 +96,6 @@ const maxVal = computed<number>(() => {
     const ceiling = Math.max(highest, 15000000);
     return Math.ceil(ceiling / 5000000) * 5000000;
 });
-
 // Generate 4 Y-Axis scale marks (20M, 15M, 10M, 5M, 0)
 const yAxisMarks = computed(() => {
     const step = maxVal.value / 4;
@@ -129,8 +112,6 @@ function calculateHeightPct(amount: number): number {
     if (maxVal.value <= 0) return 0;
     return Math.min(100, (amount / maxVal.value) * 100);
 }
-
-const hoveredBar = ref<MonthlyDataPoint | null>(null);
 </script>
 
 <template>

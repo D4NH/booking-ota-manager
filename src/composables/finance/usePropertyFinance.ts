@@ -37,7 +37,6 @@ export function usePropertyFinance(
                 notes: `${b.listing} | ${b.guestName}`,
             }));
     });
-
     const unifiedPropertyFinances = computed<PropertyFinance[]>(() => {
         const existingBookingIds = new Set<string>();
         const sheetsList = sheetPropertyFinances.value;
@@ -59,13 +58,11 @@ export function usePropertyFinance(
 
         return [...sheetsList, ...syntheticEntries];
     });
-
     const filteredPropertyFinances = computed(() =>
         unifiedPropertyFinances.value
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
             .sort(sortNewestFirst)
     );
-
     const monthlyPropertyRevenue = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -82,7 +79,6 @@ export function usePropertyFinance(
         }
         return sum;
     });
-
     const monthlyPropertyExpenses = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -95,7 +91,6 @@ export function usePropertyFinance(
         }
         return sum;
     });
-
     const monthlyOwnerDraws = computed<number>(() => {
         let sum = 0;
         const list = filteredPropertyFinances.value;
@@ -105,11 +100,9 @@ export function usePropertyFinance(
         }
         return sum;
     });
-
     const netPropertyProfit = computed<number>(
         () => monthlyPropertyRevenue.value - monthlyPropertyExpenses.value
     );
-
     const previousMonthPropertyRevenue = computed<number>(() => {
         let sum = 0;
         const list = unifiedPropertyFinances.value;
@@ -127,7 +120,6 @@ export function usePropertyFinance(
         }
         return sum;
     });
-
     const previousMonthPropertyExpenses = computed<number>(() => {
         let sum = 0;
         const list = unifiedPropertyFinances.value;
@@ -144,7 +136,6 @@ export function usePropertyFinance(
         }
         return sum;
     });
-
     const propertyRevenueGrowthPct = computed<number | null>(() =>
         calculateGrowthPct(monthlyPropertyRevenue.value, previousMonthPropertyRevenue.value)
     );

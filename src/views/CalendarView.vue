@@ -38,29 +38,33 @@ const {
     setYear,
 } = useCalendarGrid(filteredBookings);
 
-const handleMonthChange = (e: Event): void =>
-    setMonth(Number((e.target as HTMLSelectElement).value));
-const handleYearChange = (e: Event): void => setYear(Number((e.target as HTMLSelectElement).value));
-const handleAddBooking = (): void =>
-    modalStore.openBookingModal({ propertyId: selectedProperty.value });
-const handleCellClick = (day: CalendarDay): void => {
-    selectedCheckInDate.value = day.dateStr;
-    modalStore.openBookingModal({
-        checkInDate: selectedCheckInDate.value,
-        propertyId: selectedProperty.value,
-    });
-};
-const handleBookingClick = (booking: Booking, event: Event): void => {
-    event.stopPropagation();
-    modalStore.openBookingModal({ booking });
-};
-
 watch(
     () => route.params.id,
     (newId) => {
         selectedProperty.value = (newId as PropertyId) || 'all';
     }
 );
+
+function handleMonthChange(e: Event): void {
+    setMonth(Number((e.target as HTMLSelectElement).value));
+}
+function handleYearChange(e: Event): void {
+    setYear(Number((e.target as HTMLSelectElement).value));
+}
+function handleAddBooking(): void {
+    modalStore.openBookingModal({ propertyId: selectedProperty.value });
+}
+function handleCellClick(day: CalendarDay): void {
+    selectedCheckInDate.value = day.dateStr;
+    modalStore.openBookingModal({
+        checkInDate: selectedCheckInDate.value,
+        propertyId: selectedProperty.value,
+    });
+}
+function handleBookingClick(booking: Booking, event: Event): void {
+    event.stopPropagation();
+    modalStore.openBookingModal({ booking });
+}
 </script>
 
 <template>

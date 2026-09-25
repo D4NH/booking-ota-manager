@@ -25,7 +25,6 @@ export function useOccupancy() {
      */
     const isBookingActiveOnDate = (b: Booking, dateStr: string): boolean =>
         b.status === 'Unavailable' ? false : dateStr >= b.checkIn && dateStr < b.checkOut;
-
     /**
      * Calculate Occupancy for a Specific Month
      * Returns: { percentage: number, bookedNights: number, totalNights: number }
@@ -67,7 +66,6 @@ export function useOccupancy() {
             totalAvailableNights,
         };
     };
-
     /**
      * Calculate 12-Month Array (For Jan - Dec Line / Area Chart)
      * Returns an array of 12 percentages: [45, 30, 35, ...]

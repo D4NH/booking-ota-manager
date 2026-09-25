@@ -16,7 +16,6 @@ const {
     netPropertyProfit,
     monthlyPropertyRevenue,
 } = storeToRefs(financeStore);
-
 const { totalPayout } = useMonthlyMetrics(bookings, {
     propertyId: () => 'all',
 });

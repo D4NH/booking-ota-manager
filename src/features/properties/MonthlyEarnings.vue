@@ -4,6 +4,15 @@ import { formatIDR } from '@/utils/money';
 import type { WeeklyData, MonthlyData } from '@/composables/useRevenueData';
 import CardTitle from '@/components/CardTitle.vue';
 
+const SVG_WIDTH = 600;
+const SVG_HEIGHT = 200;
+const PADDING_TOP = 20;
+const PADDING_BOTTOM = 30;
+const PADDING_LEFT = 45;
+const PADDING_RIGHT = 20;
+const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
+
 const { weeklyData, monthlyData } = defineProps<{
     weeklyData: WeeklyData;
     monthlyData: MonthlyData;
@@ -16,40 +25,24 @@ const currentTotal = computed(() => {
     const list = activeView.value === 'weekly' ? weeklyData.currentWeek : monthlyData.currentMonth;
     return list.reduce((a, b) => a + b, 0);
 });
-
 const previousTotal = computed(() => {
     const list = activeView.value === 'weekly' ? weeklyData.lastWeek : monthlyData.lastMonth;
     return list.reduce((a, b) => a + b, 0);
 });
-
 const growthPercentage = computed(() => {
     if (previousTotal.value === 0) return 0;
     const diff = currentTotal.value - previousTotal.value;
     return Number(((diff / previousTotal.value) * 100).toFixed(1));
 });
-
 const activeLabels = computed(() =>
     activeView.value === 'weekly' ? weeklyData.labels : monthlyData.labels
 );
-
 const currentPoints = computed(() =>
     activeView.value === 'weekly' ? weeklyData.currentWeek : monthlyData.currentMonth
 );
-
 const previousPoints = computed(() =>
     activeView.value === 'weekly' ? weeklyData.lastWeek : monthlyData.lastMonth
 );
-
-const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
-
-const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
-const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
-
 const maxVal = computed(() => {
     const all = [...currentPoints.value, ...previousPoints.value];
     const highest = Math.max(...all, 0);
@@ -57,7 +50,6 @@ const maxVal = computed(() => {
     const step = highest > 10_000_000 ? 5_000_000 : 1_000_000;
     return Math.ceil(highest / step) * step;
 });
-
 const yAxisTicks = computed(() => {
     const max = maxVal.value;
     const step = max / 4;
@@ -85,8 +77,20 @@ const yAxisTicks = computed(() => {
         },
     ];
 });
+const currentCoords = computed(() => mapToCoordinates(currentPoints.value));
+const previousCoords = computed(() => mapToCoordinates(previousPoints.value));
+const currentLinePath = computed(() => generateSmoothPath(currentCoords.value));
+const previousLinePath = computed(() => generateSmoothPath(previousCoords.value));
+const currentAreaPath = computed(() => {
+    if (!currentCoords.value.length) return '';
+    const line = currentLinePath.value;
+    const lastX = currentCoords.value[currentCoords.value.length - 1]!.x;
+    const firstX = currentCoords.value[0]!.x;
+    const bottomY = PADDING_TOP + chartPlotHeight;
+    return `${line} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+});
 
-const mapToCoordinates = (data: number[]) => {
+function mapToCoordinates(data: number[]) {
     const len = data.length;
     if (len === 0) return [];
     const stepX = chartPlotWidth / Math.max(1, len - 1);
@@ -97,12 +101,8 @@ const mapToCoordinates = (data: number[]) => {
         const y = PADDING_TOP + (1 - normalizedY) * chartPlotHeight;
         return { x, y, val };
     });
-};
-
-const currentCoords = computed(() => mapToCoordinates(currentPoints.value));
-const previousCoords = computed(() => mapToCoordinates(previousPoints.value));
-
-const generateSmoothPath = (points: { x: number; y: number }[]): string => {
+}
+function generateSmoothPath(points: { x: number; y: number }[]): string {
     if (!points.length) return '';
     if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
 
@@ -114,19 +114,7 @@ const generateSmoothPath = (points: { x: number; y: number }[]): string => {
         path += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
     }
     return path;
-};
-
-const currentLinePath = computed(() => generateSmoothPath(currentCoords.value));
-const previousLinePath = computed(() => generateSmoothPath(previousCoords.value));
-
-const currentAreaPath = computed(() => {
-    if (!currentCoords.value.length) return '';
-    const line = currentLinePath.value;
-    const lastX = currentCoords.value[currentCoords.value.length - 1]!.x;
-    const firstX = currentCoords.value[0]!.x;
-    const bottomY = PADDING_TOP + chartPlotHeight;
-    return `${line} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-});
+}
 </script>
 
 <template>

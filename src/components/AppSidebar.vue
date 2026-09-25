@@ -23,6 +23,7 @@ const navLinks: NavItem[] = [
     { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
 ];
 const currentYear = new Date().getFullYear();
+const stagingSpreadsheetId = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
@@ -35,8 +36,6 @@ const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
 const isNotificationCollapsed = useStorage('notifications-collapsed', false);
 const stagingStore = useStagingStore();
 const { stagedBookings } = storeToRefs(stagingStore);
-
-const stagingSpreadsheetId = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
 
 const activeStagedBooking = ref<StagedBooking | null>(null);
 const isReviewModalOpen = ref(false);
@@ -68,26 +67,6 @@ const pendingPayments = computed(() => {
     };
 });
 
-const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
-const handleInstantComplete = async (booking: Booking) => await markBookingComplete(booking);
-const isLinkActive = (path: string) => {
-    if (path === '/') return route.path === '/';
-    return route.path.startsWith(path);
-};
-const toggleSidebar = () => {
-    isSidebarCollapsed.value = !isSidebarCollapsed.value;
-    isNotificationCollapsed.value = true;
-    isPropertiesOpen.value = false;
-    isFinanceOpen.value = false;
-};
-const toggleNotifications = () => (isNotificationCollapsed.value = !isNotificationCollapsed.value);
-const handleOpenStaging = (stagedItem?: StagedBooking): void => {
-    if (stagedItem) {
-        activeStagedBooking.value = stagedItem;
-        isReviewModalOpen.value = true;
-    }
-};
-
 watch(
     () => route.path,
     (newPath) => {
@@ -104,6 +83,32 @@ watch(
     },
     { immediate: true }
 );
+
+function handleEditBooking(booking: Booking): void {
+    modalStore.openBookingModal({ booking });
+}
+function handleInstantComplete(booking: Booking): Promise<boolean> {
+    return markBookingComplete(booking);
+}
+function isLinkActive(path: string): boolean {
+    if (path === '/') return route.path === '/';
+    return route.path.startsWith(path);
+}
+function toggleSidebar(): void {
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+    isNotificationCollapsed.value = true;
+    isPropertiesOpen.value = false;
+    isFinanceOpen.value = false;
+}
+function toggleNotifications(): void {
+    isNotificationCollapsed.value = !isNotificationCollapsed.value;
+}
+function handleOpenStaging(stagedItem?: StagedBooking): void {
+    if (stagedItem) {
+        activeStagedBooking.value = stagedItem;
+        isReviewModalOpen.value = true;
+    }
+}
 </script>
 
 <template>

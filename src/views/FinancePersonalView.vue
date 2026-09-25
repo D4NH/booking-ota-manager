@@ -16,12 +16,12 @@ import InvestmentChart from '@/features/finance/InvestmentChart.vue';
 import SavingsList from '@/features/finance/SavingsList.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
 
-const financeStore = useFinanceStore();
-const { danhNetBalance, danhMonthlyRevenue, danhMonthlyExpenses } = storeToRefs(financeStore);
-
 const bcaCardNo = import.meta.env.VITE_BCA_CARD_NO;
 const bcaCardExpDate = import.meta.env.VITE_BCA_CARD_EXP;
 const bcaCardId = import.meta.env.VITE_BCA_CARD_ID;
+
+const financeStore = useFinanceStore();
+const { danhNetBalance, danhMonthlyRevenue, danhMonthlyExpenses } = storeToRefs(financeStore);
 
 const isTransferModalOpen = ref(false);
 </script>

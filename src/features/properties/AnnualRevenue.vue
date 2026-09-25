@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { PROPERTY_LIST } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
@@ -15,21 +16,6 @@ const { selectedProperty = 'all' } = defineProps<Props>();
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-
-const MONTH_LABELS = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-] as const;
 
 const hoveredIndex = ref<number | null>(null);
 
@@ -49,13 +35,12 @@ const yearOptions = computed<number[]>(() => {
 
     return Array.from(years).sort((a, b) => b - a);
 });
-
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
 const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
     const yearStr = String(selectedYear.value);
 
-    const months: MonthlyPropertyRevenue[] = MONTH_LABELS.map((label) => ({
+    const months: MonthlyPropertyRevenue[] = MONTH_NAMES_SHORT.map((label) => ({
         label,
         piyungan: 0,
         wonosari: 0,
@@ -78,7 +63,6 @@ const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
 
     return months;
 });
-
 const activeConfigs = computed(() => {
     return PROPERTY_LIST.filter((config) => {
         if (selectedProperty !== 'all') return config.id === selectedProperty;
@@ -91,7 +75,6 @@ const activeConfigs = computed(() => {
         return totalEarned > 0;
     });
 });
-
 const totalAnnualRevenue = computed(() => {
     return monthlyData.value.reduce((sum, row) => {
         return (
@@ -103,7 +86,6 @@ const totalAnnualRevenue = computed(() => {
         );
     }, 0);
 });
-
 const displayHeaderMonth = computed(() => {
     if (hoveredIndex.value !== null) {
         const item = monthlyData.value[hoveredIndex.value];
@@ -111,7 +93,6 @@ const displayHeaderMonth = computed(() => {
     }
     return `Total ${selectedYear.value}`;
 });
-
 const displayHeaderValue = computed(() => {
     if (hoveredIndex.value !== null && monthlyData.value.length > 0) {
         const item = monthlyData.value[hoveredIndex.value];
@@ -125,7 +106,6 @@ const displayHeaderValue = computed(() => {
 
     return totalAnnualRevenue.value;
 });
-
 // Chart calculations: maximum monthly stacked value for Y-axis bounds
 const maxMonthlyTotal = computed<number>(() => {
     let highest = 0;
@@ -140,7 +120,6 @@ const maxMonthlyTotal = computed<number>(() => {
     // Round ceiling up to nearest 5jt
     return Math.ceil(highest / 5_000_000) * 5_000_000;
 });
-
 const yAxisTicks = computed(() => {
     const max = maxMonthlyTotal.value;
     const step = max / 4;
@@ -153,17 +132,17 @@ const yAxisTicks = computed(() => {
     ];
 });
 
-// Calculate stacked segment percentage height relative to max ceiling
-const getSegmentHeightPct = (value: number): number => {
-    if (maxMonthlyTotal.value <= 0 || !value) return 0;
-    return (value / maxMonthlyTotal.value) * 100;
-};
-
 watch(yearOptions, (available) => {
     if (!available.includes(selectedYear.value) && available.length > 0) {
         selectedYear.value = available[0]!;
     }
 });
+
+// Calculate stacked segment percentage height relative to max ceiling
+function getSegmentHeightPct(value: number): number {
+    if (maxMonthlyTotal.value <= 0 || !value) return 0;
+    return (value / maxMonthlyTotal.value) * 100;
+}
 </script>
 
 <template>

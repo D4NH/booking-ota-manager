@@ -4,12 +4,6 @@ import type { Property } from '@/types/property';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const { property, targetZoom = 17 } = defineProps<{
-    property: Property;
-    targetZoom?: number;
-}>();
-
-const mapContainer = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;
 let marker: L.Marker | null = null;
 
@@ -29,7 +23,34 @@ const customMarkerIcon = L.divIcon({
     iconAnchor: [16, 16],
 });
 
-const initMap = async () => {
+const { property, targetZoom = 17 } = defineProps<{
+    property: Property;
+    targetZoom?: number;
+}>();
+
+const mapContainer = ref<HTMLElement | null>(null);
+
+watch(
+    () => [property.coordinates?.lat, property.coordinates?.lng],
+    ([newLat, newLng]) => {
+        if (map && marker && newLat && newLng) {
+            map.flyTo([newLat, newLng], targetZoom, { duration: 0.5 });
+            marker.setLatLng([newLat, newLng]);
+        }
+    }
+);
+
+onMounted(() => {
+    initMap();
+});
+onBeforeUnmount(() => {
+    if (map) {
+        map.remove();
+        map = null;
+    }
+});
+
+async function initMap() {
     if (!mapContainer.value || !property.coordinates) return;
 
     await nextTick();
@@ -68,28 +89,7 @@ const initMap = async () => {
             });
         });
     });
-};
-
-watch(
-    () => [property.coordinates?.lat, property.coordinates?.lng],
-    ([newLat, newLng]) => {
-        if (map && marker && newLat && newLng) {
-            map.flyTo([newLat, newLng], targetZoom, { duration: 0.5 });
-            marker.setLatLng([newLat, newLng]);
-        }
-    }
-);
-
-onMounted(() => {
-    initMap();
-});
-
-onBeforeUnmount(() => {
-    if (map) {
-        map.remove();
-        map = null;
-    }
-});
+}
 </script>
 
 <template>

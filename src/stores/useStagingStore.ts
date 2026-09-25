@@ -21,7 +21,7 @@ export const useStagingStore = defineStore('staging', () => {
     const pendingCount = computed(() => stagedBookings.value.length);
 
     // 1. Instant 0ms Load from IndexedDB
-    const loadLocalStagingData = async (): Promise<void> => {
+    async function loadLocalStagingData(): Promise<void> {
         try {
             if (!db.stagedBookings) return;
             const cached = await db.stagedBookings.toArray();
@@ -31,14 +31,13 @@ export const useStagingStore = defineStore('staging', () => {
         } catch (err) {
             console.warn('Failed loading local staged bookings:', err);
         }
-    };
-
+    }
     /**
      * Quota-optimized pull:
      * - Only pulls full rows if cooldown elapsed or forced.
      * - If lightCheck=true, reads only Column J (status) to verify if pending items exist.
      */
-    const pollStagingQueue = async (options: { force?: boolean } = {}): Promise<void> => {
+    async function pollStagingQueue(options: { force?: boolean } = {}): Promise<void> {
         if (!STAGING_SPREADSHEET_ID) return;
 
         const now = Date.now();
@@ -110,14 +109,13 @@ export const useStagingStore = defineStore('staging', () => {
         } finally {
             isLoading.value = false;
         }
-    };
-
-    const removeStagedBookingLocally = async (id: string): Promise<void> => {
+    }
+    async function removeStagedBookingLocally(id: string): Promise<void> {
         stagedBookings.value = stagedBookings.value.filter((i) => i.id !== id);
         if (db.stagedBookings) {
             await db.stagedBookings.delete(id).catch(() => {});
         }
-    };
+    }
 
     return {
         stagedBookings,

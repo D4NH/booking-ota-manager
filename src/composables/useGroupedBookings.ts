@@ -47,21 +47,21 @@ export function useGroupedBookings(
         return allGroupedBookings.value.filter((g) => g.key === targetMonth);
     });
 
-    const toggleMonth = (monthKey: string): void => {
+    function toggleMonth(monthKey: string): void {
         const idx = collapsedMonths.value.indexOf(monthKey);
         if (idx > -1) {
             collapsedMonths.value.splice(idx, 1);
         } else {
             collapsedMonths.value.push(monthKey);
         }
-    };
-    const collapsePastMonths = (): void => {
+    }
+    function collapsePastMonths(): void {
         const past = availableMonths.value.filter((key) => key < currentMonthKey.value);
         collapsedMonths.value = Array.from(new Set([...collapsedMonths.value, ...past]));
-    };
-    const expandAll = (): void => {
+    }
+    function expandAll(): void {
         collapsedMonths.value = [];
-    };
+    }
 
     if (autoCollapsePast) {
         watch(

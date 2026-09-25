@@ -7,6 +7,19 @@ export type DatePickerMode = 'single' | 'range';
 export type DatePickerValue =
     string | [string, string] | { start: string; end: string } | null | undefined;
 
+const todayStr = getCurrentDate();
+const todayDate = parseISODate(todayStr);
+const viewYear = ref<number>(todayDate.getFullYear());
+const viewMonth = ref<number>(todayDate.getMonth()); // 0-11
+const minDateStr = computed(() => (minDate ? normalizeDate(minDate) : ''));
+const maxDateStr = computed(() => (maxDate ? normalizeDate(maxDate) : ''));
+
+// 42-cell matrix calculation with canonical dateStr attached to every cell
+interface CalendarCell {
+    dateStr: string;
+    dayNumber: number;
+    isCurrentMonth: boolean;
+}
 interface Props {
     inputLabel?: string;
     mode?: DatePickerMode;
@@ -26,128 +39,23 @@ const {
     width = 420,
     placeholder = '',
 } = defineProps<Props>();
-
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string | [string, string]): void;
     (e: 'change', value: string | [string, string]): void;
 }>();
-
 const modelValue = defineModel<DatePickerValue>({ default: '' });
 
-// State
 const isOpen = ref<boolean>(false);
 const triggerButtonRef = ref<HTMLButtonElement | null>(null);
 const popoverRef = ref<HTMLDivElement | null>(null);
 const coords = ref({ top: 0, left: 0, width: 0 });
-
-// Internal Canonical String State ('YYYY-MM-DD')
 const singleDate = ref<string>('');
 const rangeStart = ref<string>('');
 const rangeEnd = ref<string>('');
 const hoverDate = ref<string>('');
 
-const todayStr = getCurrentDate();
-const todayDate = parseISODate(todayStr);
-
-// Active View Month & Year
-const viewYear = ref<number>(todayDate.getFullYear());
-const viewMonth = ref<number>(todayDate.getMonth()); // 0-11
-
-// Boundaries
-const minDateStr = computed(() => (minDate ? normalizeDate(minDate) : ''));
-const maxDateStr = computed(() => (maxDate ? normalizeDate(maxDate) : ''));
-
-/**
- * Parses any incoming prop format into canonical YYYY-MM-DD strings
- */
-const syncFromModelValue = (val: DatePickerValue): void => {
-    if (!val) {
-        singleDate.value = selectTodayByDefault ? todayStr : '';
-        rangeStart.value = '';
-        rangeEnd.value = '';
-        return;
-    }
-
-    if (mode === 'range') {
-        if (Array.isArray(val)) {
-            rangeStart.value = normalizeDate(val[0]);
-            rangeEnd.value = normalizeDate(val[1]);
-        } else if (typeof val === 'object' && 'start' in val) {
-            rangeStart.value = normalizeDate(val.start);
-            rangeEnd.value = normalizeDate(val.end);
-        } else if (typeof val === 'string' && val.includes(',')) {
-            const [s, e] = val.split(',');
-            rangeStart.value = normalizeDate(s);
-            rangeEnd.value = normalizeDate(e);
-        }
-
-        if (rangeStart.value) {
-            const d = parseISODate(rangeStart.value);
-            viewYear.value = d.getFullYear();
-            viewMonth.value = d.getMonth();
-        }
-    } else {
-        const clean = normalizeDate(val);
-        singleDate.value = clean;
-        if (clean) {
-            const d = parseISODate(clean);
-            viewYear.value = d.getFullYear();
-            viewMonth.value = d.getMonth();
-        }
-    }
-};
-
-watch(() => modelValue.value, syncFromModelValue, { immediate: true });
-
-// Popover Positioning (Uses getBoundingClientRect without scrollY for fixed overlay)
-const updateCoordinates = (): void => {
-    if (!triggerButtonRef.value) return;
-    const rect = triggerButtonRef.value.getBoundingClientRect();
-
-    coords.value = {
-        top: rect.bottom,
-        left: rect.left,
-        width: rect.width,
-    };
-};
-
-const toggleDatepicker = async (): Promise<void> => {
-    isOpen.value = !isOpen.value;
-    if (isOpen.value) {
-        hoverDate.value = '';
-        await nextTick();
-        updateCoordinates();
-    }
-};
-
 // Navigation
 const monthHeading = computed<string>(() => `${MONTH_NAMES[viewMonth.value]} ${viewYear.value}`);
-
-const prevMonth = (): void => {
-    if (viewMonth.value === 0) {
-        viewMonth.value = 11;
-        viewYear.value--;
-    } else {
-        viewMonth.value--;
-    }
-};
-
-const nextMonth = (): void => {
-    if (viewMonth.value === 11) {
-        viewMonth.value = 0;
-        viewYear.value++;
-    } else {
-        viewMonth.value++;
-    }
-};
-
-// 42-cell matrix calculation with canonical dateStr attached to every cell
-interface CalendarCell {
-    dateStr: string;
-    dayNumber: number;
-    isCurrentMonth: boolean;
-}
-
 const calendarGrid = computed<CalendarCell[]>(() => {
     const year = viewYear.value;
     const month = viewMonth.value;
@@ -188,14 +96,141 @@ const calendarGrid = computed<CalendarCell[]>(() => {
 
     return cells;
 });
+// Range State Styling Helpers
+const effectiveRangeEnd = computed(() => rangeEnd.value || hoverDate.value);
+const displayValue = computed<string>(() => {
+    if (mode === 'range') {
+        if (rangeStart.value && rangeEnd.value) {
+            const startTxt = formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true });
+            const endTxt = formatDate(rangeEnd.value, { shortWeekday: true, shortMonth: true });
+            return `${startTxt} → ${endTxt}`;
+        }
+        if (rangeStart.value) {
+            return `${formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true })} → Select checkout date`;
+        }
+        return placeholder || 'Select stay dates';
+    }
 
-const isDateDisabled = (dateStr: string): boolean => {
+    if (singleDate.value) {
+        return formatDate(singleDate.value, {
+            shortWeekday: true,
+            shortMonth: true,
+            includeYear: true,
+        });
+    }
+
+    return placeholder || 'Select date';
+});
+
+watch(() => modelValue.value, syncFromModelValue, { immediate: true });
+
+onMounted(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', updateCoordinates);
+    window.addEventListener('scroll', updateCoordinates, { capture: true });
+});
+
+onUnmounted(() => {
+    document.removeEventListener('mousedown', handleClickOutside);
+    window.removeEventListener('resize', updateCoordinates);
+    window.removeEventListener('scroll', updateCoordinates, { capture: true });
+});
+
+/**
+ * Parses any incoming prop format into canonical YYYY-MM-DD strings
+ */
+function syncFromModelValue(val: DatePickerValue): void {
+    if (!val) {
+        singleDate.value = selectTodayByDefault ? todayStr : '';
+        rangeStart.value = '';
+        rangeEnd.value = '';
+        return;
+    }
+
+    if (mode === 'range') {
+        if (Array.isArray(val)) {
+            rangeStart.value = normalizeDate(val[0]);
+            rangeEnd.value = normalizeDate(val[1]);
+        } else if (typeof val === 'object' && 'start' in val) {
+            rangeStart.value = normalizeDate(val.start);
+            rangeEnd.value = normalizeDate(val.end);
+        } else if (typeof val === 'string' && val.includes(',')) {
+            const [s, e] = val.split(',');
+            rangeStart.value = normalizeDate(s);
+            rangeEnd.value = normalizeDate(e);
+        }
+
+        if (rangeStart.value) {
+            const d = parseISODate(rangeStart.value);
+            viewYear.value = d.getFullYear();
+            viewMonth.value = d.getMonth();
+        }
+    } else {
+        const clean = normalizeDate(val);
+        singleDate.value = clean;
+        if (clean) {
+            const d = parseISODate(clean);
+            viewYear.value = d.getFullYear();
+            viewMonth.value = d.getMonth();
+        }
+    }
+}
+// Popover Positioning (Uses getBoundingClientRect without scrollY for fixed overlay)
+function updateCoordinates(): void {
+    if (!triggerButtonRef.value) return;
+    const rect = triggerButtonRef.value.getBoundingClientRect();
+
+    coords.value = {
+        top: rect.bottom,
+        left: rect.left,
+        width: rect.width,
+    };
+}
+async function toggleDatepicker(): Promise<void> {
+    isOpen.value = !isOpen.value;
+    if (isOpen.value) {
+        hoverDate.value = '';
+        await nextTick();
+        updateCoordinates();
+    }
+}
+function prevMonth(): void {
+    if (viewMonth.value === 0) {
+        viewMonth.value = 11;
+        viewYear.value--;
+    } else {
+        viewMonth.value--;
+    }
+}
+function nextMonth(): void {
+    if (viewMonth.value === 11) {
+        viewMonth.value = 0;
+        viewYear.value++;
+    } else {
+        viewMonth.value++;
+    }
+}
+function isRangeStart(dateStr: string): boolean {
+    return mode === 'range' && rangeStart.value === dateStr;
+}
+function isRangeEnd(dateStr: string): boolean {
+    return (
+        (mode === 'range' && rangeEnd.value !== '' && rangeEnd.value === dateStr) ||
+        (!rangeEnd.value && hoverDate.value === dateStr && hoverDate.value > rangeStart.value)
+    );
+}
+function isInRange(dateStr: string): boolean {
+    if (mode !== 'range' || !rangeStart.value || !effectiveRangeEnd.value) return false;
+    const start = rangeStart.value;
+    const end = effectiveRangeEnd.value;
+    return start < end ? dateStr > start && dateStr < end : dateStr > end && dateStr < start;
+}
+function isDateDisabled(dateStr: string): boolean {
     if (minDateStr.value && dateStr < minDateStr.value) return true;
     if (maxDateStr.value && dateStr > maxDateStr.value) return true;
     return false;
-};
-
-const selectCell = (cell: CalendarCell): void => {
+}
+function selectCell(cell: CalendarCell): void {
     if (isDateDisabled(cell.dateStr)) return;
 
     if (mode === 'range') {
@@ -229,54 +264,13 @@ const selectCell = (cell: CalendarCell): void => {
         emit('change', cell.dateStr);
         isOpen.value = false;
     }
-};
-
-const handleCellHover = (dateStr: string): void => {
+}
+function handleCellHover(dateStr: string): void {
     if (mode === 'range' && rangeStart.value && !rangeEnd.value) {
         hoverDate.value = dateStr;
     }
-};
-
-// Range State Styling Helpers
-const effectiveRangeEnd = computed(() => rangeEnd.value || hoverDate.value);
-
-const isRangeStart = (dateStr: string): boolean => mode === 'range' && rangeStart.value === dateStr;
-const isRangeEnd = (dateStr: string): boolean =>
-    mode === 'range' &&
-    ((rangeEnd.value !== '' && rangeEnd.value === dateStr) ||
-        (!rangeEnd.value && hoverDate.value === dateStr && hoverDate.value > rangeStart.value));
-const isInRange = (dateStr: string): boolean => {
-    if (mode !== 'range' || !rangeStart.value || !effectiveRangeEnd.value) return false;
-    const start = rangeStart.value;
-    const end = effectiveRangeEnd.value;
-    return start < end ? dateStr > start && dateStr < end : dateStr > end && dateStr < start;
-};
-
-const displayValue = computed<string>(() => {
-    if (mode === 'range') {
-        if (rangeStart.value && rangeEnd.value) {
-            const startTxt = formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true });
-            const endTxt = formatDate(rangeEnd.value, { shortWeekday: true, shortMonth: true });
-            return `${startTxt} → ${endTxt}`;
-        }
-        if (rangeStart.value) {
-            return `${formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true })} → Select checkout date`;
-        }
-        return placeholder || 'Select stay dates';
-    }
-
-    if (singleDate.value) {
-        return formatDate(singleDate.value, {
-            shortWeekday: true,
-            shortMonth: true,
-            includeYear: true,
-        });
-    }
-
-    return placeholder || 'Select date';
-});
-
-const handleClickOutside = (event: MouseEvent): void => {
+}
+function handleClickOutside(event: MouseEvent): void {
     const target = event.target as Node;
     if (
         triggerButtonRef.value &&
@@ -286,19 +280,7 @@ const handleClickOutside = (event: MouseEvent): void => {
     ) {
         isOpen.value = false;
     }
-};
-
-onMounted(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('resize', updateCoordinates);
-    window.addEventListener('scroll', updateCoordinates, { capture: true });
-});
-
-onUnmounted(() => {
-    document.removeEventListener('mousedown', handleClickOutside);
-    window.removeEventListener('resize', updateCoordinates);
-    window.removeEventListener('scroll', updateCoordinates, { capture: true });
-});
+}
 </script>
 
 <template>

@@ -21,14 +21,10 @@ const toastConfig = {
 };
 
 export const usePropertyStore = defineStore('property', () => {
-    const properties = ref<Property[]>([]);
     const preferredOrder: PropertyId[] = ['piyungan', 'wonosari', 'bantul', 'nusadua'];
 
-    const loadProperties = async (): Promise<void> => {
-        properties.value = await db.properties.toArray();
-    };
+    const properties = ref<Property[]>([]);
 
-    // Sorted properties computed (piyungan -> wonosari -> bantul -> fallback)
     const sortedProperties = computed(() => {
         return [...properties.value].sort((a, b) => {
             const indexA = preferredOrder.indexOf(a.id);
@@ -39,31 +35,31 @@ export const usePropertyStore = defineStore('property', () => {
         });
     });
 
-    const addProperty = async (property: Property): Promise<void> => {
+    async function loadProperties(): Promise<void> {
+        properties.value = await db.properties.toArray();
+    }
+    async function addProperty(property: Property): Promise<void> {
         const plainRecord = JSON.parse(JSON.stringify(property));
 
         await db.properties.add(plainRecord);
         await loadProperties();
-    };
-
-    const saveProperty = async (propertyData: Property): Promise<void> => {
+    }
+    async function saveProperty(propertyData: Property): Promise<void> {
         await toast.loading(async () => {
             const cleanProperty = JSON.parse(JSON.stringify(propertyData));
 
             await db.properties.put(cleanProperty);
             await loadProperties();
         }, toastConfig);
-    };
-
-    const deleteProperty = async (id: PropertyId): Promise<void> => {
+    }
+    async function deleteProperty(id: PropertyId): Promise<void> {
         await db.properties.delete(id);
         await loadProperties();
-    };
-
-    const clearAllProperties = async (): Promise<void> => {
+    }
+    async function clearAllProperties(): Promise<void> {
         await db.properties.clear();
         await loadProperties();
-    };
+    }
 
     return {
         properties,

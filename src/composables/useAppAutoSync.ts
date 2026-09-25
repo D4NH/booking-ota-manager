@@ -41,10 +41,32 @@ export function useAppAutoSync() {
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     });
 
-    const shouldRevalidate = (): boolean => isOnline.value && isEligibleToAutoSync.value;
-    const syncAllData = async (
+    watch([windowFocused, visibility], ([focused, vis]) => {
+        if (focused && vis === 'visible') {
+            syncAllData({ force: false, silent: true });
+        }
+    });
+    watch(isOnline, (online) => {
+        if (online) {
+            syncAllData({ force: false, silent: true });
+        }
+    });
+
+    onMounted(() => {
+        ticker = setInterval(() => {
+            nowTimestamp.value = Date.now();
+        }, 1000);
+    });
+    onUnmounted(() => {
+        if (ticker) clearInterval(ticker);
+    });
+
+    function shouldRevalidate(): boolean {
+        return isOnline.value && isEligibleToAutoSync.value;
+    }
+    async function syncAllData(
         options: { force?: boolean; silent?: boolean } = {}
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         if (isSyncing.value) return false;
 
         const authenticated = refreshAuthStatus() || isAuthenticated.value;
@@ -58,7 +80,6 @@ export function useAppAutoSync() {
         try {
             const propertyIds = Object.keys(PROPERTY_CONFIGS) as PropertyId[];
 
-            // 1. Sync Bookings
             const bookingsTask = Promise.all(
                 propertyIds.map(async (propId) => {
                     const spreadsheetId = PROPERTY_CONFIGS[propId]?.spreadsheetId;
@@ -71,15 +92,12 @@ export function useAppAutoSync() {
                 })
             );
 
-            // 2. Sync Financial System
             const financeTask = syncAllFinancialData({
                 silent: options.silent ?? true,
             });
 
-            // 3. Sync Incoming Staging Queue (Single quota window)
             const stagingTask = stagingStore.pollStagingQueue({ force: options.force });
 
-            // Run all 3 in parallel
             await Promise.all([bookingsTask, financeTask, stagingTask]);
 
             const now = Date.now();
@@ -92,29 +110,7 @@ export function useAppAutoSync() {
         } finally {
             isSyncing.value = false;
         }
-    };
-
-    onMounted(() => {
-        ticker = setInterval(() => {
-            nowTimestamp.value = Date.now();
-        }, 1000);
-    });
-
-    onUnmounted(() => {
-        if (ticker) clearInterval(ticker);
-    });
-
-    watch([windowFocused, visibility], ([focused, vis]) => {
-        if (focused && vis === 'visible') {
-            syncAllData({ force: false, silent: true });
-        }
-    });
-
-    watch(isOnline, (online) => {
-        if (online) {
-            syncAllData({ force: false, silent: true });
-        }
-    });
+    }
 
     return {
         isSyncing,

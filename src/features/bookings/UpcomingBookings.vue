@@ -8,25 +8,23 @@ import { formatDate, getCurrentDate } from '@/utils/date';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+interface MonthSection {
+    key: string;
+    label: string;
+    items: Booking[];
+}
+
 interface Props {
     bookings: Booking[];
     limit?: number;
     showMonthHeaders?: boolean;
     showProperty?: boolean;
 }
-interface Emits {
-    (e: 'edit-booking', booking: Booking): void;
-}
 
 const { bookings, limit = 5, showMonthHeaders = false, showProperty = true } = defineProps<Props>();
-
-const emit = defineEmits<Emits>();
-
-interface MonthSection {
-    key: string;
-    label: string;
-    items: Booking[];
-}
+const emit = defineEmits<{
+    'edit-booking': [booking: Booking];
+}>();
 
 const sortedUpcomingBookings = computed<Booking[]>(() => {
     const today = getCurrentDate();

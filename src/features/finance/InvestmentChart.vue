@@ -1,53 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+// SVG Donut Calculations (radius = 40, circumference = 2 * PI * 40 ≈ 251.32)
+const circumference = 251.32;
+
 const financeStore = useFinanceStore();
 const { sbnMonthlyNetYield, sbnTotalPrincipal, estimatedGoldMarketValue, totalGoldGrams } =
     storeToRefs(financeStore);
 
-// Portfolio Allocation Percentages
 const totalInvestments = computed(() => sbnTotalPrincipal.value + estimatedGoldMarketValue.value);
-
 const sbnSharePct = computed(() => {
     if (totalInvestments.value === 0) return 0;
     return Math.round((sbnTotalPrincipal.value / totalInvestments.value) * 100);
 });
-
 const goldSharePct = computed(() => {
     if (totalInvestments.value === 0) return 0;
     return 100 - sbnSharePct.value;
 });
-
-// SVG Donut Calculations (radius = 40, circumference = 2 * PI * 40 ≈ 251.32)
-const circumference = 251.32;
 const sbnStrokeDasharray = computed(() => {
     const sbnOffset = (sbnSharePct.value / 100) * circumference;
     return `${sbnOffset} ${circumference - sbnOffset}`;
 });
-
-// 12-Month Projected Cash Flow Simulation for SBN
-const monthsLabels = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-];
 const cashFlowBars = computed(() => {
     const netCoupon = sbnMonthlyNetYield.value;
-    return monthsLabels.map((month, idx) => ({
+    return MONTH_NAMES_SHORT.map((month, idx) => ({
         month,
         amount: netCoupon,
         heightPct: netCoupon > 0 ? 80 : 0, // Uniform fixed coupon height

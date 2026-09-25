@@ -52,13 +52,19 @@ const {
     todayTurnover,
 } = usePropertyDetails(() => id);
 
-const handleAddBooking = (propertyId: PropertyId) => modalStore.openBookingModal({ propertyId });
-const handleEditBooking = (booking: Booking) => modalStore.openBookingModal({ booking });
-const handleEditProperty = () => modalStore.openPropertyModal({ property: selectedProperty.value });
-const handleNavigate = (target: PropertyId | 'all'): void => {
+function handleAddBooking(propertyId: PropertyId): void {
+    modalStore.openBookingModal({ propertyId });
+}
+function handleEditBooking(booking: Booking): void {
+    modalStore.openBookingModal({ booking });
+}
+function handleEditProperty(): void {
+    modalStore.openPropertyModal({ property: selectedProperty.value });
+}
+function handleNavigate(target: PropertyId | 'all'): void {
     if (target === 'all') router.push({ name: 'properties' });
     else router.push({ name: 'property-detail', params: { id: target } });
-};
+}
 </script>
 
 <template>

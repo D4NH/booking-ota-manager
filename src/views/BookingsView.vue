@@ -67,30 +67,6 @@ const monthOptions = computed(() => [
     })),
 ]);
 
-const scrollToCurrentMonth = (): void =>
-    void nextTick(() => {
-        requestAnimationFrame(() => {
-            const el = document.querySelector(`[data-month-key="${currentMonthKey.value}"]`);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    });
-const toggleStatusVisibility = (status: Booking['status']): void => {
-    const idx = hiddenStatuses.value.indexOf(status);
-    if (idx > -1) {
-        hiddenStatuses.value.splice(idx, 1);
-    } else {
-        hiddenStatuses.value.push(status);
-    }
-};
-const handleAddBooking = (): void =>
-    modalStore.openBookingModal({
-        propertyId: selectedProperty.value,
-        checkInDate: currentDay.value,
-    });
-const handleEditBooking = (booking: Booking): void => modalStore.openBookingModal({ booking });
-const handleDeleteBooking = async (booking: Booking): Promise<void> =>
-    void (await deleteBooking(booking));
-
 watch(selectedMonth, (newMonth) => {
     if (newMonth !== 'all') {
         expandAll();
@@ -106,10 +82,38 @@ watch(selectedProperty, () => {
 onMounted(() => {
     scrollToCurrentMonth();
 });
-
 onActivated(() => {
     scrollToCurrentMonth();
 });
+
+function scrollToCurrentMonth(): void {
+    nextTick(() => {
+        requestAnimationFrame(() => {
+            const el = document.querySelector(`[data-month-key="${currentMonthKey.value}"]`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+}
+function toggleStatusVisibility(status: Booking['status']): void {
+    const idx = hiddenStatuses.value.indexOf(status);
+    if (idx > -1) {
+        hiddenStatuses.value.splice(idx, 1);
+    } else {
+        hiddenStatuses.value.push(status);
+    }
+}
+function handleAddBooking(): void {
+    modalStore.openBookingModal({
+        propertyId: selectedProperty.value,
+        checkInDate: currentDay.value,
+    });
+}
+function handleEditBooking(booking: Booking): void {
+    modalStore.openBookingModal({ booking });
+}
+async function handleDeleteBooking(booking: Booking): Promise<void> {
+    void (await deleteBooking(booking));
+}
 </script>
 
 <template>

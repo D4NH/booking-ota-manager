@@ -5,6 +5,9 @@ import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 import CardTitle from '@/components/CardTitle.vue';
 
+// SVG Donut Math: radius = 38, circumference = 2 * PI * 38 ≈ 238.76
+const circumference = 238.76;
+
 interface Props {
     bookings: Booking[];
 }
@@ -24,7 +27,6 @@ const yearOptions = computed<number[]>(() => {
     if (years.size === 0) years.add(new Date().getFullYear());
     return Array.from(years).sort((a, b) => b - a);
 });
-
 const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
 
 const channelStats = computed(() => {
@@ -62,10 +64,6 @@ const channelStats = computed(() => {
     entries.sort((a, b) => b.value - a.value);
     return { entries, totalCount, totalRevenue, total };
 });
-
-// SVG Donut Math: radius = 38, circumference = 2 * PI * 38 ≈ 238.76
-const circumference = 238.76;
-
 const donutSegments = computed(() => {
     const total = channelStats.value.total || 1;
     let accumulatedOffset = 0;
@@ -85,15 +83,15 @@ const donutSegments = computed(() => {
     });
 });
 
-const clearHighlight = (): void => {
-    hoveredIndex.value = null;
-};
-
 watch(yearOptions, (available) => {
     if (!available.includes(selectedYear.value) && available.length > 0) {
         selectedYear.value = available[0]!;
     }
 });
+
+function clearHighlight(): void {
+    hoveredIndex.value = null;
+}
 </script>
 
 <template>

@@ -29,29 +29,26 @@ const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (activeTab.value === 'Shared') return filteredSharedFinances.value;
     return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
 });
-
 const totalRecurringCount = computed(() => {
     const recurringItems = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
     return recurringItems.filter((i) => !i.isSettled).length;
 });
 
-const openAddModal = (): void => {
+function openAddModal(): void {
     editingItem.value = null;
     isModalOpen.value = true;
-};
-
-const openEditModal = (item: PersonalFinance | SharedFinance): void => {
+}
+function openEditModal(item: PersonalFinance | SharedFinance): void {
     editingItem.value = item;
     isModalOpen.value = true;
-};
-
-const handleDelete = async (item: PersonalFinance | SharedFinance): Promise<void> => {
+}
+async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void> {
     if (activeTab.value === 'Shared') {
         await removeSharedTransaction(item.id, item.category);
     } else {
         await removePersonalTransaction(item.id, item.category);
     }
-};
+}
 </script>
 
 <template>

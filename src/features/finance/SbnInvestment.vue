@@ -10,7 +10,6 @@ const { sbnInvestments, sbnTotalPrincipal, sbnMonthlyNetYield, sbnTotalCollected
     storeToRefs(financeStore);
 
 const primarySbn = computed(() => sbnInvestments.value[0]);
-
 const maturityProgress = computed(() => {
     if (!primarySbn.value) return 0;
     const start = new Date(primarySbn.value.issueDate).getTime();
@@ -20,7 +19,6 @@ const maturityProgress = computed(() => {
     const total = end - start;
     return Math.min(100, Math.round((elapsed / total) * 100));
 });
-
 const monthsRemaining = computed(() => {
     if (!primarySbn.value) return 0;
     const end = new Date(primarySbn.value.maturityDate);

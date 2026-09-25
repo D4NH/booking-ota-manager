@@ -7,15 +7,6 @@ import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface Props {
-    modelValue?: boolean;
-}
-
-const { modelValue = false } = defineProps<Props>();
-const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
-
-const { createSavingGoal } = useFinanceSync();
-
 const ownerOptions = [
     { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
@@ -27,6 +18,15 @@ const priorityOptions = [
     { label: 'Low', value: 3 },
 ];
 
+interface Props {
+    modelValue?: boolean;
+}
+
+const { modelValue = false } = defineProps<Props>();
+const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
+
+const { createSavingGoal } = useFinanceSync();
+
 const name = ref('');
 const owner = ref<PersonalOwner | 'Shared'>('Shared');
 const targetAmount = ref<number | null>(null);
@@ -35,10 +35,10 @@ const deadline = ref('');
 const notes = ref('');
 const isSubmitting = ref(false);
 
-const closeModal = (): void => {
+function closeModal(): void {
     emit('update:modelValue', false);
-};
-const handleSubmit = async (): Promise<void> => {
+}
+async function handleSubmit(): Promise<void> {
     if (isSubmitting.value || !name.value || !targetAmount.value) return;
 
     isSubmitting.value = true;
@@ -65,7 +65,7 @@ const handleSubmit = async (): Promise<void> => {
             isSubmitting.value = false;
         }, 1000);
     }
-};
+}
 </script>
 
 <template>

@@ -19,7 +19,7 @@ const { properties } = storeToRefs(propertyStore);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const isImporting = ref(false);
 
-const isValidProperty = (obj: unknown): obj is Property => {
+function isValidProperty(obj: unknown): obj is Property {
     if (!obj || typeof obj !== 'object') return false;
     const p = obj as Record<string, unknown>;
 
@@ -35,8 +35,8 @@ const isValidProperty = (obj: unknown): obj is Property => {
         typeof p.plotSize === 'number' &&
         typeof p.available === 'boolean'
     );
-};
-const exportProperties = (): void => {
+}
+function exportProperties(): void {
     try {
         const backupData: PropertyBackupPayload = {
             version: 1,
@@ -67,9 +67,11 @@ const exportProperties = (): void => {
             description: err instanceof Error ? err.message : 'Failed to generate file.',
         });
     }
-};
-const triggerFileInput = (): void => fileInputRef.value?.click();
-const handleFileChange = async (event: Event): Promise<void> => {
+}
+function triggerFileInput(): void {
+    fileInputRef.value?.click();
+}
+async function handleFileChange(event: Event): Promise<void> {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
     if (!file) return;
@@ -126,7 +128,7 @@ const handleFileChange = async (event: Event): Promise<void> => {
         isImporting.value = false;
         target.value = '';
     }
-};
+}
 </script>
 
 <template>

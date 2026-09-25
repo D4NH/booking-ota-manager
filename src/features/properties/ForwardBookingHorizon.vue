@@ -1,4 +1,3 @@
-<!-- src/components/ForwardBookingHorizon.vue -->
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Booking } from '@/types/booking';
@@ -7,6 +6,8 @@ import { formatIDR } from '@/utils/money';
 import { getCurrentDate, formatDate, parseISODate } from '@/utils/date';
 
 import CardTitle from '@/components/CardTitle.vue';
+
+const MS_PER_DAY = 86_400_000;
 
 interface Props {
     bookings: Booking[];
@@ -29,8 +30,6 @@ interface HorizonWindow {
 }
 
 const { bookings, property, propertyId = 'all', today = getCurrentDate() } = defineProps<Props>();
-
-const MS_PER_DAY = 86_400_000;
 
 const horizonWindows = computed<HorizonWindow[]>(() => {
     const activePropId = property?.id || (propertyId !== 'all' ? propertyId : null);
@@ -134,7 +133,6 @@ const horizonWindows = computed<HorizonWindow[]>(() => {
         };
     });
 });
-
 const totalConfirmed90dRevenue = computed(() =>
     horizonWindows.value.reduce((sum, w) => sum + w.confirmedRevenue, 0)
 );

@@ -11,34 +11,33 @@ export const useModalStore = defineStore('modal', () => {
     const isPropertyModalOpen = ref(false);
     const propertyToEdit = ref<Property | null>(null);
 
-    const openBookingModal = (options?: {
+    function openBookingModal(options?: {
         booking?: Booking | null;
         checkInDate?: string;
         propertyId?: PropertyId | 'all';
-    }) => {
+    }) {
         bookingToEdit.value = options?.booking || null;
         currentProperty.value = options?.propertyId || 'all';
         initialCheckInDate.value = options?.checkInDate || '';
         isBookingModalOpen.value = true;
-    };
-    const closeBookingModal = () => {
+    }
+    function closeBookingModal() {
         bookingToEdit.value = null;
         initialCheckInDate.value = '';
         isBookingModalOpen.value = false;
-    };
-
-    const openPropertyModal = (options?: {
+    }
+    function openPropertyModal(options?: {
         property?: Property | null;
         propertyId?: PropertyId | 'all';
-    }) => {
+    }) {
         currentProperty.value = options?.propertyId || 'all';
         propertyToEdit.value = options?.property || null;
         isPropertyModalOpen.value = true;
-    };
-    const closePropertyModal = () => {
+    }
+    function closePropertyModal() {
         propertyToEdit.value = null;
         isPropertyModalOpen.value = false;
-    };
+    }
 
     return {
         isBookingModalOpen,

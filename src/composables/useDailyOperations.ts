@@ -44,14 +44,6 @@ export function useDailyOperations(
     options: UseDailyOperationsOptions = {}
 ) {
     /**
-     * Resolves property ID filter using `toValue` to support getters, refs, and strings.
-     */
-    const getActivePropertyId = (): PropertyId | null => {
-        const rawId = toValue(options.propertyId);
-        return rawId && rawId !== 'all' ? (rawId as PropertyId) : null;
-    };
-
-    /**
      * All daily operations based on date, time of day, and status.
      */
     const dailyOperationsData = computed(() => {
@@ -104,12 +96,10 @@ export function useDailyOperations(
             },
         };
     });
-
     const todaysArrivals = computed(() => dailyOperationsData.value.arrivals);
     const currentStays = computed(() => dailyOperationsData.value.stays);
     const todaysDepartures = computed(() => dailyOperationsData.value.departures);
     const todaysTurnover = computed(() => dailyOperationsData.value.turnover);
-
     const isOccupied = computed<boolean>(() => {
         // 1. In-house or in the arrivals queue
         if (currentStays.value.length > 0 || todaysArrivals.value.length > 0) {
@@ -127,7 +117,6 @@ export function useDailyOperations(
             return b.checkIn === today && b.status === 'Checked-in';
         });
     });
-
     /**
      * Formatted operational sections ready for direct template rendering.
      * Automatically omits empty sections.
@@ -139,6 +128,14 @@ export function useDailyOperations(
             { label: 'Leaving Today', items: todaysDepartures.value },
         ].filter((section) => section.items.length > 0)
     );
+
+    /**
+     * Resolves property ID filter using `toValue` to support getters, refs, and strings.
+     */
+    function getActivePropertyId(): PropertyId | null {
+        const rawId = toValue(options.propertyId);
+        return rawId && rawId !== 'all' ? (rawId as PropertyId) : null;
+    }
 
     return {
         todaysArrivals,

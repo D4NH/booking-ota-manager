@@ -15,34 +15,8 @@ import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface Props {
-    owner?: PersonalOwner | 'Shared';
-    itemToEdit?: PersonalFinance | SharedFinance | null;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    owner: 'Danh Nguyen',
-    itemToEdit: null,
-});
-
-const emit = defineEmits<{
-    (e: 'closed'): void;
-}>();
-
-const isOpen = defineModel<boolean>({ default: false });
-
-const financeStore = useFinanceStore();
-const {
-    addPersonalTransaction,
-    addSharedTransaction,
-    editPersonalTransaction,
-    editSharedTransaction,
-} = useFinanceSync();
-const { currentGoldPricePerGram, isLoading } = storeToRefs(financeStore);
-
 const DEFAULT_PERSONAL_CATEGORY = 'Food & Drinks';
 const DEFAULT_SHARED_CATEGORY = 'House';
-
 const categoriesPersonal = [
     'Creditcard',
     'Investments',
@@ -52,7 +26,6 @@ const categoriesPersonal = [
     'Savings',
     'Subscription',
 ] as const;
-
 const categoriesShared = [
     'BPJS',
     'Creditcard',
@@ -64,14 +37,32 @@ const categoriesShared = [
     'Other',
     'Subscription',
 ] as const;
-
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
-
 const entryType = [
     { label: 'Income', value: 'income' },
     { label: 'Expense', value: 'expense' },
     { label: 'Fixed Cost', value: 'fixed_cost' },
 ];
+
+interface Props {
+    owner?: PersonalOwner | 'Shared';
+    itemToEdit?: PersonalFinance | SharedFinance | null;
+}
+
+const { owner = 'Danh Nguyen', itemToEdit = null } = defineProps<Props>();
+const emit = defineEmits<{
+    closed: [];
+}>();
+const isOpen = defineModel<boolean>({ default: false });
+
+const financeStore = useFinanceStore();
+const {
+    addPersonalTransaction,
+    addSharedTransaction,
+    editPersonalTransaction,
+    editSharedTransaction,
+} = useFinanceSync();
+const { currentGoldPricePerGram, isLoading } = storeToRefs(financeStore);
 
 const formType = ref<TransactionType>('expense');
 const formCategory = ref<string>(DEFAULT_PERSONAL_CATEGORY);
@@ -82,33 +73,19 @@ const formDate = ref(getCurrentDate());
 const formNotes = ref('');
 const isSubmitting = ref(false);
 
-const isEditing = computed(() => Boolean(props.itemToEdit));
-
+const isEditing = computed(() => Boolean(itemToEdit));
 const availableCategories = computed(() => {
-    const list = props.owner === 'Shared' ? categoriesShared : categoriesPersonal;
+    const list = owner === 'Shared' ? categoriesShared : categoriesPersonal;
     return list.map((category) => ({
         label: category,
         value: category,
     }));
 });
-
 const isSavingsCategory = computed(() => formCategory.value.trim().toLowerCase() === 'savings');
-
 const isGoldCategory = computed(() => formCategory.value.trim().toLowerCase() === 'gold');
 
-const getDefaultCategory = (): string =>
-    props.owner === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
-
-const handleAmountChange = (): void => {
-    if (isGoldCategory.value && formAmount.value && Number(formAmount.value) > 0) {
-        const rate = currentGoldPricePerGram.value || 2450000;
-        const calculatedGrams = Number(formAmount.value) / rate;
-        formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
-    }
-};
-
 watch(
-    () => [isOpen.value, props.itemToEdit, props.owner] as const,
+    () => [isOpen.value, itemToEdit, owner] as const,
     ([open, item, currentOwner]) => {
         if (!open) return;
 
@@ -137,19 +114,27 @@ watch(
     },
     { immediate: true }
 );
-
 watch(formCategory, (newCat) => {
     if (newCat?.trim().toLowerCase() === 'gold') {
         handleAmountChange();
     }
 });
 
-const closeModal = () => {
+function getDefaultCategory(): string {
+    return owner === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
+}
+function handleAmountChange(): void {
+    if (isGoldCategory.value && formAmount.value && Number(formAmount.value) > 0) {
+        const rate = currentGoldPricePerGram.value || 2450000;
+        const calculatedGrams = Number(formAmount.value) / rate;
+        formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
+    }
+}
+function closeModal(): void {
     isOpen.value = false;
     emit('closed');
-};
-
-const submitRecord = async (): Promise<void> => {
+}
+async function submitRecord(): Promise<void> {
     if (isSubmitting.value || !formAmount.value || formAmount.value <= 0 || !formDate.value) {
         return;
     }
@@ -160,9 +145,9 @@ const submitRecord = async (): Promise<void> => {
     try {
         let success = false;
 
-        if (isEditing.value && props.itemToEdit) {
-            if (props.owner === 'Shared') {
-                success = await editSharedTransaction(props.itemToEdit.id, {
+        if (isEditing.value && itemToEdit) {
+            if (owner === 'Shared') {
+                success = await editSharedTransaction(itemToEdit.id, {
                     type: formType.value,
                     category: resolvedCategory,
                     amount: Number(formAmount.value),
@@ -170,8 +155,8 @@ const submitRecord = async (): Promise<void> => {
                     notes: formNotes.value.trim(),
                 });
             } else {
-                success = await editPersonalTransaction(props.itemToEdit.id, {
-                    owner: props.owner as PersonalOwner,
+                success = await editPersonalTransaction(itemToEdit.id, {
+                    owner: owner as PersonalOwner,
                     type: formType.value,
                     category: resolvedCategory,
                     amount: Number(formAmount.value),
@@ -186,7 +171,7 @@ const submitRecord = async (): Promise<void> => {
                 });
             }
         } else {
-            if (props.owner === 'Shared') {
+            if (owner === 'Shared') {
                 success = await addSharedTransaction({
                     type: formType.value,
                     category: resolvedCategory,
@@ -196,7 +181,7 @@ const submitRecord = async (): Promise<void> => {
                 });
             } else {
                 success = await addPersonalTransaction({
-                    owner: props.owner as PersonalOwner,
+                    owner: owner as PersonalOwner,
                     type: formType.value,
                     category: resolvedCategory,
                     amount: Number(formAmount.value),
@@ -218,7 +203,7 @@ const submitRecord = async (): Promise<void> => {
     } finally {
         isSubmitting.value = false;
     }
-};
+}
 </script>
 
 <template>
@@ -299,7 +284,7 @@ const submitRecord = async (): Promise<void> => {
                                 v-model.number="formAmount"
                                 input-label="Amount"
                                 type="number"
-                                placeholder="e.g. 100000"
+                                placeholder="100000"
                                 required
                                 @input="handleAmountChange">
                                 <template #icon>

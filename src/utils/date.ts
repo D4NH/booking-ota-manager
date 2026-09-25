@@ -1,71 +1,3 @@
-/**
- * Current date formatted to YYYY-MM-DD in local time
- */
-export const getCurrentDate = (d: Date = new Date()): string => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
-
-/**
- * Current month formatted to YYYY-MM
- */
-export const getCurrentMonth = (d: Date = new Date()): string => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-};
-
-/**
- * Previous month formatted to YYYY-MM.
- * Hardened: Sets day to 1 before shifting months to prevent 31st-day rollover.
- */
-export const getPreviousMonth = (d: Date = new Date()): string => {
-    const date = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-};
-
-/**
- * Current year formatted to YYYY
- */
-export const getCurrentYear = (d: Date = new Date()): string => String(d.getFullYear());
-
-/**
- * Current local hour (0-23)
- */
-export const getCurrentHour = (d: Date = new Date()): number => d.getHours();
-
-/**
- * Returns total days in a given target month ("YYYY-MM")
- */
-export const getDaysInMonth = (yearMonthStr: string): number => {
-    const [year, month] = yearMonthStr.split('-').map(Number);
-    if (!year || !month) return 0;
-    return new Date(year, month, 0).getDate();
-};
-
-export const getCurrentWeekNumber = (d: Date = new Date()): number => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    const weekNumber = Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-
-    return weekNumber;
-};
-
-/**
- * Parse an ISO date string ("YYYY-MM-DD" or "YYYY-MM") into a local Date object.
- * Prevents UTC timezone shift backward by 1 day.
- */
-export const parseISODate = (isoStr: string): Date => {
-    const [year, month, day = 1] = isoStr.split('-').map(Number);
-    return new Date(year ?? 2026, (month ?? 1) - 1, day);
-};
-
 export interface FormatDateOptions {
     includeYear?: boolean;
     shortMonth?: boolean;
@@ -77,6 +9,78 @@ export interface FormatDateOptions {
 }
 
 /**
+ * Current date formatted to YYYY-MM-DD in local time
+ */
+export function getCurrentDate(d: Date = new Date()): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+/**
+ * Current month formatted to YYYY-MM
+ */
+export function getCurrentMonth(d: Date = new Date()): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+}
+
+/**
+ * Previous month formatted to YYYY-MM.
+ * Hardened: Sets day to 1 before shifting months to prevent 31st-day rollover.
+ */
+export function getPreviousMonth(d: Date = new Date()): string {
+    const date = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+}
+
+/**
+ * Current year formatted to YYYY
+ */
+export function getCurrentYear(d: Date = new Date()): string {
+    return String(d.getFullYear());
+}
+
+/**
+ * Current local hour (0-23)
+ */
+export function getCurrentHour(d: Date = new Date()): number {
+    return d.getHours();
+}
+
+/**
+ * Returns total days in a given target month ("YYYY-MM")
+ */
+export function getDaysInMonth(yearMonthStr: string): number {
+    const [year, month] = yearMonthStr.split('-').map(Number);
+    if (!year || !month) return 0;
+    return new Date(year, month, 0).getDate();
+}
+
+export function getCurrentWeekNumber(d: Date = new Date()): number {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    const weekNumber = Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+
+    return weekNumber;
+}
+
+/**
+ * Parse an ISO date string ("YYYY-MM-DD" or "YYYY-MM") into a local Date object.
+ * Prevents UTC timezone shift backward by 1 day.
+ */
+export function parseISODate(isoStr: string): Date {
+    const [year, month, day = 1] = isoStr.split('-').map(Number);
+    return new Date(year ?? 2026, (month ?? 1) - 1, day);
+}
+
+/**
  * Formats an ISO string ("2026-09-02" or "2026-09") into display text.
  * Examples:
  *  - formatDate("2026-09-02") -> "02 September"
@@ -84,7 +88,7 @@ export interface FormatDateOptions {
  *  - formatDate("2026-09-02", { includeWeekday: true, includeYear: true }) -> "Wednesday, 02 September 2026"
  *  - formatDate("2026-09-02", { weekday: 'short' }) -> "Wed, 02 September"
  */
-export const formatDate = (isoDateStr: string, options: FormatDateOptions = {}): string => {
+export function formatDate(isoDateStr: string, options: FormatDateOptions = {}): string {
     if (!isoDateStr) return '';
 
     const date = parseISODate(isoDateStr);
@@ -112,12 +116,12 @@ export const formatDate = (isoDateStr: string, options: FormatDateOptions = {}):
     const yearSuffix = options.includeYear ? ` ${date.getFullYear()}` : '';
 
     return `${weekdayPrefix}${day} ${monthName}${yearSuffix}`;
-};
+}
 
 /**
  * Accurately calculates nights between two 'YYYY-MM-DD' dates using UTC boundaries.
  */
-export const calculateNights = (checkIn: string, checkOut: string): number => {
+export function calculateNights(checkIn: string, checkOut: string): number {
     const [y1, m1, d1] = checkIn.split('-').map(Number);
     const [y2, m2, d2] = checkOut.split('-').map(Number);
 
@@ -128,22 +132,22 @@ export const calculateNights = (checkIn: string, checkOut: string): number => {
     const diff = Math.round((end - start) / 86_400_000);
 
     return diff > 0 ? diff : 1;
-};
+}
 
 /**
  * Shifts date by offsetDays without UTC timezone shifts.
  */
-export const getOffsetDate = (dateStr: string, offsetDays: number): string => {
+export function getOffsetDate(dateStr: string, offsetDays: number): string {
     const [y, m, d] = dateStr.split('-').map(Number);
     const date = new Date(y!, m! - 1, d! + offsetDays);
     return getCurrentDate(date);
-};
+}
 
 /**
  * Converts arbitrary Google Sheets date formats (ISO, DD/MM/YYYY, MM/DD/YYYY, or serial number)
  * into a canonical ISO "YYYY-MM-DD" string.
  */
-export const normalizeDate = (raw: unknown): string => {
+export function normalizeDate(raw: unknown): string {
     if (raw === null || raw === undefined || raw === '') return '';
 
     // If it is already YYYY-MM-DD
@@ -187,4 +191,4 @@ export const normalizeDate = (raw: unknown): string => {
     }
 
     return str;
-};
+}
