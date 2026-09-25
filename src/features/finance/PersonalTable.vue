@@ -1,218 +1,57 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import type { TransactionType, PersonalFinance, SharedFinance } from '@/types/finance';
+import type { PersonalFinance, SharedFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
-import SelectDropdown from '@/components/ui/SelectDropdown.vue';
-import DatePicker from '@/components/ui/DatePicker.vue';
-import TextInput from '@/components/ui/TextInput.vue';
 import RecurringChecklist from '@/features/finance/RecurringChecklist.vue';
+import PersonalTransactionModal from '@/features/finance/PersonalTransactionModal.vue';
 
 const financeStore = useFinanceStore();
-const {
-    addPersonalTransaction,
-    addSharedTransaction,
-    editPersonalTransaction,
-    editSharedTransaction,
-    removePersonalTransaction,
-} = useFinanceSync();
+const { removePersonalTransaction, removeSharedTransaction } = useFinanceSync();
 const {
     filteredPersonalFinances,
     filteredSharedFinances,
-    isLoading,
-    currentGoldPricePerGram,
     monthlyProjectedIncome,
     monthlyProjectedExpenses,
 } = storeToRefs(financeStore);
 
-const DEFAULT_PERSONAL_CATEGORY = '';
-const DEFAULT_SHARED_CATEGORY = 'House';
-
-const categoriesPersonal = [
-    'Creditcard',
-    'Investments',
-    'Other',
-    'Food & Drinks',
-    'Groceries',
-    'Savings',
-    'Subscription',
-] as const;
-const categoriesShared = [
-    'BPJS',
-    'Creditcard',
-    'Electricity',
-    'Internet',
-    'Investments',
-    'Kirana',
-    'Other',
-    'Subscription',
-] as const;
-const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
-const entryType = [
-    { label: 'Income', value: 'income' },
-    { label: 'Expense', value: 'expense' },
-    { label: 'Fixed Cost', value: 'fixed_cost' },
-];
-
 const activeTab = ref<'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared'>('Danh Nguyen');
 const isModalOpen = ref(false);
-const isSubmitting = ref(false);
 const editingItem = ref<PersonalFinance | SharedFinance | null>(null);
 const showRecurring = ref(false);
-const formType = ref<TransactionType>('expense');
-const formCategory = ref<string>(DEFAULT_PERSONAL_CATEGORY);
-const formSavingsInstitution = ref<string>('BCA');
-const formGoldWeightGrams = ref<number | null>(null);
-const formAmount = ref<number | null>(null);
-const formDate = ref(new Date().toISOString().slice(0, 10));
-const formNotes = ref('');
-
-const isEditing = computed(() => editingItem.value !== null);
-const availableCategories = computed(() => {
-    const activeSource = activeTab.value === 'Shared' ? categoriesShared : categoriesPersonal;
-
-    return activeSource.map((category) => ({
-        label: category,
-        value: category,
-    }));
-});
 
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (activeTab.value === 'Shared') return filteredSharedFinances.value;
     return filteredPersonalFinances.value.filter((i) => i.owner === activeTab.value);
 });
+
 const totalRecurringCount = computed(() => {
     const recurringItems = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
     return recurringItems.filter((i) => !i.isSettled).length;
 });
 
-const getDefaultCategory = (): string =>
-    activeTab.value === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
 const openAddModal = (): void => {
     editingItem.value = null;
-    formCategory.value = getDefaultCategory();
-    formSavingsInstitution.value = 'BCA';
-    formGoldWeightGrams.value = null;
-    formAmount.value = null;
-    formNotes.value = '';
-    formDate.value = new Date().toISOString().slice(0, 10);
-    formType.value = 'expense';
     isModalOpen.value = true;
 };
+
 const openEditModal = (item: PersonalFinance | SharedFinance): void => {
     editingItem.value = item;
-    formType.value = item.type;
-    formCategory.value = item.category;
-    formAmount.value = item.amount;
-    formDate.value = item.date;
-    formNotes.value = item.notes || '';
-    formSavingsInstitution.value =
-        'savingsInstitution' in item && item.savingsInstitution ? item.savingsInstitution : 'BCA';
-    formGoldWeightGrams.value =
-        'goldWeightGrams' in item && item.goldWeightGrams ? item.goldWeightGrams : null;
     isModalOpen.value = true;
 };
-const handleAmountChange = (): void => {
-    if (formCategory.value === 'Gold' && formAmount.value && Number(formAmount.value) > 0) {
-        const rate = currentGoldPricePerGram.value || 2450000;
-        const calculatedGrams = Number(formAmount.value) / rate;
-        formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
+
+const handleDelete = async (item: PersonalFinance | SharedFinance): Promise<void> => {
+    if (activeTab.value === 'Shared') {
+        await removeSharedTransaction(item.id, item.category);
+    } else {
+        await removePersonalTransaction(item.id, item.category);
     }
 };
-const submitRecord = async (): Promise<void> => {
-    if (isSubmitting.value) return;
-
-    if (!formAmount.value || formAmount.value <= 0 || !formDate.value || !formCategory.value) {
-        return;
-    }
-
-    isSubmitting.value = true;
-    const resolvedCategory = formCategory.value.trim() || getDefaultCategory();
-
-    try {
-        let success = false;
-
-        if (isEditing.value && editingItem.value) {
-            if (activeTab.value === 'Shared') {
-                success = await editSharedTransaction(editingItem.value.id, {
-                    type: formType.value,
-                    category: resolvedCategory,
-                    amount: Number(formAmount.value),
-                    date: formDate.value,
-                    notes: formNotes.value,
-                });
-            } else {
-                success = await editPersonalTransaction(editingItem.value.id, {
-                    owner: activeTab.value,
-                    type: formType.value,
-                    category: resolvedCategory,
-                    amount: Number(formAmount.value),
-                    date: formDate.value,
-                    notes: formNotes.value,
-                    savingsInstitution:
-                        resolvedCategory === 'Savings' ? formSavingsInstitution.value : undefined,
-                    goldWeightGrams:
-                        resolvedCategory === 'Gold'
-                            ? formGoldWeightGrams.value || undefined
-                            : undefined,
-                });
-            }
-        } else {
-            if (activeTab.value === 'Shared') {
-                success = await addSharedTransaction({
-                    type: formType.value,
-                    category: resolvedCategory,
-                    amount: Number(formAmount.value),
-                    date: formDate.value,
-                    notes: formNotes.value,
-                });
-            } else {
-                success = await addPersonalTransaction({
-                    owner: activeTab.value,
-                    type: formType.value,
-                    category: resolvedCategory,
-                    amount: Number(formAmount.value),
-                    date: formDate.value,
-                    notes: formNotes.value,
-                    savingsInstitution:
-                        resolvedCategory === 'Savings' ? formSavingsInstitution.value : undefined,
-                    goldWeightGrams:
-                        resolvedCategory === 'Gold'
-                            ? formGoldWeightGrams.value || undefined
-                            : undefined,
-                });
-            }
-        }
-
-        if (success) {
-            isModalOpen.value = false;
-            editingItem.value = null;
-            formAmount.value = null;
-            formNotes.value = '';
-            formGoldWeightGrams.value = null;
-        }
-    } finally {
-        setTimeout(() => {
-            isSubmitting.value = false;
-        }, 500);
-    }
-};
-
-watch(activeTab, () => {
-    if (!isModalOpen.value) {
-        formCategory.value = getDefaultCategory();
-    }
-});
-watch(formCategory, (newCat) => {
-    if (newCat === 'Gold') {
-        handleAmountChange();
-    }
-});
 </script>
 
 <template>
@@ -224,11 +63,12 @@ watch(formCategory, (newCat) => {
                 accounts
             </template>
         </CardTitle>
+
         <div class="flex shrink-0 items-center justify-between">
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
-                    v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared']"
+                    v-for="tab in ['Danh Nguyen', 'Citra Ayu Wardani', 'Shared'] as const"
                     :key="tab"
                     class="cursor-pointer rounded-md px-3 py-1.5 transition"
                     :class="
@@ -240,6 +80,7 @@ watch(formCategory, (newCat) => {
                     {{ tab }}
                 </button>
             </div>
+
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -253,7 +94,7 @@ watch(formCategory, (newCat) => {
                     Recurring Payments ({{ totalRecurringCount }})
                 </button>
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm"
+                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm cursor-pointer"
                     @click="openAddModal">
                     + Add Record
                 </button>
@@ -320,7 +161,7 @@ watch(formCategory, (newCat) => {
                                 <button
                                     type="button"
                                     title="Edit Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition"
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
                                     @click="openEditModal(item)">
                                     <fa-icon
                                         icon="pen-to-square"
@@ -330,8 +171,8 @@ watch(formCategory, (newCat) => {
                                 <button
                                     type="button"
                                     title="Delete Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition"
-                                    @click="removePersonalTransaction(item.id, item.category)">
+                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
+                                    @click="handleDelete(item)">
                                     <fa-icon
                                         icon="trash-can"
                                         class="text-xs" />
@@ -350,106 +191,11 @@ watch(formCategory, (newCat) => {
             </table>
         </div>
 
-        <!-- TODO: move to modals -->
-        <div
-            v-if="isModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
-            <div
-                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
-                <div
-                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                    <h2 class="text-base font-semibold text-mist-100">
-                        {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ activeTab }}
-                    </h2>
-                    <button
-                        type="button"
-                        class="text-mist-400 hover:text-mist-200 text-sm"
-                        @click="isModalOpen = false">
-                        <fa-icon icon="xmark" />
-                    </button>
-                </div>
-
-                <form
-                    class="max-h-[80vh] overflow-y-auto space-y-4"
-                    @submit.prevent="submitRecord">
-                    <SelectDropdown
-                        v-model="formType"
-                        input-label="Type"
-                        :options="entryType" />
-
-                    <SelectDropdown
-                        v-model="formCategory"
-                        input-label="Category"
-                        :options="availableCategories" />
-
-                    <div
-                        v-if="formCategory === 'savings'"
-                        class="bg-mist-800 border border-mist-800 p-3 rounded-md space-y-2">
-                        <label class="text-xs font-semibold text-lime-400 block">
-                            Destination Savings Account
-                        </label>
-                        <select
-                            v-model="formSavingsInstitution"
-                            class="w-full text-xs border border-mist-800 bg-mist-900 text-mist-100 rounded-md p-2">
-                            <option
-                                v-for="inst in savingsInstitutions"
-                                :key="inst"
-                                :value="inst">
-                                {{ inst }}
-                            </option>
-                        </select>
-                        <p class="text-[11px] text-mist-400">
-                            Auto-syncs directly into the Liquid Savings breakdown.
-                        </p>
-                    </div>
-
-                    <TextInput
-                        id="amount"
-                        v-model.number="formAmount"
-                        input-label="Amount"
-                        type="number"
-                        min="1"
-                        placeholder="100000"
-                        required>
-                        <template #icon>
-                            <fa-icon
-                                icon="rupiah-sign"
-                                class="text-xs" />
-                        </template>
-                    </TextInput>
-
-                    <DatePicker
-                        v-model="formDate"
-                        select-today-by-default
-                        input-label="Date" />
-
-                    <TextInput
-                        id="amount"
-                        v-model="formNotes"
-                        input-label="Notes"
-                        type="text"
-                        placeholder="...">
-                    </TextInput>
-
-                    <div class="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
-                            @click="isModalOpen = false">
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="isLoading || isSubmitting"
-                            class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 disabled:cursor-not-allowed text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5">
-                            <span
-                                v-if="isSubmitting"
-                                class="w-3 h-3 border-2 border-mist-800 border-t-transparent rounded-full animate-spin"></span>
-                            <span>{{ isEditing ? 'Save Changes' : 'Add Entry' }}</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <!-- External Modal -->
+        <PersonalTransactionModal
+            v-model="isModalOpen"
+            :owner="activeTab"
+            :item-to-edit="editingItem"
+            @closed="editingItem = null" />
     </div>
 </template>
