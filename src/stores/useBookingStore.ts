@@ -156,9 +156,9 @@ export const useBookingStore = defineStore('booking', () => {
     async function updateBookingWithRemoteSync(
         updated: Booking,
         sheetsApi: {
-            updateSheetRowByBookingId: (
+            updateSheetRowById: (
                 spreadsheetId: string,
-                bookingId: string,
+                id: string,
                 values: (string | number)[],
                 sheetName?: string,
                 calendarId?: string
@@ -178,7 +178,7 @@ export const useBookingStore = defineStore('booking', () => {
         const nights = calculateNights(updated.checkIn, updated.checkOut);
         const updatedWithNights = { ...updated, nights };
 
-        await sheetsApi.updateSheetRowByBookingId(
+        await sheetsApi.updateSheetRowById(
             targetSheetId,
             updatedWithNights.bookingId,
             formatSheetRow(updatedWithNights),
@@ -191,10 +191,10 @@ export const useBookingStore = defineStore('booking', () => {
     async function deleteBookingWithRemoteSync(
         booking: Booking,
         sheetsApi: {
-            deleteSheetRowByBookingId: (
+            deleteSheetRowById: (
                 spreadsheetId: string,
-                bookingId: string,
-                calendarId?: string
+                id: string,
+                options?: { sheetName?: string; calendarId?: string } | string
             ) => Promise<void>;
         }
     ): Promise<void> {
@@ -208,12 +208,10 @@ export const useBookingStore = defineStore('booking', () => {
             );
         }
 
-        // Clear row from Google Sheets first
-        await sheetsApi.deleteSheetRowByBookingId(
-            targetSheetId,
-            booking.bookingId,
-            targetCalendarId || undefined
-        );
+        // Clear row from Google Sheets & delete calendar event
+        await sheetsApi.deleteSheetRowById(targetSheetId, booking.bookingId, {
+            calendarId: targetCalendarId || undefined,
+        });
 
         // Remove from local Dexie only after remote confirms deletion
         if (booking.id) {

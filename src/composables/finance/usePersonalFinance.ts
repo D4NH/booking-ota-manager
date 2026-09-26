@@ -50,7 +50,7 @@ export function usePersonalFinance(
     selectedMonth: Ref<string>,
     previousMonth: Ref<string>
 ) {
-    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
     const filteredPersonalFinances = computed(() =>
         personalFinances.value
@@ -236,7 +236,7 @@ export function usePersonalFinance(
         const cleanDate = normalizeDate(payload.date);
         const updatedRecord: PersonalFinance = { ...payload, id, date: cleanDate };
 
-        await updateSheetRowByBookingId(
+        await updateSheetRowById(
             SPREADSHEET_ID,
             id,
             [
@@ -265,7 +265,7 @@ export function usePersonalFinance(
         const cleanDate = normalizeDate(payload.date);
         const updatedRecord: SharedFinance = { ...payload, id, date: cleanDate };
 
-        await updateSheetRowByBookingId(
+        await updateSheetRowById(
             SPREADSHEET_ID,
             id,
             [

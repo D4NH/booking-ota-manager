@@ -65,7 +65,7 @@ export function usePropertyFinance(
     previousMonth: Ref<string>
 ) {
     const bookingStore = useBookingStore();
-    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
     const bookingIncomeRecords = computed<PropertyFinance[]>(() =>
         bookingStore.bookings
@@ -157,7 +157,7 @@ export function usePropertyFinance(
         const cleanDate = normalizeDate(payload.date);
         const updatedRecord: PropertyFinance = { ...payload, id, date: cleanDate };
 
-        await updateSheetRowByBookingId(
+        await updateSheetRowById(
             SPREADSHEET_ID,
             id,
             [

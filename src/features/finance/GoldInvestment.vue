@@ -98,15 +98,15 @@ const goldBrands = computed(() =>
                     <div class="space-y-1.5">
                         <div class="flex justify-between text-[11px] font-mono text-mist-400">
                             <span> Allocation</span>
-                            <span class="font-mono text-mist-200">67% Semar · 33% UBS</span>
+                            <span class="font-mono text-mist-200">50% Semar · 50% UBS</span>
                         </div>
                         <div class="flex h-1.5 w-full overflow-hidden rounded-full bg-mist-800">
                             <div
-                                class="h-full bg-amber-400"
-                                style="width: 67%"></div>
+                                class="h-full bg-amber-300"
+                                style="width: 50%"></div>
                             <div
-                                class="h-full bg-amber-600"
-                                style="width: 33%"></div>
+                                class="h-full bg-amber-500"
+                                style="width: 50%"></div>
                         </div>
                     </div>
 
@@ -149,12 +149,6 @@ const goldBrands = computed(() =>
                         </div>
                     </div>
                 </div>
-                <!-- Gram Weight Distribution Indicators -->
-                <!-- <div class="space-y-1.5 mb-3">
-                    <div class="flex justify-end text-[11px] font-mono text-mist-400">
-                        <span class="text-mist-200">Total Net Weight: {{ totalGoldGrams }}g</span>
-                    </div>
-                </div> -->
             </div>
             <div
                 v-else

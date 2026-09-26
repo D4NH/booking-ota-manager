@@ -11,12 +11,20 @@ declare const google: any;
 const TOKEN_KEY = 'gdrive_token';
 const EXPIRY_KEY = 'gdrive_token_expires_at';
 
+function isTokenValid(): boolean {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expiresAt = Number(localStorage.getItem(EXPIRY_KEY)) || 0;
+    return Boolean(token && Date.now() < expiresAt - 60_000);
+}
+
 const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
 const isAuthenticated = ref<boolean>(isTokenValid());
 
-if (typeof window !== 'undefined') {
-    loadGoogleSdk().catch(() => {});
-}
+// Singleton Auth Lock: Prevents multiple concurrent OAuth prompt popups
+let activeAuthPromise: Promise<string> | null = null;
+
+// In-Flight Request Cache: Coalesces identical simultaneous GET calls
+const inFlightRequests = new Map<string, Promise<any>>();
 
 function loadGoogleSdk(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -47,22 +55,24 @@ function loadGoogleSdk(): Promise<void> {
         document.head.appendChild(script);
     });
 }
-function isTokenValid(): boolean {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const expiresAt = Number(localStorage.getItem(EXPIRY_KEY)) || 0;
-    return Boolean(token && Date.now() < expiresAt - 60_000);
+
+if (typeof window !== 'undefined') {
+    loadGoogleSdk().catch(() => {});
+}
+
+/**
+ * Exponential backoff helper for rate limits (429) and temporary Google server glitches (503)
+ */
+async function wait(ms: number): Promise<void> {
+    return new Promise((res) => setTimeout(res, ms));
 }
 
 export function useGoogleSheets() {
-    const deleteSheetRowByBookingId = (
-        spreadsheetId: string,
-        bookingId: string,
-        calendarId?: string
-    ) => deleteSheetRowById(spreadsheetId, bookingId, { calendarId });
-
     function logout(): void {
         accessToken.value = null;
         isAuthenticated.value = false;
+        activeAuthPromise = null;
+        inFlightRequests.clear();
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(EXPIRY_KEY);
     }
@@ -111,33 +121,66 @@ export function useGoogleSheets() {
         if (refreshAuthStatus() && accessToken.value) {
             return accessToken.value;
         }
-        return await initAuth();
-    }
-    async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-        let token = await ensureAuth();
 
-        let res = await fetch(url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                Authorization: `Bearer ${token}`,
-            },
+        // Return existing promise if an auth flow is already in progress
+        if (activeAuthPromise) return activeAuthPromise;
+
+        activeAuthPromise = initAuth().finally(() => {
+            activeAuthPromise = null;
         });
 
-        if (res.status === 401) {
-            logout();
-            token = await initAuth();
-            res = await fetch(url, {
+        return activeAuthPromise;
+    }
+    /**
+     * - Automatic 401 token refresh
+     * - Automatic Exponential Backoff + Jitter for 429 (Rate Limit) and 503 (Server Busy)
+     */
+    async function fetchWithAuth(
+        url: string,
+        options: RequestInit = {},
+        maxRetries = 3
+    ): Promise<Response> {
+        let token = await ensureAuth();
+
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            let res = await fetch(url, {
                 ...options,
                 headers: {
                     ...options.headers,
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+            // Token Expired (401)
+            if (res.status === 401) {
+                logout();
+                token = await initAuth();
+                res = await fetch(url, {
+                    ...options,
+                    headers: {
+                        ...options.headers,
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+            }
+
+            // Rate Limit (429) or Temporary Google Service Outage (503)
+            if ((res.status === 429 || res.status === 503) && attempt < maxRetries) {
+                // Backoff: 1s -> 2s -> 4s + random jitter
+                const backoffMs = Math.pow(2, attempt) * 1000 + Math.random() * 500;
+                console.warn(
+                    `[Google API ${res.status}] Rate limit hit. Backing off for ${Math.round(backoffMs)}ms (attempt ${attempt + 1}/${maxRetries})...`
+                );
+                await wait(backoffMs);
+                continue;
+            }
+
+            return res;
         }
 
-        return res;
+        throw new Error('Google API request aborted after exceeding maximum rate-limit retries.');
     }
+
     function cleanGoogleCalendarEventId(rawId: string): string {
         if (!rawId) return '';
         let clean = rawId.trim();
@@ -189,9 +232,7 @@ export function useGoogleSheets() {
         const encodedCalId = encodeURIComponent(calendarId);
         const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedCalId}/events/${cleanId}`;
 
-        const payload: Record<string, any> = {
-            summary: newSummary,
-        };
+        const payload: Record<string, any> = { summary: newSummary };
         if (newDescription !== undefined) payload.description = newDescription;
         if (dates?.checkIn && dates?.checkOut) {
             payload.start = { date: dates.checkIn };
@@ -216,29 +257,70 @@ export function useGoogleSheets() {
         const encodedCalId = encodeURIComponent(calendarId);
         const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedCalId}/events/${cleanId}`;
 
-        const res = await fetchWithAuth(url, {
-            method: 'DELETE',
-        });
+        const res = await fetchWithAuth(url, { method: 'DELETE' });
 
-        // 204 = Successfully deleted
-        // 404 / 410 = Event is already deleted/trashed or does not exist (Safe to ignore)
         if (!res.ok && res.status !== 404 && res.status !== 410) {
             const error = await res.json().catch(() => null);
             console.warn('Calendar API DELETE error:', error);
-        } else {
-            console.log(`Calendar event confirmed deleted: ${cleanId}`);
         }
     }
+    async function syncCalendarForBookingValues(
+        values: (string | number)[],
+        calendarId?: string,
+        existingCalEventId?: string
+    ): Promise<string> {
+        if (!calendarId || !values[3] || !values[4]) {
+            return existingCalEventId || '';
+        }
+
+        const summary = `${values[1] || 'Direct'} - ${values[2] || 'Guest'}`;
+        const desc = `Booking ID: ${values[0]} | Notes: ${values[9] || ''}`;
+        const dates = { checkIn: String(values[3]), checkOut: String(values[4]) };
+
+        let finalEventId = existingCalEventId || '';
+
+        if (finalEventId) {
+            await updateCalendarEventSummary(calendarId, finalEventId, summary, dates, desc);
+        } else {
+            finalEventId = await createCalendarEvent(
+                calendarId,
+                summary,
+                dates.checkIn,
+                dates.checkOut,
+                desc
+            );
+        }
+
+        while (values.length < 10) values.push('');
+        values[10] = finalEventId;
+
+        return finalEventId;
+    }
+
     async function fetchSheetRows(
         spreadsheetId: string,
         range: string = 'A2:L'
     ): Promise<(string | number)[][]> {
-        const res = await fetchWithAuth(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`
-        );
-        if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
-        const data = await res.json();
-        return data.values || [];
+        const cacheKey = `${spreadsheetId}_${range}`;
+        if (inFlightRequests.has(cacheKey)) {
+            return inFlightRequests.get(cacheKey)!;
+        }
+
+        const requestPromise = (async () => {
+            const res = await fetchWithAuth(
+                `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`
+            );
+            if (!res.ok) {
+                throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
+            }
+            const data = await res.json();
+            return (data.values as (string | number)[][]) || [];
+        })().finally(() => {
+            inFlightRequests.delete(cacheKey);
+        });
+
+        inFlightRequests.set(cacheKey, requestPromise);
+        return requestPromise;
     }
     async function batchFetchSheetRows(
         spreadsheetId: string,
@@ -252,33 +334,14 @@ export function useGoogleSheets() {
         const data = await res.json();
         return (data.valueRanges || []).map((vr: any) => vr.values || []);
     }
-    /**
-     * Appends a row. If calendarId is supplied and values have checkIn (index 3) and checkOut (index 4),
-     * automatically creates an event and stores the eventId in Column K (index 10).
-     */
     async function appendSheetRow(
         spreadsheetId: string,
         values: (string | number)[],
         range: string = 'A1',
         calendarId?: string
     ): Promise<string> {
-        let calEventId = '';
         const finalValues = [...values];
-
-        if (calendarId && finalValues[3] && finalValues[4]) {
-            const summary = `${finalValues[1] || 'Direct'} - ${finalValues[2] || 'Guest'}`;
-            const desc = `Booking ID: ${finalValues[0]} | Notes: ${finalValues[9] || ''}`;
-            calEventId = await createCalendarEvent(
-                calendarId,
-                summary,
-                String(finalValues[3]),
-                String(finalValues[4]),
-                desc
-            );
-            // Ensure array has enough elements to set Column K (index 10)
-            while (finalValues.length < 10) finalValues.push('');
-            finalValues[10] = calEventId;
-        }
+        const calEventId = await syncCalendarForBookingValues(finalValues, calendarId);
 
         const encodedRange = encodeURIComponent(range);
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
@@ -299,19 +362,26 @@ export function useGoogleSheets() {
         return calEventId;
     }
     /**
-     * Updates a booking row. If calendarId is supplied, also synchronizes the Google Calendar event
-     * (updating dates, guest name, channel, or creating a new event if missing).
+     * Searches strictly 'A2:A' for non-calendar rows, saving 90% bandwidth
      */
-    async function updateSheetRowByBookingId(
+    async function updateSheetRowById(
         spreadsheetId: string,
-        bookingId: string,
+        id: string,
         values: (string | number)[],
         sheetName: string = '',
         calendarId?: string
     ): Promise<void> {
-        const searchRange = sheetName ? `'${sheetName}'!A2:K` : 'A2:K';
+        // If calendar syncing is not used, only download Column A (ID)
+        const searchRange = sheetName
+            ? calendarId
+                ? `'${sheetName}'!A2:K`
+                : `'${sheetName}'!A2:A`
+            : calendarId
+              ? 'A2:K'
+              : 'A2:A';
+
         const rows = await fetchSheetRows(spreadsheetId, searchRange);
-        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === bookingId.trim());
+        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
 
         if (rowIndex === -1) {
             const appendRange = sheetName ? `'${sheetName}'!A1` : 'A1';
@@ -323,35 +393,9 @@ export function useGoogleSheets() {
         const existingCalEventId = calendarId ? String(rows[rowIndex]?.[10] || '').trim() : '';
 
         const finalValues = [...values];
+        await syncCalendarForBookingValues(finalValues, calendarId, existingCalEventId);
 
-        if (calendarId && finalValues[3] && finalValues[4]) {
-            const summary = `${finalValues[1] || 'Direct'} - ${finalValues[2] || 'Guest'}`;
-            const desc = `Booking ID: ${bookingId} | Notes: ${finalValues[9] || ''}`;
-
-            if (existingCalEventId) {
-                await updateCalendarEventSummary(
-                    calendarId,
-                    existingCalEventId,
-                    summary,
-                    { checkIn: String(finalValues[3]), checkOut: String(finalValues[4]) },
-                    desc
-                );
-                while (finalValues.length < 10) finalValues.push('');
-                finalValues[10] = existingCalEventId;
-            } else {
-                const newCalEventId = await createCalendarEvent(
-                    calendarId,
-                    summary,
-                    String(finalValues[3]),
-                    String(finalValues[4]),
-                    desc
-                );
-                while (finalValues.length < 10) finalValues.push('');
-                finalValues[10] = newCalEventId;
-            }
-        }
-
-        const endColIndex = Math.min(26, Math.max(finalValues.length, 11));
+        const endColIndex = Math.min(26, Math.max(finalValues.length, 12));
         const endColLetter = String.fromCharCode(64 + endColIndex);
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:${endColLetter}${targetRowNumber}`
@@ -369,8 +413,7 @@ export function useGoogleSheets() {
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     }
     /**
-     * Deletes a row by matching ID in Column A.
-     * Supports optional targeting of specific tabs (sheetName) and auto-deleting Google Calendar events.
+     * Only downloads Column A unless calendar event deletion is required
      */
     async function deleteSheetRowById(
         spreadsheetId: string,
@@ -394,13 +437,15 @@ export function useGoogleSheets() {
             calendarId = options.calendarId;
         }
 
-        if (sheetName.includes('@group.calendar.google.com') || sheetName.includes('@gmail.com')) {
-            calendarId = sheetName;
-            sheetName = '';
-        }
+        // Only fetch A2:K if we need the Calendar ID from Column K; otherwise fetch only Column A
+        const idRange = sheetName
+            ? calendarId
+                ? `'${sheetName}'!A2:K`
+                : `'${sheetName}'!A2:A`
+            : calendarId
+              ? 'A2:K'
+              : 'A2:A';
 
-        // OPTIMIZATION: Only fetch Column A to locate row index
-        const idRange = sheetName ? `'${sheetName}'!A2:A` : 'A2:A';
         const rows = await fetchSheetRows(spreadsheetId, idRange);
         const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
 
@@ -408,29 +453,20 @@ export function useGoogleSheets() {
 
         const targetRowNumber = rowIndex + 2;
 
-        // Fetch Column K (or Column L) for that specific row only if calendar deletion is needed
         if (calendarId) {
-            const calRange = sheetName
-                ? `'${sheetName}'!K${targetRowNumber}:L${targetRowNumber}`
-                : `K${targetRowNumber}:L${targetRowNumber}`;
-            const calRows = await fetchSheetRows(spreadsheetId, calRange).catch(() => []);
-            const calEventId = calRows[0]?.[1] || calRows[0]?.[0];
+            const calEventId = rows[rowIndex]?.[10];
             if (calEventId) {
                 await deleteCalendarEvent(calendarId, String(calEventId).trim()).catch(() => {});
             }
         }
 
-        // Clear target row in Google Sheets
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:Z${targetRowNumber}`
             : `A${targetRowNumber}:Z${targetRowNumber}`;
 
         const res = await fetchWithAuth(
             `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}:clear`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-            }
+            { method: 'POST', headers: { 'Content-Type': 'application/json' } }
         );
 
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
@@ -445,8 +481,7 @@ export function useGoogleSheets() {
         fetchSheetRows,
         batchFetchSheetRows,
         appendSheetRow,
-        updateSheetRowByBookingId,
-        deleteSheetRowByBookingId,
+        updateSheetRowById,
         deleteSheetRowById,
         createCalendarEvent,
         updateCalendarEventSummary,

@@ -10,6 +10,7 @@ import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
+import { formatDate } from '@/utils/date';
 
 import PageTitle from '@/components/PageTitle.vue';
 import PropertySelector from '@/components/PropertySelector.vue';
@@ -177,7 +178,6 @@ function handleBookingClick(booking: Booking, event: Event): void {
                             :key="'stay-' + (b.id || b.bookingId)"
                             class="group relative z-10">
                             <div
-                                :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
                                 class="h-12 px-1.5 transition shadow-sm cursor-pointer flex flex-col justify-center"
                                 :class="[
                                     multiDayStyling(b, day.dateStr, dayIndex),
@@ -215,6 +215,43 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                     v-else-if="b.nights > 1"
                                     class="text-[10px] text-mist-500 opacity-60 mt-1">
                                     &bull;&bull;&bull;
+                                </div>
+                            </div>
+                            <!-- Hover Details Popover -->
+                            <div
+                                class="pointer-events-none absolute top-full left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                <div
+                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    <div>
+                                        <span class="font-semibold text-mist-200 block mb-1">
+                                            {{ b.guestName }}
+                                        </span>
+                                        <span class="text-xs text-mist-400">
+                                            {{
+                                                formatDate(b.checkIn, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
+                                            &rarr;
+                                            {{
+                                                formatDate(b.checkOut, {
+                                                    shortWeekday: true,
+                                                    shortMonth: true,
+                                                })
+                                            }}
+                                        </span>
+                                    </div>
+                                    <div
+                                        v-if="b.status === 'Waiting for payment'"
+                                        class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-xs">
+                                        Payment pending
+                                    </div>
+                                    <div
+                                        v-if="b.notes"
+                                        class="border-t border-mist-800 pt-1.5 mt-1.5 text-mist-300 text-xs">
+                                        {{ b.notes }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

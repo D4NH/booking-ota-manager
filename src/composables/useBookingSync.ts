@@ -13,7 +13,7 @@ interface ToastMessages {
 
 export function useBookingSync() {
     const bookingStore = useBookingStore();
-    const { appendSheetRow, updateSheetRowByBookingId, deleteSheetRowById } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
     /**
      * Internal helper to execute async booking mutations with toast notifications.
@@ -57,7 +57,7 @@ export function useBookingSync() {
                 if (bookingToEdit) {
                     await bookingStore.updateBookingWithRemoteSync(
                         { ...bookingToEdit, ...payload },
-                        { updateSheetRowByBookingId }
+                        { updateSheetRowById }
                     );
                 } else {
                     await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
@@ -82,7 +82,7 @@ export function useBookingSync() {
             async () => {
                 await bookingStore.updateBookingWithRemoteSync(
                     { ...booking, status: newStatus },
-                    { updateSheetRowByBookingId }
+                    { updateSheetRowById }
                 );
             },
             {
@@ -107,8 +107,7 @@ export function useBookingSync() {
         return runWithToast(
             async () => {
                 await bookingStore.deleteBookingWithRemoteSync(booking, {
-                    deleteSheetRowByBookingId: (spreadsheetId, bookingId, calendarId) =>
-                        deleteSheetRowById(spreadsheetId, bookingId, { calendarId }),
+                    deleteSheetRowById,
                 });
             },
             {
