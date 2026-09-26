@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
 const financeStore = useFinanceStore();
 const {
     monthlyPropertyExpenses,
@@ -16,9 +12,6 @@ const {
     netPropertyProfit,
     monthlyPropertyRevenue,
 } = storeToRefs(financeStore);
-const { totalPayout } = useMonthlyMetrics(bookings, {
-    propertyId: () => 'all',
-});
 const { totalYearRevenue } = usePropertyDetails(() => 'all');
 </script>
 
@@ -121,7 +114,8 @@ const { totalYearRevenue } = usePropertyDetails(() => 'all');
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span class="font-medium text-emerald-400">
-                    {{ totalPayout >= 0 ? '+' : '' }}{{ formatIDR(totalPayout) }}
+                    {{ monthlyPropertyRevenue >= 0 ? '+' : ''
+                    }}{{ formatIDR(monthlyPropertyRevenue) }}
                 </span>
                 <span class="text-mist-500">as latest payout</span>
             </p>

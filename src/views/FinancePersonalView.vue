@@ -158,7 +158,7 @@ const isTransferModalOpen = ref(false);
                                 class="grid grid-cols-2 gap-2 pt-2 border-t border-mist-800/60 text-xs font-mono">
                                 <div>
                                     <span class="text-[10px] text-mist-400 block"> In: </span>
-                                    <span class="text-lime-400 font-semibold"> + </span>
+                                    <span class="text-emerald-400 font-semibold"> + </span>
                                     {{ formatIDR(danhMonthlyRevenue) }}
                                 </div>
                                 <div class="text-right">

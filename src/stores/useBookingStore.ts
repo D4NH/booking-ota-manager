@@ -6,23 +6,29 @@ import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { calculateNights } from '@/utils/date';
+import { calculateOwnerPayout } from '@/utils/financeCalculators';
 
 export const useBookingStore = defineStore('booking', () => {
     const formatSheetRow = (
         b: Omit<Booking, 'id' | 'createdAt'> & { calendarEventId?: string }
-    ): (string | number)[] => [
-        b.bookingId,
-        b.listing,
-        b.guestName,
-        b.checkIn,
-        b.checkOut,
-        b.nights,
-        b.payout,
-        '', // Column H: Owner Payout
-        b.status,
-        b.notes || '',
-        b.calendarEventId || '',
-    ];
+    ): (string | number)[] => {
+        const payout = Number(b.payout) || 0;
+        const ownerPayout = b.ownerPayout ?? calculateOwnerPayout(payout);
+
+        return [
+            b.bookingId,
+            b.listing,
+            b.guestName,
+            b.checkIn,
+            b.checkOut,
+            b.nights,
+            b.payout,
+            ownerPayout > 0 ? ownerPayout : '',
+            b.status,
+            b.notes || '',
+            b.calendarEventId || '',
+        ];
+    };
 
     const bookings = ref<Booking[]>([]);
 
@@ -302,6 +308,7 @@ export const useBookingStore = defineStore('booking', () => {
             const nights = calculateNights(checkIn, checkOut);
             const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
             const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
+            const ownerPayout = isUnavailable ? 0 : calculateOwnerPayout(payout);
             const rawStatus = String(row[8] || '').trim();
             const status: Booking['status'] = isUnavailable
                 ? 'Unavailable'
@@ -320,9 +327,10 @@ export const useBookingStore = defineStore('booking', () => {
                 checkOut,
                 nights,
                 payout,
+                ownerPayout,
                 status,
                 notes: notes || undefined,
-                calendarEventId: calendarEventId || undefined, // Preserves Google Calendar link
+                calendarEventId: calendarEventId || undefined,
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 

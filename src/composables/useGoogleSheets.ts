@@ -54,7 +54,6 @@ function isTokenValid(): boolean {
 }
 
 export function useGoogleSheets() {
-    // Aliased helper for booking store
     const deleteSheetRowByBookingId = (
         spreadsheetId: string,
         bookingId: string,

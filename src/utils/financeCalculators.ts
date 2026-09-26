@@ -37,3 +37,11 @@ export function calculateGrowthPct(curr: number, prev: number): number | null {
     if (prev === 0) return null;
     return Number((((curr - prev) / prev) * 100).toFixed(1));
 }
+
+export const OWNER_PAYOUT_RATE = 0.15;
+
+export function calculateOwnerPayout(grossPayout: number | string | null | undefined): number {
+    const num = Number(grossPayout);
+    if (isNaN(num) || num <= 0) return 0;
+    return Math.round(num * OWNER_PAYOUT_RATE);
+}

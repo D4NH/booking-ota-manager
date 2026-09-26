@@ -9,6 +9,8 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights, getCurrentDate } from '@/utils/date';
+import { calculateOwnerPayout } from '@/utils/financeCalculators';
+import { formatIDR } from '@/utils/money';
 
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -29,6 +31,8 @@ const statusOptions = bookingStatuses.map((status) => ({
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
+const bookingStore = useBookingStore();
+const { deleteBooking } = useBookingSync();
 
 const { bookingToEdit = null, currentProperty = 'all' } = defineProps<{
     bookingToEdit?: Booking | null;
@@ -38,9 +42,6 @@ const emit = defineEmits<{
     close: [];
     save: [payload: Omit<Booking, 'id' | 'createdAt'>];
 }>();
-
-const bookingStore = useBookingStore();
-const { deleteBooking } = useBookingSync();
 
 const resolveInitialProperty = (): PropertyId | '' => {
     if (bookingToEdit?.propertyId) return bookingToEdit.propertyId as PropertyId;
@@ -61,6 +62,7 @@ const form = ref({
     notes: bookingToEdit?.notes || '',
 });
 
+const ownerPayoutDisplay = computed<number>((): number => calculateOwnerPayout(form.value.payout));
 const stayDates = computed<[string, string]>({
     get: (): [string, string] => [form.value.checkIn, form.value.checkOut],
     set: ([start, end]: [string, string]) => {
@@ -109,7 +111,6 @@ function handleSubmit(): void {
     if (validationError.value) return;
 
     const propertyId = form.value.propertyId;
-
     if (!propertyId) return;
 
     emit('save', {
@@ -120,6 +121,7 @@ function handleSubmit(): void {
         checkOut: form.value.checkOut,
         nights: Number(form.value.nights),
         payout: Number(form.value.payout),
+        ownerPayout: ownerPayoutDisplay.value,
         listing: form.value.listing as Booking['listing'],
         status: form.value.status,
         notes: form.value.notes?.trim(),
@@ -170,10 +172,9 @@ function handleSubmit(): void {
                     <!-- Property Selection -->
                     <SelectDropdown
                         v-model="form.propertyId"
-                        input-label="Type"
+                        input-label="Property"
                         placeholder="Select property"
                         :options="propertyType" />
-
                     <!-- Booking ID & Guest Name -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <TextInput
@@ -190,7 +191,6 @@ function handleSubmit(): void {
                                     class="text-xs" />
                             </template>
                         </TextInput>
-
                         <TextInput
                             id="guestName"
                             v-model="form.guestName"
@@ -205,8 +205,7 @@ function handleSubmit(): void {
                             </template>
                         </TextInput>
                     </div>
-
-                    <!-- Dates & Nights -->
+                    <!-- Stay Dates & Nights -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div class="sm:col-span-2">
                             <DatePicker
@@ -216,7 +215,6 @@ function handleSubmit(): void {
                                 placeholder="Select check-in & check-out dates"
                                 :min-date="checkInMinDate" />
                         </div>
-
                         <div>
                             <span class="block font-medium text-xs text-mist-400 mb-1">
                                 Nights
@@ -227,7 +225,6 @@ function handleSubmit(): void {
                             </div>
                         </div>
                     </div>
-
                     <!-- Channel, Status & Payout -->
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <SelectDropdown
@@ -235,13 +232,11 @@ function handleSubmit(): void {
                             input-label="Channel"
                             placeholder="Select channel"
                             :options="listingOptions" />
-
                         <SelectDropdown
                             v-model="form.status"
                             input-label="Status"
                             placeholder="Select status"
                             :options="statusOptions" />
-
                         <TextInput
                             id="payout"
                             v-model.number="form.payout"
@@ -254,6 +249,14 @@ function handleSubmit(): void {
                                 <fa-icon
                                     icon="rupiah-sign"
                                     class="text-xs" />
+                            </template>
+                            <template #extra>
+                                <div class="flex items-center gap-1.5 text-[11px] font-mono">
+                                    <span class="text-mist-500">15%</span>
+                                    <span class="font-medium text-mist-300">
+                                        {{ formatIDR(ownerPayoutDisplay) }}
+                                    </span>
+                                </div>
                             </template>
                         </TextInput>
                     </div>
@@ -280,6 +283,7 @@ function handleSubmit(): void {
                                 icon="trash-can" />
                             Delete booking
                         </button>
+
                         <div class="flex items-center gap-4">
                             <button
                                 type="button"

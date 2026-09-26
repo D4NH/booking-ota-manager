@@ -119,8 +119,9 @@ function handlePaste(event: ClipboardEvent): void {
         <label
             v-if="inputLabel.length"
             :for="id"
-            class="block font-medium text-xs text-mist-400 mb-1">
+            class="flex items-center justify-between font-medium text-xs text-mist-400 mb-1">
             {{ inputLabel }}
+            <slot name="extra"></slot>
         </label>
 
         <div

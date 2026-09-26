@@ -23,6 +23,7 @@ export interface Booking {
     checkOut: string;
     nights: number;
     payout: number;
+    ownerPayout?: number;
     status: BookingStatus;
     notes?: string;
     createdAt: string;
@@ -47,6 +48,7 @@ export interface StagedBooking {
     checkOut: string;
     nights: number;
     payout: number;
+    ownerPayout?: number;
     status: StagingStatus;
     notes?: string;
     calendarEventId?: string; // Column L

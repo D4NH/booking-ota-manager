@@ -5,29 +5,16 @@ import { formatIDR } from '@/utils/money';
 
 const financeStore = useFinanceStore();
 const {
-    netPropertyProfit,
     danhMonthlyRevenue,
     danhRevenueGrowthPct,
     citraMonthlyRevenue,
-    sharedNetBalance,
+    sharedMonthlyRevenue,
+    combinedMonthlyRevenue,
 } = storeToRefs(financeStore);
 </script>
 
 <template>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
-                <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
-                    Mai House Jogja
-                </h3>
-            </div>
-            <p class="font-mono text-lg font-semibold text-white">
-                {{ formatIDR(netPropertyProfit) }}
-            </p>
-            <p class="text-xs text-mist-500">Operating Profit</p>
-        </div>
-
         <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
             <div class="flex justify-between items-center">
                 <h3
@@ -87,9 +74,22 @@ const {
                 </h3>
             </div>
             <p class="font-mono text-lg font-semibold text-white">
-                {{ formatIDR(sharedNetBalance) }}
+                {{ formatIDR(sharedMonthlyRevenue) }}
             </p>
-            <p class="text-xs text-mist-500">Remaining Balance</p>
+            <p class="text-xs text-mist-500">Monthly Revenue</p>
+        </div>
+
+        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
+            <div class="flex justify-between items-center">
+                <h3
+                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    Combined Revenue
+                </h3>
+            </div>
+            <p class="font-mono text-lg font-semibold text-white">
+                {{ formatIDR(combinedMonthlyRevenue) }}
+            </p>
+            <p class="text-xs text-mist-500">Total Balance</p>
         </div>
     </div>
 </template>
