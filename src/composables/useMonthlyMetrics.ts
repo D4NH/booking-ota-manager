@@ -1,8 +1,9 @@
-// src/composables/useMonthlyMetrics.ts
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { PROPERTY_LIST } from '@/config/properties';
+import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import { getCurrentMonth, getPreviousMonth, getDaysInMonth, parseISODate } from '@/utils/date';
+import { calculateGrowthPct } from '@/utils/financeCalculators';
 import type { Booking } from '@/types/booking';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 
@@ -23,9 +24,6 @@ export interface UseMonthlyMetricsOptions {
 
 const MS_PER_DAY = 86_400_000;
 
-/**
- * Fast UTC night overlap without per-iteration Date allocations
- */
 function calculateOverlappingNights(
     checkInStr: string,
     checkOutStr: string,
@@ -36,7 +34,6 @@ function calculateOverlappingNights(
     const [y2, m2, d2] = checkOutStr.split('-').map(Number);
     if (!y1 || !m1 || !d1 || !y2 || !m2 || !d2) return 0;
 
-    // Use pure UTC milliseconds to prevent 7-hour WIB timezone offsets
     const checkInMs = Date.UTC(y1, m1 - 1, d1);
     const checkOutMs = Date.UTC(y2, m2 - 1, d2);
 
@@ -107,7 +104,6 @@ export function useMonthlyMetrics(
         const year = Number(yearStr);
         const month = Number(monthStr);
 
-        // Precalculate boundary timestamps ONCE per calculation run
         const monthStartMs = Date.UTC(year, month - 1, 1);
         const monthEndMs = Date.UTC(year, month, 1);
 
@@ -143,7 +139,7 @@ export function useMonthlyMetrics(
                 lastMonthRevenue += payout;
             }
 
-            // Check if stay spans any portion of target month
+            // Check if stay spans any portion of target month (checkOut on 1st = 0 nights in target month)
             if (checkIn <= monthEndStr && checkOut > monthStartStr) {
                 occupiedNights += calculateOverlappingNights(
                     checkIn,
@@ -160,11 +156,7 @@ export function useMonthlyMetrics(
                 : 0;
 
         const averageDailyRate = occupiedNights > 0 ? Math.round(totalPayout / occupiedNights) : 0;
-
-        const revenueGrowthPercent =
-            lastMonthRevenue === 0
-                ? 0
-                : Math.round(((totalPayout - lastMonthRevenue) / lastMonthRevenue) * 100);
+        const revenueGrowthPercent = calculateGrowthPct(totalPayout, lastMonthRevenue) ?? 0;
 
         return {
             totalPayout,
@@ -173,30 +165,16 @@ export function useMonthlyMetrics(
             occupancyPercentage,
             totalBookingsCount,
             averageDailyRate,
-            revenueGrowthPercent,
+            revenueGrowthPercent: Math.round(revenueGrowthPercent),
         };
     });
+
     // 12-Month Annual Breakdown per Property
     const monthlyPropertyData = computed<MonthlyPropertyRevenue[]>(() => {
         const currentYear = new Date().getFullYear().toString();
         const list = toValue(bookings) ?? [];
 
-        const labels = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
-        ];
-
-        const monthlyBreakdown: MonthlyPropertyRevenue[] = labels.map((label) => {
+        const monthlyBreakdown: MonthlyPropertyRevenue[] = MONTH_NAMES_SHORT.map((label) => {
             const row = { label } as MonthlyPropertyRevenue;
             for (const prop of PROPERTY_LIST) {
                 row[prop.id] = 0;

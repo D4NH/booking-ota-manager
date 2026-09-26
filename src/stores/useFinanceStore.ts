@@ -47,7 +47,6 @@ export const useFinanceStore = defineStore('finance', () => {
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
-    // Investments (SBN & Gold)
     const sbnInvestments = ref<SbnInvestment[]>([
         {
             id: 'SBN-SR022-01',
@@ -206,7 +205,6 @@ export const useFinanceStore = defineStore('finance', () => {
 
         if (!applicableTemplates.length) return [];
 
-        // Pre-indexed sets for O(1) matching
         const propSet = new Set(
             propertyDomain.filteredPropertyFinances.value.map(
                 (p) => `${p.category.toLowerCase().trim()}_${Math.round(p.amount)}`
@@ -792,6 +790,7 @@ export const useFinanceStore = defineStore('finance', () => {
         citraMonthlyExpenses: personalDomain.citraMonthlyExpenses,
         sharedMonthlyRevenue: personalDomain.sharedMonthlyRevenue,
         sharedMonthlyExpenses: personalDomain.sharedMonthlyExpenses,
+        combinedMonthlyRevenue: personalDomain.combinedMonthlyRevenue,
 
         // Previous
         danhPreviousMonthRevenue: personalDomain.danhPreviousMonthRevenue,

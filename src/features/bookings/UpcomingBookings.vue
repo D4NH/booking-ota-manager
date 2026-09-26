@@ -116,6 +116,7 @@ const displaySections = computed<MonthSection[]>(() => {
                                             formatDate(b.checkIn, {
                                                 shortWeekday: true,
                                                 shortMonth: true,
+                                                relativeDay: true,
                                             })
                                         }}
                                         &bull; {{ b.nights }} night(s) via

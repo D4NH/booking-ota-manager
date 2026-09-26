@@ -4,6 +4,7 @@ export interface FormatDateOptions {
     monthHeader?: boolean;
     monthNumber?: boolean;
     monthOnly?: boolean;
+    relativeDay?: boolean; // Formats "2026-09-26" -> "Today", "2026-09-27" -> "Tomorrow"
     includeWeekday?: boolean; // "Saturday" (or "Sat" if shortWeekday: true)
     shortWeekday?: boolean; // "Sat"
     weekday?: 'short' | 'long'; // explicit format override
@@ -73,6 +74,52 @@ export function getCurrentWeekNumber(d: Date = new Date()): number {
 }
 
 /**
+ * Today's date formatted as YYYY-MM-DD
+ */
+export function getToday(d: Date = new Date()): string {
+    return getCurrentDate(d);
+}
+
+/**
+ * Yesterday's date formatted as YYYY-MM-DD
+ */
+export function getYesterday(d: Date = new Date()): string {
+    const target = new Date(d);
+    target.setDate(target.getDate() - 1);
+    return getCurrentDate(target);
+}
+
+/**
+ * Tomorrow's date formatted as YYYY-MM-DD
+ */
+export function getTomorrow(d: Date = new Date()): string {
+    const target = new Date(d);
+    target.setDate(target.getDate() + 1);
+    return getCurrentDate(target);
+}
+
+/**
+ * Returns "Today", "Tomorrow", "Yesterday", or null if the date is outside the 3-day relative window.
+ */
+export function getRelativeDayLabel(
+    isoDateStr: string,
+    referenceDate: Date = new Date()
+): string | null {
+    if (!isoDateStr) return null;
+
+    const targetDateStr = isoDateStr.slice(0, 10);
+    const todayStr = getCurrentDate(referenceDate);
+    const yesterdayStr = getYesterday(referenceDate);
+    const tomorrowStr = getTomorrow(referenceDate);
+
+    if (targetDateStr === todayStr) return 'Today';
+    if (targetDateStr === tomorrowStr) return 'Tomorrow';
+    if (targetDateStr === yesterdayStr) return 'Yesterday';
+
+    return null;
+}
+
+/**
  * Parse an ISO date string ("YYYY-MM-DD" or "YYYY-MM") into a local Date object.
  * Prevents UTC timezone shift backward by 1 day.
  */
@@ -91,20 +138,29 @@ export function parseISODate(isoStr: string): Date {
  *  - formatDate("2026-09-02", { monthOnly: true }) -> "September"
  *  - formatDate("2026-09-02", { monthNumber: true }) -> "9"
  *  - formatDate("2026-09-02", { weekday: 'short' }) -> "Wed, 02 September"
+ *  - formatDate("2026-09-26", { relativeDay: true }) -> "Today"
+ *  - formatDate("2026-09-27", { relativeDay: true }) -> "Tomorrow"
  */
 export function formatDate(isoDateStr: string, options: FormatDateOptions = {}): string {
     if (!isoDateStr) return '';
 
+    if (options.relativeDay) {
+        const relativeLabel = getRelativeDayLabel(isoDateStr);
+        if (relativeLabel) return relativeLabel;
+    }
+
     const date = parseISODate(isoDateStr);
     if (Number.isNaN(date.getTime())) return '';
 
+    if (options.monthNumber) {
+        return String(date.getMonth());
+    }
+
     const monthFormat = options.shortMonth ? 'short' : 'long';
     const monthName = date.toLocaleDateString('en-US', { month: monthFormat });
-    const monthNumber = String(date.getMonth()).padStart(2, '0');
 
     if (options.monthHeader) return `${monthName} ${date.getFullYear()}`;
     if (options.monthOnly) return monthName;
-    if (options.monthNumber) return monthNumber;
 
     const day = String(date.getDate()).padStart(2, '0');
 
