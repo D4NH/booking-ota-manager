@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
+import { formatDate } from '@/utils/date';
 
 import CardTitle from '@/components/CardTitle.vue';
 
@@ -11,8 +12,13 @@ import CardTitle from '@/components/CardTitle.vue';
 const circumference = 251.32;
 
 const financeStore = useFinanceStore();
-const { sbnMonthlyNetYield, sbnTotalPrincipal, estimatedGoldMarketValue, totalGoldGrams } =
-    storeToRefs(financeStore);
+const {
+    sbnMonthlyNetYield,
+    sbnTotalPrincipal,
+    estimatedGoldMarketValue,
+    totalGoldGrams,
+    selectedMonth,
+} = storeToRefs(financeStore);
 
 const totalInvestments = computed(() => sbnTotalPrincipal.value + estimatedGoldMarketValue.value);
 const sbnSharePct = computed(() => {
@@ -33,7 +39,7 @@ const cashFlowBars = computed(() => {
         month,
         amount: netCoupon,
         heightPct: netCoupon > 0 ? 80 : 0, // Uniform fixed coupon height
-        active: idx === 8, // September current cycle active
+        active: idx === Number(formatDate(selectedMonth.value, { monthNumber: true })), // September current cycle active
     }));
 });
 </script>

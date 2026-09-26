@@ -48,8 +48,8 @@ const monthsRemaining = computed(() => {
             </div>
 
             <!-- Virtual Government Bond Card Display -->
-            <div class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50">
-                <div class="flex justify-between items-start mb-6">
+            <div class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50 space-y-6">
+                <div class="flex justify-between items-start">
                     <div>
                         <span class="text-xs text-mist-400 uppercase font-mono block">
                             Ministry of Finance
@@ -64,7 +64,22 @@ const monthsRemaining = computed(() => {
                     </div>
                 </div>
 
-                <div>
+                <!-- Tenor Timeline Progress Bar -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-[11px] font-mono text-mist-400">
+                        <span>Maturity Progress</span>
+                        <span class="text-mist-200">
+                            {{ maturityProgress }}% ({{ monthsRemaining }} months left)
+                        </span>
+                    </div>
+                    <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
+                        <div
+                            class="h-full rounded-full bg-linear-to-r bg-emerald-500 transition-all duration-500"
+                            :style="{ width: `${maturityProgress}%` }"></div>
+                    </div>
+                </div>
+
+                <div class="h-15">
                     <span class="text-xs text-mist-400 block"> Total Principal Investment </span>
                     <div class="text-lg font-black font-mono text-mist-100 tracking-tight mt-1">
                         {{ formatIDR(sbnTotalPrincipal) }}
@@ -87,21 +102,6 @@ const monthsRemaining = computed(() => {
                             {{ formatDate(primarySbn.maturityDate, { includeYear: true }) }}</span
                         >
                     </div>
-                </div>
-            </div>
-
-            <!-- Tenor Timeline Progress Bar -->
-            <div class="space-y-1.5 mb-3">
-                <div class="flex justify-between text-[11px] font-mono text-mist-400">
-                    <span>Maturity Progress</span>
-                    <span class="text-mist-200">
-                        {{ maturityProgress }}% ({{ monthsRemaining }} months left)
-                    </span>
-                </div>
-                <div class="w-full bg-mist-800 h-1.5 rounded-full overflow-hidden">
-                    <div
-                        class="h-full rounded-full bg-linear-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
-                        :style="{ width: `${maturityProgress}%` }"></div>
                 </div>
             </div>
         </div>

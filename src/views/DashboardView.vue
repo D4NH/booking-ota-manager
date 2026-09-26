@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
@@ -30,6 +31,12 @@ const {
     totalBookingsCount,
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings);
+
+const isPropertiesExpanded = ref(false);
+
+const visibleProperties = computed(() =>
+    isPropertiesExpanded.value ? sortedProperties.value : sortedProperties.value.slice(0, 2)
+);
 
 function handleEditBooking(booking: Booking): void {
     modalStore.openBookingModal({ booking });
@@ -128,21 +135,40 @@ function handleEditBooking(booking: Booking): void {
 
         <!-- Properties -->
         <div class="flex flex-col">
-            <CardTitle>
-                <template #title>Properties</template>
-                <template #subtitle> Real-time availability and unit operational status </template>
-            </CardTitle>
+            <div class="flex items-center justify-between">
+                <CardTitle>
+                    <template #title>Properties</template>
+                    <template #subtitle> Operational status and unit specifications </template>
+                </CardTitle>
+                <button
+                    v-if="sortedProperties.length > 2"
+                    type="button"
+                    class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                    @click="isPropertiesExpanded = !isPropertiesExpanded">
+                    <span>
+                        {{
+                            isPropertiesExpanded
+                                ? 'Show Less'
+                                : `Show All (${sortedProperties.length})`
+                        }}
+                    </span>
+                    <fa-icon
+                        icon="chevron-down"
+                        class="text-[10px] transition-transform duration-200"
+                        :class="{ 'rotate-180': isPropertiesExpanded }" />
+                </button>
+            </div>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div
                     v-if="sortedProperties.length === 0"
-                    class="col-span-2 flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-4">
+                    class="flex flex-1 flex-col col-span-2 items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-8">
                     <fa-icon
                         icon="house"
                         class="text-xl" />
-                    <p class="mt-2">No properties found</p>
+                    <p class="mt-2">No properties registered</p>
                 </div>
                 <PropertyCard
-                    v-for="property in sortedProperties"
+                    v-for="property in visibleProperties"
                     :key="property.id"
                     :property="property"
                     :bookings="bookings"

@@ -2,6 +2,7 @@ export interface FormatDateOptions {
     includeYear?: boolean;
     shortMonth?: boolean;
     monthHeader?: boolean;
+    monthNumber?: boolean;
     monthOnly?: boolean;
     includeWeekday?: boolean; // "Saturday" (or "Sat" if shortWeekday: true)
     shortWeekday?: boolean; // "Sat"
@@ -86,6 +87,9 @@ export function parseISODate(isoStr: string): Date {
  *  - formatDate("2026-09-02") -> "02 September"
  *  - formatDate("2026-09-02", { shortWeekday: true, shortMonth: true }) -> "Wed, 02 Sep"
  *  - formatDate("2026-09-02", { includeWeekday: true, includeYear: true }) -> "Wednesday, 02 September 2026"
+ *  - formatDate("2026-09-02", { monthHeader: true }) -> "September 2026"
+ *  - formatDate("2026-09-02", { monthOnly: true }) -> "September"
+ *  - formatDate("2026-09-02", { monthNumber: true }) -> "9"
  *  - formatDate("2026-09-02", { weekday: 'short' }) -> "Wed, 02 September"
  */
 export function formatDate(isoDateStr: string, options: FormatDateOptions = {}): string {
@@ -96,9 +100,11 @@ export function formatDate(isoDateStr: string, options: FormatDateOptions = {}):
 
     const monthFormat = options.shortMonth ? 'short' : 'long';
     const monthName = date.toLocaleDateString('en-US', { month: monthFormat });
+    const monthNumber = String(date.getMonth()).padStart(2, '0');
 
     if (options.monthHeader) return `${monthName} ${date.getFullYear()}`;
     if (options.monthOnly) return monthName;
+    if (options.monthNumber) return monthNumber;
 
     const day = String(date.getDate()).padStart(2, '0');
 

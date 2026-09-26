@@ -74,7 +74,7 @@ function handleAddProperty(): void {
                     <button
                         v-if="sortedProperties.length > 2"
                         type="button"
-                        class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 transition shadow-sm cursor-pointer"
+                        class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
                         @click="isPropertiesExpanded = !isPropertiesExpanded">
                         <span>
                             {{
@@ -91,7 +91,7 @@ function handleAddProperty(): void {
 
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition"
+                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition-colors"
                         @click="handleAddProperty">
                         <fa-icon
                             class="text-xs mr-1"
@@ -110,7 +110,6 @@ function handleAddProperty(): void {
                         class="text-xl" />
                     <p class="mt-2">No properties registered</p>
                 </div>
-
                 <PropertyCard
                     v-for="property in visibleProperties"
                     :key="property.id"
