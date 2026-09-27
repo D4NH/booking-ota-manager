@@ -6,6 +6,7 @@ import type {
     OwnerTransfer,
     ProjectedRecurringItem,
     SavingGoal,
+    GoldAsset,
 } from '@/types/finance';
 import { toast } from 'vue-toastflow';
 
@@ -256,6 +257,44 @@ export function useFinanceSync() {
             }
         );
     }
+    function editGoldAsset(id: string, payload: Omit<GoldAsset, 'id'>): Promise<boolean> {
+        return runWithToast(() => financeStore.updateGoldAsset(id, payload), {
+            loadingTitle: 'Updating Gold Asset...',
+            loadingDesc: `Syncing ${payload.weightGrams}g of ${payload.type} to Google Sheets & Dexie.`,
+            successTitle: 'Gold Holding Updated',
+            successDesc: `Successfully saved changes to ${payload.type} holding.`,
+            errorTitle: 'Update Failed',
+        });
+    }
+
+    async function removeGoldAsset(
+        id: string,
+        type: string,
+        weightGrams: number
+    ): Promise<boolean> {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete this ${weightGrams}g ${type} gold holding?`
+        );
+        if (!confirmed) return false;
+
+        return runWithToast(() => financeStore.deleteGoldAsset(id), {
+            loadingTitle: 'Deleting Gold Asset...',
+            loadingDesc: 'Removing holding from Google Sheets & Dexie.',
+            successTitle: 'Gold Holding Deleted',
+            successDesc: `Successfully deleted ${weightGrams}g ${type} asset.`,
+            errorTitle: 'Delete Failed',
+        });
+    }
+
+    function editSavingGoal(id: string, payload: Omit<SavingGoal, 'id'>): Promise<boolean> {
+        return runWithToast(() => financeStore.updateSavingGoal(id, payload), {
+            loadingTitle: 'Updating Savings Goal...',
+            loadingDesc: `Syncing target "${payload.name}" to Google Sheets & local cache.`,
+            successTitle: 'Goal Updated',
+            successDesc: `Successfully updated target "${payload.name}".`,
+            errorTitle: 'Update Failed',
+        });
+    }
 
     return {
         syncAllFinancialData,
@@ -272,6 +311,9 @@ export function useFinanceSync() {
         executeOwnerTransfer,
         settleRecurringCommitment,
         createSavingGoal,
+        editSavingGoal,
         removeSavingGoal,
+        editGoldAsset,
+        removeGoldAsset,
     };
 }

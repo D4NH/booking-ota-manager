@@ -130,6 +130,31 @@ export interface GoldAsset {
     notes?: string;
 }
 
+export interface BrandGoldBreakdown {
+    brand: string;
+    weightGrams: number;
+    buyPriceTotal: number;
+    valuation: number;
+    unrealizedPnL: number;
+    pctOfTotal: number; // e.g. 50.0 (percentage of grams)
+    certificateCount: number;
+    color: string;
+}
+
+export interface AccountGoldBreakdown {
+    owner: PersonalOwner | 'Shared';
+    label: string;
+    badgeClass: string;
+    weightGrams: number;
+    buyPriceTotal: number;
+    valuation: number;
+    unrealizedPnL: number;
+    pnLPct: number;
+    pctOfTotal: number; // percentage of total gold reserve
+    certificateCount: number;
+    brands: BrandGoldBreakdown[]; // Brand distribution specific to this account
+}
+
 export type RecurrenceFrequency = 'monthly' | 'yearly';
 export type RecurrenceTargetLedger = 'Property' | 'Personal' | 'Shared';
 

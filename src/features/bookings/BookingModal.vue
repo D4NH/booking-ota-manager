@@ -284,7 +284,7 @@ function handleSubmit(): void {
                             Delete booking
                         </button>
 
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3">
                             <button
                                 type="button"
                                 class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"

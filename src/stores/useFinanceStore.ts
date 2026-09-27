@@ -24,14 +24,63 @@ import type {
     SbnInvestment,
     SbnSeries,
     InvestmentPortfolioSummary,
+    AccountSbnBreakdown,
     SavingGoal,
     ComputedSavingGoal,
+    BrandGoldBreakdown,
+    AccountGoldBreakdown,
+    PersonalOwner,
 } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
+const BRAND_COLORS: Record<string, string> = {
+    Antam: '#fbbf24', // amber-400
+    UBS: '#f59e0b', // amber-500
+    Semar: '#fde047', // yellow-300
+    'Galeri 24': '#38bdf8', // sky-400
+    'Digital Pegadaian': '#34d399', // emerald-400
+    Pluang: '#a78bfa', // violet-400
+};
+
+function computeBrandDistribution(assets: GoldAsset[], pricePerGram: number): BrandGoldBreakdown[] {
+    const totalGrams = assets.reduce((sum, a) => sum + Number(a.weightGrams || 0), 0);
+    const groups = new Map<string, { grams: number; cost: number; count: number }>();
+
+    for (let i = 0; i < assets.length; i++) {
+        const a = assets[i];
+        if (!a) continue;
+        const brand = a.type || 'Other';
+        const existing = groups.get(brand) || { grams: 0, cost: 0, count: 0 };
+        existing.grams += Number(a.weightGrams || 0);
+        existing.cost += Number(a.buyPriceTotal || 0);
+        existing.count += 1;
+        groups.set(brand, existing);
+    }
+
+    return Array.from(groups.entries())
+        .map(([brand, data]) => {
+            const valuation = data.grams * pricePerGram;
+            const pnl = valuation - data.cost;
+            const pct = totalGrams > 0 ? Number(((data.grams / totalGrams) * 100).toFixed(1)) : 0;
+            const color = BRAND_COLORS[brand] || '#71717a';
+
+            return {
+                brand,
+                weightGrams: Number(data.grams.toFixed(2)),
+                buyPriceTotal: data.cost,
+                valuation,
+                unrealizedPnL: pnl,
+                pctOfTotal: pct,
+                certificateCount: data.count,
+                color,
+            };
+        })
+        .sort((a, b) => b.weightGrams - a.weightGrams);
+}
 
 export const useFinanceStore = defineStore('finance', () => {
-    const { appendSheetRow, deleteSheetRowById, batchFetchSheetRows } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowById, deleteSheetRowById, batchFetchSheetRows } =
+        useGoogleSheets();
     const bookingStore = useBookingStore();
 
     const properties = shallowRef<Property[]>([]);
@@ -172,6 +221,67 @@ export const useFinanceStore = defineStore('finance', () => {
         if (totalGoldCostBasis.value === 0) return 0;
         return Number(((goldUnrealizedPnL.value / totalGoldCostBasis.value) * 100).toFixed(1));
     });
+    const goldBrandAllocation = computed<BrandGoldBreakdown[]>(() =>
+        computeBrandDistribution(goldAssets.value, currentGoldPricePerGram.value)
+    );
+    const goldAccountAllocation = computed<AccountGoldBreakdown[]>(() => {
+        const totalReserveGrams = totalGoldGrams.value || 0;
+        const pricePerGram = currentGoldPricePerGram.value || 0;
+
+        const accountsConfig: {
+            owner: PersonalOwner | 'Shared';
+            label: string;
+            badgeClass: string;
+        }[] = [
+            {
+                owner: 'Danh Nguyen',
+                label: 'Danh',
+                badgeClass: 'text-lime-400 bg-lime-400/10 border-lime-400/20',
+            },
+            {
+                owner: 'Citra Ayu Wardani',
+                label: 'Citra',
+                badgeClass: 'text-sky-300 bg-sky-400/10 border-sky-400/20',
+            },
+            {
+                owner: 'Shared',
+                label: 'Shared',
+                badgeClass: 'text-amber-300 bg-amber-400/10 border-amber-400/20',
+            },
+        ];
+
+        return accountsConfig.map(({ owner, label, badgeClass }) => {
+            const accountAssets = goldAssets.value.filter((a) => a.owner === owner);
+            const grams = accountAssets.reduce((sum, a) => sum + Number(a.weightGrams || 0), 0);
+            const costBasis = accountAssets.reduce(
+                (sum, a) => sum + Number(a.buyPriceTotal || 0),
+                0
+            );
+            const valuation = grams * pricePerGram;
+            const pnl = valuation - costBasis;
+            const pnlPct = costBasis > 0 ? Number(((pnl / costBasis) * 100).toFixed(1)) : 0;
+            const pctOfTotal =
+                totalReserveGrams > 0 ? Number(((grams / totalReserveGrams) * 100).toFixed(1)) : 0;
+
+            // Brand breakdown specific to this account
+            const accountBrands = computeBrandDistribution(accountAssets, pricePerGram);
+
+            return {
+                owner,
+                label,
+                badgeClass,
+                weightGrams: Number(grams.toFixed(2)),
+                buyPriceTotal: costBasis,
+                valuation,
+                unrealizedPnL: pnl,
+                pnLPct: pnlPct,
+                pctOfTotal,
+                certificateCount: accountAssets.length,
+                brands: accountBrands,
+            };
+        });
+    });
+
     const portfolioSummary = computed<InvestmentPortfolioSummary>(() => {
         const totalVal = sbnTotalPrincipal.value + estimatedGoldMarketValue.value;
         return {
@@ -529,6 +639,44 @@ export const useFinanceStore = defineStore('finance', () => {
         goldAssets.value = [...goldAssets.value, record];
         await db.goldAssets.put(record);
     }
+    async function updateGoldAsset(id: string, payload: Omit<GoldAsset, 'id'>): Promise<void> {
+        const cleanDate = normalizeDate(payload.purchaseDate);
+        const updatedRecord: GoldAsset = {
+            ...payload,
+            id,
+            purchaseDate: cleanDate,
+            weightGrams: Number(payload.weightGrams),
+            buyPriceTotal: Number(payload.buyPriceTotal),
+            certificateNumber: payload.certificateNumber?.trim() || '',
+        };
+
+        await updateSheetRowById(
+            SPREADSHEET_ID,
+            id,
+            [
+                id,
+                updatedRecord.owner,
+                updatedRecord.type,
+                updatedRecord.weightGrams,
+                updatedRecord.buyPriceTotal,
+                cleanDate,
+                updatedRecord.certificateNumber || '',
+            ],
+            'Gold_Assets'
+        );
+
+        goldAssets.value = goldAssets.value.map((g) => (g.id === id ? updatedRecord : g));
+        if (db.goldAssets) {
+            await db.goldAssets.put(updatedRecord).catch(() => {});
+        }
+    }
+    async function deleteGoldAsset(id: string): Promise<void> {
+        await deleteSheetRowById(SPREADSHEET_ID, id, 'Gold_Assets');
+        goldAssets.value = goldAssets.value.filter((g) => g.id !== id);
+        if (db.goldAssets) {
+            await db.goldAssets.delete(id).catch(() => {});
+        }
+    }
     async function settleRecurringItem(item: ProjectedRecurringItem): Promise<void> {
         if (item.isSettled) return;
         const itemNote = item.notes?.trim() || '';
@@ -593,6 +741,36 @@ export const useFinanceStore = defineStore('finance', () => {
             await db.savingGoals
                 .put(newGoal)
                 .catch((e) => console.warn('Dexie goal save error:', e));
+        }
+    }
+    async function updateSavingGoal(id: string, payload: Omit<SavingGoal, 'id'>): Promise<void> {
+        const updatedGoal: SavingGoal = {
+            ...payload,
+            id,
+            targetAmount: Number(payload.targetAmount),
+            priority: Number(payload.priority) || 1,
+            deadline: payload.deadline ? normalizeDate(payload.deadline) : undefined,
+            notes: payload.notes?.trim() || '',
+        };
+
+        await updateSheetRowById(
+            SPREADSHEET_ID,
+            id,
+            [
+                updatedGoal.id,
+                updatedGoal.name,
+                updatedGoal.owner,
+                updatedGoal.targetAmount,
+                updatedGoal.priority ?? 1,
+                updatedGoal.deadline || '',
+                updatedGoal.notes || '',
+            ],
+            'Saving_Goals'
+        );
+
+        savingGoals.value = savingGoals.value.map((g) => (g.id === id ? updatedGoal : g));
+        if (db.savingGoals) {
+            await db.savingGoals.put(updatedGoal).catch(() => {});
         }
     }
     async function deleteSavingGoal(id: string): Promise<void> {
@@ -929,10 +1107,15 @@ export const useFinanceStore = defineStore('finance', () => {
         goldPnLPct,
         portfolioSummary,
         addGoldPurchase,
+        updateGoldAsset,
+        deleteGoldAsset,
+        goldBrandAllocation,
+        goldAccountAllocation,
 
-        // Savinfs
+        // Savings
         savingGoals,
         addSavingGoal,
+        updateSavingGoal,
         deleteSavingGoal,
         dynamicAllocatedGoals,
 

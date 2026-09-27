@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-toastflow';
+import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { getCurrentDate } from '@/utils/date';
-import type { PersonalOwner, GoldType } from '@/types/finance';
+import type { PersonalOwner, GoldType, GoldAsset } from '@/types/finance';
 
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -14,7 +15,6 @@ const ownerOptions = [
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
     { label: 'Shared', value: 'Shared' },
 ];
-
 const goldOptions = [
     { label: 'Antam', value: 'Antam' },
     { label: 'Galeri 24', value: 'Galeri 24' },
@@ -22,9 +22,17 @@ const goldOptions = [
     { label: 'UBS', value: 'UBS' },
 ];
 
+interface Props {
+    itemToEdit?: GoldAsset | null;
+}
+const { itemToEdit = null } = defineProps<Props>();
+const emit = defineEmits<{
+    closed: [];
+}>();
 const isOpen = defineModel<boolean>({ default: false });
 
 const financeStore = useFinanceStore();
+const { editGoldAsset, removeGoldAsset } = useFinanceSync();
 
 const goldOwner = ref<PersonalOwner | 'Shared'>('Danh Nguyen');
 const goldType = ref<GoldType>('Antam');
@@ -34,57 +42,88 @@ const goldDate = ref(getCurrentDate());
 const goldCert = ref('');
 const isSubmitting = ref(false);
 
-function resetForm() {
-    goldOwner.value = 'Danh Nguyen';
-    goldType.value = 'Antam';
-    goldGrams.value = null;
-    goldTotalCost.value = null;
-    goldDate.value = getCurrentDate();
-    goldCert.value = '';
-}
+const isEditing = computed(() => Boolean(itemToEdit));
+
+watch(
+    () => [isOpen.value, itemToEdit] as const,
+    ([open, item]) => {
+        if (!open) return;
+
+        if (item) {
+            goldOwner.value = item.owner;
+            goldType.value = item.type;
+            goldGrams.value = item.weightGrams;
+            goldTotalCost.value = item.buyPriceTotal;
+            goldDate.value = item.purchaseDate;
+            goldCert.value = item.certificateNumber || '';
+        } else {
+            goldOwner.value = 'Danh Nguyen';
+            goldType.value = 'Antam';
+            goldGrams.value = null;
+            goldTotalCost.value = null;
+            goldDate.value = getCurrentDate();
+            goldCert.value = '';
+        }
+    },
+    { immediate: true }
+);
+
 function closeModal(): void {
     isOpen.value = false;
-    resetForm();
+    emit('closed');
 }
-async function handleSaveGold(): Promise<void> {
+const handleSaveGold = async (): Promise<void> => {
     if (!goldGrams.value || !goldTotalCost.value) return;
 
     isSubmitting.value = true;
     try {
-        await toast.loading(
-            async () => {
-                await financeStore.addGoldPurchase({
-                    owner: goldOwner.value,
-                    type: goldType.value,
-                    weightGrams: Number(goldGrams.value),
-                    buyPriceTotal: Number(goldTotalCost.value),
-                    purchaseDate: goldDate.value,
-                    certificateNumber: goldCert.value.trim(),
-                });
-            },
-            {
-                loading: {
-                    title: 'Saving Gold Asset...',
-                    description: 'Adding holding to precious metals ledger & local cache.',
+        const payload = {
+            owner: goldOwner.value,
+            type: goldType.value,
+            weightGrams: Number(goldGrams.value),
+            buyPriceTotal: Number(goldTotalCost.value),
+            purchaseDate: goldDate.value,
+            certificateNumber: goldCert.value.trim(),
+        };
+
+        if (isEditing.value && itemToEdit) {
+            await editGoldAsset(itemToEdit.id, payload);
+        } else {
+            await toast.loading(
+                async () => {
+                    await financeStore.addGoldPurchase(payload);
                 },
-                success: {
-                    title: 'Gold Holding Added',
-                    description: `Logged ${goldGrams.value}g of ${goldType.value} for ${goldOwner.value}.`,
-                },
-                error: (err: unknown) => ({
-                    title: 'Save Failed',
-                    description:
-                        err instanceof Error ? err.message : 'Failed to write to Google Sheets.',
-                }),
-            }
-        );
+                {
+                    loading: {
+                        title: 'Saving Gold Asset...',
+                        description: 'Adding holding to precious metals ledger & local cache.',
+                    },
+                    success: {
+                        title: 'Gold Holding Added',
+                        description: `Logged ${goldGrams.value}g of ${goldType.value} for ${goldOwner.value}.`,
+                    },
+                    error: (err: unknown) => ({
+                        title: 'Save Failed',
+                        description:
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to write to Google Sheets.',
+                    }),
+                }
+            );
+        }
 
         closeModal();
     } catch (err: unknown) {
-        console.error('Failed to add gold holding:', err);
+        console.error('Failed to save gold holding:', err);
     } finally {
         isSubmitting.value = false;
     }
+};
+async function handleDeleteGold(): Promise<void> {
+    if (!itemToEdit) return;
+    await removeGoldAsset(itemToEdit.id, itemToEdit.type, itemToEdit.weightGrams);
+    emit('closed');
 }
 </script>
 
@@ -105,7 +144,9 @@ async function handleSaveGold(): Promise<void> {
                     <!-- Header -->
                     <div
                         class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
-                        <h2 class="font-semibold text-mist-100">Add Gold Holding</h2>
+                        <h2 class="font-semibold text-mist-100">
+                            {{ isEditing ? 'Edit Gold Holding' : 'Add Gold Holding' }}
+                        </h2>
                         <button
                             type="button"
                             class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
@@ -184,20 +225,34 @@ async function handleSaveGold(): Promise<void> {
                                     class="text-xs" />
                             </template>
                         </TextInput>
-
-                        <div class="flex justify-end gap-2">
+                        <div
+                            class="flex gap-2"
+                            :class="[isEditing ? 'justify-between' : 'justify-end']">
                             <button
+                                v-if="isEditing"
                                 type="button"
-                                class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
-                                @click="closeModal">
-                                Cancel
+                                class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                                @click="handleDeleteGold">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="trash-can" />
+                                Delete booking
                             </button>
-                            <button
-                                type="submit"
-                                :disabled="isSubmitting"
-                                class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
-                                {{ isSubmitting ? 'Saving...' : 'Save Holding' }}
-                            </button>
+
+                            <div class="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    class="text-xs px-3 py-2 text-mist-400 hover:text-mist-200"
+                                    @click="closeModal">
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="isSubmitting"
+                                    class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold">
+                                    {{ isSubmitting ? 'Saving...' : 'Save Holding' }}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

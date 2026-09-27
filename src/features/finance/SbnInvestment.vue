@@ -124,36 +124,17 @@ const maturity = computed(() =>
                     </div>
                 </div>
                 <!-- Progress Bar -->
-                <!-- <div class="space-y-1.5">
+                <div class="space-y-1.5">
                     <div class="flex justify-between text-xs font-mono text-mist-400">
                         <span>Maturity Progress</span>
                         <span class="text-mist-200">
-                            {{ maturityProgress }}% ({{ monthsRemaining }}
+                            {{ maturity.progressPct }}% ({{ maturity.monthsLeft }}
                             months left)
                         </span>
                     </div>
                     <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
                         <div
                             class="h-full bg-emerald-500 transition-all duration-500"
-                            :style="{ width: `${maturityProgress}%` }"></div>
-                    </div>
-                </div> -->
-                <div class="space-y-1.5 mb-3.5">
-                    <div
-                        class="flex justify-between items-center text-[11px] font-mono text-mist-400">
-                        <span>Maturity Progress</span>
-                        <span class="text-mist-200">
-                            <strong class="text-emerald-400 font-bold"
-                                >{{ maturity.progressPct }}%</strong
-                            >
-                            <span class="text-mist-400">
-                                ({{ maturity.monthsLeft }} months left)</span
-                            >
-                        </span>
-                    </div>
-                    <div class="w-full bg-mist-950 h-2 rounded-full overflow-hidden">
-                        <div
-                            class="h-full rounded-full bg-emerald-400 transition-all duration-500"
                             :style="{ width: `${maturity.progressPct}%` }"></div>
                     </div>
                 </div>
