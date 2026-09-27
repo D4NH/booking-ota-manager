@@ -2,17 +2,17 @@
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import { useFinanceSync } from '@/composables/useFinanceSync';
 import { formatIDR } from '@/utils/money';
+import type { SavingGoal } from '@/types/finance';
 
 import SavingGoalModal from '@/features/finance/SavingGoalModal.vue';
 import TransferSavingsModal from '@/features/finance/TransferSavingsModal.vue'; // <── Imported
 
 const financeStore = useFinanceStore();
 const { dynamicSavingsAccounts, dynamicAllocatedGoals } = storeToRefs(financeStore);
-const { removeSavingGoal } = useFinanceSync();
 
 const isGoalModalOpen = ref(false);
+const editingGoal = ref<SavingGoal | null>(null);
 const isTransferModalOpen = ref(false);
 const selectedAccountKey = ref('');
 
@@ -20,9 +20,15 @@ function openTransferModal(preselectedKey?: string): void {
     selectedAccountKey.value = preselectedKey || '';
     isTransferModalOpen.value = true;
 }
-async function handleDeleteGoal(id: string, name: string): Promise<void> {
-    await removeSavingGoal(id, name);
-}
+const openAddGoal = () => {
+    editingGoal.value = null;
+    isGoalModalOpen.value = true;
+};
+
+const openEditGoal = (goal: SavingGoal) => {
+    editingGoal.value = goal;
+    isGoalModalOpen.value = true;
+};
 </script>
 
 <template>
@@ -47,6 +53,7 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
             </button>
         </div>
 
+        <!-- <div class="flex flex-col justify-between"> -->
         <div class="overflow-x-auto mb-6">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
@@ -61,10 +68,7 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
                 <tbody class="divide-y divide-mist-800/60 font-mono">
                     <tr
                         v-for="acc in dynamicSavingsAccounts"
-                        :key="acc.key"
-                        class="hover:bg-mist-800/50 transition-colors cursor-pointer"
-                        title="Click to transfer from this account"
-                        @click="openTransferModal(acc.key)">
+                        :key="acc.key">
                         <td class="py-2.5 px-3 text-mist-400">{{ acc.lastUpdated }}</td>
                         <td class="py-2.5 px-3 font-medium text-mist-100">
                             {{ acc.owner }}
@@ -99,7 +103,7 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
             <button
                 type="button"
                 class="bg-mist-800 hover:bg-mist-700 text-blue-400 border border-mist-700 rounded text-xs font-semibold px-2 py-1 transition cursor-pointer"
-                @click="isGoalModalOpen = true">
+                @click="openAddGoal">
                 <fa-icon
                     class="text-[10px]"
                     icon="plus" />
@@ -112,7 +116,8 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
             <div
                 v-for="goal in dynamicAllocatedGoals"
                 :key="goal.id"
-                class="pb-3 pt-1">
+                class="-mx-2 mb-1.5 px-2 pb-3 pt-1 hover:bg-mist-800/40 rounded-md transition cursor-pointer"
+                @click="openEditGoal(goal)">
                 <div class="flex items-center justify-between gap-2">
                     <div>
                         <div class="flex items-center gap-1.5">
@@ -136,7 +141,7 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
                         </p>
                     </div>
 
-                    <!-- Financial Values & Delete Action -->
+                    <!-- Financial Values -->
                     <div class="flex items-center gap-2.5 shrink-0">
                         <div class="text-right font-mono text-xs">
                             <span class="text-mist-300">
@@ -145,15 +150,11 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
                             <span class="text-mist-500 mx-1">/</span>
                             <span class="text-mist-200">{{ formatIDR(goal.targetAmount) }}</span>
                         </div>
-                        <button
-                            type="button"
-                            class="text-mist-500 hover:text-rose-400 p-1 -mt-1 transition opacity-60 hover:opacity-100 cursor-pointer rounded"
-                            title="Delete Saving Goal"
-                            @click="handleDeleteGoal(goal.id, goal.name)">
+                        <span class="text-mist-500 p-1 -mt-1">
                             <fa-icon
                                 class="text-xs"
-                                icon="trash-can" />
-                        </button>
+                                icon="pen-to-square" />
+                        </span>
                     </div>
                 </div>
 
@@ -192,8 +193,10 @@ async function handleDeleteGoal(id: string, name: string): Promise<void> {
             </div>
         </div>
 
-        <!-- External Modals -->
-        <SavingGoalModal v-model="isGoalModalOpen" />
+        <SavingGoalModal
+            v-model="isGoalModalOpen"
+            :item-to-edit="editingGoal"
+            @closed="editingGoal = null" />
         <TransferSavingsModal
             v-model="isTransferModalOpen"
             :preselected-key="selectedAccountKey"

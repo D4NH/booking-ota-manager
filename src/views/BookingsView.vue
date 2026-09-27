@@ -112,7 +112,7 @@ function handleEditBooking(booking: Booking): void {
     modalStore.openBookingModal({ booking });
 }
 async function handleDeleteBooking(booking: Booking): Promise<void> {
-    void (await deleteBooking(booking));
+    await deleteBooking(booking);
 }
 </script>
 

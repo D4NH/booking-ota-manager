@@ -1,185 +1,246 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import type { PersonalOwner } from '@/types/finance';
+import type { SavingGoal, PersonalOwner } from '@/types/finance';
 
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
+interface Props {
+    itemToEdit?: SavingGoal | null;
+}
+const { itemToEdit = null } = defineProps<Props>();
+
+const emit = defineEmits<{
+    (e: 'closed'): void;
+}>();
+
+const isOpen = defineModel<boolean>({ default: false });
+
+const { createSavingGoal, editSavingGoal, removeSavingGoal } = useFinanceSync();
+
 const ownerOptions = [
-    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
+    { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Shared', value: 'Shared' },
 ];
+
 const priorityOptions = [
-    { label: 'High', value: 1 },
-    { label: 'Medium', value: 2 },
-    { label: 'Low', value: 3 },
+    { label: 'Priority 1 (Highest)', value: 1 },
+    { label: 'Priority 2 (High)', value: 2 },
+    { label: 'Priority 3 (Medium)', value: 3 },
+    { label: 'Priority 4 (Low)', value: 4 },
 ];
 
-interface Props {
-    modelValue?: boolean;
-}
-
-const { modelValue = false } = defineProps<Props>();
-const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
-
-const { createSavingGoal } = useFinanceSync();
-
-const name = ref('');
-const owner = ref<PersonalOwner | 'Shared'>('Shared');
-const targetAmount = ref<number | null>(null);
-const priority = ref<number>(1);
-const deadline = ref('');
-const notes = ref('');
+const goalName = ref('');
+const goalOwner = ref<PersonalOwner | 'Shared'>('Shared');
+const goalTarget = ref<number | ''>('');
+const goalPriority = ref<number>(1);
+const goalDeadline = ref<string>('');
+const goalNotes = ref('');
 const isSubmitting = ref(false);
 
-function closeModal(): void {
-    emit('update:modelValue', false);
+const isEditing = computed(() => Boolean(itemToEdit));
+
+watch(
+    () => [isOpen.value, itemToEdit] as const,
+    ([open, item]) => {
+        if (!open) return;
+
+        if (item) {
+            goalName.value = item.name;
+            goalOwner.value = item.owner;
+            goalTarget.value = item.targetAmount;
+            goalPriority.value = item.priority ?? 1;
+            goalDeadline.value = item.deadline || '';
+            goalNotes.value = item.notes || '';
+        } else {
+            goalName.value = '';
+            goalOwner.value = 'Shared';
+            goalTarget.value = '';
+            goalPriority.value = 1;
+            goalDeadline.value = '';
+            goalNotes.value = '';
+        }
+    },
+    { immediate: true }
+);
+
+function closeModal() {
+    isOpen.value = false;
+    emit('closed');
 }
-async function handleSubmit(): Promise<void> {
-    if (isSubmitting.value || !name.value || !targetAmount.value) return;
+async function handleSaveGoal() {
+    const targetNum = Number(goalTarget.value);
+    if (!goalName.value.trim() || !targetNum || targetNum <= 0) return;
 
     isSubmitting.value = true;
     try {
-        const success = await createSavingGoal({
-            name: name.value.trim(),
-            owner: owner.value,
-            targetAmount: Number(targetAmount.value),
-            priority: Number(priority.value) || 1,
-            deadline: deadline.value || undefined,
-            notes: notes.value.trim() || undefined,
-        });
+        const payload = {
+            name: goalName.value.trim(),
+            owner: goalOwner.value,
+            targetAmount: targetNum,
+            priority: Number(goalPriority.value) || 1,
+            deadline: goalDeadline.value || undefined,
+            notes: goalNotes.value.trim() || undefined,
+        };
 
-        if (success) {
-            name.value = '';
-            targetAmount.value = null;
-            priority.value = 1;
-            deadline.value = '';
-            notes.value = '';
-            closeModal();
+        if (isEditing.value && itemToEdit) {
+            await editSavingGoal(itemToEdit.id, payload);
+        } else {
+            await createSavingGoal(payload);
         }
+
+        closeModal();
     } finally {
-        setTimeout(() => {
-            isSubmitting.value = false;
-        }, 1000);
+        isSubmitting.value = false;
     }
+}
+async function handleDeleteGoal(): Promise<void> {
+    if (!itemToEdit) return;
+    await removeSavingGoal(itemToEdit.id, itemToEdit.name);
+    emit('closed');
 }
 </script>
 
 <template>
-    <div
-        v-if="modelValue"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
-        <div
-            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
-            <!-- Modal Header -->
+    <Teleport to="body">
+        <transition
+            enter-active-class="transition ease-out duration-150"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0">
             <div
-                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
-                <div>
-                    <h2 class="text-base font-semibold text-mist-100">New Savings Goal</h2>
+                v-if="isOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
+                <div
+                    class="w-full max-w-xl rounded-md border border-mist-800 bg-mist-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-5 space-y-4 text-mist-100">
+                    <!-- Header -->
+                    <div
+                        class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
+                        <h2 class="text-sm font-semibold text-mist-100 uppercase tracking-wider">
+                            {{ isEditing ? 'Edit Savings Goal' : 'Add Savings Goal' }}
+                        </h2>
+                        <button
+                            type="button"
+                            class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
+                            @click="closeModal">
+                            <fa-icon
+                                class="text-sm"
+                                icon="xmark" />
+                        </button>
+                    </div>
+
+                    <form
+                        class="max-h-[80vh] overflow-y-auto space-y-3.5 text-xs"
+                        @submit.prevent="handleSaveGoal">
+                        <TextInput
+                            id="goalName"
+                            v-model.trim="goalName"
+                            input-label="Goal Name"
+                            type="text"
+                            placeholder="Emergency Fund, Education, Vacation"
+                            required>
+                            <template #icon>
+                                <fa-icon
+                                    icon="bullseye"
+                                    class="text-xs" />
+                            </template>
+                        </TextInput>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <SelectDropdown
+                                v-model="goalOwner"
+                                input-label="Owner"
+                                :options="ownerOptions">
+                                <template #icon>
+                                    <fa-icon
+                                        class="text-xs"
+                                        icon="id-card" />
+                                </template>
+                            </SelectDropdown>
+
+                            <SelectDropdown
+                                v-model="goalPriority"
+                                input-label="Funding Priority"
+                                :options="priorityOptions">
+                                <template #icon>
+                                    <fa-icon
+                                        class="text-xs"
+                                        icon="arrow-up-1-9" />
+                                </template>
+                            </SelectDropdown>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <TextInput
+                                id="goalTarget"
+                                v-model.number="goalTarget"
+                                input-label="Target Amount"
+                                type="number"
+                                placeholder="10.000.000"
+                                required>
+                                <template #icon>
+                                    <fa-icon
+                                        class="text-xs"
+                                        icon="rupiah-sign" />
+                                </template>
+                            </TextInput>
+
+                            <DatePicker
+                                v-model="goalDeadline"
+                                :width="311"
+                                input-label="Target Deadline (Optional)" />
+                        </div>
+
+                        <TextInput
+                            id="goalNotes"
+                            v-model.trim="goalNotes"
+                            input-label="Notes / Milestones"
+                            type="text"
+                            placeholder="Held in BCA & Blu accounts" />
+
+                        <div
+                            class="flex gap-2"
+                            :class="[isEditing ? 'justify-between' : 'justify-end']">
+                            <button
+                                v-if="isEditing"
+                                type="button"
+                                class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                                @click="handleDeleteGoal">
+                                <fa-icon
+                                    class="text-xs"
+                                    icon="trash-can" />
+                                Delete Goal
+                            </button>
+
+                            <div class="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    class="text-xs px-3 py-2 font-medium text-mist-400 hover:text-mist-200 cursor-pointer"
+                                    @click="closeModal">
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    :disabled="isSubmitting"
+                                    class="bg-blue-400 hover:bg-blue-300 text-mist-950 px-4 py-2 rounded-md font-semibold cursor-pointer transition disabled:opacity-50">
+                                    {{
+                                        isSubmitting
+                                            ? 'Saving...'
+                                            : isEditing
+                                              ? 'Update Goal'
+                                              : 'Create Goal'
+                                    }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <button
-                    type="button"
-                    class="text-mist-400 hover:text-mist-200 cursor-pointer"
-                    @click="closeModal">
-                    <fa-icon
-                        icon="xmark"
-                        class="text-sm" />
-                </button>
             </div>
-
-            <p class="text-xs text-mist-400 mb-4">
-                Will be funded automatically in order of priority from your liquid savings pool.
-            </p>
-
-            <form
-                class="max-h-[80vh] overflow-y-auto space-y-4"
-                @submit.prevent="handleSubmit">
-                <TextInput
-                    id="goalTitle"
-                    v-model="name"
-                    input-label="Goal Title"
-                    type="text"
-                    placeholder="Relocating funds"
-                    required>
-                    <template #icon>
-                        <fa-icon
-                            icon="box-archive"
-                            class="text-xs" />
-                    </template>
-                </TextInput>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <SelectDropdown
-                        v-model="owner"
-                        input-label="Owner"
-                        :options="ownerOptions">
-                        <template #icon>
-                            <fa-icon
-                                icon="id-card"
-                                class="text-xs" />
-                        </template>
-                    </SelectDropdown>
-
-                    <SelectDropdown
-                        v-model="priority"
-                        input-label="Funding Priority"
-                        :options="priorityOptions">
-                        <template #icon>
-                            <fa-icon
-                                icon="arrow-up-1-9"
-                                class="text-xs" />
-                        </template>
-                    </SelectDropdown>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <TextInput
-                        id="payout"
-                        v-model.number="targetAmount"
-                        input-label="Target Amount"
-                        type="number"
-                        min="1"
-                        placeholder="100.000"
-                        required>
-                        <template #icon>
-                            <fa-icon
-                                icon="rupiah-sign"
-                                class="text-xs" />
-                        </template>
-                    </TextInput>
-
-                    <DatePicker
-                        v-model="deadline"
-                        input-label="Target Deadline (Optional)"
-                        :width="311" />
-                </div>
-
-                <TextInput
-                    id="amount"
-                    v-model="notes"
-                    input-label="Description"
-                    type="text"
-                    placeholder="...">
-                </TextInput>
-
-                <div class="flex justify-end space-x-2">
-                    <button
-                        type="button"
-                        class="text-xs px-3 py-2 font-medium text-mist-400 hover:text-mist-200 cursor-pointer"
-                        @click="closeModal">
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        :disabled="isSubmitting"
-                        class="bg-blue-400 hover:bg-blue-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition cursor-pointer">
-                        {{ isSubmitting ? 'Creating...' : 'Create Goal' }}
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+        </transition>
+    </Teleport>
 </template>

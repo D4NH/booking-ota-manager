@@ -229,43 +229,41 @@ function openEditGoldModal(item: GoldAsset): void {
                     <thead
                         class="bg-mist-950/50 text-mist-400 uppercase font-semibold border-y border-mist-800">
                         <tr>
-                            <th class="w-25 py-1.5 px-3">Date</th>
-                            <th class="w-26 py-1.5 px-3">Owner</th>
-                            <th class="py-1.5 px-3">Type</th>
-                            <th class="py-1.5 px-3 text-right">Cost Basis</th>
+                            <th class="w-25 py-2.5 px-3">Date</th>
+                            <th class="w-26 py-2.5 px-3">Owner</th>
+                            <th class="py-2.5 px-3">Type</th>
+                            <th class="py-2.5 px-3 text-right">Cost Basis</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-mist-800/60 font-mono">
                         <tr
                             v-for="g in goldAssets"
                             :key="g.id"
-                            class="hover:bg-mist-800/50 align-middle">
-                            <td class="py-1.5 px-3 text-mist-400 align-middle">
+                            class="hover:bg-mist-800/50 align-middle cursor-pointer"
+                            @click="openEditGoldModal(g)">
+                            <td class="py-2 px-3 text-mist-400 align-middle">
                                 {{ g.purchaseDate }}
                             </td>
-                            <td class="py-1.5 px-3 align-middle">
+                            <td class="py-2 px-3 align-middle">
                                 <span class="font-medium text-mist-100">
                                     {{ g.owner }}
                                 </span>
                             </td>
-                            <td class="py-1.5 px-3 align-middle">
+                            <td class="py-2 px-3 align-middle">
                                 <span class="text-mist-400">{{ g.type }}</span> &bull;
                                 <span class="text-amber-300">{{ g.weightGrams }}g</span>
                             </td>
-                            <td class="py-1.5 px-3 text-mist-300 align-middle">
+                            <td class="py-2 px-3 text-mist-300 align-middle">
                                 <div class="flex items-baseline justify-end gap-2">
                                     <span class="block mb-1 text-nowrap">
                                         {{ formatIDR(g.buyPriceTotal) }}
                                     </span>
-                                    <button
-                                        type="button"
-                                        title="Edit Transaction"
-                                        class="opacity-70 text-mist-400 hover:text-amber-300 p-1 transition-color cursor-pointer"
-                                        @click="openEditGoldModal(g)">
+                                    <span
+                                        class="text-mist-400 hover:text-amber-300 pl-1 py-1 transition-color">
                                         <fa-icon
-                                            icon="pen-to-square"
-                                            class="text-xs" />
-                                    </button>
+                                            class="text-xs"
+                                            icon="pen-to-square" />
+                                    </span>
                                 </div>
                             </td>
                         </tr>
