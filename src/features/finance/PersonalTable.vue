@@ -107,7 +107,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                     class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
-                        <th class="w-32 px-4 py-2.5">Category</th>
+                        <th class="w-36 px-4 py-2.5">Category</th>
                         <th class="w-auto px-4 py-2.5">Notes</th>
                         <th class="w-35 px-4 py-2.5 text-right">Amount</th>
                         <th class="w-23 px-4 py-2.5 text-center">Actions</th>

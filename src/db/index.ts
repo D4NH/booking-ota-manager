@@ -10,6 +10,7 @@ import type {
     GoldAsset,
     RecurringTemplate,
     SavingGoal,
+    SbnInvestment,
 } from '@/types/finance';
 
 export const db = new Dexie('YogyakartaRentalsDB') as Dexie & {
@@ -24,6 +25,7 @@ export const db = new Dexie('YogyakartaRentalsDB') as Dexie & {
     recurringTemplates: EntityTable<RecurringTemplate, 'id'>;
     savingGoals: EntityTable<SavingGoal, 'id'>;
     stagedBookings: EntityTable<StagedBooking, 'id'>;
+    sbnInvestments: EntityTable<SbnInvestment, 'id'>;
 };
 
 db.version(1).stores({
@@ -88,6 +90,21 @@ db.version(6).stores({
     recurringTemplates: 'id, targetLedger, category, active',
     savingGoals: 'id, owner, priority',
     stagedBookings: 'id, propertyId, status',
+});
+
+db.version(7).stores({
+    properties: 'id, name',
+    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
+    propertyFinances: 'id, propertyId, type, category, date, bookingId',
+    personalFinances: 'id, owner, type, category, date',
+    sharedFinances: 'id, type, category, date',
+    transfers: 'id, sourcePropertyId, targetAccount, date',
+    personalSavings: 'id, owner, institution',
+    goldAssets: 'id, owner, type, purchaseDate',
+    recurringTemplates: 'id, targetLedger, category, active',
+    savingGoals: 'id, owner, priority',
+    stagedBookings: 'id, propertyId, status',
+    sbnInvestments: 'id, series, owner, active',
 });
 
 export default db;

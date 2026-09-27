@@ -19,9 +19,6 @@ type LedgerItem = {
     owner?: string;
 };
 
-/**
- * Single consolidated summation for any ledger, owner, month, and type
- */
 function sumTransactions(
     list: LedgerItem[],
     targetMonth: string,
@@ -187,7 +184,6 @@ export function usePersonalFinance(
         calculateGrowthPct(sharedMonthlyExpenses.value, sharedPreviousMonthExpenses.value)
     );
 
-    // Unified CRUD
     async function addPersonalTransaction(payload: Omit<PersonalFinance, 'id'>): Promise<void> {
         if (!SPREADSHEET_ID) {
             throw new Error('Missing Google Sheets database configuration. Operation aborted.');

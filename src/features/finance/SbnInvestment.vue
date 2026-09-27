@@ -1,33 +1,64 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
+import { calculateSbnMaturity } from '@/utils/financeCalculators';
 import { formatIDR } from '@/utils/money';
-import { formatDate } from '@/utils/date';
 
 const financeStore = useFinanceStore();
-const { sbnInvestments, sbnTotalPrincipal, sbnMonthlyNetYield, sbnTotalCollectedYield } =
-    storeToRefs(financeStore);
+const {
+    sbnInvestments,
+    sbnTotalPrincipal,
+    sbnMonthlyNetYield,
+    sbnTotalCollectedYield,
+    sbnAccountAllocation,
+    sbnMonthlyGrossYield,
+} = storeToRefs(financeStore);
 
-const primarySbn = computed(() => sbnInvestments.value[0]);
-const maturityProgress = computed(() => {
-    if (!primarySbn.value) return 0;
-    const start = new Date(primarySbn.value.issueDate).getTime();
-    const end = new Date(primarySbn.value.maturityDate).getTime();
-    const now = Date.now();
-    const elapsed = Math.max(0, now - start);
-    const total = end - start;
-    return Math.min(100, Math.round((elapsed / total) * 100));
+const selectedAccount = ref<string>('Danh Nguyen');
+
+const activeData = computed(() => {
+    if (selectedAccount.value === 'all') {
+        const activeItems = sbnInvestments.value.filter((s) => s.active);
+        const seriesNames = [...new Set(activeItems.map((s) => s.series))].join(' / ');
+        const primary = activeItems[0];
+
+        return {
+            label: 'Total SBN Reserve',
+            series: seriesNames || 'SR022',
+            couponRate: primary?.couponRatePct || 6.45,
+            principal: sbnTotalPrincipal.value,
+            monthlyGross: sbnMonthlyGrossYield.value,
+            monthlyNet: sbnMonthlyNetYield.value,
+            collected: sbnTotalCollectedYield.value,
+            activeCount: activeItems.length,
+            payoutDay: primary?.payoutDayOfMonth || 10,
+            issueDate: primary?.issueDate,
+            maturityDate: primary?.maturityDate,
+        };
+    }
+
+    const acc = sbnAccountAllocation.value.find((a) => a.owner === selectedAccount.value);
+    const seriesNames = [...new Set((acc?.investments || []).map((s) => s.series))].join(' / ');
+    const primary = acc?.investments[0];
+
+    return {
+        label: `${acc?.label || 'Account'} Holdings`,
+        series: seriesNames || 'None',
+        couponRate: primary?.couponRatePct || 6.45,
+        principal: acc?.principalAmount || 0,
+        monthlyGross: acc?.monthlyGrossYield || 0,
+        monthlyNet: acc?.monthlyNetYield || 0,
+        collected: acc?.totalCollectedYield || 0,
+        activeCount: acc?.activeCount || 0,
+        payoutDay: primary?.payoutDayOfMonth || 10,
+        issueDate: primary?.issueDate,
+        maturityDate: primary?.maturityDate,
+    };
 });
-const monthsRemaining = computed(() => {
-    if (!primarySbn.value) return 0;
-    const end = new Date(primarySbn.value.maturityDate);
-    const now = new Date();
-    return Math.max(
-        0,
-        (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth())
-    );
-});
+const maturity = computed(() =>
+    calculateSbnMaturity(activeData.value.issueDate, activeData.value.maturityDate)
+);
 </script>
 
 <template>
@@ -39,68 +70,122 @@ const monthsRemaining = computed(() => {
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
-                        SBN SR022 6.45%
+                        SBN Investment
                     </h3>
                 </div>
-                <!-- Toggle Buttons -->
-                <div
-                    class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs"></div>
+                <span
+                    class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-semibold">
+                    Fixed Coupon {{ activeData.couponRate }}% p.a.
+                </span>
             </div>
 
-            <!-- Virtual Government Bond Card Display -->
-            <div class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50 space-y-6">
+            <!-- Account Selector Tabs -->
+            <div class="flex items-center gap-1.5 mb-3.5 pb-2 border-b border-mist-800/60 text-xs">
+                <button
+                    type="button"
+                    class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                    :class="
+                        selectedAccount === 'all'
+                            ? 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="selectedAccount = 'all'">
+                    All ({{ formatIDR(sbnTotalPrincipal) }})
+                </button>
+                <button
+                    v-for="acc in sbnAccountAllocation"
+                    :key="acc.owner"
+                    type="button"
+                    class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                    :class="
+                        selectedAccount === acc.owner
+                            ? 'bg-mist-800 text-emerald-300 border border-mist-700'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="selectedAccount = acc.owner">
+                    {{ acc.label }}
+                </button>
+            </div>
+            <!-- Virtual Bond Display -->
+            <div
+                class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50 space-y-6 font-mono">
                 <div class="flex justify-between items-start">
                     <div>
-                        <span class="text-xs text-mist-400 uppercase font-mono block">
-                            Ministry of Finance
-                        </span>
-                        <span class="text-xs font-bold text-mist-100 font-mono tracking-wider">
-                            SR022-T3 Syariah
+                        <span class="text-xs text-mist-400 uppercase block">Series</span>
+                        <span class="text-xs font-semibold text-emerald-400 tracking-wider">
+                            {{ activeData.series }}
                         </span>
                     </div>
-                    <div
-                        class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-emerald-400/10 text-emerald-400">
-                        100% APBN Guaranteed
+                    <div class="text-right">
+                        <span class="text-mist-400 block text-xs">Coupon Payout</span>
+                        <span class="font-semibold text-xs text-mist-200">
+                            Day {{ activeData.payoutDay }} of month
+                        </span>
                     </div>
                 </div>
-
-                <!-- Tenor Timeline Progress Bar -->
-                <div class="space-y-1.5">
-                    <div class="flex justify-between text-[11px] font-mono text-mist-400">
+                <!-- Progress Bar -->
+                <!-- <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-mono text-mist-400">
                         <span>Maturity Progress</span>
                         <span class="text-mist-200">
-                            {{ maturityProgress }}% ({{ monthsRemaining }} months left)
+                            {{ maturityProgress }}% ({{ monthsRemaining }}
+                            months left)
                         </span>
                     </div>
                     <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
                         <div
-                            class="h-full rounded-full bg-linear-to-r bg-emerald-500 transition-all duration-500"
+                            class="h-full bg-emerald-500 transition-all duration-500"
                             :style="{ width: `${maturityProgress}%` }"></div>
+                    </div>
+                </div> -->
+                <div class="space-y-1.5 mb-3.5">
+                    <div
+                        class="flex justify-between items-center text-[11px] font-mono text-mist-400">
+                        <span>Maturity Progress</span>
+                        <span class="text-mist-200">
+                            <strong class="text-emerald-400 font-bold"
+                                >{{ maturity.progressPct }}%</strong
+                            >
+                            <span class="text-mist-400">
+                                ({{ maturity.monthsLeft }} months left)</span
+                            >
+                        </span>
+                    </div>
+                    <div class="w-full bg-mist-950 h-2 rounded-full overflow-hidden">
+                        <div
+                            class="h-full rounded-full bg-emerald-400 transition-all duration-500"
+                            :style="{ width: `${maturity.progressPct}%` }"></div>
                     </div>
                 </div>
 
-                <div class="h-15">
-                    <span class="text-xs text-mist-400 block"> Total Principal Investment </span>
-                    <div class="text-lg font-black font-mono text-mist-100 tracking-tight mt-1">
-                        {{ formatIDR(sbnTotalPrincipal) }}
+                <div class="flex items-baseline justify-between font-mono">
+                    <div>
+                        <span class="text-xs text-mist-400 block">Total Principal</span>
+                        <div class="text-lg font-black text-mist-100 tracking-tight mt-0.5">
+                            {{ formatIDR(activeData.principal) }}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-emerald-400">
+                            +{{ formatIDR(activeData.monthlyNet) }}/mo
+                        </div>
+                        <span class="text-xs text-mist-400">Net after 10% tax</span>
                     </div>
                 </div>
 
                 <div
-                    class="grid grid-cols-2 gap-2 pt-3 mt-3 border-t border-mist-750/70 text-[11px] font-mono">
+                    class="grid grid-cols-2 gap-2 pt-2.5 border-t border-mist-700/50 text-xs font-mono">
                     <div>
-                        <span class="text-mist-400 text-xs block"> Net Passive Income: </span>
-                        <span class="text-emerald-400 font-bold">
-                            +{{ formatIDR(sbnMonthlyNetYield) }} / month
+                        <span class="text-mist-400 block text-[11px]">Monthly Gross Yield:</span>
+                        <span class="text-mist-300 font-semibold">
+                            {{ formatIDR(activeData.monthlyGross) }}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="text-mist-400 text-xs block"> Maturity Date: </span>
-                        <span
-                            v-if="primarySbn"
-                            class="text-mist-200 font-bold">
-                            {{ formatDate(primarySbn.maturityDate, { includeYear: true }) }}</span
-                        >
+                        <span class="text-mist-400 block text-[11px]">Total Collected Yield:</span>
+                        <span class="font-semibold text-emerald-400">
+                            {{ formatIDR(activeData.collected) }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -108,15 +193,12 @@ const monthsRemaining = computed(() => {
 
         <!-- Metric Footer -->
         <div
-            class="pt-3 border-t border-mist-800/80 flex items-center justify-between text-xs font-mono">
+            class="pt-3 mt-3 border-t border-mist-800 flex items-center justify-between text-xs font-mono">
             <span class="text-mist-400">
-                Payout Day: <strong class="text-mist-200 font-mono">10th every month</strong>
+                Asset: <strong class="text-mist-200">Government Sukuk</strong>
             </span>
             <span class="text-mist-400">
-                Collected:
-                <strong class="text-mist-200 font-mono">
-                    {{ formatIDR(sbnTotalCollectedYield) }}
-                </strong>
+                Status: <strong class="text-emerald-400">Active</strong>
             </span>
         </div>
     </div>

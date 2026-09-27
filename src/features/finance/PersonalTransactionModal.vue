@@ -24,6 +24,7 @@ const categoriesPersonal = [
     'Food & Drinks',
     'Groceries',
     'Savings',
+    'Travel & Transport',
     'Subscription',
 ] as const;
 const categoriesShared = [

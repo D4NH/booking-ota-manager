@@ -184,6 +184,19 @@ export interface InvestmentPortfolioSummary {
     totalPortfolioValue: number;
 }
 
+export interface AccountSbnBreakdown {
+    owner: PersonalOwner | 'Shared';
+    label: string; // 'Danh', 'Citra', 'Shared'
+    badgeClass: string;
+    principalAmount: number;
+    monthlyGrossYield: number;
+    monthlyNetYield: number;
+    totalCollectedYield: number;
+    pctOfTotal: number; // percentage of total SBN portfolio
+    activeCount: number;
+    investments: SbnInvestment[];
+}
+
 export interface SavingGoal {
     id: string;
     name: string;

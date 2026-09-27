@@ -22,6 +22,7 @@ import type {
     RecurringTemplate,
     ProjectedRecurringItem,
     SbnInvestment,
+    SbnSeries,
     InvestmentPortfolioSummary,
     SavingGoal,
     ComputedSavingGoal,
@@ -40,28 +41,12 @@ export const useFinanceStore = defineStore('finance', () => {
     const transfers = shallowRef<OwnerTransfer[]>([]);
     const goldAssets = shallowRef<GoldAsset[]>([]);
     const recurringTemplates = shallowRef<RecurringTemplate[]>([]);
-
+    const sbnInvestments = ref<SbnInvestment[]>([]);
     const savingGoals = ref<SavingGoal[]>([]);
     const currentGoldPricePerGram = ref<number>(2450000);
     const selectedMonth = ref<string>(getCurrentMonth());
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
-
-    const sbnInvestments = ref<SbnInvestment[]>([
-        {
-            id: 'SBN-SR022-01',
-            series: 'SR022-T3',
-            owner: 'Shared',
-            principalAmount: Number(import.meta.env.VITE_SBN_AMOUNT) || 0,
-            couponRatePct: 6.45,
-            taxRatePct: 10,
-            issueDate: '2025-06-25',
-            maturityDate: '2028-06-10',
-            payoutDayOfMonth: 10,
-            active: true,
-            notes: 'Kemenkeu Sukuk Ritel Syariah via BCA',
-        },
-    ]);
 
     const previousMonth = computed<string>(() => getPreviousMonthStr(selectedMonth.value));
 
@@ -82,6 +67,8 @@ export const useFinanceStore = defineStore('finance', () => {
     const totalOwnerDraws = computed<number>(() =>
         filteredTransfers.value.reduce((sum, item) => sum + Number(item.amount), 0)
     );
+
+    // Investments
     const sbnTotalPrincipal = computed<number>(() =>
         sbnInvestments.value.filter((s) => s.active).reduce((sum, s) => sum + s.principalAmount, 0)
     );
@@ -109,6 +96,66 @@ export const useFinanceStore = defineStore('finance', () => {
 
         return fromShared + fromPersonal;
     });
+    const sbnAccountAllocation = computed<AccountSbnBreakdown[]>(() => {
+        const totalPrincipal = sbnTotalPrincipal.value || 0;
+
+        const accountsConfig: {
+            owner: PersonalOwner | 'Shared';
+            label: string;
+            badgeClass: string;
+        }[] = [
+            {
+                owner: 'Danh Nguyen',
+                label: 'Danh',
+                badgeClass: 'text-lime-400 bg-lime-400/10 border-lime-400/20',
+            },
+            {
+                owner: 'Citra Ayu Wardani',
+                label: 'Citra',
+                badgeClass: 'text-sky-300 bg-sky-400/10 border-sky-400/20',
+            },
+            {
+                owner: 'Shared',
+                label: 'Shared',
+                badgeClass: 'text-amber-300 bg-amber-400/10 border-amber-400/20',
+            },
+        ];
+
+        return accountsConfig.map(({ owner, label, badgeClass }) => {
+            const activeItems = sbnInvestments.value.filter((s) => s.active && s.owner === owner);
+            const principal = activeItems.reduce(
+                (sum, s) => sum + (Number(s.principalAmount) || 0),
+                0
+            );
+
+            const grossYield = activeItems.reduce((sum, s) => {
+                return sum + (s.principalAmount * (s.couponRatePct / 100)) / 12;
+            }, 0);
+
+            const netYield = activeItems.reduce((sum, s) => {
+                const gross = (s.principalAmount * (s.couponRatePct / 100)) / 12;
+                return sum + gross * (1 - s.taxRatePct / 100);
+            }, 0);
+
+            const collectedYield = getCollectedYieldForOwner(owner);
+            const pctOfTotal =
+                totalPrincipal > 0 ? Number(((principal / totalPrincipal) * 100).toFixed(1)) : 0;
+
+            return {
+                owner,
+                label,
+                badgeClass,
+                principalAmount: principal,
+                monthlyGrossYield: Math.round(grossYield),
+                monthlyNetYield: Math.round(netYield),
+                totalCollectedYield: collectedYield,
+                pctOfTotal,
+                activeCount: activeItems.length,
+                investments: activeItems,
+            };
+        });
+    });
+
     const totalGoldGrams = computed(() =>
         goldAssets.value.reduce((sum, item) => sum + Number(item.weightGrams), 0)
     );
@@ -555,11 +602,12 @@ export const useFinanceStore = defineStore('finance', () => {
             await db.savingGoals.delete(id).catch(() => {});
         }
     }
+
     // Data Synchronization
     async function loadLocalFinanceData(): Promise<void> {
         try {
             if (!db.propertyFinances) return;
-            const [pFin, persFin, sFin, trans, gold, rec, goals] = await Promise.all([
+            const [pFin, persFin, sFin, trans, gold, rec, goals, sbn] = await Promise.all([
                 db.propertyFinances.toArray(),
                 db.personalFinances.toArray(),
                 db.sharedFinances.toArray(),
@@ -567,6 +615,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 db.goldAssets.toArray(),
                 db.recurringTemplates.toArray(),
                 db.savingGoals ? db.savingGoals.toArray() : Promise.resolve([]),
+                db.sbnInvestments ? db.sbnInvestments.toArray() : Promise.resolve([]),
             ]);
 
             if (pFin.length) sheetPropertyFinances.value = pFin;
@@ -576,6 +625,7 @@ export const useFinanceStore = defineStore('finance', () => {
             if (gold.length) goldAssets.value = gold;
             if (rec.length) recurringTemplates.value = rec;
             if (goals.length) savingGoals.value = goals;
+            if (sbn.length) sbnInvestments.value = sbn;
         } catch (err) {
             console.error('Failed to load local finance storage:', err);
         }
@@ -596,6 +646,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 "'Gold_Assets'!A2:G",
                 "'Recurring_Templates'!A2:L",
                 "'Saving_Goals'!A2:G",
+                "'SBN_Investments'!A2:K",
             ];
 
             const batchResults = await batchFetchSheetRows(SPREADSHEET_ID, financeRanges);
@@ -698,6 +749,23 @@ export const useFinanceStore = defineStore('finance', () => {
                     deadline: r[5] ? normalizeDate(r[5]) : undefined,
                     notes: String(r[6] || '').trim(),
                 }));
+            const parsedSbn: SbnInvestment[] = (batchResults[8] || [])
+                .filter((r) => r[0] && String(r[0]).trim())
+                .map((r) => ({
+                    id: String(r[0]),
+                    series: String(r[1] || 'SR022-T3') as SbnSeries,
+                    owner: (r[2] as SbnInvestment['owner']) || 'Shared',
+                    principalAmount: Number(r[3]) || 0,
+                    couponRatePct: Number(r[4]) || 6.45,
+                    taxRatePct: Number(r[5]) || 10,
+                    issueDate: normalizeDate(r[6]),
+                    maturityDate: normalizeDate(r[7]),
+                    payoutDayOfMonth: Number(r[8]) || 10,
+                    active: String(r[9]).toUpperCase() === 'TRUE',
+                    notes: String(r[10] || '').trim(),
+                }));
+
+            sbnInvestments.value = parsedSbn;
 
             sheetPropertyFinances.value = parsedPropFinances;
             personalFinances.value = parsedPersonal;
@@ -717,6 +785,7 @@ export const useFinanceStore = defineStore('finance', () => {
                     db.goldAssets,
                     db.recurringTemplates,
                     db.savingGoals,
+                    db.sbnInvestments,
                 ],
                 async () => {
                     await Promise.all([
@@ -735,6 +804,7 @@ export const useFinanceStore = defineStore('finance', () => {
                             .clear()
                             .then(() => db.recurringTemplates.bulkPut(parsedRecurring)),
                         db.savingGoals.clear().then(() => db.savingGoals.bulkPut(parsedGoals)),
+                        db.sbnInvestments.clear().then(() => db.sbnInvestments.bulkPut(parsedSbn)),
                     ]);
                 }
             ).catch((err) => console.warn('Dexie background sync warning:', err));
@@ -744,6 +814,27 @@ export const useFinanceStore = defineStore('finance', () => {
         } finally {
             isLoading.value = false;
         }
+    }
+    // Helpers
+    function getCollectedYieldForOwner(ownerName: PersonalOwner | 'Shared'): number {
+        if (ownerName === 'Shared') {
+            return sharedFinances.value
+                .filter(
+                    (s) =>
+                        s.type === 'income' &&
+                        /SR022|SR021|ORI|SBN|SUKUK/i.test(s.category + ' ' + s.notes)
+                )
+                .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        }
+
+        return personalFinances.value
+            .filter(
+                (p) =>
+                    p.owner === ownerName &&
+                    p.type === 'income' &&
+                    /SR022|SR021|ORI|SBN|SUKUK/i.test(p.category + ' ' + p.notes)
+            )
+            .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     }
 
     return {
@@ -827,6 +918,8 @@ export const useFinanceStore = defineStore('finance', () => {
         sbnMonthlyGrossYield,
         sbnMonthlyNetYield,
         sbnTotalCollectedYield,
+        sbnAccountAllocation,
+
         goldAssets,
         currentGoldPricePerGram,
         totalGoldGrams,
