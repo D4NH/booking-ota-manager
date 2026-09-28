@@ -14,6 +14,7 @@ import type { Booking, StagedBooking } from '@/types/booking';
 import type { NavItem } from '@/types/navigation';
 import { getCurrentDate } from '@/utils/date';
 
+import SyncSection from '@/components/SyncSection.vue';
 import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
 import ReviewBookingModal from '@/features/bookings/ReviewBookingModal.vue';
 
@@ -294,6 +295,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             </div>
         </nav>
 
+        <SyncSection />
         <NotificationsDrawer
             :is-collapsed="isNotificationCollapsed"
             :pending-payments="pendingPayments.whatsappPayments"
