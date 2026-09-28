@@ -41,6 +41,9 @@ const BRAND_COLORS: Record<string, string> = {
     'Digital Pegadaian': '#34d399', // emerald-400
     Pluang: '#a78bfa', // violet-400
 };
+const GOLD_PRICE_CACHE_KEY = 'app_gold_price';
+const GOLD_PRICE_TIME_KEY = 'app_gold_price_time';
+const DEFAULT_GOLD_PRICE = 2300000;
 
 function computeBrandDistribution(assets: GoldAsset[], pricePerGram: number): BrandGoldBreakdown[] {
     const totalGrams = assets.reduce((sum, a) => sum + Number(a.weightGrams || 0), 0);
@@ -90,9 +93,13 @@ export const useFinanceStore = defineStore('finance', () => {
     const transfers = shallowRef<OwnerTransfer[]>([]);
     const goldAssets = shallowRef<GoldAsset[]>([]);
     const recurringTemplates = shallowRef<RecurringTemplate[]>([]);
+    const currentGoldPricePerGram = ref<number>(
+        Number(localStorage.getItem(GOLD_PRICE_CACHE_KEY)) || DEFAULT_GOLD_PRICE
+    );
+    const lastGoldPriceSync = ref<string>(localStorage.getItem(GOLD_PRICE_TIME_KEY) || '');
+    const isFetchingGoldPrice = ref<boolean>(false);
     const sbnInvestments = ref<SbnInvestment[]>([]);
     const savingGoals = ref<SavingGoal[]>([]);
-    const currentGoldPricePerGram = ref<number>(2450000);
     const selectedMonth = ref<string>(getCurrentMonth());
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
@@ -620,6 +627,7 @@ export const useFinanceStore = defineStore('finance', () => {
             }
         }
     }
+
     async function addGoldPurchase(payload: Omit<GoldAsset, 'id'>): Promise<void> {
         const id = crypto.randomUUID();
         const record: GoldAsset = { ...payload, id };
@@ -677,6 +685,84 @@ export const useFinanceStore = defineStore('finance', () => {
             await db.goldAssets.delete(id).catch(() => {});
         }
     }
+    /**
+     * Fetches live Antam gold price per gram from logam-mulia-api.
+     * Caches in localStorage for 1 hour to prevent redundant requests.
+     */
+    async function fetchLiveGoldPrice(force = false): Promise<number> {
+        const lastSync = Number(localStorage.getItem(GOLD_PRICE_TIME_KEY)) || 0;
+        const oneHourMs = 60 * 60 * 1000;
+
+        // Use cache if fetched less than 1 hour ago
+        if (!force && Date.now() - lastSync < oneHourMs && currentGoldPricePerGram.value > 0) {
+            return currentGoldPricePerGram.value;
+        }
+
+        isFetchingGoldPrice.value = true;
+        try {
+            const primaryUrl = 'https://logam-mulia-api.iamutaki.workers.dev/api/prices/logammulia';
+            const res = await fetch(primaryUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const json = (await res.json()) as {
+                success?: boolean;
+                data?: Array<{
+                    material?: string;
+                    materialType?: string;
+                    weight?: number;
+                    sellPrice?: number;
+                    recordedDate?: string;
+                }>;
+                timestamp?: string;
+            };
+
+            let livePrice = 0;
+
+            if (Array.isArray(json.data)) {
+                // 1. Target standard investment bar (Emas Batangan 1 gr)
+                const standardOneGram = json.data.find(
+                    (item) =>
+                        item.material === 'gold' &&
+                        item.materialType === 'Emas Batangan' &&
+                        Number(item.weight) === 1
+                );
+
+                // 2. Fallback to any 1g gold if specific materialType is missing
+                const fallbackOneGram = json.data.find(
+                    (item) => item.material === 'gold' && Number(item.weight) === 1
+                );
+
+                livePrice = Number(standardOneGram?.sellPrice ?? fallbackOneGram?.sellPrice ?? 0);
+            }
+
+            // Sanity check: Ensure price is within a realistic Indonesian per-gram range
+            if (livePrice >= 1_500_000 && livePrice <= 5_000_000) {
+                currentGoldPricePerGram.value = livePrice;
+                const recordedAt = new Date().toISOString();
+                lastGoldPriceSync.value = recordedAt;
+                localStorage.setItem(GOLD_PRICE_CACHE_KEY, String(livePrice));
+                localStorage.setItem(GOLD_PRICE_TIME_KEY, String(Date.now()));
+                return livePrice;
+            }
+
+            return currentGoldPricePerGram.value;
+        } catch (err) {
+            console.warn(
+                '[Gold Price Sync] Failed to fetch live Antam price, using cached fallback:',
+                err
+            );
+            return currentGoldPricePerGram.value;
+        } finally {
+            isFetchingGoldPrice.value = false;
+        }
+    }
+    function setGoldPricePerGram(newPrice: number): void {
+        if (newPrice > 0) {
+            currentGoldPricePerGram.value = newPrice;
+            localStorage.setItem(GOLD_PRICE_CACHE_KEY, String(newPrice));
+        }
+    }
+
     async function settleRecurringItem(item: ProjectedRecurringItem): Promise<void> {
         if (item.isSettled) return;
         const itemNote = item.notes?.trim() || '';
@@ -813,7 +899,11 @@ export const useFinanceStore = defineStore('finance', () => {
         error.value = null;
 
         try {
-            await Promise.all([bookingStore.loadBookings(), loadLocalFinanceData()]);
+            await Promise.all([
+                bookingStore.loadBookings(),
+                loadLocalFinanceData(),
+                fetchLiveGoldPrice(),
+            ]);
 
             const financeRanges = [
                 "'Properties'!A2:C",
@@ -1099,7 +1189,6 @@ export const useFinanceStore = defineStore('finance', () => {
         sbnAccountAllocation,
 
         goldAssets,
-        currentGoldPricePerGram,
         totalGoldGrams,
         totalGoldCostBasis,
         estimatedGoldMarketValue,
@@ -1111,6 +1200,10 @@ export const useFinanceStore = defineStore('finance', () => {
         deleteGoldAsset,
         goldBrandAllocation,
         goldAccountAllocation,
+        currentGoldPricePerGram,
+        isFetchingGoldPrice,
+        fetchLiveGoldPrice,
+        setGoldPricePerGram,
 
         // Savings
         savingGoals,
