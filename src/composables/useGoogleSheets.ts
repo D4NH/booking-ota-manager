@@ -3,6 +3,7 @@ import { ref } from 'vue';
 export interface DeleteSheetRowOptions {
     sheetName?: string;
     calendarId?: string;
+    calendarEventId?: string;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -20,10 +21,9 @@ function isTokenValid(): boolean {
 const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
 const isAuthenticated = ref<boolean>(isTokenValid());
 
-// Singleton Auth Lock: Prevents multiple concurrent OAuth prompt popups
+// Prevents multiple concurrent OAuth prompt popups
 let activeAuthPromise: Promise<string> | null = null;
 
-// In-Flight Request Cache: Coalesces identical simultaneous GET calls
 const inFlightRequests = new Map<string, Promise<any>>();
 
 function loadGoogleSdk(): Promise<void> {
@@ -362,7 +362,7 @@ export function useGoogleSheets() {
         return calEventId;
     }
     /**
-     * Searches strictly 'A2:A' for non-calendar rows, saving 90% bandwidth
+     * Searches strictly 'A2:A' for non-calendar rows
      */
     async function updateSheetRowById(
         spreadsheetId: string,
@@ -424,6 +424,7 @@ export function useGoogleSheets() {
 
         let sheetName = '';
         let calendarId: string | undefined;
+        let explicitEventId: string | undefined;
 
         if (typeof options === 'string') {
             if (options.includes('@group.calendar.google.com') || options.includes('@gmail.com')) {
@@ -435,15 +436,20 @@ export function useGoogleSheets() {
         } else if (options && typeof options === 'object') {
             sheetName = options.sheetName || '';
             calendarId = options.calendarId;
+            explicitEventId = options.calendarEventId;
         }
 
-        // Only fetch A2:K if we need the Calendar ID from Column K; otherwise fetch only Column A
+        if (sheetName.includes('@group.calendar.google.com') || sheetName.includes('@gmail.com')) {
+            calendarId = sheetName;
+            sheetName = '';
+        }
+
         const idRange = sheetName
             ? calendarId
-                ? `'${sheetName}'!A2:K`
+                ? `'${sheetName}'!A2:L`
                 : `'${sheetName}'!A2:A`
             : calendarId
-              ? 'A2:K'
+              ? 'A2:L'
               : 'A2:A';
 
         const rows = await fetchSheetRows(spreadsheetId, idRange);
@@ -454,12 +460,29 @@ export function useGoogleSheets() {
         const targetRowNumber = rowIndex + 2;
 
         if (calendarId) {
-            const calEventId = rows[rowIndex]?.[10];
+            let calEventId = explicitEventId ? cleanGoogleCalendarEventId(explicitEventId) : '';
+
+            // If not explicitly passed, safely detect from row
+            if (!calEventId && rows[rowIndex]) {
+                const row = rows[rowIndex];
+                const valL = String(row[11] || '').trim(); // Staging Sheet Column L
+                const valK = String(row[10] || '').trim(); // Official Sheet Column K
+
+                if (valL && !valL.includes(' ')) {
+                    calEventId = cleanGoogleCalendarEventId(valL);
+                } else if (valK && !valK.includes(' ')) {
+                    calEventId = cleanGoogleCalendarEventId(valK);
+                }
+            }
+
             if (calEventId) {
-                await deleteCalendarEvent(calendarId, String(calEventId).trim()).catch(() => {});
+                await deleteCalendarEvent(calendarId, calEventId).catch((err) => {
+                    console.warn('Failed to delete calendar event:', err);
+                });
             }
         }
 
+        // Clear row in Google Sheets
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:Z${targetRowNumber}`
             : `A${targetRowNumber}:Z${targetRowNumber}`;

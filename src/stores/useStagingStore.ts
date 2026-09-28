@@ -9,6 +9,8 @@ import { calculateNights } from '@/utils/date';
 
 const STAGING_SPREADSHEET_ID = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
 const STAGING_COOLDOWN_MS = 5 * 60 * 1000; // 5-minute quota cooldown
+const SCRAPER_URL = import.meta.env.VITE_STAGING_SCRAPER_WEBHOOK_URL as string;
+const SCRAPER_SECRET = import.meta.env.VITE_STAGING_SYNC_SECRET as string;
 
 export const useStagingStore = defineStore('staging', () => {
     const { fetchSheetRows } = useGoogleSheets();
@@ -20,7 +22,6 @@ export const useStagingStore = defineStore('staging', () => {
 
     const pendingCount = computed(() => stagedBookings.value.length);
 
-    // 1. Instant 0ms Load from IndexedDB
     async function loadLocalStagingData(): Promise<void> {
         try {
             if (!db.stagedBookings) return;
@@ -116,6 +117,34 @@ export const useStagingStore = defineStore('staging', () => {
             await db.stagedBookings.delete(id).catch(() => {});
         }
     }
+    async function forceScrapeAndPoll(): Promise<{ newEmailsCount: number }> {
+        isLoading.value = true;
+        let newEmailsCount = 0;
+
+        try {
+            // Force Stage 1 (Gmail -> Staging Sheet)
+            if (SCRAPER_URL) {
+                const targetUrl = `${SCRAPER_URL}?token=${encodeURIComponent(SCRAPER_SECRET || '')}`;
+                const res = await fetch(targetUrl, { mode: 'cors' }).catch(() => null);
+                if (res && res.ok) {
+                    const data = await res.json().catch(() => null);
+                    newEmailsCount = Number(data?.scrapedCount) || 0;
+                }
+            }
+
+            // Force Stage 2 (Staging Sheet -> Vue App) bypassing the 5-min cooldown
+            await pollStagingQueue({ force: true });
+
+            return { newEmailsCount };
+        } catch (err) {
+            console.warn('Failed to force email sync:', err);
+            // Fallback: still pull whatever is already in staging sheet
+            await pollStagingQueue({ force: true });
+            return { newEmailsCount: 0 };
+        } finally {
+            isLoading.value = false;
+        }
+    }
 
     return {
         stagedBookings,
@@ -124,5 +153,6 @@ export const useStagingStore = defineStore('staging', () => {
         loadLocalStagingData,
         pollStagingQueue,
         removeStagedBookingLocally,
+        forceScrapeAndPoll,
     };
 });

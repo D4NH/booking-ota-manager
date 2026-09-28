@@ -173,6 +173,7 @@ async function handleReject(): Promise<void> {
                 await deleteSheetRowById(stagingSpreadsheetId, targetItem.id, {
                     sheetName: 'Sheet1',
                     calendarId: targetCalendarId,
+                    calendarEventId: booking.calendarEventId,
                 });
 
                 // Remove from local staging store
