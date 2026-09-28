@@ -145,6 +145,22 @@ export const useStagingStore = defineStore('staging', () => {
             isLoading.value = false;
         }
     }
+    /**
+     * Tells Apps Script to tag the email with 'Reservation' and archive it from Inbox
+     */
+    async function archiveBookingEmail(bookingId: string, label = 'Reservation'): Promise<void> {
+        if (!SCRAPER_URL || !bookingId) return;
+
+        try {
+            const cleanId = String(bookingId).replace(/^'+/, '').trim();
+            const url = `${SCRAPER_URL}?action=archiveEmail&bookingId=${encodeURIComponent(cleanId)}&label=${encodeURIComponent(label)}&token=${encodeURIComponent(SCRAPER_SECRET || '')}`;
+
+            // Fire and forget in the background
+            await fetch(url, { mode: 'cors' }).catch(() => null);
+        } catch (err) {
+            console.warn('Failed to auto-archive Gmail thread:', err);
+        }
+    }
 
     return {
         stagedBookings,
@@ -154,5 +170,6 @@ export const useStagingStore = defineStore('staging', () => {
         pollStagingQueue,
         removeStagedBookingLocally,
         forceScrapeAndPoll,
+        archiveBookingEmail,
     };
 });

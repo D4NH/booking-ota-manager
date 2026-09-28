@@ -3,9 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useStorage } from '@vueuse/core';
-import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
@@ -30,9 +28,7 @@ const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
-const { isEligibleToAutoSync, formattedCountdown } = useAppAutoSync();
 const { markBookingComplete } = useBookingSync();
-const { isAuthenticated } = useGoogleSheets();
 const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
 const isNotificationCollapsed = useStorage('notifications-collapsed', false);
 const stagingStore = useStagingStore();
@@ -279,19 +275,6 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         Settings
                     </span>
                 </RouterLink>
-                <div
-                    v-if="isAuthenticated"
-                    class="flex items-center rounded-md font-mono text-xs gap-2 border-l ml-4 pl-6.5 bg-mist-900 text-mist-400">
-                    <span
-                        class="w-1.5 h-1.5 rounded-full"
-                        :class="
-                            isEligibleToAutoSync ? 'bg-lime-400 animate-ping' : 'bg-mist-600'
-                        " />
-                    <span class="font-medium text-[10px] text-mist-400">Auto Sync:</span>
-                    <span class="font-bold">
-                        {{ isEligibleToAutoSync ? 'READY' : formattedCountdown }}
-                    </span>
-                </div>
             </div>
         </nav>
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePropertyMetrics from '@/features/finance/PropertyMetrics.vue';
@@ -15,7 +14,6 @@ import CashFlow from '@/features/finance/CashFlow.vue';
             <template #subtitle> Property, Personal and Shared Finances </template>
 
             <div class="flex items-center gap-2">
-                <GoogleSyncButton scope="finance" />
                 <MonthSelector />
             </div>
         </PageTitle>

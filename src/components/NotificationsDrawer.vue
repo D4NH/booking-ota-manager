@@ -45,7 +45,7 @@ const totalCount = computed(
             </div>
             <span
                 v-if="totalCount > 0"
-                class="rounded-md bg-lime-500/20 px-2 py-0.5 text-[10px] font-semibold text-lime-400 border border-lime-500/30">
+                class="rounded-xs bg-lime-500/20 px-2 py-0.5 text-[10px] font-semibold text-lime-400">
                 {{ totalCount }} New
             </span>
         </div>
@@ -180,9 +180,48 @@ const totalCount = computed(
 
                 <div
                     class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-2">
-                    <span class="text-xs font-mono font-semibold text-mist-200 shrink-0">
-                        {{ formatIDR(b.payout) }}
-                    </span>
+                    <div class="shrink-0">
+                        <span
+                            class="group relative z-10 text-xs font-mono font-semibold text-mist-200">
+                            {{ formatIDR(b.payout) }}
+                        </span>
+                        <div
+                            class="pointer-events-none absolute bottom-full left-1/2 z-50 mt-1.5 w-52 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                            <div
+                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                <div>
+                                    <span class="font-semibold text-mist-200 block mb-1">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <span class="text-xs text-mist-400">
+                                        {{
+                                            formatDate(b.checkIn, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                        &rarr;
+                                        {{
+                                            formatDate(b.checkOut, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="b.status === 'Waiting for payment'"
+                                    class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-xs">
+                                    Payment pending
+                                </div>
+                                <div
+                                    v-if="b.notes"
+                                    class="border-t border-mist-800 pt-1.5 mt-1.5 text-mist-300 text-xs">
+                                    {{ b.notes }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-2">
                         <button
                             type="button"

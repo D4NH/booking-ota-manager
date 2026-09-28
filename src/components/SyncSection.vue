@@ -1,33 +1,28 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
 import { toast } from 'vue-toastflow';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useBookingStore } from '@/stores/useBookingStore';
-import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useStagingStore } from '@/stores/useStagingStore';
 import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
 
-const isMenuOpen = ref(false);
+const isMenuOpen = ref(true);
 
 const { isAuthenticated, fetchSheetRows } = useGoogleSheets();
 const { isSyncing: isMasterSyncing, formattedCountdown, syncAllData } = useAppAutoSync();
-const { syncAllFinancialData, persistDexieBookings } = useFinanceSync();
+const { syncAllFinancialData } = useFinanceSync();
 
 const bookingStore = useBookingStore();
-const financeStore = useFinanceStore();
 const stagingStore = useStagingStore();
-
-const { pendingCount } = storeToRefs(stagingStore);
 
 const isSyncingBookings = ref(false);
 const isSyncingEmails = ref(false);
 
-// 1. Master Sync (Everything)
-const handleMasterSync = async () => {
+// Sync everything
+async function handleMasterSync() {
     await toast.loading(() => syncAllData({ force: true }), {
         loading: {
             title: 'Syncing Entire System...',
@@ -42,10 +37,9 @@ const handleMasterSync = async () => {
             description: 'Failed to complete full system sync.',
         },
     });
-};
-
-// 2. Sync Bookings Only
-const handleSyncBookings = async () => {
+}
+// Sync bookings Only
+async function handleSyncBookings() {
     isSyncingBookings.value = true;
     try {
         await toast.loading(
@@ -91,10 +85,9 @@ const handleSyncBookings = async () => {
     } finally {
         isSyncingBookings.value = false;
     }
-};
-
-// 3. Scan Gmail & Poll Staging
-const handleScanEmails = async () => {
+}
+// Scan Gmail & Poll Staging
+async function handleScanEmails() {
     isSyncingEmails.value = true;
     try {
         await toast.loading(
@@ -123,35 +116,11 @@ const handleScanEmails = async () => {
     } finally {
         isSyncingEmails.value = false;
     }
-};
-
-// 4. Sync Financials Only
-const handleSyncFinancials = () => {
+}
+// Sync Financials Only
+function handleSyncFinancials() {
     syncAllFinancialData({ silent: false });
-};
-
-// 5. Push Dexie Bookings to Property Ledger
-const handlePersistBookings = () => {
-    persistDexieBookings();
-};
-
-// 6. Refresh Live Gold Price
-const handleSyncGold = () => {
-    toast.loading(() => financeStore.fetchLiveGoldPrice(true), {
-        loading: {
-            title: 'Fetching Antam Live Price...',
-            description: 'Querying official Indonesian benchmark.',
-        },
-        success: (price: unknown) => ({
-            title: 'Gold Price Updated',
-            description: `Benchmark set to Rp ${Number(price).toLocaleString('id-ID')}/g.`,
-        }),
-        error: {
-            title: 'Fetch Failed',
-            description: 'Using cached gold benchmark.',
-        },
-    });
-};
+}
 </script>
 
 <template>
@@ -161,13 +130,13 @@ const handleSyncGold = () => {
             <span class="flex items-center gap-1.5">
                 <span
                     class="w-2 h-2 rounded-full"
-                    :class="isAuthenticated ? 'bg-emerald-400' : 'bg-rose-400'"></span>
+                    :class="isAuthenticated ? 'bg-lime-400' : 'bg-rose-400'"></span>
                 {{ isAuthenticated ? 'Google API' : 'Disconnected' }}
             </span>
             <span class="text-[10px] text-mist-500"> SWR: {{ formattedCountdown }} </span>
         </div>
 
-        <!-- Master Sync Button with Menu Toggle -->
+        <!-- Master Sync Button -->
         <div class="flex items-center gap-1">
             <button
                 type="button"
@@ -182,7 +151,7 @@ const handleSyncGold = () => {
                 <span>{{ isMasterSyncing ? 'Syncing...' : 'Sync All' }}</span>
             </button>
 
-            <!-- Toggle Granular Options Dropdown -->
+            <!-- Toggle Options Dropdown -->
             <button
                 type="button"
                 class="py-1.5 px-2 rounded bg-mist-850 hover:bg-mist-800 text-mist-400 hover:text-mist-100 border border-mist-700 transition cursor-pointer text-xs"
@@ -195,96 +164,48 @@ const handleSyncGold = () => {
             </button>
         </div>
 
-        <!-- Granular Sync Options Panel -->
-        <transition
-            enter-active-class="transition ease-out duration-150"
-            enter-from-class="opacity-0 -translate-y-2"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-2">
-            <div
-                v-if="isMenuOpen"
-                class="mt-2.5 pt-2 border-t border-mist-800 space-y-1 text-xs font-mono">
-                <!-- 1. Sync Bookings -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
-                    @click="handleSyncBookings">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="calendar-check"
-                            class="text-[11px] text-mist-400" />
-                        Bookings
-                    </span>
-                    <span class="text-[10px] text-mist-500">A2:L</span>
-                </button>
+        <!-- Sync Options Panel -->
+        <div
+            v-if="isMenuOpen"
+            class="mt-2 space-y-1 text-xs font-mono">
+            <!-- Sync Bookings -->
+            <button
+                type="button"
+                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                @click="handleSyncBookings">
+                <span class="flex items-center gap-1.5">
+                    <fa-icon
+                        icon="calendar-check"
+                        class="text-[11px] text-mist-400" />
+                    Bookings
+                </span>
+            </button>
 
-                <!-- 2. Sync Financials -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
-                    @click="handleSyncFinancials">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="receipt"
-                            class="text-[11px] text-mist-400" />
-                        Financials & Ledgers
-                    </span>
-                    <span class="text-[10px] text-mist-500">9 Tabs</span>
-                </button>
+            <!-- Sync Financials -->
+            <button
+                type="button"
+                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                @click="handleSyncFinancials">
+                <span class="flex items-center gap-1.5">
+                    <fa-icon
+                        icon="receipt"
+                        class="text-[11px] text-mist-400" />
+                    Financials
+                </span>
+            </button>
 
-                <!-- 3. Scan Gmail & Staging -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
-                    @click="handleScanEmails">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="inbox"
-                            class="text-[11px] text-mist-400" />
-                        Scan Gmail (OTAs)
-                    </span>
-                    <span
-                        v-if="pendingCount > 0"
-                        class="px-1.5 py-0.2 rounded-full bg-lime-500/20 text-lime-300 text-[10px] font-bold">
-                        {{ pendingCount }}
-                    </span>
-                    <span
-                        v-else
-                        class="text-[10px] text-mist-500"
-                        >Trigger</span
-                    >
-                </button>
-
-                <!-- 4. Push Bookings to Ledger -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
-                    @click="handlePersistBookings">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="arrow-right-to-bracket"
-                            class="text-[11px] text-mist-400" />
-                        Push Bookings &rarr; Ledger
-                    </span>
-                    <span class="text-[10px] text-mist-500">Payouts</span>
-                </button>
-
-                <!-- 5. Refresh Gold Price -->
-                <button
-                    type="button"
-                    class="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-amber-300 transition cursor-pointer"
-                    @click="handleSyncGold">
-                    <span class="flex items-center gap-1.5">
-                        <fa-icon
-                            icon="coins"
-                            class="text-[11px] text-amber-400" />
-                        Live Gold Price
-                    </span>
-                    <span class="text-[10px] text-amber-400/80">Antam</span>
-                </button>
-            </div>
-        </transition>
+            <!-- Scan Gmail & Staging -->
+            <button
+                type="button"
+                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                @click="handleScanEmails">
+                <span class="flex items-center gap-1.5">
+                    <fa-icon
+                        icon="inbox"
+                        class="text-[11px] text-mist-400" />
+                    Scan Gmail (OTAs)
+                </span>
+            </button>
+        </div>
     </div>
 </template>

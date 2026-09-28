@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import MonthSelector from '@/components/MonthSelector.vue';
@@ -33,7 +32,6 @@ const isTransferModalOpen = ref(false);
             <template #subtitle> Personal, Shared and Mai House Jogja </template>
 
             <div class="flex items-center gap-2">
-                <GoogleSyncButton scope="finance" />
                 <MonthSelector />
             </div>
         </PageTitle>

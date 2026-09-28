@@ -3,8 +3,6 @@ import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { PropertyId } from '@/types/property';
 
-import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
-
 interface Props {
     modelValue: PropertyId | 'all';
     showAll?: boolean;
@@ -28,9 +26,6 @@ function handleSelect(id: PropertyId | 'all'): void {
 
 <template>
     <div class="flex items-center gap-2">
-        <GoogleSyncButton
-            scope="bookings"
-            :property-id="modelValue" />
         <div
             class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
             <button
