@@ -294,7 +294,7 @@ function handleClickOutside(event: MouseEvent): void {
         <button
             ref="triggerButtonRef"
             type="button"
-            class="w-full flex items-center justify-between px-3 py-2 bg-mist-950/50 border border-mist-800 rounded-md text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-hidden transition-colors text-left cursor-pointer hover:border-mist-700"
+            class="w-full flex items-center justify-between px-3 py-2 bg-mist-950/50 border border-mist-800 rounded-md font-mono text-[13px] h-8.5 text-mist-200 focus:border-lime-500 focus:outline-hidden transition-colors text-left cursor-pointer hover:border-mist-700"
             @click="toggleDatepicker">
             <span :class="{ 'text-mist-500': !singleDate && !rangeStart }">
                 {{ displayValue }}

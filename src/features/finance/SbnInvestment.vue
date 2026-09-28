@@ -148,7 +148,7 @@ const maturity = computed(() =>
                     </div>
                     <div class="text-right">
                         <div class="text-sm font-semibold text-emerald-400">
-                            +{{ formatIDR(activeData.monthlyNet) }}/mo
+                            +{{ formatIDR(activeData.monthlyNet) }} / month
                         </div>
                         <span class="text-xs text-mist-400">Net after 10% tax</span>
                     </div>

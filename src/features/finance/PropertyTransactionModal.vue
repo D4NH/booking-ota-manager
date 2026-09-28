@@ -210,7 +210,7 @@ async function submitTransaction(): Promise<void> {
                             <button
                                 type="submit"
                                 :disabled="isSubmitting"
-                                class="bg-lime-400 hover:bg-lime-300 text-mist-950 px-4 py-2 rounded font-semibold cursor-pointer transition disabled:opacity-50">
+                                class="bg-lime-400 hover:bg-lime-300 text-mist-950 px-4 py-2 rounded-sm font-semibold cursor-pointer transition disabled:opacity-50">
                                 {{
                                     isSubmitting
                                         ? 'Saving...'

@@ -17,7 +17,7 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         price: 1499000,
         codePrefix: 'MHJ',
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2026,
-        calendarId: import.meta.env.VITE_PROPERTY_CALENDAR_ID as string,
+        calendarId: import.meta.env.VITE_CALENDAR_PIYUNGAN as string,
         defaultRange: 'A2:K',
         bedrooms: 2,
         bathrooms: 3,

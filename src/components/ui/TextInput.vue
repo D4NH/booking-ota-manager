@@ -140,7 +140,10 @@ function handlePaste(event: ClipboardEvent): void {
             class="w-full flex items-center justify-between py-1.5 bg-mist-950/50 border border-mist-800 hover:border-mist-700 rounded-md shadow-md text-sm text-mist-300 focus:outline-none focus:ring-lime-500 focus:border-lime-500 transition-colors"
             :class="[
                 slots.icon ? 'pl-9 pr-3 ' : 'px-3',
-                { 'font-mono': type === 'number' || id === 'bookingId' || id === 'goldCert' },
+                {
+                    'font-mono text-[13px] h-8.5':
+                        type === 'number' || id === 'bookingId' || id === 'goldCert',
+                },
                 { 'cursor-not-allowed disabled:bg-mist-900': disabled },
             ]"
             :disabled="disabled"

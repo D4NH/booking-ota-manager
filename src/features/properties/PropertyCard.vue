@@ -30,7 +30,7 @@ const { staySections, isOccupied } = useDailyOperations(() => bookings, {
 const nextUpcoming = computed(
     () =>
         bookings
-            .filter((b) => b.checkIn > getCurrentDate())
+            .filter((b) => b.checkIn > getCurrentDate() && b.status !== 'Unavailable')
             .sort((a, b) => a.checkIn.localeCompare(b.checkIn))[0]
 );
 

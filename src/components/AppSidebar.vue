@@ -165,8 +165,8 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="flex items-center gap-3 flex-1 min-w-0"
                         :class="{ 'text-lime-400 font-semibold': isLinkActive('/properties') }">
                         <fa-icon
-                            icon="house"
-                            class="w-4 h-4 shrink-0 text-center py-2" />
+                            class="w-4 h-4 shrink-0 text-center py-2"
+                            icon="house" />
                         <span
                             v-show="!isSidebarCollapsed"
                             class="truncate">
@@ -180,9 +180,9 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
                         <fa-icon
-                            icon="chevron-down"
                             class="text-[10px] transition-transform duration-200"
-                            :class="{ 'rotate-180': isPropertiesOpen }" />
+                            :class="{ 'rotate-180': isPropertiesOpen }"
+                            icon="chevron-down" />
                     </button>
                 </div>
 
@@ -223,8 +223,8 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="flex items-center gap-3 flex-1 min-w-0"
                         :class="{ 'text-lime-400 font-semibold': isLinkActive('/finance') }">
                         <fa-icon
-                            icon="sack-dollar"
-                            class="w-4 h-4 shrink-0 text-center py-2" />
+                            class="w-4 h-4 shrink-0 text-center py-2"
+                            icon="sack-dollar" />
                         <span
                             v-show="!isSidebarCollapsed"
                             class="truncate">
@@ -237,9 +237,9 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
                         <fa-icon
-                            icon="chevron-down"
                             class="text-[10px] transition-transform duration-200"
-                            :class="{ 'rotate-180': isFinanceOpen }" />
+                            :class="{ 'rotate-180': isFinanceOpen }"
+                            icon="chevron-down" />
                     </button>
                 </div>
                 <!-- Finance Subitems -->
@@ -270,8 +270,8 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                             : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                     ]">
                     <fa-icon
-                        icon="gear"
-                        class="w-4 h-4 shrink-0 text-center py-2" />
+                        class="w-4 h-4 shrink-0 text-center py-2"
+                        icon="gear" />
                     <span
                         v-show="!isSidebarCollapsed"
                         class="truncate">
@@ -307,8 +307,8 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
         <div class="border-t border-mist-800 p-3 overflow-hidden">
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">
                 <fa-icon
-                    icon="copyright"
-                    class="w-4 h-4 shrink-0" />
+                    class="w-4 h-4 shrink-0"
+                    icon="copyright" />
                 <span class="truncate"> {{ currentYear }} - Danh Nguyen </span>
             </div>
         </div>
@@ -319,9 +319,9 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
             @click="toggleSidebar">
             <fa-icon
-                icon="chevron-left"
                 class="transition-transform duration-300"
-                :class="{ 'rotate-180': isSidebarCollapsed }" />
+                :class="{ 'rotate-180': isSidebarCollapsed }"
+                icon="chevron-left" />
         </button>
 
         <ReviewBookingModal

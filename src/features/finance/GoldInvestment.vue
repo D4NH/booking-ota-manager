@@ -15,10 +15,12 @@ const {
     estimatedGoldMarketValue,
     goldUnrealizedPnL,
     goldPnLPct,
-    currentGoldPricePerGram,
     goldBrandAllocation,
     goldAccountAllocation,
+    currentGoldPricePerGram,
+    isFetchingGoldPrice,
 } = storeToRefs(financeStore);
+const { fetchLiveGoldPrice } = financeStore;
 
 const isGoldModalOpen = ref(false);
 const activeView = ref<'info' | 'logs'>('info');
@@ -51,6 +53,7 @@ const activeData = computed(() => {
         brands: acc?.brands || [],
     };
 });
+
 function openAddGoldModal(): void {
     editingGoldItem.value = null;
     isGoldModalOpen.value = true;
@@ -58,6 +61,9 @@ function openAddGoldModal(): void {
 function openEditGoldModal(item: GoldAsset): void {
     editingGoldItem.value = item;
     isGoldModalOpen.value = true;
+}
+async function handleRefreshGoldPrice() {
+    await fetchLiveGoldPrice(true);
 }
 </script>
 
@@ -152,8 +158,28 @@ function openEditGoldModal(item: GoldAsset): void {
                             </span>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-mist-400 block">Benchmark:</span>
-                            <span class="font-semibold text-xs text-mist-200">
+                            <div class="flex items-center justify-end gap-1.5 -my-1">
+                                <div
+                                    class="flex items-center justify-end gap-1.5 text-xs text-mist-400">
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse">
+                                    </span>
+                                    Antam Live
+                                </div>
+                                <button
+                                    type="button"
+                                    :disabled="isFetchingGoldPrice"
+                                    class="text-mist-500 hover:text-amber-300 transition cursor-pointer"
+                                    @click="handleRefreshGoldPrice">
+                                    <fa-icon
+                                        icon="arrows-rotate"
+                                        class="text-[10px] mb-0.5"
+                                        :class="{
+                                            'animate-spin text-amber-300': isFetchingGoldPrice,
+                                        }" />
+                                </button>
+                            </div>
+                            <span class="text-xs font-semibold text-mist-300 tracking-wider">
                                 {{ formatIDR(currentGoldPricePerGram) }}/g
                             </span>
                         </div>
@@ -194,7 +220,7 @@ function openEditGoldModal(item: GoldAsset): void {
                         </div>
                         <div class="text-right">
                             <div class="text-sm font-semibold text-amber-300">
-                                {{ activeData.grams.toFixed(2) }}g
+                                {{ activeData.grams.toFixed(0) }}g
                             </div>
                             <span class="text-xs text-mist-400">
                                 {{ activeData.certCount }} certificate(s)
