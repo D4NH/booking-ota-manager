@@ -27,6 +27,7 @@ export interface Booking {
     status: BookingStatus;
     notes?: string;
     createdAt: string;
+    calendarEventId?: string;
 }
 
 export interface BookingGroup {
@@ -51,6 +52,6 @@ export interface StagedBooking {
     ownerPayout?: number;
     status: StagingStatus;
     notes?: string;
-    calendarEventId?: string; // Column L
+    calendarEventId?: string;
     hasConflict?: boolean;
 }

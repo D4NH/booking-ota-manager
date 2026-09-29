@@ -274,7 +274,8 @@ export function useGoogleSheets() {
         }
 
         const summary = `${values[1] || 'Direct'} - ${values[2] || 'Guest'}`;
-        const desc = `Booking ID: ${values[0]} | Notes: ${values[9] || ''}`;
+        const notesSuffix = values[9] ? ` | Notes: ${values[9]}` : '';
+        const desc = `Confirmed reservation for ${values[2] || 'Guest'} via ${values[1] || 'Direct'}. Ref: ${values[0]}${notesSuffix}`;
         const dates = { checkIn: String(values[3]), checkOut: String(values[4]) };
 
         let finalEventId = existingCalEventId || '';
@@ -341,7 +342,12 @@ export function useGoogleSheets() {
         calendarId?: string
     ): Promise<string> {
         const finalValues = [...values];
-        const calEventId = await syncCalendarForBookingValues(finalValues, calendarId);
+        const existingEventId = String(finalValues[10] || '').trim();
+        const calEventId = await syncCalendarForBookingValues(
+            finalValues,
+            calendarId,
+            existingEventId
+        );
 
         const encodedRange = encodeURIComponent(range);
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;

@@ -46,7 +46,7 @@ const emit = defineEmits<{
 const bookingStore = useBookingStore();
 const stagingStore = useStagingStore();
 const { saveBooking } = useBookingSync();
-const { deleteSheetRowById, updateCalendarEventSummary } = useGoogleSheets();
+const { deleteSheetRowById } = useGoogleSheets();
 
 const isProcessing = ref(false);
 
@@ -122,36 +122,28 @@ async function handleApprove(): Promise<void> {
 
     isProcessing.value = true;
     const targetItem = booking;
-    const targetCalendarId = PROPERTY_CONFIGS[form.value.propertyId]?.calendarId;
-    const payoutNum = Number(form.value.payout) || 0;
 
     try {
         await toast.loading(
             async () => {
-                await saveBooking({
-                    propertyId: form.value.propertyId,
-                    bookingId: form.value.bookingId.trim() || targetItem.bookingId,
-                    listing: form.value.listing,
-                    guestName: form.value.guestName.trim(),
-                    checkIn: form.value.checkIn,
-                    checkOut: form.value.checkOut,
-                    nights: Number(form.value.nights),
-                    payout: payoutNum,
-                    ownerPayout: ownerPayoutDisplay.value, // Auto 15%
-                    status: 'Booked',
-                    notes: form.value.notes.trim(),
-                });
-
-                // Remove [PENDING] from Google Calendar Event
-                if (targetItem.calendarEventId && targetCalendarId) {
-                    await updateCalendarEventSummary(
-                        targetCalendarId,
-                        targetItem.calendarEventId,
-                        `${form.value.listing} - ${form.value.guestName.trim()}`,
-                        { checkIn: form.value.checkIn, checkOut: form.value.checkOut },
-                        `Confirmed reservation for ${form.value.guestName.trim()} via ${form.value.listing}. Ref: ${form.value.bookingId}`
-                    ).catch((e) => console.warn('Direct Calendar PATCH skipped:', e));
-                }
+                await saveBooking(
+                    {
+                        propertyId: form.value.propertyId,
+                        bookingId: form.value.bookingId.trim() || targetItem.bookingId,
+                        listing: form.value.listing,
+                        guestName: form.value.guestName.trim(),
+                        checkIn: form.value.checkIn,
+                        checkOut: form.value.checkOut,
+                        nights: Number(form.value.nights) || 1,
+                        payout: Number(form.value.payout) || 0,
+                        ownerPayout: ownerPayoutDisplay.value,
+                        status: 'Booked',
+                        notes: form.value.notes.trim(),
+                        calendarEventId: targetItem.calendarEventId,
+                    },
+                    null,
+                    { silent: true }
+                );
                 await deleteSheetRowById(stagingSpreadsheetId, targetItem.id, {
                     sheetName: 'Sheet1',
                 });

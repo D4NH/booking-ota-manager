@@ -15,9 +15,6 @@ export function useBookingSync() {
     const bookingStore = useBookingStore();
     const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
-    /**
-     * Internal helper to execute async booking mutations with toast notifications.
-     */
     async function runWithToast<T>(
         action: () => Promise<T>,
         messages: ToastMessages
@@ -48,31 +45,41 @@ export function useBookingSync() {
     }
     async function saveBooking(
         payload: Omit<Booking, 'id' | 'createdAt'>,
-        bookingToEdit?: Booking | null
+        bookingToEdit?: Booking | null,
+        options: { silent?: boolean } = {}
     ): Promise<boolean> {
         const isEditing = Boolean(bookingToEdit);
 
-        return runWithToast(
-            async () => {
-                if (bookingToEdit) {
-                    await bookingStore.updateBookingWithRemoteSync(
-                        { ...bookingToEdit, ...payload },
-                        { updateSheetRowById }
-                    );
-                } else {
-                    await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
-                }
-            },
-            {
-                loadingTitle: isEditing ? 'Updating booking...' : 'Saving booking...',
-                loadingDesc: 'Syncing with Google Sheets and database.',
-                successTitle: 'Success',
-                successDesc: isEditing
-                    ? 'Booking updated successfully.'
-                    : 'Booking saved successfully.',
-                errorTitle: 'Save failed',
+        const executeAction = async () => {
+            if (bookingToEdit) {
+                await bookingStore.updateBookingWithRemoteSync(
+                    { ...bookingToEdit, ...payload },
+                    { updateSheetRowById }
+                );
+            } else {
+                await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
             }
-        );
+        };
+
+        if (options.silent) {
+            try {
+                await executeAction();
+                return true;
+            } catch (err: unknown) {
+                console.error('Silent saveBooking failed:', err);
+                throw err;
+            }
+        }
+
+        return runWithToast(executeAction, {
+            loadingTitle: isEditing ? 'Updating booking...' : 'Saving booking...',
+            loadingDesc: 'Syncing with Google Sheets and database.',
+            successTitle: 'Success',
+            successDesc: isEditing
+                ? 'Booking updated successfully.'
+                : 'Booking saved successfully.',
+            errorTitle: 'Save failed',
+        });
     }
     async function updateBookingStatus(
         booking: Booking,
