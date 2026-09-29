@@ -1,7 +1,11 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { db } from '@/db';
-import { PROPERTY_CONFIGS } from '@/config/properties';
+import {
+    PROPERTY_CONFIGS,
+    getPropertySpreadsheetId,
+    shouldSyncCalendarForYear,
+} from '@/config/properties';
 import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
@@ -128,13 +132,17 @@ export const useBookingStore = defineStore('booking', () => {
             ) => Promise<string>;
         }
     ): Promise<void> {
+        const bookingYear = Number(payload.checkIn?.slice(0, 4)) || new Date().getFullYear();
+        const targetSheetId = getPropertySpreadsheetId(payload.propertyId, bookingYear);
         const config = PROPERTY_CONFIGS[payload.propertyId as PropertyId];
-        const targetSheetId = config?.spreadsheetId;
-        const targetCalendarId = config?.calendarId;
+
+        const targetCalendarId = shouldSyncCalendarForYear(bookingYear)
+            ? config?.calendarId
+            : undefined;
 
         if (!targetSheetId || !targetSheetId.trim()) {
             throw new Error(
-                `Operation rejected: Missing Google Sheets configuration for property "${payload.propertyId}".`
+                `Missing Google Sheets config for property "${payload.propertyId}" (${bookingYear}).`
             );
         }
 
@@ -165,14 +173,16 @@ export const useBookingStore = defineStore('booking', () => {
             ) => Promise<void>;
         }
     ): Promise<void> {
+        const bookingYear = Number(updated.checkIn?.slice(0, 4)) || new Date().getFullYear();
+        const targetSheetId = getPropertySpreadsheetId(updated.propertyId, bookingYear);
         const config = PROPERTY_CONFIGS[updated.propertyId as PropertyId];
-        const targetSheetId = config?.spreadsheetId;
-        const targetCalendarId = config?.calendarId;
+
+        const targetCalendarId = shouldSyncCalendarForYear(bookingYear)
+            ? config?.calendarId
+            : undefined;
 
         if (!targetSheetId || !targetSheetId.trim()) {
-            throw new Error(
-                `Operation rejected: Missing Google Sheets configuration for property "${updated.propertyId}".`
-            );
+            throw new Error(`Missing Google Sheets config for year ${bookingYear}.`);
         }
 
         const nights = calculateNights(updated.checkIn, updated.checkOut);
@@ -198,22 +208,18 @@ export const useBookingStore = defineStore('booking', () => {
             ) => Promise<void>;
         }
     ): Promise<void> {
-        const config = PROPERTY_CONFIGS[booking.propertyId as PropertyId];
-        const targetSheetId = config?.spreadsheetId;
-        const targetCalendarId = config?.calendarId;
+        const bookingYear = Number(booking.checkIn?.slice(0, 4)) || new Date().getFullYear();
+        const targetSheetId = getPropertySpreadsheetId(booking.propertyId, bookingYear);
+        const targetCalendarId = PROPERTY_CONFIGS[booking.propertyId as PropertyId]?.calendarId;
 
         if (!targetSheetId || !targetSheetId.trim()) {
-            throw new Error(
-                `Operation rejected: Missing Google Sheets configuration for property "${booking.propertyId}".`
-            );
+            throw new Error(`Missing Google Sheets config for year ${bookingYear}.`);
         }
 
-        // Clear row from Google Sheets & delete calendar event
         await sheetsApi.deleteSheetRowById(targetSheetId, booking.bookingId, {
             calendarId: targetCalendarId || undefined,
         });
 
-        // Remove from local Dexie only after remote confirms deletion
         if (booking.id) {
             await deleteBooking(booking.id);
         } else {

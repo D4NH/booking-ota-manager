@@ -145,7 +145,14 @@ function handleImageError(e: Event): void {
                     <p
                         v-if="nextUpcoming"
                         class="text-xs mt-1">
-                        Next: {{ formatDate(nextUpcoming.checkIn) }} - {{ nextUpcoming.guestName }}
+                        Next:
+                        {{
+                            formatDate(nextUpcoming.checkIn, {
+                                shortWeekday: true,
+                                shortMonth: true,
+                            })
+                        }}
+                        - {{ nextUpcoming.guestName }}
                     </p>
                     <p
                         v-else

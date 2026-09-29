@@ -79,16 +79,24 @@ export function useAppAutoSync() {
         isSyncing.value = true;
         try {
             const propertyIds = Object.keys(PROPERTY_CONFIGS) as PropertyId[];
+            const syncYears = [2025, 2026, 2027];
 
             const bookingsTask = Promise.all(
-                propertyIds.map(async (propId) => {
-                    const spreadsheetId = PROPERTY_CONFIGS[propId]?.spreadsheetId;
-                    if (!spreadsheetId) return;
+                propertyIds.flatMap((propId) => {
+                    const config = PROPERTY_CONFIGS[propId];
+                    if (!config) return [];
 
-                    const rows = await fetchSheetRows(spreadsheetId, 'A2:K');
-                    if (rows && rows.length > 0) {
-                        await bookingStore.importBookingsFromGoogleSheets(propId, rows);
-                    }
+                    return syncYears.map(async (year) => {
+                        const sheetId =
+                            config.spreadsheetIds?.[year] ||
+                            (year === 2026 ? config.spreadsheetId : undefined);
+                        if (!sheetId) return;
+
+                        const rows = await fetchSheetRows(sheetId, 'A2:L');
+                        if (rows && rows.length > 0) {
+                            await bookingStore.importBookingsFromGoogleSheets(propId, rows);
+                        }
+                    });
                 })
             );
 

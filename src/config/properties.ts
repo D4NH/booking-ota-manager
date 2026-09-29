@@ -2,8 +2,9 @@ import type { Property, PropertyId } from '@/types/property';
 
 export interface PropertyConfig extends Property {
     defaultRange: string;
-    spreadsheetId?: string;
     calendarId?: string;
+    spreadsheetIds?: Record<number, string | undefined>;
+    spreadsheetId?: string;
 }
 
 export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
@@ -16,9 +17,14 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#016730',
         price: 1499000,
         codePrefix: 'MHJ',
-        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2026,
         calendarId: import.meta.env.VITE_CALENDAR_PIYUNGAN as string,
-        defaultRange: 'A2:K',
+        spreadsheetIds: {
+            2025: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2025,
+            2026: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2026,
+            2027: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2027,
+        },
+        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_PIYUNGAN_2026,
+        defaultRange: 'A2:L',
         bedrooms: 2,
         bathrooms: 3,
         plotSize: 123,
@@ -34,12 +40,12 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#38bdf8',
         price: 1499000,
         codePrefix: 'MHW',
+        // TODO: replace spreadsheetId with spreadsheetIds: {} when finished construction
         spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
-        defaultRange: 'A2:K',
+        defaultRange: 'A2:L',
         bedrooms: 2,
         bathrooms: 1,
         plotSize: 80,
-        wifi: { ssid: '', pwd: '' },
         available: false,
     },
     bantul: {
@@ -51,11 +57,10 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#fbbf24',
         price: 1499000,
         codePrefix: 'MHB',
-        defaultRange: 'A2:K',
+        defaultRange: 'A2:L',
         bedrooms: 3,
         bathrooms: 2,
         plotSize: 110,
-        wifi: { ssid: '', pwd: '' },
         available: false,
     },
     nusadua: {
@@ -67,14 +72,37 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#e879f9',
         price: 1499000,
         codePrefix: 'MHN',
-        defaultRange: 'A2:K',
+        defaultRange: 'A2:L',
         bedrooms: 2,
         bathrooms: 2,
         plotSize: 105,
-        wifi: { ssid: '', pwd: '' },
         available: false,
     },
 };
+
+export function getPropertySpreadsheetId(
+    propertyId: PropertyId | string,
+    year?: number | string
+): string {
+    const config = PROPERTY_CONFIGS[propertyId as PropertyId];
+    if (!config) return '';
+
+    const targetYear = Number(year) || new Date().getFullYear();
+    const sheetIdForYear = config.spreadsheetIds?.[targetYear];
+
+    return sheetIdForYear || config.spreadsheetId || '';
+}
+
+/**
+ * Automatically enables calendar sync for the current year and all future years.
+ * Any past year is automatically treated as historical archive (calendar skipped).
+ */
+export function shouldSyncCalendarForYear(year: number | string | undefined): boolean {
+    const currentYear = new Date().getFullYear();
+    const targetYear = Number(year) || currentYear;
+
+    return targetYear >= currentYear;
+}
 
 export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS);
 
