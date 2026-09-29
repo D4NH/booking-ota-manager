@@ -700,42 +700,46 @@ export const useFinanceStore = defineStore('finance', () => {
 
         isFetchingGoldPrice.value = true;
         try {
-            const primaryUrl = 'https://logam-mulia-api.iamutaki.workers.dev/api/prices/logammulia';
-            const res = await fetch(primaryUrl);
+            const workerUrl = import.meta.env.VITE_GOLD_PRICE_API_URL;
+
+            let res = await fetch(workerUrl).catch(() => null);
+
+            if (!res || !res.ok) {
+                res = await fetch(
+                    'https://logam-mulia-api.iamutaki.workers.dev/api/prices/logammulia'
+                );
+            }
+
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
             const json = (await res.json()) as {
                 success?: boolean;
+                price?: number;
                 data?: Array<{
                     material?: string;
                     materialType?: string;
                     weight?: number;
                     sellPrice?: number;
-                    recordedDate?: string;
                 }>;
-                timestamp?: string;
             };
 
             let livePrice = 0;
 
-            if (Array.isArray(json.data)) {
-                // 1. Target standard investment bar (Emas Batangan 1 gr)
+            if (json.price && typeof json.price === 'number') {
+                livePrice = json.price;
+            } else if (Array.isArray(json.data)) {
                 const standardOneGram = json.data.find(
                     (item) =>
                         item.material === 'gold' &&
                         item.materialType === 'Emas Batangan' &&
                         Number(item.weight) === 1
                 );
-
-                // 2. Fallback to any 1g gold if specific materialType is missing
                 const fallbackOneGram = json.data.find(
                     (item) => item.material === 'gold' && Number(item.weight) === 1
                 );
-
                 livePrice = Number(standardOneGram?.sellPrice ?? fallbackOneGram?.sellPrice ?? 0);
             }
 
-            // Sanity check: Ensure price is within a realistic Indonesian per-gram range
             if (livePrice >= 1_500_000 && livePrice <= 5_000_000) {
                 currentGoldPricePerGram.value = livePrice;
                 const recordedAt = new Date().toISOString();
@@ -1020,16 +1024,19 @@ export const useFinanceStore = defineStore('finance', () => {
             const parsedSbn: SbnInvestment[] = (batchResults[8] || [])
                 .filter((r) => r[0] && String(r[0]).trim())
                 .map((r) => ({
-                    id: String(r[0]),
-                    series: String(r[1] || 'SR022-T3') as SbnSeries,
-                    owner: (r[2] as SbnInvestment['owner']) || 'Shared',
-                    principalAmount: Number(r[3]) || 0,
+                    id: String(r[0]).trim(),
+                    series: String(r[1] || 'SR022-T3').trim() as SbnSeries,
+                    owner: (String(r[2] || '').trim() as SbnInvestment['owner']) || 'Shared',
+                    principalAmount: Number(String(r[3] || '').replace(/[^0-9]/g, '')) || 0,
                     couponRatePct: Number(r[4]) || 6.45,
                     taxRatePct: Number(r[5]) || 10,
                     issueDate: normalizeDate(r[6]),
                     maturityDate: normalizeDate(r[7]),
                     payoutDayOfMonth: Number(r[8]) || 10,
-                    active: String(r[9]).toUpperCase() === 'TRUE',
+                    active:
+                        String(r[9] ?? '')
+                            .trim()
+                            .toUpperCase() === 'TRUE',
                     notes: String(r[10] || '').trim(),
                 }));
 
