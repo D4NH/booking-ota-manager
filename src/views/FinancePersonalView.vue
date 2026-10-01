@@ -39,7 +39,7 @@ const isTransferModalOpen = ref(false);
         <div class="space-y-4">
             <FinancePersonalMetrics />
 
-            <div class="grid grid-cols-4 items-stretch gap-4">
+            <div class="grid grid-cols-4 gap-4 h-110">
                 <div class="flex flex-col">
                     <CardTitle>
                         <template #title>My Card</template>

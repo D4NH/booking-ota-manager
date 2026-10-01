@@ -155,7 +155,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
 
             <!-- Cells Canvas -->
             <div
-                class="flex-1 min-h-0 overflow-y-auto grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
+                class="flex-1 min-h-0 overflow-hidden grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
                 <div
                     v-for="(day, dayIndex) in calendarDays"
                     :key="day.dateStr"

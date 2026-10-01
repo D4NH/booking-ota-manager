@@ -52,7 +52,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
 </script>
 
 <template>
-    <div class="min-h-0 flex flex-col space-y-4">
+    <div class="h-full min-h-0 flex flex-col space-y-4">
         <CardTitle>
             <template #title>Budget Overview</template>
             <template #subtitle>
@@ -101,7 +101,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
         <RecurringChecklist v-if="showRecurring" />
 
         <div
-            class="flex-1 overflow-auto max-h-76.5 rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            class="flex-1 min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
                 <thead
                     class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">

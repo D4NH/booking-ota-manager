@@ -203,7 +203,7 @@ function openEditModal(item: PropertyFinance): void {
                     <tr v-if="displayedTransactions.length === 0">
                         <td
                             colspan="6"
-                            class="py-6 text-center text-mist-400">
+                            class="py-25 text-center text-mist-400">
                             <div class="flex justify-center items-center">
                                 <fa-icon
                                     icon="calendar-days"
