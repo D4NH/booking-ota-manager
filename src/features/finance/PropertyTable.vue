@@ -76,7 +76,7 @@ function openEditModal(item: PropertyFinance): void {
 </script>
 
 <template>
-    <div class="min-h-0 flex flex-col">
+    <div class="min-h-0 overflow-auto">
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Transaction Overview</template>
@@ -106,33 +106,33 @@ function openEditModal(item: PropertyFinance): void {
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
                     <tr>
-                        <th class="w-28 px-4 py-2.5">Date</th>
-                        <th class="w-28 px-4 py-2.5">Property</th>
-                        <th class="w-50 px-4 py-2.5">Category</th>
+                        <th class="w-30 px-4 py-2.5">Date</th>
+                        <th class="w-30 px-4 py-2.5">Property</th>
+                        <th class="w-52 px-4 py-2.5">Category</th>
                         <th class="w-auto px-4 py-2.5">Source</th>
-                        <th class="w-35 px-4 py-2.5 text-right">Amount</th>
-                        <th class="w-23 px-4 py-2.5 text-right">Actions</th>
+                        <th class="w-40 px-4 py-2.5 text-right">Amount</th>
+                        <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-mist-800/60 align-middle">
+                <tbody class="divide-y divide-mist-800/60">
                     <tr
                         v-for="item in paginatedTransactions"
                         :key="item.id"
-                        class="hover:bg-mist-800/40 align-middle">
-                        <td class="px-4 py-2.5 align-middle text-mist-400 text-xs font-mono">
+                        class="hover:bg-mist-800/40">
+                        <td class="px-4 py-2.5 text-mist-400 text-xs font-mono">
                             {{ item.date }}
                         </td>
-                        <td class="px-4 py-2.5 align-middle">
+                        <td class="px-4 py-2.5">
                             <RouterLink
                                 :to="{ name: 'property-detail', params: { id: item.propertyId } }"
                                 :class="getPropertyStyle(item.propertyId)">
                                 {{ item.propertyId }}
                             </RouterLink>
                         </td>
-                        <td class="px-4 py-2.5 align-middle truncate">
+                        <td class="px-4 py-2.5 font-medium truncate">
                             {{ item.category }}
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-mist-400 truncate">
+                        <td class="px-4 py-2.5 text-mist-400 truncate">
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
@@ -142,26 +142,47 @@ function openEditModal(item: PropertyFinance): void {
                                 <TransactionNote :notes="item.notes" />
                             </div>
                         </td>
-                        <td class="px-4 py-2.5 text-right font-bold font-mono text-xs">
-                            <span
-                                :class="
-                                    item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
-                                ">
-                                {{ item.type === 'expense' ? '-' : '+' }}
-                            </span>
-                            {{ formatIDR(item.amount) }}
+                        <td class="px-4 py-2.5 text-right font-mono font-medium">
+                            <div class="group relative inline-flex items-center justify-end">
+                                <span
+                                    class="text-xs pr-1"
+                                    :class="
+                                        item.type === 'income'
+                                            ? 'text-emerald-400'
+                                            : 'text-rose-400'
+                                    ">
+                                    {{ item.type === 'expense' ? '-' : '+' }}
+                                </span>
+                                <span class="text-sm">
+                                    {{ formatIDR(item.amount) }}
+                                </span>
+
+                                <div
+                                    v-if="item.category === 'Property Payout'"
+                                    class="pointer-events-none absolute right-full top-1/2 z-30 mr-2 w-48 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    <div
+                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        <div class="flex items-center justify-between font-mono">
+                                            <span class="font-medium text-mist-400">
+                                                Payout 15%
+                                            </span>
+                                            <span class="font-semibold text-mist-200">
+                                                {{ formatIDR(item.amount * 0.15) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-4 py-2.5 align-middle">
+                        <td class="px-4 py-2.5">
                             <div class="flex items-center justify-end gap-1 h-7">
                                 <button
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Edit Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
+                                    class="text-mist-400 hover:text-lime-400 p-1 cursor-pointer"
                                     @click="openEditModal(item)">
-                                    <fa-icon
-                                        icon="pen-to-square"
-                                        class="text-xs" />
+                                    <fa-icon icon="pen-to-square" />
                                 </button>
                                 <span
                                     v-if="!item.id.startsWith('dexie')"
@@ -172,11 +193,9 @@ function openEditModal(item: PropertyFinance): void {
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Delete Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
+                                    class="text-mist-400 hover:text-rose-400 p-1 cursor-pointer"
                                     @click="removePropertyTransaction(item.id, item.category)">
-                                    <fa-icon
-                                        icon="trash-can"
-                                        class="text-xs" />
+                                    <fa-icon icon="trash-can" />
                                 </button>
                             </div>
                         </td>
@@ -185,7 +204,14 @@ function openEditModal(item: PropertyFinance): void {
                         <td
                             colspan="6"
                             class="py-6 text-center text-mist-400">
-                            No records for this month.
+                            <div class="flex justify-center items-center">
+                                <fa-icon
+                                    icon="calendar-days"
+                                    class="text-xl text-mist-700" />
+                                <span class="ml-2 font-medium text-mist-400">
+                                    No records for this month
+                                </span>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

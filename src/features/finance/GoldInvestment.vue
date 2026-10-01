@@ -265,21 +265,21 @@ async function handleRefreshGoldPrice() {
                         <tr
                             v-for="g in goldAssets"
                             :key="g.id"
-                            class="hover:bg-mist-800/50 align-middle cursor-pointer"
+                            class="hover:bg-mist-800/50 cursor-pointer"
                             @click="openEditGoldModal(g)">
-                            <td class="py-2 px-3 text-mist-400 align-middle">
+                            <td class="py-2 px-3 text-mist-400">
                                 {{ g.purchaseDate }}
                             </td>
-                            <td class="py-2 px-3 align-middle">
+                            <td class="py-2 px-3">
                                 <span class="font-medium text-mist-100">
                                     {{ g.owner }}
                                 </span>
                             </td>
-                            <td class="py-2 px-3 align-middle">
+                            <td class="py-2 px-3">
                                 <span class="text-mist-400">{{ g.type }}</span> &bull;
                                 <span class="text-amber-300">{{ g.weightGrams }}g</span>
                             </td>
-                            <td class="py-2 px-3 text-mist-300 align-middle">
+                            <td class="py-2 px-3 text-mist-300">
                                 <div class="flex items-baseline justify-end gap-2">
                                     <span class="block mb-1 text-nowrap">
                                         {{ formatIDR(g.buyPriceTotal) }}
@@ -295,10 +295,10 @@ async function handleRefreshGoldPrice() {
                         </tr>
                         <tr
                             v-if="goldAssets.length === 0"
-                            class="align-middle">
+                            class="">
                             <td
                                 colspan="5"
-                                class="py-6 text-center text-mist-400 align-middle">
+                                class="py-6 text-center text-mist-400">
                                 No gold holdings recorded.
                             </td>
                         </tr>

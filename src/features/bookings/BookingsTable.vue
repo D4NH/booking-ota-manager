@@ -28,7 +28,7 @@ const emit = defineEmits<{
 
 const collapsedMonths = defineModel<string[]>('collapsedMonths', { default: () => [] });
 const collapsedSet = computed(() => new Set(collapsedMonths.value));
-const colSpan = computed(() => (showPropertyColumn ? 7 : 6));
+const colSpan = computed(() => (showPropertyColumn ? 6 : 6));
 
 function toggleMonth(key: string): void {
     if (collapsedSet.value.has(key)) {
@@ -53,16 +53,11 @@ function isCurrentBooking(b: Booking): boolean {
             <thead
                 class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
                 <tr>
-                    <th class="w-45 px-4 py-2.5">ID</th>
-                    <th
-                        v-if="showPropertyColumn"
-                        class="w-28 px-4 py-2.5">
-                        Listing
-                    </th>
+                    <th class="w-36 px-4 py-2.5">Listing</th>
                     <th class="px-4 py-2.5">Guest</th>
                     <th class="w-40 px-4 py-2.5 text-center">Stay Date</th>
                     <th class="w-10 px-4 py-2.5 text-center">Nights</th>
-                    <th class="px-4 py-2.5 text-right">Payout</th>
+                    <th class="w-40 px-4 py-2.5 text-right">Payout</th>
                     <th class="w-26 px-4 py-2.5 text-right">Actions</th>
                 </tr>
             </thead>
@@ -106,24 +101,17 @@ function isCurrentBooking(b: Booking): boolean {
                     <tr
                         v-for="b in group.bookings"
                         :key="b.id || b.bookingId"
-                        class="transition align-middle"
+                        class="transition"
                         :class="[
                             isCurrentBooking(b) && b.status === 'Booked'
                                 ? 'bg-lime-500/5 text-lime-400 ring-1 ring-lime-500/30 hover:bg-lime-500/15'
                                 : 'hover:bg-mist-800/40',
                         ]"
                         @click="emit('edit', b)">
-                        <td class="px-4 py-2.5 align-middle">
-                            <span class="font-mono text-xs">
-                                {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
-                            </span>
-                        </td>
-                        <td
-                            v-if="showPropertyColumn"
-                            class="px-4 py-2.5 align-middle">
+                        <td class="px-4 py-2.5">
                             <div class="flex flex-col space-y-1">
-                                <span class="ml-1 text-xs">{{ b.listing }}</span>
-                                <div>
+                                <span class="ml-1">{{ b.listing }}</span>
+                                <div v-if="showPropertyColumn">
                                     <span
                                         v-if="b.bookingId.includes('UNAVAILABLE')"
                                         class="text-mist-500">
@@ -141,12 +129,15 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2.5 align-middle">
-                            <span class="truncate font-medium text-mist-100 leading-5">
+                        <td class="px-4 py-2.5">
+                            <span class="truncate font-medium text-mist-100 leading-5 block mb-0.5">
                                 {{ b.guestName }}
                             </span>
+                            <span class="font-mono text-xs text-mist-400">
+                                {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                            </span>
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-center text-nowrap">
+                        <td class="px-4 py-2.5 text-center text-nowrap">
                             <span>
                                 {{
                                     formatDate(b.checkIn, {
@@ -163,8 +154,8 @@ function isCurrentBooking(b: Booking): boolean {
                                 }}
                             </span>
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-center">{{ b.nights }}</td>
-                        <td class="px-4 py-2.5 align-middle text-right">
+                        <td class="px-4 py-2.5 text-center">{{ b.nights }}</td>
+                        <td class="px-4 py-2.5 text-right">
                             <div class="group relative -mt-1">
                                 <div class="flex flex-col items-end justify-center text-right">
                                     <span class="font-mono text-sm font-medium">
@@ -178,11 +169,11 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                                 <div
                                     v-if="b.payout !== 0"
-                                    class="pointer-events-none absolute bottom-full left-0 top-1 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    class="pointer-events-none absolute bottom-full -left-50 top-1 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
                                         class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-semibold text-mist-400">
+                                        <div class="flex items-center justify-between font-mono">
+                                            <span class="font-medium text-mist-400">
                                                 Payout 15%
                                             </span>
                                             <span class="font-semibold text-mist-200">
@@ -193,7 +184,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-right text-nowrap">
+                        <td class="px-4 py-2.5 text-right text-nowrap">
                             <div class="flex items-center justify-end gap-2">
                                 <button
                                     type="button"
