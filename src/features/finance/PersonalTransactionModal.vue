@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import { getCurrentDate } from '@/utils/date';
+import { getCurrentDate, getPreviousMonthName } from '@/utils/date';
 import type {
     TransactionType,
     PersonalFinance,
@@ -116,8 +116,8 @@ watch(
     { immediate: true }
 );
 watch(formCategory, (newCat) => {
-    if (newCat?.trim().toLowerCase() === 'gold') {
-        handleAmountChange();
+    if (newCat?.trim().toLowerCase() === 'creditcard') {
+        autofillCreditcardNotes();
     }
 });
 
@@ -129,6 +129,11 @@ function handleAmountChange(): void {
         const rate = currentGoldPricePerGram.value || 2450000;
         const calculatedGrams = Number(formAmount.value) / rate;
         formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
+    }
+}
+function autofillCreditcardNotes(): void {
+    if (!isEditing.value) {
+        formNotes.value = `Debt ${getPreviousMonthName()}`;
     }
 }
 function closeModal(): void {

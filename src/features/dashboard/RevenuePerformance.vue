@@ -3,13 +3,14 @@ import { ref, computed } from 'vue';
 import { MONTH_NAMES as monthsList } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
+import { getCurrentYear } from '@/utils/date';
 import CardTitle from '@/components/CardTitle.vue';
 
 const quartersList = [
-    { id: 0, label: 'Q1 2026', startMonthIdx: 0 },
-    { id: 1, label: 'Q2 2026', startMonthIdx: 3 },
-    { id: 2, label: 'Q3 2026', startMonthIdx: 6 },
-    { id: 3, label: 'Q4 2026', startMonthIdx: 9 },
+    { id: 0, label: 'Quarter 1', startMonthIdx: 0 },
+    { id: 1, label: 'Quarter 2', startMonthIdx: 3 },
+    { id: 2, label: 'Quarter 3', startMonthIdx: 6 },
+    { id: 3, label: 'Quarter 4', startMonthIdx: 9 },
 ];
 const now = new Date();
 const currentActualMonthIdx = now.getUTCMonth();
@@ -25,13 +26,13 @@ const hoveredIndex = ref<number | null>(null);
 const fourMonthSequence = computed(() => {
     const currentQuarter = quartersList[activeQuarterIndex.value] ?? quartersList[0]!;
     const startIdx = currentQuarter.startMonthIdx;
-    const baseYear = 2026;
+    const currentYear = +getCurrentYear();
 
     const sequence: { monthIdx: number; year: number }[] = [];
 
     for (let offset = 0; offset < 4; offset++) {
         let monthIdx = startIdx + offset;
-        let year = baseYear;
+        let year = currentYear;
 
         if (monthIdx >= 12) {
             monthIdx -= 12;

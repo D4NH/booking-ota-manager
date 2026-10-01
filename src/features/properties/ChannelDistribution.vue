@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
+
 import CardTitle from '@/components/CardTitle.vue';
 
 // SVG Donut Math: radius = 38, circumference = 2 * PI * 38 ≈ 238.76
@@ -18,16 +19,26 @@ const hoveredIndex = ref<number | null>(null);
 
 const yearOptions = computed<number[]>(() => {
     const years = new Set<number>();
+
     for (const b of bookings) {
         if (b.checkIn && b.checkIn.length >= 4) {
             const year = Number(b.checkIn.slice(0, 4));
             if (!Number.isNaN(year)) years.add(year);
         }
     }
-    if (years.size === 0) years.add(new Date().getFullYear());
+
+    if (years.size === 0) {
+        years.add(new Date().getFullYear());
+    }
+
     return Array.from(years).sort((a, b) => b - a);
 });
-const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
+
+const selectedYear = ref<number>(
+    yearOptions.value.includes(new Date().getFullYear())
+        ? new Date().getFullYear()
+        : (yearOptions.value[0] ?? new Date().getFullYear())
+);
 
 const channelStats = computed(() => {
     const targetYearStr = String(selectedYear.value);

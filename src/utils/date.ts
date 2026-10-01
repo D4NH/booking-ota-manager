@@ -40,6 +40,11 @@ export function getPreviousMonth(d: Date = new Date()): string {
     return `${year}-${month}`;
 }
 
+export function getPreviousMonthName(date: Date = new Date()): string {
+    const previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+    return previousMonth.toLocaleDateString('en-US', { month: 'long' });
+}
+
 /**
  * Current year formatted to YYYY
  */

@@ -25,7 +25,7 @@ import CashFlow from '@/features/finance/CashFlow.vue';
                 <CashFlow />
                 <FinancePropertyBreakdown />
             </div>
-            <FinancePropertyTable class="h-162" />
+            <FinancePropertyTable class="max-h-162" />
         </div>
     </div>
 </template>

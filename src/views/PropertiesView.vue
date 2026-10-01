@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -28,7 +27,6 @@ const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
 const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
-const { monthlyPropertyData } = useMonthlyMetrics(bookings);
 const { totalYearRevenue } = usePropertyDetails(() => 'all');
 
 const isPropertiesExpanded = ref(false);
@@ -130,7 +128,7 @@ function handleAddProperty(): void {
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AnnualRevenue
-                :data="monthlyPropertyData"
+                :bookings="bookings"
                 :total-revenue="totalYearRevenue" />
 
             <PropertyPerformance

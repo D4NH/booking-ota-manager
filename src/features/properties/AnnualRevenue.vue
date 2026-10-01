@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { storeToRefs } from 'pinia';
 import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { PROPERTY_LIST } from '@/config/properties';
-import { useBookingStore } from '@/stores/useBookingStore';
+import type { Booking } from '@/types/booking';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 import { formatIDR } from '@/utils/money';
+
 import CardTitle from '@/components/CardTitle.vue';
 
 interface Props {
     selectedProperty?: PropertyId | 'all';
+    bookings: Booking[];
 }
 
-const { selectedProperty = 'all' } = defineProps<Props>();
-
-const bookingStore = useBookingStore();
-const { bookings } = storeToRefs(bookingStore);
+const { selectedProperty = 'all', bookings } = defineProps<Props>();
 
 const hoveredIndex = ref<number | null>(null);
 
 const yearOptions = computed<number[]>(() => {
     const years = new Set<number>();
 
-    for (const b of bookings.value) {
+    for (const b of bookings) {
         if (b.checkIn && b.checkIn.length >= 4) {
             const year = Number(b.checkIn.slice(0, 4));
             if (!Number.isNaN(year)) years.add(year);
@@ -35,7 +33,12 @@ const yearOptions = computed<number[]>(() => {
 
     return Array.from(years).sort((a, b) => b - a);
 });
-const selectedYear = ref<number>(yearOptions.value[0] ?? new Date().getFullYear());
+
+const selectedYear = ref<number>(
+    yearOptions.value.includes(new Date().getFullYear())
+        ? new Date().getFullYear()
+        : (yearOptions.value[0] ?? new Date().getFullYear())
+);
 
 const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
     const yearStr = String(selectedYear.value);
@@ -48,7 +51,7 @@ const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
         nusadua: 0,
     }));
 
-    for (const b of bookings.value) {
+    for (const b of bookings) {
         if (b.status === 'Unavailable' || b.status === 'No show') continue;
         if (!b.checkIn || b.checkIn.slice(0, 4) !== yearStr) continue;
 
