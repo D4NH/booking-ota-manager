@@ -220,11 +220,7 @@ export const useBookingStore = defineStore('booking', () => {
             calendarId: targetCalendarId || undefined,
         });
 
-        if (booking.id) {
-            await deleteBooking(booking.id);
-        } else {
-            await deleteBooking(booking.bookingId);
-        }
+        await deleteBooking(booking.id || booking.bookingId);
     }
     async function updateBookingStatusWithSync(
         booking: Booking,

@@ -26,7 +26,7 @@ const isTransferModalOpen = ref(false);
 </script>
 
 <template>
-    <div class="h-full overflow-y-auto space-y-4 p-4">
+    <div class="h-full space-y-4 overflow-y-auto p-4">
         <PageTitle>
             <template #title>Finance Dashboard</template>
             <template #subtitle> Personal, Shared and Mai House Jogja </template>
@@ -39,25 +39,25 @@ const isTransferModalOpen = ref(false);
         <div class="space-y-4">
             <FinancePersonalMetrics />
 
-            <div class="grid grid-cols-4 gap-4 h-110">
+            <div class="grid h-110 grid-cols-4 gap-4">
                 <div class="flex flex-col">
                     <CardTitle>
                         <template #title>My Card</template>
                         <template #subtitle> Active card credentials </template>
                     </CardTitle>
                     <div
-                        class="flex-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm space-y-4">
-                        <div class="relative h-48 select-none mt-4 mr-4">
+                        class="flex-1 space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                        <div class="relative mt-4 mr-4 h-48 select-none">
                             <!-- Back Card (Monochrome / Shifted Shadow Card) -->
                             <div
-                                class="absolute -top-3 -right-3 w-full h-full rounded-xl bg-mist-800 border border-mist-700 shadow-md z-0 overflow-hidden">
+                                class="absolute -top-3 -right-3 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">
                                 <!-- Back Card Magnetic Strip Mock -->
-                                <div class="w-full h-8 bg-mist-950/50 mt-4 opacity-80" />
+                                <div class="mt-4 h-8 w-full bg-mist-950/50 opacity-80" />
                             </div>
 
                             <!-- Front Card (Monochrome Base) -->
                             <div
-                                class="relative w-full h-full rounded-xl bg-mist-900 border border-mist-800 shadow-2xl p-5 flex flex-col justify-between overflow-hidden z-10">
+                                class="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
                                 <!-- Top Row: Bank/App Name + Card Tier -->
                                 <div
                                     class="flex items-center justify-between text-xs font-medium text-mist-300">
@@ -66,10 +66,10 @@ const isTransferModalOpen = ref(false);
                                 </div>
 
                                 <!-- Middle Section: EMV Chip + Contactless Icon -->
-                                <div class="flex items-center gap-3 my-auto">
+                                <div class="my-auto flex items-center gap-3">
                                     <!-- EMV Chip Mock -->
                                     <div
-                                        class="w-9 h-7 rounded bg-linear-to-br from-amber-200 via-amber-400 to-amber-500 border border-amber-600/50 relative overflow-hidden shadow-sm">
+                                        class="relative h-7 w-9 overflow-hidden rounded border border-amber-600/50 bg-linear-to-br from-amber-200 via-amber-400 to-amber-500 shadow-sm">
                                         <div
                                             class="absolute inset-0 grid grid-cols-2 divide-x divide-amber-700/40 opacity-60">
                                             <div class="border-b border-amber-700/40" />
@@ -80,12 +80,12 @@ const isTransferModalOpen = ref(false);
                                     <!-- Contactless Signal Icon -->
                                     <fa-icon
                                         icon="wifi"
-                                        class="rotate-90 text-mist-400 text-sm" />
+                                        class="rotate-90 text-sm text-mist-400" />
                                 </div>
 
                                 <!-- Card Number -->
                                 <div
-                                    class="font-mono text-lg tracking-widest text-mist-100 font-semibold mb-4">
+                                    class="mb-4 font-mono text-lg font-semibold tracking-widest text-mist-100">
                                     {{ bcaCardNo }}
                                 </div>
 
@@ -93,20 +93,20 @@ const isTransferModalOpen = ref(false);
                                 <div class="flex items-end justify-between">
                                     <div class="flex flex-col">
                                         <span
-                                            class="text-[9px] uppercase tracking-wider text-mist-500 font-medium">
+                                            class="text-[9px] font-medium tracking-wider text-mist-500 uppercase">
                                             Card Holder
                                         </span>
-                                        <span class="font-mono text-xs text-mist-300 font-medium">
+                                        <span class="font-mono text-xs font-medium text-mist-300">
                                             {{ bcaCardId }}
                                         </span>
                                     </div>
 
                                     <div class="flex flex-col">
                                         <span
-                                            class="text-[9px] uppercase tracking-wider text-mist-500 font-medium">
+                                            class="text-[9px] font-medium tracking-wider text-mist-500 uppercase">
                                             Valid Thru
                                         </span>
-                                        <span class="font-mono text-xs text-mist-300 font-medium">
+                                        <span class="font-mono text-xs font-medium text-mist-300">
                                             {{ bcaCardExpDate }}
                                         </span>
                                     </div>
@@ -144,24 +144,24 @@ const isTransferModalOpen = ref(false);
                         <div class="space-y-3">
                             <!-- Balance Row -->
                             <span
-                                class="text-[10px] uppercase font-bold text-mist-400 tracking-wider">
+                                class="text-[10px] font-bold tracking-wider text-mist-400 uppercase">
                                 Available Balance
                             </span>
-                            <div class="text-xl font-black font-mono text-mist-100">
+                            <div class="font-mono text-xl font-black text-mist-100">
                                 {{ formatIDR(danhNetBalance) }}
                             </div>
 
                             <!-- Monthly Outflow Progress / Metric -->
                             <div
-                                class="grid grid-cols-2 gap-2 pt-2 border-t border-mist-800/60 text-xs font-mono">
+                                class="grid grid-cols-2 gap-2 border-t border-mist-800/60 pt-2 font-mono text-xs">
                                 <div>
-                                    <span class="text-[10px] text-mist-400 block"> In: </span>
-                                    <span class="text-emerald-400 font-semibold"> + </span>
+                                    <span class="block text-[10px] text-mist-400"> In: </span>
+                                    <span class="font-semibold text-emerald-400"> + </span>
                                     {{ formatIDR(danhMonthlyRevenue) }}
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[10px] text-mist-400 block"> Out: </span>
-                                    <span class="text-rose-400 font-semibold"> - </span>
+                                    <span class="block text-[10px] text-mist-400"> Out: </span>
+                                    <span class="font-semibold text-rose-400"> - </span>
                                     {{ formatIDR(danhMonthlyExpenses) }}
                                 </div>
                             </div>
@@ -174,7 +174,7 @@ const isTransferModalOpen = ref(false);
 
             <InvestmentChart />
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <SbnInvestment />
                 <GoldInvestment />
                 <SavingsList />

@@ -117,7 +117,7 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
 </script>
 
 <template>
-    <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
+    <div class="flex h-full flex-col space-y-4 overflow-hidden p-4">
         <PageTitle>
             <template #title>Bookings</template>
             <template #subtitle>Real-time availability and unit operational status</template>
@@ -165,12 +165,12 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
                     <!-- Status Filters -->
                     <button
                         type="button"
-                        class="rounded-md border border-mist-800 pl-2.5 pr-3 py-2 text-xs text-mist-300 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                        class="cursor-pointer rounded-md border border-mist-800 py-2 pr-3 pl-2.5 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700"
                         :class="[toggleFilters ? 'bg-mist-800' : 'bg-mist-950/50']"
                         title="Filter by Status"
                         @click="toggleFilters = !toggleFilters">
                         <fa-icon
-                            class="text-xs mr-1"
+                            class="mr-1 text-xs"
                             icon="filter" />
                         Filters
                     </button>
@@ -182,7 +182,7 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
                             :key="status"
                             type="button"
                             :class="[
-                                'cursor-pointer rounded-md px-2.5 py-1 text-xs border transition',
+                                'cursor-pointer rounded-md border px-2.5 py-1 text-xs transition',
                                 hiddenStatuses.includes(status)
                                     ? 'border-rose-500/40 bg-rose-500/10 text-rose-400 line-through'
                                     : 'border-mist-800 bg-mist-800 text-mist-300 hover:border-mist-600',
@@ -195,10 +195,10 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
 
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition"
+                    class="cursor-pointer rounded-md bg-lime-500 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
                     @click="handleAddBooking">
                     <fa-icon
-                        class="text-xs mr-1"
+                        class="-ml-1 text-xs"
                         icon="plus" />
                     Add Booking
                 </button>
@@ -208,7 +208,7 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
         <!-- Bookings Table -->
         <div
             v-if="groupedBookings.length === 0"
-            class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-8">
+            class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 p-8 text-xs text-mist-400 shadow-md">
             <fa-icon
                 icon="receipt"
                 class="text-2xl text-mist-600" />

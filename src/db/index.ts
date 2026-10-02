@@ -33,65 +33,6 @@ db.version(1).stores({
     bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
 });
 
-db.version(2).stores({
-    properties: 'id, name',
-    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
-    propertyFinances: 'id, propertyId, type, category, date, bookingId',
-    personalFinances: 'id, owner, type, category, date',
-    sharedFinances: 'id, type, category, date',
-    transfers: 'id, sourcePropertyId, targetAccount, date',
-});
-
-db.version(3).stores({
-    properties: 'id, name',
-    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
-    propertyFinances: 'id, propertyId, type, category, date, bookingId',
-    personalFinances: 'id, owner, type, category, date',
-    sharedFinances: 'id, type, category, date',
-    transfers: 'id, sourcePropertyId, targetAccount, date',
-    personalSavings: 'id, owner, institution',
-    goldAssets: 'id, owner, type, purchaseDate',
-});
-
-db.version(4).stores({
-    properties: 'id, name',
-    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
-    propertyFinances: 'id, propertyId, type, category, date, bookingId',
-    personalFinances: 'id, owner, type, category, date',
-    sharedFinances: 'id, type, category, date',
-    transfers: 'id, sourcePropertyId, targetAccount, date',
-    personalSavings: 'id, owner, institution',
-    goldAssets: 'id, owner, type, purchaseDate',
-    recurringTemplates: 'id, targetLedger, category, active',
-});
-
-db.version(5).stores({
-    properties: 'id, name',
-    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
-    propertyFinances: 'id, propertyId, type, category, date, bookingId',
-    personalFinances: 'id, owner, type, category, date',
-    sharedFinances: 'id, type, category, date',
-    transfers: 'id, sourcePropertyId, targetAccount, date',
-    personalSavings: 'id, owner, institution',
-    goldAssets: 'id, owner, type, purchaseDate',
-    recurringTemplates: 'id, targetLedger, category, active',
-    savingGoals: 'id, owner, priority',
-});
-
-db.version(6).stores({
-    properties: 'id, name',
-    bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',
-    propertyFinances: 'id, propertyId, type, category, date, bookingId',
-    personalFinances: 'id, owner, type, category, date',
-    sharedFinances: 'id, type, category, date',
-    transfers: 'id, sourcePropertyId, targetAccount, date',
-    personalSavings: 'id, owner, institution',
-    goldAssets: 'id, owner, type, purchaseDate',
-    recurringTemplates: 'id, targetLedger, category, active',
-    savingGoals: 'id, owner, priority',
-    stagedBookings: 'id, propertyId, status',
-});
-
 db.version(7).stores({
     properties: 'id, name',
     bookings: 'id, propertyId, bookingId, checkIn, checkOut, status, listing',

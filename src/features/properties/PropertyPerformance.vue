@@ -55,7 +55,7 @@ const propertyStats = computed(() => {
     }
 
     for (const b of bookings) {
-        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (b.status === 'Unavailable') continue;
         if (!b.checkIn || b.checkIn.slice(0, 4) !== targetYearStr) continue;
 
         totalPortfolioRevenue += b.payout || 0;

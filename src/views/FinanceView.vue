@@ -8,7 +8,7 @@ import CashFlow from '@/features/finance/CashFlow.vue';
 </script>
 
 <template>
-    <div class="h-full overflow-y-auto space-y-4 p-4">
+    <div class="h-full space-y-4 overflow-y-auto p-4">
         <PageTitle>
             <template #title>Finance Dashboard</template>
             <template #subtitle> Property, Personal and Shared Finances </template>
@@ -21,7 +21,7 @@ import CashFlow from '@/features/finance/CashFlow.vue';
         <div class="space-y-4">
             <FinancePropertyMetrics />
 
-            <div class="grid grid-cols-2 gap-4 h-115">
+            <div class="grid h-115 grid-cols-2 gap-4">
                 <CashFlow />
                 <FinancePropertyBreakdown />
             </div>

@@ -45,7 +45,7 @@ function handleAddProperty(): void {
 </script>
 
 <template>
-    <div class="h-full overflow-y-auto space-y-4 p-4">
+    <div class="h-full space-y-4 overflow-y-auto p-4">
         <PageTitle>
             <template #title>Property Management</template>
             <template #subtitle>
@@ -61,7 +61,7 @@ function handleAddProperty(): void {
             :properties="sortedProperties" />
 
         <!-- Properties -->
-        <div class="flex flex-col shrink-0">
+        <div class="flex shrink-0 flex-col">
             <div class="flex items-center justify-between">
                 <CardTitle>
                     <template #title>Properties</template>
@@ -72,7 +72,7 @@ function handleAddProperty(): void {
                     <button
                         v-if="sortedProperties.length > 2"
                         type="button"
-                        class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                        class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700 hover:text-mist-100"
                         @click="isPropertiesExpanded = !isPropertiesExpanded">
                         <span>
                             {{
@@ -89,20 +89,20 @@ function handleAddProperty(): void {
 
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition-colors"
+                        class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition-colors hover:bg-lime-400"
                         @click="handleAddProperty">
                         <fa-icon
-                            class="text-xs mr-1"
+                            class="mr-1 text-xs"
                             icon="plus" />
                         Add Property
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <div
                     v-if="sortedProperties.length === 0"
-                    class="flex flex-1 flex-col col-span-2 items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-8">
+                    class="col-span-2 flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 p-8 text-xs text-mist-400 shadow-md">
                     <fa-icon
                         icon="house"
                         class="text-xl" />
@@ -118,7 +118,7 @@ function handleAddProperty(): void {
         </div>
 
         <!-- Analytics Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <MonthlyEarnings
                 :weekly-data="getWeeklyComparison(bookings, 'all')"
                 :monthly-data="getMonthlyComparison(bookings, 'all')" />
@@ -126,7 +126,7 @@ function handleAddProperty(): void {
             <ChannelDistribution :bookings="bookings" />
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <AnnualRevenue
                 :bookings="bookings"
                 :total-revenue="totalYearRevenue" />

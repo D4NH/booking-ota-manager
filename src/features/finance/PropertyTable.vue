@@ -91,7 +91,10 @@ function openEditModal(item: PropertyFinance): void {
                 <button
                     class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm cursor-pointer"
                     @click="openAddModal">
-                    + Add Entry
+                    <fa-icon
+                        class="text-xs -ml-1"
+                        icon="plus" />
+                    Add Entry
                 </button>
                 <button
                     class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow cursor-pointer"

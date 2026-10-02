@@ -69,7 +69,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
 </script>
 
 <template>
-    <div class="h-full overflow-hidden flex flex-col space-y-4 p-4">
+    <div class="flex h-full flex-col space-y-4 overflow-hidden p-4">
         <PageTitle>
             <template #title>Calendar</template>
             <template #subtitle>Monthly schedule and room availability</template>
@@ -83,19 +83,19 @@ function handleBookingClick(booking: Booking, event: Event): void {
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 font-semibold hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 px-3 py-2 text-xs font-semibold text-mist-300 shadow-sm transition-colors hover:border-mist-700"
                     @click="goToToday">
                     Today
                 </button>
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 bg-mist-800 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700"
                     @click="prevMonth">
                     <fa-icon icon="chevron-left" />
                 </button>
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 bg-mist-800 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700"
                     @click="nextMonth">
                     <fa-icon icon="chevron-right" />
                 </button>
@@ -104,7 +104,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                 <select
                     name="month-selector"
                     :value="selectedMonth"
-                    class="appearance-none cursor-pointer outline-none w-32 text-right text-mist-300 hover:text-mist-100 bg-mist-900 text-lg"
+                    class="w-32 cursor-pointer appearance-none bg-mist-900 text-right text-lg text-mist-300 outline-none hover:text-mist-100"
                     @change="handleMonthChange">
                     <option
                         v-for="(name, index) in MONTH_NAMES"
@@ -117,7 +117,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                 <select
                     name="year-selector"
                     :value="selectedYear"
-                    class="appearance-none cursor-pointer outline-none w-24 text-mist-300 hover:text-mist-100 bg-mist-900 text-lg"
+                    class="w-24 cursor-pointer appearance-none bg-mist-900 text-lg text-mist-300 outline-none hover:text-mist-100"
                     @change="handleYearChange">
                     <option
                         v-for="year in yearOptions"
@@ -130,20 +130,20 @@ function handleBookingClick(booking: Booking, event: Event): void {
             </div>
             <button
                 type="button"
-                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-lime-400 transition"
+                class="cursor-pointer rounded-md bg-lime-500 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
                 @click="handleAddBooking">
                 <fa-icon
-                    class="text-xs mr-1"
+                    class="-ml-1 text-xs"
                     icon="plus" />
                 Add Booking
             </button>
         </div>
 
         <div
-            class="flex-1 min-h-0 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
+            class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <!-- Weekday Header -->
             <div
-                class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold uppercase text-mist-400">
+                class="grid shrink-0 grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold text-mist-400 uppercase">
                 <div class="px-4 py-2.5">Mon</div>
                 <div class="px-4 py-2.5">Tue</div>
                 <div class="px-4 py-2.5">Wed</div>
@@ -155,37 +155,37 @@ function handleBookingClick(booking: Booking, event: Event): void {
 
             <!-- Cells Canvas -->
             <div
-                class="flex-1 min-h-0 overflow-hidden grid grid-cols-7 divide-x divide-y divide-mist-800/60 bg-mist-900">
+                class="grid min-h-0 flex-1 grid-cols-7 divide-x divide-y divide-mist-800/60 overflow-hidden bg-mist-900">
                 <div
                     v-for="(day, dayIndex) in calendarDays"
                     :key="day.dateStr"
                     :class="[
-                        'min-h-28 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40',
+                        'flex min-h-28 cursor-pointer flex-col justify-between p-2 transition hover:bg-mist-800/40',
                         !day.isCurrentMonth ? 'bg-mist-950/40 opacity-40' : '',
-                        day.isToday ? 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30' : '',
+                        day.isToday ? 'bg-lime-500/5 ring-1 ring-lime-500/30 ring-inset' : '',
                     ]"
                     @click="handleCellClick(day)">
                     <!-- Date Header -->
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs rounded-md h-6 w-6 flex items-center justify-center">
+                    <div class="mb-1 flex items-center justify-between">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-md text-xs">
                             {{ day.dayNumber }}
                         </span>
                     </div>
                     <!-- Event -->
-                    <div class="space-y-1.5 flex-1 flex flex-col justify-start">
+                    <div class="flex flex-1 flex-col justify-start space-y-1.5">
                         <div
                             v-for="b in getStaysForDate(day.dateStr)"
                             :key="'stay-' + (b.id || b.bookingId)"
                             class="group relative z-10">
                             <div
-                                class="h-12 px-1.5 transition shadow-sm cursor-pointer flex flex-col justify-center"
+                                class="flex h-12 cursor-pointer flex-col justify-center px-1.5 shadow-sm transition"
                                 :class="[
                                     multiDayStyling(b, day.dateStr, dayIndex),
                                     getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">
-                                <div class="flex items-center justify-between min-w-0">
-                                    <span class="font-semibold text-xs text-mist-100 truncate">
+                                <div class="flex min-w-0 items-center justify-between">
+                                    <span class="truncate text-xs font-semibold text-mist-100">
                                         {{ b.guestName }}
                                     </span>
                                     <span
@@ -196,7 +196,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                             b.status !== 'Unavailable' &&
                                             selectedProperty === 'all'
                                         "
-                                        class="capitalize rounded px-1 py-0.2 text-[10px] font-semibold shrink-0"
+                                        class="py-0.2 shrink-0 rounded px-1 text-[10px] font-semibold capitalize"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
@@ -208,12 +208,12 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                             b.nights === 1) &&
                                         b.status !== 'Unavailable'
                                     "
-                                    class="text-[10px] text-mist-400 truncate mt-1">
+                                    class="mt-1 truncate text-[10px] text-mist-400">
                                     {{ b.listing }}
                                 </div>
                                 <div
                                     v-else-if="b.nights > 1"
-                                    class="text-[10px] text-mist-500 opacity-60 mt-1">
+                                    class="mt-1 text-[10px] text-mist-500 opacity-60">
                                     &bull;&bull;&bull;
                                 </div>
                             </div>
@@ -223,7 +223,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                 <div
                                     class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                     <div>
-                                        <span class="font-semibold text-mist-200 block mb-1">
+                                        <span class="mb-1 block font-semibold text-mist-200">
                                             {{ b.guestName }}
                                         </span>
                                         <span class="text-xs text-mist-400">
@@ -244,12 +244,12 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                     </div>
                                     <div
                                         v-if="b.status === 'Waiting for payment'"
-                                        class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-xs">
+                                        class="mb-1 rounded bg-amber-500/10 p-1 text-xs text-amber-300">
                                         Payment pending
                                     </div>
                                     <div
                                         v-if="b.notes"
-                                        class="border-t border-mist-800 pt-1.5 mt-1.5 text-mist-300 text-xs">
+                                        class="mt-1.5 border-t border-mist-800 pt-1.5 text-xs text-mist-300">
                                         {{ b.notes }}
                                     </div>
                                 </div>

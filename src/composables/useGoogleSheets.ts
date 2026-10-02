@@ -401,7 +401,7 @@ export function useGoogleSheets() {
         const finalValues = [...values];
         await syncCalendarForBookingValues(finalValues, calendarId, existingCalEventId);
 
-        const endColIndex = Math.min(26, Math.max(finalValues.length, 12));
+        const endColIndex = Math.min(26, finalValues.length);
         const endColLetter = String.fromCharCode(64 + endColIndex);
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:${endColLetter}${targetRowNumber}`
@@ -471,13 +471,13 @@ export function useGoogleSheets() {
             // If not explicitly passed, safely detect from row
             if (!calEventId && rows[rowIndex]) {
                 const row = rows[rowIndex];
-                const valL = String(row[11] || '').trim(); // Staging Sheet Column L
-                const valK = String(row[10] || '').trim(); // Official Sheet Column K
+                const valK = String(row[10] || '').trim(); // Official Booking Sheet: Col K
+                const valL = String(row[11] || '').trim(); // Staging Sheet: Col L
 
-                if (valL && !valL.includes(' ')) {
-                    calEventId = cleanGoogleCalendarEventId(valL);
-                } else if (valK && !valK.includes(' ')) {
+                if (valK && !valK.includes(' ')) {
                     calEventId = cleanGoogleCalendarEventId(valK);
+                } else if (valL && !valL.includes(' ')) {
+                    calEventId = cleanGoogleCalendarEventId(valL);
                 }
             }
 

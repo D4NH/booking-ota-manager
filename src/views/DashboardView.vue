@@ -44,7 +44,7 @@ function handleEditBooking(booking: Booking): void {
 </script>
 
 <template>
-    <div class="h-full overflow-y-auto space-y-4 p-4">
+    <div class="h-full space-y-4 overflow-y-auto p-4">
         <PageTitle>
             <template #title> Dashboard </template>
             <template #subtitle>
@@ -56,9 +56,9 @@ function handleEditBooking(booking: Booking): void {
         </PageTitle>
 
         <!-- Monthly Summary -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
                 <p class="font-mono text-lg font-semibold text-mist-100">
@@ -77,8 +77,8 @@ function handleEditBooking(booking: Booking): void {
                     <span class="text-mist-500">vs last month</span>
                 </p>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Occupancy Rate
                 </h3>
                 <p class="font-mono text-lg font-semibold text-mist-100">
@@ -93,8 +93,8 @@ function handleEditBooking(booking: Booking): void {
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Bookings
                 </h3>
                 <p class="font-mono text-lg font-semibold text-mist-100">
@@ -102,18 +102,18 @@ function handleEditBooking(booking: Booking): void {
                 </p>
                 <p class="text-xs text-mist-500">Active bookings</p>
             </div>
-            <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Today's Turnover
                 </h3>
-                <p class="text-lg font-semibold text-mist-100 flex gap-3">
-                    <span class="text-lime-400 flex items-center gap-1">
+                <p class="flex gap-3 text-lg font-semibold text-mist-100">
+                    <span class="flex items-center gap-1 text-lime-400">
                         <fa-icon
                             class="text-sm"
                             icon="arrow-down" />
                         <span class="font-mono">{{ todaysTurnover.in }}</span> In
                     </span>
-                    <span class="text-amber-400 flex items-center gap-1">
+                    <span class="flex items-center gap-1 text-amber-400">
                         <fa-icon
                             class="text-sm"
                             icon="arrow-up" />
@@ -125,7 +125,7 @@ function handleEditBooking(booking: Booking): void {
         </div>
 
         <!-- Recent Bookings & Revenue Performance-->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <UpcomingBookings
                 :bookings="bookings"
                 @edit-booking="handleEditBooking" />
@@ -143,7 +143,7 @@ function handleEditBooking(booking: Booking): void {
                 <button
                     v-if="sortedProperties.length > 2"
                     type="button"
-                    class="flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 pl-3 pr-1.5 py-2 text-xs text-mist-300 hover:text-mist-100 hover:border-mist-700 transition-colors shadow-sm cursor-pointer"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700 hover:text-mist-100"
                     @click="isPropertiesExpanded = !isPropertiesExpanded">
                     <span>
                         {{
@@ -158,10 +158,10 @@ function handleEditBooking(booking: Booking): void {
                         :class="{ 'rotate-180': isPropertiesExpanded }" />
                 </button>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <div
                     v-if="sortedProperties.length === 0"
-                    class="flex flex-1 flex-col col-span-2 items-center justify-center rounded-md border border-mist-800 shadow-md text-xs text-mist-400 p-8">
+                    class="col-span-2 flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 p-8 text-xs text-mist-400 shadow-md">
                     <fa-icon
                         icon="house"
                         class="text-xl" />

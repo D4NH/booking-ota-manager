@@ -48,7 +48,7 @@ const channelStats = computed(() => {
     let totalRevenue = 0;
 
     for (const b of bookings) {
-        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (b.status === 'Unavailable') continue;
         if (!b.checkIn || b.checkIn.slice(0, 4) !== targetYearStr) continue;
 
         const channel = b.listing || 'Other';

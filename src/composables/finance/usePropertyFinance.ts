@@ -65,7 +65,7 @@ export function usePropertyFinance(
     previousMonth: Ref<string>
 ) {
     const bookingStore = useBookingStore();
-    const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
+    const { appendSheetRow, updateSheetRowById } = useGoogleSheets();
 
     const bookingIncomeRecords = computed<PropertyFinance[]>(() =>
         bookingStore.bookings
@@ -178,16 +178,6 @@ export function usePropertyFinance(
         await db.propertyFinances.put(updatedRecord);
     }
 
-    async function deletePropertyTransaction(id: string): Promise<void> {
-        if (id.startsWith('dexie-')) {
-            throw new Error('This transaction is auto-populated from Dexie bookings.');
-        }
-
-        await deleteSheetRowById(SPREADSHEET_ID, id, { sheetName: 'Property_Finances' });
-        sheetPropertyFinances.value = sheetPropertyFinances.value.filter((i) => i.id !== id);
-        await db.propertyFinances.delete(id);
-    }
-
     async function persistDexieBookingsToRemoteSheet(): Promise<number> {
         const unrecorded = extractUnrecordedBookings(
             sheetPropertyFinances.value,
@@ -239,7 +229,6 @@ export function usePropertyFinance(
         propertyExpenseGrowthPct,
         addPropertyTransaction,
         updatePropertyTransaction,
-        deletePropertyTransaction,
         persistDexieBookingsToRemoteSheet,
     };
 }

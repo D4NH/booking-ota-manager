@@ -142,15 +142,11 @@ export const useFinanceStore = defineStore('finance', () => {
             }, 0)
     );
     const sbnTotalCollectedYield = computed<number>(() => {
-        const fromShared = sharedFinances.value
-            .filter((s) => s.type === 'income' && /SR022|SBN/i.test(s.category))
-            .reduce((sum, s) => sum + Number(s.amount), 0);
-
-        const fromPersonal = personalFinances.value
-            .filter((p) => p.type === 'income' && /SR022|SBN/i.test(p.notes))
-            .reduce((sum, p) => sum + Number(p.amount), 0);
-
-        return fromShared + fromPersonal;
+        return (
+            getCollectedYieldForOwner('Shared') +
+            getCollectedYieldForOwner('Danh Nguyen') +
+            getCollectedYieldForOwner('Citra Ayu Wardani')
+        );
     });
     const sbnAccountAllocation = computed<AccountSbnBreakdown[]>(() => {
         const totalPrincipal = sbnTotalPrincipal.value || 0;

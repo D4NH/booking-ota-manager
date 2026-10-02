@@ -13,10 +13,13 @@ export type BookingStatus =
     | 'No show'
     | 'Unavailable';
 
+// Booking Google Sheet:
+// Booking ID | Listing | Guest Name | Check-in | Check-out | Nights | Payout | Owner Payout | Status | Notes | calendarEventId
 export interface Booking {
-    id: string;
-    propertyId: PropertyId;
-    bookingId: string;
+    id: string; // Dexie IndexedDB Primary Key
+    createdAt: string; // Local audit timestamp
+    propertyId: PropertyId; // Metadata for routing
+    bookingId: string; // Google Sheets Column A
     listing: BookingChannel;
     guestName: string;
     checkIn: string;
@@ -26,9 +29,9 @@ export interface Booking {
     ownerPayout?: number;
     status: BookingStatus;
     notes?: string;
-    createdAt: string;
     calendarEventId?: string;
 }
+export type BookingPayload = Omit<Booking, 'id' | 'createdAt'>;
 
 export interface BookingGroup {
     key: string;
@@ -37,8 +40,9 @@ export interface BookingGroup {
     bookings: Booking[];
 }
 
+// Staging Google Sheet:
+// id | propertyId | bookingId | listing | guestName | checkIn | checkOut | nights | payout | status | notes | calendarEventId
 export type StagingStatus = 'Pending Approval' | 'Approved' | 'Rejected';
-
 export interface StagedBooking {
     id: string;
     propertyId: PropertyId;

@@ -52,7 +52,7 @@ const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
     }));
 
     for (const b of bookings) {
-        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (b.status === 'Unavailable') continue;
         if (!b.checkIn || b.checkIn.slice(0, 4) !== yearStr) continue;
 
         const monthIdx = Number(b.checkIn.slice(5, 7)) - 1;

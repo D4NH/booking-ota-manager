@@ -30,7 +30,7 @@ const sortedUpcomingBookings = computed<Booking[]>(() => {
     const today = getCurrentDate();
 
     return bookings
-        .filter((b) => b.status !== 'Unavailable' && b.status !== 'No show' && b.checkIn >= today)
+        .filter((b) => b.status !== 'Unavailable' && b.checkIn >= today)
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
         .slice(0, limit);
 });

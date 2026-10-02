@@ -171,7 +171,8 @@ export function useMonthlyMetrics(
 
     // 12-Month Annual Breakdown per Property
     const monthlyPropertyData = computed<MonthlyPropertyRevenue[]>(() => {
-        const currentYear = new Date().getFullYear().toString();
+        const rawMonth = toValue(options.targetMonth);
+        const activeYear = rawMonth ? rawMonth.slice(0, 4) : new Date().getFullYear().toString();
         const list = toValue(bookings) ?? [];
 
         const monthlyBreakdown: MonthlyPropertyRevenue[] = MONTH_NAMES_SHORT.map((label) => {
@@ -184,7 +185,7 @@ export function useMonthlyMetrics(
 
         for (let i = 0; i < list.length; i++) {
             const b = list[i];
-            if (!b || !b.checkIn?.startsWith(currentYear) || b.status === 'Unavailable') {
+            if (!b || !b.checkIn?.startsWith(activeYear) || b.status === 'Unavailable') {
                 continue;
             }
 

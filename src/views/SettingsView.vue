@@ -120,7 +120,7 @@ async function handleWipeDatabase(): Promise<void> {
 </script>
 
 <template>
-    <div class="h-full overflow-y-auto space-y-4 p-4">
+    <div class="h-full space-y-4 overflow-y-auto p-4">
         <PageTitle>
             <template #title>Settings</template>
             <template #subtitle>
@@ -132,8 +132,8 @@ async function handleWipeDatabase(): Promise<void> {
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <span
-                        class="h-3 w-3 rounded-full shrink-0"
-                        :class="isAuthenticated ? 'bg-lime-400 animate-pulse' : 'bg-amber-400'" />
+                        class="h-3 w-3 shrink-0 rounded-full"
+                        :class="isAuthenticated ? 'animate-pulse bg-lime-400' : 'bg-amber-400'" />
                     <div>
                         <h4 class="text-xs font-semibold text-mist-100">
                             {{
@@ -167,30 +167,30 @@ async function handleWipeDatabase(): Promise<void> {
                 </CardTitle>
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 hover:bg-lime-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition"
+                    class="cursor-pointer rounded-md bg-lime-500 px-3 py-1.5 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
                     @click="handleAddProperty">
                     <fa-icon
                         icon="plus"
-                        class="text-xs mr-1" />
+                        class="mr-1 text-xs" />
                     Add Property
                 </button>
             </div>
 
             <!-- Properties -->
-            <div class="rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
+            <div class="overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
                 <div
                     v-if="sortedProperties.length === 0"
                     class="flex flex-col items-center justify-center p-8 text-xs text-mist-400">
                     <fa-icon
                         icon="house"
-                        class="text-xl text-mist-600 mb-1" />
+                        class="mb-1 text-xl text-mist-600" />
                     <p>No properties registered yet. Click "Add Property" to begin.</p>
                 </div>
                 <table
                     v-else
-                    class="w-full text-left text-sm text-mist-300 table-fixed">
+                    class="w-full table-fixed text-left text-sm text-mist-300">
                     <thead
-                        class="border-b border-mist-800 bg-mist-950/50 text-xs font-semibold uppercase text-mist-400">
+                        class="border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase">
                         <tr>
                             <th class="w-32 px-4 py-2.5">ID</th>
                             <th class="px-4 py-2.5">Name</th>
@@ -204,20 +204,20 @@ async function handleWipeDatabase(): Promise<void> {
                         <tr
                             v-for="p in sortedProperties"
                             :key="p.id"
-                            class="hover:bg-mist-800/30 transition">
-                            <td class="px-4 py-3 font-mono text-lime-400 text-xs truncate">
+                            class="transition hover:bg-mist-800/30">
+                            <td class="truncate px-4 py-3 font-mono text-xs text-lime-400">
                                 {{ p.id }}
                             </td>
-                            <td class="px-4 py-3 font-medium text-mist-100 truncate">
+                            <td class="truncate px-4 py-3 font-medium text-mist-100">
                                 <div>{{ p.name }}</div>
-                                <div class="text-[11px] text-mist-500 truncate">
+                                <div class="truncate text-[11px] text-mist-500">
                                     {{ p.address }}
                                 </div>
                             </td>
-                            <td class="px-4 py-3 font-mono text-right text-xs">
+                            <td class="px-4 py-3 text-right font-mono text-xs">
                                 {{ formatIDR(p.price) }}
                             </td>
-                            <td class="px-4 py-3 text-center text-xs text-mist-400 gap-2">
+                            <td class="gap-2 px-4 py-3 text-center text-xs text-mist-400">
                                 <fa-icon
                                     icon="bed"
                                     class="text-[11px] text-mist-500" />
@@ -236,7 +236,7 @@ async function handleWipeDatabase(): Promise<void> {
                                     class="rounded px-2 py-0.5 text-[10px] font-semibold uppercase"
                                     :class="
                                         p.available
-                                            ? 'bg-lime-500/10 text-lime-400 border border-lime-500/20'
+                                            ? 'border border-lime-500/20 bg-lime-500/10 text-lime-400'
                                             : 'bg-mist-800 text-mist-400'
                                     ">
                                     {{ p.available ? 'Active' : 'Draft' }}
@@ -246,7 +246,7 @@ async function handleWipeDatabase(): Promise<void> {
                                 <div class="flex items-center justify-end gap-2">
                                     <button
                                         type="button"
-                                        class="cursor-pointer text-mist-400 hover:text-mist-100 transition"
+                                        class="cursor-pointer text-mist-400 transition hover:text-mist-100"
                                         title="Edit property"
                                         @click="handleEditProperty(p)">
                                         <fa-icon icon="pen-to-square" />
@@ -254,7 +254,7 @@ async function handleWipeDatabase(): Promise<void> {
                                     <span class="text-mist-700">|</span>
                                     <button
                                         type="button"
-                                        class="cursor-pointer text-rose-400 hover:text-rose-300 transition"
+                                        class="cursor-pointer text-rose-400 transition hover:text-rose-300"
                                         title="Delete property"
                                         @click="handleDeleteProperty(p.id)">
                                         <fa-icon icon="trash-can" />
@@ -276,7 +276,7 @@ async function handleWipeDatabase(): Promise<void> {
                 <template #title>Database Storage & Cache</template>
                 <template #subtitle>Manage client-side IndexedDB records</template>
             </CardTitle>
-            <div class="rounded-md border border-rose-500/20 bg-mist-900 p-4 shadow-md space-y-4">
+            <div class="space-y-4 rounded-md border border-rose-500/20 bg-mist-900 p-4 shadow-md">
                 <div class="flex items-center justify-between">
                     <div>
                         <h4 class="text-xs font-semibold text-mist-200">Local Bookings Cache</h4>
@@ -288,7 +288,7 @@ async function handleWipeDatabase(): Promise<void> {
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20"
                         @click="handleClearBookings">
                         Clear Bookings Cache
                     </button>
@@ -302,13 +302,13 @@ async function handleWipeDatabase(): Promise<void> {
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition"
+                        class="cursor-pointer rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20"
                         @click="handleClearFinance">
                         Clear Finance Cache
                     </button>
                 </div>
 
-                <div class="border-t border-mist-800/60 pt-3 flex items-center justify-between">
+                <div class="flex items-center justify-between border-t border-mist-800/60 pt-3">
                     <div>
                         <h4 class="text-xs font-semibold text-rose-400">Hard Reset Database</h4>
                         <p class="text-[11px] text-mist-500">
@@ -317,7 +317,7 @@ async function handleWipeDatabase(): Promise<void> {
                     </div>
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-rose-600 hover:bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition shadow-sm"
+                        class="cursor-pointer rounded-md bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-500"
                         @click="handleWipeDatabase">
                         Purge All Data
                     </button>

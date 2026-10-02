@@ -22,7 +22,7 @@ const metrics = computed(() => {
     const activePropertyIds = new Set<string>();
 
     for (const b of bookings) {
-        if (b.status === 'Unavailable' || b.status === 'No show') continue;
+        if (b.status === 'Unavailable') continue;
         if (!b.checkIn || !b.checkIn.startsWith(yearPrefix)) continue;
 
         revenue += b.payout || 0;

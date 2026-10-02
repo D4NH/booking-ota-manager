@@ -55,7 +55,7 @@ const horizonWindows = computed<HorizonWindow[]>(() => {
         let confirmedRevenue = 0;
 
         for (const b of bookings) {
-            if (b.status === 'Unavailable' || b.status === 'No show') continue;
+            if (b.status === 'Unavailable') continue;
             if (activePropId && b.propertyId !== activePropId) continue;
 
             const checkInMs = parseISODate(b.checkIn).getTime();

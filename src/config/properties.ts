@@ -40,8 +40,9 @@ export const PROPERTY_CONFIGS: Record<PropertyId, PropertyConfig> = {
         color: '#38bdf8',
         price: 1499000,
         codePrefix: 'MHW',
-        // TODO: replace spreadsheetId with spreadsheetIds: {} when finished construction
-        spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
+        spreadsheetIds: {
+            2026: import.meta.env.VITE_SPREADSHEET_ID_WONOSARI,
+        },
         defaultRange: 'A2:L',
         bedrooms: 2,
         bathrooms: 1,
