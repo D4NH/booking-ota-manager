@@ -124,12 +124,12 @@ function handleSyncFinancials() {
 </script>
 
 <template>
-    <div class="p-3 border-t border-mist-800/80 bg-mist-950/40 text-mist-200 font-sans select-none">
+    <div class="border-t border-mist-800/80 bg-mist-950/40 p-3 font-sans text-mist-200 select-none">
         <!-- Auth & Status Indicator -->
-        <div class="flex items-center justify-between text-[11px] font-mono text-mist-400 mb-2">
+        <div class="mb-2 flex items-center justify-between font-mono text-[11px] text-mist-400">
             <span class="flex items-center gap-1.5">
                 <span
-                    class="w-2 h-2 rounded-full"
+                    class="h-2 w-2 rounded-full"
                     :class="isAuthenticated ? 'bg-lime-400' : 'bg-rose-400'"></span>
                 {{ isAuthenticated ? 'Google API' : 'Disconnected' }}
             </span>
@@ -141,7 +141,7 @@ function handleSyncFinancials() {
             <button
                 type="button"
                 :disabled="isMasterSyncing"
-                class="flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded bg-mist-850 hover:bg-mist-800 text-mist-100 border border-mist-700 hover:border-lime-500/40 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+                class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-100 transition hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
                 title="Force full system sync across all data"
                 @click="handleMasterSync">
                 <fa-icon
@@ -154,7 +154,7 @@ function handleSyncFinancials() {
             <!-- Toggle Options Dropdown -->
             <button
                 type="button"
-                class="py-1.5 px-2 rounded bg-mist-850 hover:bg-mist-800 text-mist-400 hover:text-mist-100 border border-mist-700 transition cursor-pointer text-xs"
+                class="bg-mist-850 cursor-pointer rounded border border-mist-700 px-2 py-1.5 text-xs text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
                 :title="isMenuOpen ? 'Hide granular sync options' : 'Show granular sync options'"
                 @click="isMenuOpen = !isMenuOpen">
                 <fa-icon
@@ -167,11 +167,11 @@ function handleSyncFinancials() {
         <!-- Sync Options Panel -->
         <div
             v-if="isMenuOpen"
-            class="mt-2 space-y-1 text-xs font-mono">
+            class="mt-2 space-y-1 font-mono text-xs">
             <!-- Sync Bookings -->
             <button
                 type="button"
-                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
                 @click="handleSyncBookings">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
@@ -184,7 +184,7 @@ function handleSyncFinancials() {
             <!-- Sync Financials -->
             <button
                 type="button"
-                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
                 @click="handleSyncFinancials">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
@@ -197,7 +197,7 @@ function handleSyncFinancials() {
             <!-- Scan Gmail & Staging -->
             <button
                 type="button"
-                class="w-full flex items-center justify-between py-1.5 rounded hover:bg-mist-850 text-mist-300 hover:text-lime-300 transition cursor-pointer"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
                 @click="handleScanEmails">
                 <span class="flex items-center gap-1.5">
                     <fa-icon

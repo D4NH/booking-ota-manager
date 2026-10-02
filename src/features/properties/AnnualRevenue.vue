@@ -150,7 +150,7 @@ function getSegmentHeightPct(value: number): number {
 
 <template>
     <div class="flex flex-col">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Annual Revenue</template>
                 <template #subtitle>Monthly gross earnings across properties</template>
@@ -158,7 +158,7 @@ function getSegmentHeightPct(value: number): number {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none hover:border-mist-700 transition-colors cursor-pointer">
+                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
@@ -177,12 +177,12 @@ function getSegmentHeightPct(value: number): number {
         </div>
 
         <div
-            class="h-full flex flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
+            class="flex h-full flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <!-- Summary & Legend -->
-            <div class="flex justify-between items-center">
+            <div class="flex items-center justify-between">
                 <div class="flex flex-col space-y-1">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ displayHeaderMonth }}
                     </span>
                     <div class="font-mono text-lg font-semibold text-mist-100">
@@ -191,7 +191,7 @@ function getSegmentHeightPct(value: number): number {
                 </div>
                 <div class="flex items-center gap-4">
                     <div
-                        class="hidden sm:flex items-center gap-4 text-xs font-medium text-mist-200">
+                        class="hidden items-center gap-4 text-xs font-medium text-mist-200 sm:flex">
                         <div
                             v-for="item in activeConfigs"
                             :key="item.id"
@@ -207,32 +207,32 @@ function getSegmentHeightPct(value: number): number {
                 </div>
             </div>
 
-            <div class="relative mt-6 mb-4 h-full w-full flex items-end">
+            <div class="relative mt-6 mb-4 flex h-full w-full items-end">
                 <!-- Background Horizontal Gridlines -->
                 <div
-                    class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
+                    class="pointer-events-none absolute inset-0 flex flex-col justify-between pr-2 pb-6">
                     <div
                         v-for="tick in yAxisTicks"
                         :key="tick.value"
-                        class="w-full flex items-center text-xs font-mono text-mist-500">
-                        <span class="w-10 text-right pr-2 select-none">{{ tick.label }}</span>
+                        class="flex w-full items-center font-mono text-xs text-mist-500">
+                        <span class="w-10 pr-2 text-right select-none">{{ tick.label }}</span>
                         <div class="flex-1 border-b border-mist-800/40" />
                     </div>
                 </div>
 
                 <!-- Bars Columns -->
-                <div class="relative w-full h-full flex items-end justify-between pl-12 pr-2 pb-6">
+                <div class="relative flex h-full w-full items-end justify-between pr-2 pb-6 pl-12">
                     <div
                         v-for="(row, idx) in monthlyData"
                         :key="row.label"
-                        class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer px-1"
+                        class="group relative flex h-full flex-1 cursor-pointer flex-col items-center justify-end px-1"
                         @mouseenter="hoveredIndex = idx">
                         <!-- Custom Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="absolute -top-20 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md p-2 text-xs font-mono whitespace-nowrap space-y-1">
+                            class="border-mist-750 pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-2xl">
                             <div
-                                class="font-bold text-mist-100 text-[11px] pb-1 border-b border-mist-800">
+                                class="border-b border-mist-800 pb-1 text-[11px] font-bold text-mist-100">
                                 {{ row.label }} {{ selectedYear }}
                             </div>
                             <div
@@ -241,11 +241,11 @@ function getSegmentHeightPct(value: number): number {
                                 class="flex items-center justify-between gap-3 text-xs">
                                 <span class="flex items-center gap-1.5 text-mist-400 capitalize">
                                     <span
-                                        class="w-2 h-2 rounded-xs"
+                                        class="h-2 w-2 rounded-xs"
                                         :style="{ backgroundColor: config.color }" />
                                     {{ config.id }}:
                                 </span>
-                                <span class="text-mist-100 font-semibold">
+                                <span class="font-semibold text-mist-100">
                                     {{ formatIDR(Number(row[config.id]) || 0) }}
                                 </span>
                             </div>
@@ -253,7 +253,7 @@ function getSegmentHeightPct(value: number): number {
 
                         <!-- Stacked Bar Column -->
                         <div
-                            class="w-full max-w-6 flex flex-col-reverse items-center h-full justify-start">
+                            class="flex h-full w-full max-w-6 flex-col-reverse items-center justify-start">
                             <div
                                 v-for="config in activeConfigs"
                                 :key="config.id"

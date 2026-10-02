@@ -98,7 +98,7 @@ watch(yearOptions, (available) => {
 
 <template>
     <div class="flex flex-col">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Property Performance</template>
                 <template #subtitle>Revenue contribution & occupancy rate per unit</template>
@@ -106,7 +106,7 @@ watch(yearOptions, (available) => {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none hover:border-mist-700 transition-colors cursor-pointer">
+                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
@@ -125,10 +125,10 @@ watch(yearOptions, (available) => {
         </div>
 
         <div
-            class="divide-y divide-mist-800 h-full flex flex-col items-stretch rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            class="flex h-full flex-col items-stretch divide-y divide-mist-800 rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div
                 v-if="propertyStats.length === 0"
-                class="flex flex-1 flex-col items-center justify-center text-xs text-mist-400 p-4">
+                class="flex flex-1 flex-col items-center justify-center p-4 text-xs text-mist-400">
                 <fa-icon
                     icon="house"
                     class="text-xl" />
@@ -142,7 +142,7 @@ watch(yearOptions, (available) => {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center justify-between gap-2">
                         <span
-                            class="capitalize rounded px-2 py-0.5 text-xs font-medium"
+                            class="rounded px-2 py-0.5 text-xs font-medium capitalize"
                             :class="getPropertyStyle(stat.property.id)">
                             {{ stat.property.id }}
                         </span>
@@ -150,13 +150,13 @@ watch(yearOptions, (available) => {
                             {{ formatIDR(stat.property.price) }} / night
                         </span>
                     </div>
-                    <span class="font-mono text-sm font-semibold text-mist-300 block">
+                    <span class="block font-mono text-sm font-semibold text-mist-300">
                         {{ formatIDR(stat.revenue) }}
                     </span>
                 </div>
                 <!-- Progress Bar -->
                 <div class="mt-2.5 space-y-2">
-                    <div class="h-1.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-mist-950/50">
                         <div
                             class="h-full rounded-full transition-all duration-500"
                             :class="stat.revenue > 0 ? 'bg-lime-400' : 'bg-mist-700'"
@@ -164,7 +164,7 @@ watch(yearOptions, (available) => {
                                 width: `${Math.max(2, stat.propertyStats.revenueShare)}%`,
                             }" />
                     </div>
-                    <div class="flex justify-between text-[11px] text-mist-500 pt-0.5">
+                    <div class="flex justify-between pt-0.5 text-[11px] text-mist-500">
                         <div class="flex gap-2">
                             <span class="text-xs text-mist-400">
                                 Occupancy:
@@ -183,7 +183,7 @@ watch(yearOptions, (available) => {
                                 {{ stat.nights }} nights
                             </span>
                         </div>
-                        <span class="text-xs text-mist-500 block">
+                        <span class="block text-xs text-mist-500">
                             {{ stat.propertyStats.revenueShare }}% of portfolio
                         </span>
                     </div>

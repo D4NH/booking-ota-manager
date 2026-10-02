@@ -67,7 +67,7 @@ onMounted(async () => {
     <div class="flex h-screen w-screen overflow-hidden">
         <AppSidebar class="shrink-0" />
 
-        <main class="flex flex-1 flex-col min-w-0 min-h-0">
+        <main class="flex min-h-0 min-w-0 flex-1 flex-col">
             <!-- Scrollable views: h-full overflow-y-auto to the root element -->
             <!-- Fixed views: h-full overflow-hidden flex flex-col to lock the page -->
             <RouterView />

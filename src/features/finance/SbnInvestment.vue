@@ -63,30 +63,30 @@ const maturity = computed(() =>
 
 <template>
     <div
-        class="bg-mist-900 border border-mist-800 rounded-md p-4 shadow-lg flex flex-col justify-between">
+        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-lg">
         <div>
             <!-- Header Tag -->
-            <div class="flex items-center justify-between gap-2 mb-4 h-7">
+            <div class="mb-4 flex h-7 items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                    <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         SBN Investment
                     </h3>
                 </div>
                 <span
-                    class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-semibold">
+                    class="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-300">
                     Fixed Coupon {{ activeData.couponRate }}% p.a.
                 </span>
             </div>
 
             <!-- Account Selector Tabs -->
-            <div class="flex items-center gap-1.5 mb-3.5 pb-2 border-b border-mist-800/60 text-xs">
+            <div class="mb-3.5 flex items-center gap-1.5 border-b border-mist-800/60 pb-2 text-xs">
                 <button
                     type="button"
-                    class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                    class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                     :class="
                         selectedAccount === 'all'
-                            ? 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                            ? 'border border-emerald-400/30 bg-emerald-400/20 text-emerald-300'
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="selectedAccount = 'all'">
@@ -96,10 +96,10 @@ const maturity = computed(() =>
                     v-for="acc in sbnAccountAllocation"
                     :key="acc.owner"
                     type="button"
-                    class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                    class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                     :class="
                         selectedAccount === acc.owner
-                            ? 'bg-mist-800 text-emerald-300 border border-mist-700'
+                            ? 'border border-mist-700 bg-mist-800 text-emerald-300'
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="selectedAccount = acc.owner">
@@ -108,31 +108,31 @@ const maturity = computed(() =>
             </div>
             <!-- Virtual Bond Display -->
             <div
-                class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50 space-y-6 font-mono">
-                <div class="flex justify-between items-start">
+                class="relative mb-4 space-y-6 overflow-hidden rounded-md bg-mist-800/50 p-4 font-mono">
+                <div class="flex items-start justify-between">
                     <div>
-                        <span class="text-xs text-mist-400 uppercase block">Series</span>
-                        <span class="text-xs font-semibold text-emerald-400 tracking-wider">
+                        <span class="block text-xs text-mist-400 uppercase">Series</span>
+                        <span class="text-xs font-semibold tracking-wider text-emerald-400">
                             {{ activeData.series }}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="text-mist-400 block text-xs">Coupon Payout</span>
-                        <span class="font-semibold text-xs text-mist-200">
+                        <span class="block text-xs text-mist-400">Coupon Payout</span>
+                        <span class="text-xs font-semibold text-mist-200">
                             Day {{ activeData.payoutDay }} of month
                         </span>
                     </div>
                 </div>
                 <!-- Progress Bar -->
                 <div class="space-y-1.5">
-                    <div class="flex justify-between text-xs font-mono text-mist-400">
+                    <div class="flex justify-between font-mono text-xs text-mist-400">
                         <span>Maturity Progress</span>
                         <span class="text-mist-200">
                             {{ maturity.progressPct }}% ({{ maturity.monthsLeft }}
                             months left)
                         </span>
                     </div>
-                    <div class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-mist-950/50">
                         <div
                             class="h-full bg-emerald-500 transition-all duration-500"
                             :style="{ width: `${maturity.progressPct}%` }"></div>
@@ -141,8 +141,8 @@ const maturity = computed(() =>
 
                 <div class="flex items-baseline justify-between font-mono">
                     <div>
-                        <span class="text-xs text-mist-400 block">Total Principal</span>
-                        <div class="text-lg font-black text-mist-100 tracking-tight mt-0.5">
+                        <span class="block text-xs text-mist-400">Total Principal</span>
+                        <div class="mt-0.5 text-lg font-black tracking-tight text-mist-100">
                             {{ formatIDR(activeData.principal) }}
                         </div>
                     </div>
@@ -155,15 +155,15 @@ const maturity = computed(() =>
                 </div>
 
                 <div
-                    class="grid grid-cols-2 gap-2 pt-2.5 border-t border-mist-700/50 text-xs font-mono">
+                    class="grid grid-cols-2 gap-2 border-t border-mist-700/50 pt-2.5 font-mono text-xs">
                     <div>
-                        <span class="text-mist-400 block text-[11px]">Monthly Gross Yield:</span>
-                        <span class="text-mist-300 font-semibold">
+                        <span class="block text-[11px] text-mist-400">Monthly Gross Yield:</span>
+                        <span class="font-semibold text-mist-300">
                             {{ formatIDR(activeData.monthlyGross) }}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="text-mist-400 block text-[11px]">Total Collected Yield:</span>
+                        <span class="block text-[11px] text-mist-400">Total Collected Yield:</span>
                         <span class="font-semibold text-emerald-400">
                             {{ formatIDR(activeData.collected) }}
                         </span>
@@ -174,7 +174,7 @@ const maturity = computed(() =>
 
         <!-- Metric Footer -->
         <div
-            class="pt-3 mt-3 border-t border-mist-800 flex items-center justify-between text-xs font-mono">
+            class="mt-3 flex items-center justify-between border-t border-mist-800 pt-3 font-mono text-xs">
             <span class="text-mist-400">
                 Asset: <strong class="text-mist-200">Government Sukuk</strong>
             </span>

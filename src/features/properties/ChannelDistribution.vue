@@ -107,7 +107,7 @@ function clearHighlight(): void {
 
 <template>
     <div class="flex flex-col">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Channel Distribution</template>
                 <template #subtitle>Share breakdown by volume and gross revenue</template>
@@ -117,7 +117,7 @@ function clearHighlight(): void {
             <div class="relative w-18">
                 <select
                     v-model.number="selectedYear"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none hover:border-mist-700 transition-colors cursor-pointer">
+                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">
                     <option
                         v-for="year in yearOptions"
                         :key="year"
@@ -137,7 +137,7 @@ function clearHighlight(): void {
 
         <!-- Chart Body -->
         <div
-            class="flex h-full rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md min-h-60">
+            class="flex h-full min-h-60 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div
                 v-if="channelStats.total === 0"
                 class="flex flex-1 flex-col items-center justify-center text-xs text-mist-400">
@@ -148,12 +148,12 @@ function clearHighlight(): void {
             </div>
             <div
                 v-else
-                class="flex flex-1 flex-col sm:flex-row items-center gap-4">
+                class="flex flex-1 flex-col items-center gap-4 sm:flex-row">
                 <div
-                    class="relative h-60 w-60 shrink-0 flex items-center justify-center"
+                    class="relative flex h-60 w-60 shrink-0 items-center justify-center"
                     @mouseleave="clearHighlight">
                     <svg
-                        class="w-full h-full transform -rotate-90"
+                        class="h-full w-full -rotate-90 transform"
                         viewBox="0 0 100 100">
                         <!-- Background track -->
                         <circle
@@ -186,7 +186,7 @@ function clearHighlight(): void {
 
                     <!-- Center KPI -->
                     <div
-                        class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
+                        class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
                         <span class="font-mono text-xl font-bold text-mist-100">
                             {{
                                 hoveredIndex !== null && channelStats.entries[hoveredIndex]
@@ -195,7 +195,7 @@ function clearHighlight(): void {
                             }}
                         </span>
                         <span
-                            class="text-[10px] font-semibold uppercase tracking-wider text-mist-400 mt-0.5">
+                            class="mt-0.5 text-[10px] font-semibold tracking-wider text-mist-400 uppercase">
                             {{
                                 hoveredIndex !== null && channelStats.entries[hoveredIndex]
                                     ? channelStats.entries[hoveredIndex]?.name
@@ -206,11 +206,11 @@ function clearHighlight(): void {
                 </div>
 
                 <!-- Breakdown List -->
-                <div class="flex-1 w-full overflow-y-auto space-y-1">
+                <div class="w-full flex-1 space-y-1 overflow-y-auto">
                     <div
                         v-for="(ch, index) in channelStats.entries"
                         :key="ch.name"
-                        class="text-xs px-2.5 pb-2 pt-1 rounded-md transition cursor-pointer"
+                        class="cursor-pointer rounded-md px-2.5 pt-1 pb-2 text-xs transition"
                         :class="
                             hoveredIndex === index
                                 ? 'bg-mist-800/80 shadow-xs'
@@ -221,29 +221,29 @@ function clearHighlight(): void {
                         <div class="flex items-center justify-between">
                             <span class="flex items-center gap-2">
                                 <span
-                                    class="h-2 w-2 rounded-full shrink-0"
+                                    class="h-2 w-2 shrink-0 rounded-full"
                                     :style="{ backgroundColor: ch.color }" />
                                 <span class="font-medium text-mist-200">
                                     {{ ch.name }}
                                 </span>
                                 <span class="text-xs text-mist-500">&bull;</span>
-                                <span class="text-[11px] text-mist-400 font-mono">
+                                <span class="font-mono text-[11px] text-mist-400">
                                     {{ ch.count }} stays
                                 </span>
                             </span>
                             <div class="flex items-center gap-2 font-mono">
-                                <span class="text-mist-400 text-[11px]">
+                                <span class="text-[11px] text-mist-400">
                                     {{ formatIDR(ch.revenue) }}
                                 </span>
                                 <span
-                                    class="font-semibold text-mist-200 min-w-8 text-right text-[11px]">
+                                    class="min-w-8 text-right text-[11px] font-semibold text-mist-200">
                                     {{ ch.percentage }}%
                                 </span>
                             </div>
                         </div>
 
                         <div class="mt-1.5">
-                            <div class="h-1.5 w-full rounded-full bg-mist-950/60 overflow-hidden">
+                            <div class="h-1.5 w-full overflow-hidden rounded-full bg-mist-950/60">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
                                     :style="{

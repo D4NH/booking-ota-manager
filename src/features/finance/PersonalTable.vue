@@ -52,7 +52,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
 </script>
 
 <template>
-    <div class="h-full min-h-0 flex flex-col space-y-4">
+    <div class="flex h-full min-h-0 flex-col space-y-4">
         <CardTitle>
             <template #title>Budget Overview</template>
             <template #subtitle>
@@ -81,17 +81,17 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 hover:bg-mist-800 transition shadow-sm cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 px-3 py-2 text-xs text-mist-300 shadow-sm transition hover:bg-mist-800"
                     :class="[showRecurring ? 'bg-mist-800' : 'bg-mist-900']"
                     title="Filter by Status"
                     @click="showRecurring = !showRecurring">
                     <fa-icon
-                        class="text-xs mr-1"
+                        class="mr-1 text-xs"
                         icon="arrows-rotate" />
                     Recurring Payments ({{ totalRecurringCount }})
                 </button>
                 <button
-                    class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm cursor-pointer"
+                    class="cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow-sm transition hover:bg-lime-300"
                     @click="openAddModal">
                     + Add Record
                 </button>
@@ -101,10 +101,10 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
         <RecurringChecklist v-if="showRecurring" />
 
         <div
-            class="flex-1 min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
+            class="min-h-0 flex-1 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            <table class="w-full table-fixed border-collapse text-left text-xs text-mist-200">
                 <thead
-                    class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
+                    class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
                         <th class="w-36 px-4 py-2.5">Category</th>
@@ -117,8 +117,8 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                     <tr
                         v-for="item in currentList"
                         :key="item.id"
-                        class="hover:bg-mist-800/50 group">
-                        <td class="px-4 py-2.5 align-middle text-mist-400 font-mono">
+                        class="group hover:bg-mist-800/50">
+                        <td class="px-4 py-2.5 align-middle font-mono text-mist-400">
                             {{ item.date }}
                         </td>
                         <td class="px-4 py-2.5 align-middle font-medium text-mist-100">
@@ -126,7 +126,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                                 <span>{{ item.category }}</span>
                                 <span
                                     v-if="item.category === 'Gold'"
-                                    class="text-[9px] bg-amber-400/10 text-amber-400 border border-amber-400/20 px-1 rounded-md font-mono font-semibold">
+                                    class="rounded-md border border-amber-400/20 bg-amber-400/10 px-1 font-mono text-[9px] font-semibold text-amber-400">
                                     GOLD
                                 </span>
                             </div>
@@ -134,17 +134,17 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                         <td class="px-4 py-2.5 align-middle text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
-                                class="text-blue-400 mr-1 font-semibold">
+                                class="mr-1 font-semibold text-blue-400">
                                 [{{ item.savingsInstitution }}]
                             </span>
                             <span
                                 v-if="'goldWeightGrams' in item && item.goldWeightGrams"
-                                class="text-amber-400 mr-1 font-semibold">
+                                class="mr-1 font-semibold text-amber-400">
                                 [{{ item.goldWeightGrams }}g]
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-right font-semibold font-mono">
+                        <td class="px-4 py-2.5 text-right align-middle font-mono font-semibold">
                             <span
                                 :class="
                                     item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
@@ -153,12 +153,12 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                             </span>
                             {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="px-4 py-2.5 align-middle text-center">
-                            <div class="flex items-center justify-end gap-1 h-7">
+                        <td class="px-4 py-2.5 text-center align-middle">
+                            <div class="flex h-7 items-center justify-end gap-1">
                                 <button
                                     type="button"
                                     title="Edit Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-lime-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
+                                    class="cursor-pointer rounded p-1 text-mist-400 opacity-70 transition group-hover:opacity-100 hover:bg-mist-800 hover:text-lime-400"
                                     @click="openEditModal(item)">
                                     <fa-icon
                                         icon="pen-to-square"
@@ -168,7 +168,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                                 <button
                                     type="button"
                                     title="Delete Transaction"
-                                    class="opacity-70 group-hover:opacity-100 text-mist-400 hover:text-rose-400 p-1 rounded hover:bg-mist-800 transition cursor-pointer"
+                                    class="cursor-pointer rounded p-1 text-mist-400 opacity-70 transition group-hover:opacity-100 hover:bg-mist-800 hover:text-rose-400"
                                     @click="handleDelete(item)">
                                     <fa-icon
                                         icon="trash-can"

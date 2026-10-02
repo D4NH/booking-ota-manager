@@ -142,7 +142,7 @@ const total90dBookedNights = computed(() =>
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex h-full min-h-0 flex-col">
         <div class="flex items-start justify-between">
             <CardTitle>
                 <template #title>Booking Horizon</template>
@@ -151,25 +151,25 @@ const total90dBookedNights = computed(() =>
         </div>
 
         <div
-            class="flex-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md flex flex-col justify-between space-y-4">
+            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <!-- 30-Day Window Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 divide-x divide-mist-800">
+            <div class="grid grid-cols-1 divide-x divide-mist-800 md:grid-cols-3">
                 <div
                     v-for="win in horizonWindows"
                     :key="win.label"
-                    class="first:pl-0 last:pr-0 px-4 space-y-2.5 flex flex-col justify-between">
+                    class="flex flex-col justify-between space-y-2.5 px-4 first:pl-0 last:pr-0">
                     <!-- Window Header -->
                     <div class="flex items-start justify-between">
                         <div>
-                            <span class="text-xs font-semibold text-mist-100 block">
+                            <span class="block text-xs font-semibold text-mist-100">
                                 {{ win.label }}
                             </span>
-                            <span class="text-xs text-mist-500 font-medium">
+                            <span class="text-xs font-medium text-mist-500">
                                 {{ win.rangeText }}
                             </span>
                         </div>
                         <span
-                            class="rounded-sm px-1.5 py-0.5 uppercase font-medium text-xs text-nowrap"
+                            class="rounded-sm px-1.5 py-0.5 text-xs font-medium text-nowrap uppercase"
                             :class="win.statusClass">
                             {{ win.statusText }}
                         </span>
@@ -186,7 +186,7 @@ const total90dBookedNights = computed(() =>
                             </span>
                         </div>
 
-                        <div class="h-1.5 w-full rounded-full bg-mist-900 overflow-hidden">
+                        <div class="h-1.5 w-full overflow-hidden rounded-full bg-mist-900">
                             <div
                                 class="h-full rounded-full transition-all duration-500 ease-out"
                                 :class="win.barColorClass"
@@ -196,8 +196,8 @@ const total90dBookedNights = computed(() =>
 
                     <!-- Revenue Secured -->
                     <div
-                        class="pt-2 border-t border-mist-800 flex items-center justify-between text-xs">
-                        <span class="text-mist-500 text-[11px]">Confirmed:</span>
+                        class="flex items-center justify-between border-t border-mist-800 pt-2 text-xs">
+                        <span class="text-[11px] text-mist-500">Confirmed:</span>
                         <span class="font-mono font-semibold text-mist-200">
                             {{ formatIDR(win.confirmedRevenue) }}
                         </span>
@@ -206,7 +206,7 @@ const total90dBookedNights = computed(() =>
             </div>
 
             <!-- 90-Day Summary Footer -->
-            <div class="border-t border-mist-800 pt-3 flex items-center justify-between text-xs">
+            <div class="flex items-center justify-between border-t border-mist-800 pt-3 text-xs">
                 <div class="flex items-center gap-2">
                     <span class="text-mist-400">Total 90-Day Pipeline:</span>
                     <span class="font-mono font-semibold text-lime-400">

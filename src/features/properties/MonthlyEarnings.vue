@@ -118,7 +118,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex h-full min-h-0 flex-col">
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Monthly Earnings</template>
@@ -166,7 +166,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
         </div>
 
         <div
-            class="flex flex-col flex-1 justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md space-y-4"
+            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
             @mouseleave="hoveredIndex = null">
             <!-- Header Metrics -->
             <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -200,18 +200,18 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span
-                            class="h-0.5 w-3 bg-mist-500 border-t border-dashed border-mist-400"></span>
+                            class="h-0.5 w-3 border-t border-dashed border-mist-400 bg-mist-500"></span>
                         <span>{{ activeView === 'weekly' ? 'Last Week' : 'Last Month' }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative w-full flex items-center justify-center">
+            <div class="relative flex w-full items-center justify-center">
                 <!-- Tooltip -->
                 <div
                     v-if="hoveredIndex !== null && currentCoords[hoveredIndex]"
-                    class="absolute -top-3 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md px-3 py-2 text-xs font-mono whitespace-nowrap space-y-1">
-                    <div class="text-[11px] text-mist-400 pb-0.5 border-b border-mist-800">
+                    class="border-mist-750 pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl">
+                    <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
                         {{ activeLabels[hoveredIndex] }}
                     </div>
                     <div class="flex justify-between gap-3 text-lime-400">
@@ -227,7 +227,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                 </div>
 
                 <svg
-                    class="w-full h-full overflow-visible select-none"
+                    class="h-full w-full overflow-visible select-none"
                     :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
                     preserveAspectRatio="none">
                     <defs>
@@ -276,7 +276,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                     <path
                         :d="currentAreaPath"
                         fill="url(#areaGradient)"
-                        class="transition-all duration-300 pointer-events-none" />
+                        class="pointer-events-none transition-all duration-300" />
 
                     <!-- Previous Period Dashed Line -->
                     <path
@@ -287,7 +287,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                         stroke-dasharray="5 5"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        class="transition-all duration-300 pointer-events-none" />
+                        class="pointer-events-none transition-all duration-300" />
 
                     <!-- Current Period Solid Line -->
                     <path
@@ -297,7 +297,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                         stroke-width="2.5"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        class="transition-all duration-300 pointer-events-none" />
+                        class="pointer-events-none transition-all duration-300" />
 
                     <!-- Interactive Points & Invisible Hover Triggers -->
                     <g
@@ -323,7 +323,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                             :fill="hoveredIndex === idx ? '#bef264' : '#a3e635'"
                             stroke="#18181b"
                             stroke-width="2"
-                            class="transition-all duration-150 pointer-events-none" />
+                            class="pointer-events-none transition-all duration-150" />
 
                         <!-- Full-height invisible hover zone -->
                         <rect

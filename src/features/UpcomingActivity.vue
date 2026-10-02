@@ -60,7 +60,7 @@ const upcomingEvents = computed(() => {
             </div>
             <RouterLink
                 :to="{ name: 'bookings' }"
-                class="text-xs font-semibold text-lime-400 hover:text-lime-300 transition">
+                class="text-xs font-semibold text-lime-400 transition hover:text-lime-300">
                 View all &rarr;
             </RouterLink>
         </div>
@@ -72,26 +72,26 @@ const upcomingEvents = computed(() => {
                 class="flex h-36 flex-col items-center justify-center text-center text-xs text-mist-500">
                 <fa-icon
                     icon="calendar-check"
-                    class="text-xl text-mist-700 mb-2" />
+                    class="mb-2 text-xl text-mist-700" />
                 <p>No arrivals or departures scheduled for the next 7 days.</p>
             </div>
             <!-- Event Rows -->
             <div
                 v-for="(event, idx) in upcomingEvents"
                 :key="idx"
-                class="flex items-center justify-between rounded-md border border-mist-800/60 bg-mist-950/40 p-3 hover:bg-mist-800/40 transition cursor-pointer"
+                class="flex cursor-pointer items-center justify-between rounded-md border border-mist-800/60 bg-mist-950/40 p-3 transition hover:bg-mist-800/40"
                 @click="emit('select-booking', event.booking)">
                 <!-- Left: Badge & Guest Info -->
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex min-w-0 items-center gap-3">
                     <!-- Event Tag -->
                     <span
                         :class="[
-                            'rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider shrink-0 border',
+                            'shrink-0 rounded-md border px-2 py-1 text-[10px] font-semibold tracking-wider uppercase',
                             event.type === 'arrival'
                                 ? event.isToday
-                                    ? 'bg-lime-500/20 text-lime-400 border-lime-500/30 animate-pulse'
-                                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-300 border-rose-500/20',
+                                    ? 'animate-pulse border-lime-500/30 bg-lime-500/20 text-lime-400'
+                                    : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'
+                                : 'border-rose-500/20 bg-rose-500/10 text-rose-300',
                         ]">
                         {{
                             event.isToday
@@ -105,17 +105,17 @@ const upcomingEvents = computed(() => {
                     </span>
                     <div class="truncate">
                         <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm text-mist-100 truncate">
+                            <span class="truncate text-sm font-semibold text-mist-100">
                                 {{ event.booking.guestName }}
                             </span>
                             <!-- Property Badge -->
                             <span
-                                class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold shrink-0"
+                                class="py-0.2 shrink-0 rounded px-1.5 text-[10px] font-semibold capitalize"
                                 :class="getPropertyStyle(event.booking.propertyId)">
                                 {{ event.booking.propertyId }}
                             </span>
                         </div>
-                        <p class="text-xs text-mist-400 mt-1">
+                        <p class="mt-1 text-xs text-mist-400">
                             {{ event.date }} &bull; {{ event.booking.nights }} night(s)
                         </p>
                     </div>
@@ -123,7 +123,7 @@ const upcomingEvents = computed(() => {
 
                 <!-- Channel Pill -->
                 <span
-                    class="rounded bg-mist-800/80 px-2 py-1 text-xs font-medium text-mist-300 shrink-0">
+                    class="shrink-0 rounded bg-mist-800/80 px-2 py-1 text-xs font-medium text-mist-300">
                     {{ event.booking.listing }}
                 </span>
             </div>

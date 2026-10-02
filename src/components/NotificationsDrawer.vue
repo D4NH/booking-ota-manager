@@ -32,16 +32,16 @@ const totalCount = computed(
 </script>
 
 <template>
-    <div class="bg-mist-900 border-t border-mist-800 overflow-hidden">
+    <div class="overflow-hidden border-t border-mist-800 bg-mist-900">
         <div
-            class="cursor-pointer flex items-center justify-between px-4 py-3 bg-mist-950/50"
+            class="flex cursor-pointer items-center justify-between bg-mist-950/50 px-4 py-3"
             :class="{ 'border-b border-mist-800': !isCollapsed }"
             @click="emit('close')">
             <div class="flex items-center gap-2">
                 <fa-icon
                     icon="bell"
-                    class="text-mist-400 text-sm" />
-                <span class="font-semibold text-sm text-mist-100">Notifications</span>
+                    class="text-sm text-mist-400" />
+                <span class="text-sm font-semibold text-mist-100">Notifications</span>
             </div>
             <span
                 v-if="totalCount > 0"
@@ -52,14 +52,14 @@ const totalCount = computed(
 
         <div
             v-if="!isCollapsed"
-            class="divide-y divide-mist-800/60 p-2 space-y-1 overflow-y-auto max-h-[70vh]">
+            class="max-h-[70vh] space-y-1 divide-y divide-mist-800/60 overflow-y-auto p-2">
             <!-- Empty State -->
             <div
                 v-if="totalCount === 0"
-                class="py-10 text-center text-xs text-mist-500 space-y-1">
+                class="space-y-1 py-10 text-center text-xs text-mist-500">
                 <fa-icon
                     icon="circle-check"
-                    class="text-xl text-lime-500/40 mb-1" />
+                    class="mb-1 text-xl text-lime-500/40" />
                 <p class="font-medium text-mist-400">All caught up!</p>
                 <p>No incoming bookings, pending payments, or unsettled payouts.</p>
             </div>
@@ -68,26 +68,26 @@ const totalCount = computed(
             <div
                 v-for="staged in stagedBookings"
                 :key="staged.id || staged.bookingId"
-                class="cursor-pointer rounded-xs border-l-2 border-l-purple-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
+                class="group cursor-pointer rounded-xs border-b-0 border-l-2 border-l-purple-500 p-3 transition hover:bg-mist-800/40"
                 @click.stop="emit('open-staging', staged)">
-                <div class="flex items-center justify-between gap-2 mb-1.5">
+                <div class="mb-1.5 flex items-center justify-between gap-2">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-purple-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-400"></span>
                         New Booking
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="py-0.2 rounded-md px-1.5 text-[10px] font-semibold capitalize"
                         :class="getPropertyStyle(staged.propertyId)">
                         {{ staged.propertyId }}
                     </span>
                 </div>
 
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm font-semibold text-mist-100 leading-tight">
+                    <p class="text-sm leading-tight font-semibold text-mist-100">
                         {{ staged.guestName }}
                     </p>
-                    <p class="text-xs text-mist-400 font-mono">
+                    <p class="font-mono text-xs text-mist-400">
                         {{ formatDate(staged.checkIn, { shortWeekday: true, shortMonth: true }) }}
                         &bull; {{ staged.nights }} night(s)
                     </p>
@@ -99,10 +99,10 @@ const totalCount = computed(
 
                 <div
                     class="mt-2.5 flex items-center justify-between border-t border-mist-800/80 pt-2">
-                    <span class="text-xs font-mono font-bold text-mist-200 shrink-0">
+                    <span class="shrink-0 font-mono text-xs font-bold text-mist-200">
                         {{ formatIDR(staged.payout) }}
                     </span>
-                    <div class="flex items-center text-xs text-mist-300 gap-1.5">
+                    <div class="flex items-center gap-1.5 text-xs text-mist-300">
                         <fa-icon icon="pen-to-square" />
                         <span>Review</span>
                     </div>
@@ -113,24 +113,24 @@ const totalCount = computed(
             <div
                 v-for="b in pendingPayments"
                 :key="b.id || b.bookingId"
-                class="cursor-pointer rounded-xs border-l-2 border-l-amber-500 border-b-0 p-3 hover:bg-mist-800/40 transition group"
+                class="group cursor-pointer rounded-xs border-b-0 border-l-2 border-l-amber-500 p-3 transition hover:bg-mist-800/40"
                 @click.stop="emit('edit', b)">
-                <div class="flex items-center justify-between gap-2 mb-1.5">
+                <div class="mb-1.5 flex items-center justify-between gap-2">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
                         Payment Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="py-0.2 rounded-md px-1.5 text-[10px] font-semibold capitalize"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm font-semibold text-mist-100 leading-tight">
+                    <p class="text-sm leading-tight font-semibold text-mist-100">
                         {{ b.guestName }}
                     </p>
-                    <p class="text-xs text-mist-400 font-mono">
+                    <p class="font-mono text-xs text-mist-400">
                         {{ formatDate(b.checkIn, { shortWeekday: true, shortMonth: true }) }} &bull;
                         {{ b.nights }} night(s)
                     </p>
@@ -139,10 +139,10 @@ const totalCount = computed(
                     </p>
                 </div>
                 <div class="mt-2.5 flex items-center justify-between border-t border-mist-800 pt-2">
-                    <span class="text-xs font-mono font-semibold shrink-0">
+                    <span class="shrink-0 font-mono text-xs font-semibold">
                         {{ formatIDR(b.payout) }}
                     </span>
-                    <div class="flex items-center text-xs text-mist-300 gap-1.5">
+                    <div class="flex items-center gap-1.5 text-xs text-mist-300">
                         <fa-icon icon="pen-to-square" />
                         <span>Review</span>
                     </div>
@@ -153,23 +153,23 @@ const totalCount = computed(
             <div
                 v-for="b in pendingPayouts"
                 :key="'payout-' + (b.id || b.bookingId)"
-                class="rounded-xs border-l-2 border-l-sky-500 border-b-0 p-3 hover:bg-mist-800/40 transition group">
-                <div class="flex items-center justify-between gap-2 mb-1.5">
+                class="group rounded-xs border-b-0 border-l-2 border-l-sky-500 p-3 transition hover:bg-mist-800/40">
+                <div class="mb-1.5 flex items-center justify-between gap-2">
                     <span class="flex items-center gap-1.5 text-[11px] font-semibold text-sky-400">
                         Payout Pending
                     </span>
                     <span
-                        class="capitalize rounded-md px-1.5 py-0.2 text-[10px] font-semibold"
+                        class="py-0.2 rounded-md px-1.5 text-[10px] font-semibold capitalize"
                         :class="getPropertyStyle(b.propertyId)">
                         {{ b.propertyId }}
                     </span>
                 </div>
 
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm font-semibold text-mist-100 leading-tight">
+                    <p class="text-sm leading-tight font-semibold text-mist-100">
                         {{ b.guestName }}
                     </p>
-                    <p class="text-xs text-mist-400 font-mono">
+                    <p class="font-mono text-xs text-mist-400">
                         {{ formatDate(b.checkIn, { shortWeekday: true, shortMonth: true }) }} &bull;
                         {{ b.nights }} night(s)
                     </p>
@@ -182,7 +182,7 @@ const totalCount = computed(
                     class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-2">
                     <div class="shrink-0">
                         <span
-                            class="group relative z-10 text-xs font-mono font-semibold text-mist-200">
+                            class="group relative z-10 font-mono text-xs font-semibold text-mist-200">
                             {{ formatIDR(b.payout) }}
                         </span>
                         <div
@@ -190,7 +190,7 @@ const totalCount = computed(
                             <div
                                 class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                 <div>
-                                    <span class="font-semibold text-mist-200 block mb-1">
+                                    <span class="mb-1 block font-semibold text-mist-200">
                                         {{ b.guestName }}
                                     </span>
                                     <span class="text-xs text-mist-400">
@@ -211,12 +211,12 @@ const totalCount = computed(
                                 </div>
                                 <div
                                     v-if="b.status === 'Waiting for payment'"
-                                    class="mb-1 rounded bg-amber-500/10 p-1 text-amber-300 text-xs">
+                                    class="mb-1 rounded bg-amber-500/10 p-1 text-xs text-amber-300">
                                     Payment pending
                                 </div>
                                 <div
                                     v-if="b.notes"
-                                    class="border-t border-mist-800 pt-1.5 mt-1.5 text-mist-300 text-xs">
+                                    class="mt-1.5 border-t border-mist-800 pt-1.5 text-xs text-mist-300">
                                     {{ b.notes }}
                                 </div>
                             </div>

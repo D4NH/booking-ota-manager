@@ -287,14 +287,14 @@ function handleClickOutside(event: MouseEvent): void {
     <div class="relative">
         <span
             v-if="inputLabel.length"
-            class="block font-medium text-xs text-mist-400 mb-1">
+            class="mb-1 block text-xs font-medium text-mist-400">
             {{ inputLabel }}
         </span>
 
         <button
             ref="triggerButtonRef"
             type="button"
-            class="w-full flex items-center justify-between px-3 py-2 bg-mist-950/50 border border-mist-800 rounded-md font-mono text-[13px] h-8.5 text-mist-200 focus:border-lime-500 focus:outline-hidden transition-colors text-left cursor-pointer hover:border-mist-700"
+            class="flex h-8.5 w-full cursor-pointer items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-left font-mono text-[13px] text-mist-200 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
             @click="toggleDatepicker">
             <span :class="{ 'text-mist-500': !singleDate && !rangeStart }">
                 {{ displayValue }}
@@ -315,17 +315,17 @@ function handleClickOutside(event: MouseEvent): void {
                 <div
                     v-if="isOpen"
                     ref="popoverRef"
-                    class="fixed z-999 bg-mist-950/90 backdrop-blur-xl border border-mist-800 rounded-lg shadow-2xl p-3.5 select-none box-border text-mist-100"
+                    class="fixed z-999 box-border rounded-lg border border-mist-800 bg-mist-950/90 p-3.5 text-mist-100 shadow-2xl backdrop-blur-xl select-none"
                     :style="{
                         top: `${coords.top + 6}px`,
                         left: `${coords.left}px`,
                         minWidth: `${width}px`,
                     }">
                     <!-- Month Navigation Header -->
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="mb-3 flex items-center justify-between">
                         <button
                             type="button"
-                            class="p-1 rounded text-mist-400 hover:bg-mist-800 hover:text-mist-100 transition cursor-pointer"
+                            class="cursor-pointer rounded p-1 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
                             @click="prevMonth">
                             <fa-icon
                                 class="text-xs"
@@ -338,7 +338,7 @@ function handleClickOutside(event: MouseEvent): void {
 
                         <button
                             type="button"
-                            class="p-1 rounded text-mist-400 hover:bg-mist-800 hover:text-mist-100 transition cursor-pointer"
+                            class="cursor-pointer rounded p-1 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
                             @click="nextMonth">
                             <fa-icon
                                 class="text-xs"
@@ -348,7 +348,7 @@ function handleClickOutside(event: MouseEvent): void {
 
                     <!-- Weekday Labels -->
                     <div
-                        class="grid grid-cols-7 gap-0 text-center text-[10px] font-mono mb-1 text-mist-500 uppercase">
+                        class="mb-1 grid grid-cols-7 gap-0 text-center font-mono text-[10px] text-mist-500 uppercase">
                         <div
                             v-for="day in DAYS_OF_WEEK"
                             :key="day"
@@ -358,13 +358,13 @@ function handleClickOutside(event: MouseEvent): void {
                     </div>
 
                     <!-- Days Grid -->
-                    <div class="grid grid-cols-7 gap-y-1 gap-x-0 text-center text-xs font-mono">
+                    <div class="grid grid-cols-7 gap-x-0 gap-y-1 text-center font-mono text-xs">
                         <button
                             v-for="cell in calendarGrid"
                             :key="cell.dateStr"
                             type="button"
                             :disabled="isDateDisabled(cell.dateStr)"
-                            class="h-8 flex items-center justify-center transition-colors relative cursor-pointer disabled:cursor-not-allowed focus:outline-hidden"
+                            class="relative flex h-8 cursor-pointer items-center justify-center transition-colors focus:outline-hidden disabled:cursor-not-allowed"
                             :class="[
                                 isDateDisabled(cell.dateStr)
                                     ? 'text-mist-700 line-through opacity-40 hover:bg-transparent'
@@ -375,19 +375,19 @@ function handleClickOutside(event: MouseEvent): void {
                                     : 'text-mist-200',
 
                                 mode === 'single' && singleDate === cell.dateStr
-                                    ? 'bg-lime-500 text-mist-950 font-bold rounded-md'
+                                    ? 'rounded-md bg-lime-500 font-bold text-mist-950'
                                     : '',
 
                                 isRangeStart(cell.dateStr)
-                                    ? 'bg-lime-500 text-mist-950 font-bold rounded-l-md z-10'
+                                    ? 'z-10 rounded-l-md bg-lime-500 font-bold text-mist-950'
                                     : '',
 
                                 isRangeEnd(cell.dateStr)
-                                    ? 'bg-lime-500 text-mist-950 font-bold rounded-r-md z-10'
+                                    ? 'z-10 rounded-r-md bg-lime-500 font-bold text-mist-950'
                                     : '',
 
                                 isInRange(cell.dateStr)
-                                    ? 'bg-lime-500/20 text-lime-200 rounded-none'
+                                    ? 'rounded-none bg-lime-500/20 text-lime-200'
                                     : '',
 
                                 !isRangeStart(cell.dateStr) &&
@@ -395,7 +395,7 @@ function handleClickOutside(event: MouseEvent): void {
                                 !isInRange(cell.dateStr) &&
                                 (mode === 'single' ? singleDate !== cell.dateStr : true) &&
                                 !isDateDisabled(cell.dateStr)
-                                    ? 'hover:bg-mist-800 rounded-md'
+                                    ? 'rounded-md hover:bg-mist-800'
                                     : '',
 
                                 cell.dateStr === todayStr &&
@@ -414,14 +414,14 @@ function handleClickOutside(event: MouseEvent): void {
                     <!-- Range Selection Helper Footer -->
                     <div
                         v-if="mode === 'range'"
-                        class="mt-3 pt-2 border-t border-mist-800/80 flex items-center justify-between text-xs text-mist-400">
+                        class="mt-3 flex items-center justify-between border-t border-mist-800/80 pt-2 text-xs text-mist-400">
                         <span>
                             {{ rangeStart ? 'Click to set checkout' : 'Click to set check-in' }}
                         </span>
                         <button
                             v-if="rangeStart"
                             type="button"
-                            class="text-mist-400 font-medium hover:text-rose-400 text-xs underline cursor-pointer"
+                            class="cursor-pointer text-xs font-medium text-mist-400 underline hover:text-rose-400"
                             @click="
                                 rangeStart = '';
                                 rangeEnd = '';

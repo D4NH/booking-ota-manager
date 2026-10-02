@@ -97,6 +97,6 @@ async function initMap() {
         class="relative h-full min-h-64 w-full overflow-hidden rounded-md border border-mist-800 bg-mist-950/50 shadow-md">
         <div
             ref="mapContainer"
-            class="h-full w-full z-10" />
+            class="z-10 h-full w-full" />
     </div>
 </template>

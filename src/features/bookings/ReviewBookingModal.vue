@@ -236,12 +236,12 @@ async function handleReject(): Promise<void> {
             leave-to-class="opacity-0">
             <div
                 v-if="modelValue && booking"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs font-sans">
+                class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 font-sans backdrop-blur-xs">
                 <div
-                    class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-5 text-mist-100">
+                    class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Modal Header -->
                     <div
-                        class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
+                        class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                         <div>
                             <div class="flex items-center gap-2">
                                 <h2 class="text-base font-semibold text-mist-100">
@@ -249,18 +249,18 @@ async function handleReject(): Promise<void> {
                                 </h2>
                                 <span
                                     v-if="formHasConflict"
-                                    class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-mono font-bold">
+                                    class="rounded border border-rose-500/30 bg-rose-500/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-rose-300">
                                     Conflict Detected
                                 </span>
                             </div>
-                            <p class="text-xs text-mist-400 mt-0.5">
+                            <p class="mt-0.5 text-xs text-mist-400">
                                 Verify dates, channel payout, and commit directly to active property
                                 records.
                             </p>
                         </div>
                         <button
                             type="button"
-                            class="cursor-pointer text-mist-400 hover:text-mist-200 text-lg leading-none"
+                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
                             @click="closeModal">
                             <fa-icon icon="xmark" />
                         </button>
@@ -268,7 +268,7 @@ async function handleReject(): Promise<void> {
 
                     <!-- Review & Edit Form -->
                     <form
-                        class="max-h-[75vh] overflow-y-auto space-y-4 text-xs"
+                        class="max-h-[75vh] space-y-4 overflow-y-auto text-xs"
                         @submit.prevent="handleApprove">
                         <!-- Target Property & Channel -->
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -333,11 +333,11 @@ async function handleReject(): Promise<void> {
                             </div>
 
                             <div>
-                                <span class="block font-medium text-xs text-mist-400 mb-1">
+                                <span class="mb-1 block text-xs font-medium text-mist-400">
                                     Nights
                                 </span>
                                 <div
-                                    class="flex items-center h-9.5 px-3 bg-mist-950/50 border border-mist-800 rounded-md font-mono text-xs text-mist-200 select-none">
+                                    class="flex h-9.5 items-center rounded-md border border-mist-800 bg-mist-950/50 px-3 font-mono text-xs text-mist-200 select-none">
                                     {{ form.nights }} night{{ form.nights > 1 ? 's' : '' }}
                                 </div>
                             </div>
@@ -361,13 +361,13 @@ async function handleReject(): Promise<void> {
                             </TextInput>
 
                             <div>
-                                <label class="block font-medium text-xs text-mist-400 mb-1">
+                                <label class="mb-1 block text-xs font-medium text-mist-400">
                                     Owner Payout (15%)
                                 </label>
                                 <div
-                                    class="flex items-center justify-between h-9.5 px-3 bg-mist-950/50 border border-mist-800 rounded-md font-mono text-sm text-mist-300 font-semibold select-none">
+                                    class="flex h-9.5 items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 font-mono text-sm font-semibold text-mist-300 select-none">
                                     <span>{{ formatIDR(ownerPayoutDisplay) }}</span>
-                                    <span class="text-[10px] text-mist-500 font-normal">
+                                    <span class="text-[10px] font-normal text-mist-500">
                                         15% share
                                     </span>
                                 </div>
@@ -392,10 +392,10 @@ async function handleReject(): Promise<void> {
 
                         <!-- Actions -->
                         <div
-                            class="flex justify-between items-center pt-3 border-t border-mist-800">
+                            class="flex items-center justify-between border-t border-mist-800 pt-3">
                             <button
                                 type="button"
-                                class="text-xs font-semibold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                                class="cursor-pointer text-xs font-semibold text-rose-400 transition hover:text-rose-300"
                                 @click="handleReject">
                                 Reject & Discard
                             </button>
@@ -403,17 +403,17 @@ async function handleReject(): Promise<void> {
                             <div class="flex items-center gap-2">
                                 <button
                                     type="button"
-                                    class="text-xs px-3 py-2 font-semibold text-mist-400 hover:text-mist-200 cursor-pointer"
+                                    class="cursor-pointer px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                                     @click="closeModal">
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     :disabled="isProcessing"
-                                    class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5 cursor-pointer">
+                                    class="flex cursor-pointer items-center gap-1.5 rounded-md bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-300 disabled:opacity-50">
                                     <span
                                         v-if="isProcessing"
-                                        class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin" />
+                                        class="h-3 w-3 animate-spin rounded-full border-2 border-mist-950 border-t-transparent" />
                                     <span>Approve Reservation</span>
                                 </button>
                             </div>

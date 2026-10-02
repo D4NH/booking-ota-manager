@@ -132,13 +132,13 @@ async function handleFileChange(event: Event): Promise<void> {
 </script>
 
 <template>
-    <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-3">
+    <div class="space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-200">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-200 uppercase">
                     Property Data Backup
                 </h3>
-                <p class="text-xs text-mist-500 mt-1">
+                <p class="mt-1 text-xs text-mist-500">
                     Save local unit configurations or restore from JSON backup.
                 </p>
             </div>
@@ -157,7 +157,7 @@ async function handleFileChange(event: Event): Promise<void> {
                 @change="handleFileChange" />
             <button
                 type="button"
-                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs font-semibold text-mist-200 hover:border-mist-600 hover:text-white transition"
+                class="flex cursor-pointer items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs font-semibold text-mist-200 transition hover:border-mist-600 hover:text-white"
                 @click="exportProperties">
                 <fa-icon
                     icon="download"
@@ -167,7 +167,7 @@ async function handleFileChange(event: Event): Promise<void> {
             <button
                 type="button"
                 :disabled="isImporting"
-                class="cursor-pointer flex items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs font-semibold text-mist-200 hover:border-mist-600 hover:text-white transition disabled:opacity-50"
+                class="flex cursor-pointer items-center gap-2 rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs font-semibold text-mist-200 transition hover:border-mist-600 hover:text-white disabled:opacity-50"
                 @click="triggerFileInput">
                 <fa-icon
                     :icon="isImporting ? 'spinner' : 'upload'"

@@ -51,13 +51,13 @@ const departedGuests = computed(() =>
 </script>
 
 <template>
-    <div class="rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md space-y-4">
+    <div class="space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
                 <h3 class="text-base font-semibold text-mist-100">Active Stays</h3>
                 <p class="text-xs text-mist-400">Current in-house guests & today's departures</p>
             </div>
-            <span class="rounded bg-mist-800 px-2 py-0.5 text-xs font-mono text-mist-300">
+            <span class="rounded bg-mist-800 px-2 py-0.5 font-mono text-xs text-mist-300">
                 {{ inHouseGuests.length }} In-House
             </span>
         </div>
@@ -72,21 +72,21 @@ const departedGuests = computed(() =>
         <div
             v-if="inHouseGuests.length > 0"
             class="space-y-2">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-mist-400">
+            <span class="text-[11px] font-semibold tracking-wider text-mist-400 uppercase">
                 Currently In-House ({{ inHouseGuests.length }})
             </span>
             <div
                 v-for="b in inHouseGuests"
                 :key="b.id || b.bookingId"
-                class="rounded-md border border-mist-800 bg-mist-950/60 p-3 flex items-center justify-between hover:border-mist-800 transition">
+                class="flex items-center justify-between rounded-md border border-mist-800 bg-mist-950/60 p-3 transition hover:border-mist-800">
                 <!-- Guest Info -->
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="font-semibold text-sm text-mist-100 truncate">
+                        <span class="truncate text-sm font-semibold text-mist-100">
                             {{ b.guestName }}
                         </span>
                         <span
-                            class="capitalize rounded px-1.5 py-0.2 text-[10px] font-semibold"
+                            class="py-0.2 rounded px-1.5 text-[10px] font-semibold capitalize"
                             :class="getPropertyStyle(b.propertyId)">
                             {{ b.propertyId }}
                         </span>
@@ -94,19 +94,19 @@ const departedGuests = computed(() =>
                         <!-- Urgency Tag if leaving today -->
                         <span
                             v-if="b.checkOut === today"
-                            class="rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-semibold text-amber-300 animate-pulse">
+                            class="py-0.2 animate-pulse rounded border border-amber-500/30 bg-amber-500/15 px-1.5 text-[10px] font-semibold text-amber-300">
                             Due Out at 12:00
                         </span>
                     </div>
 
-                    <p class="text-xs text-mist-400 mt-1">
+                    <p class="mt-1 text-xs text-mist-400">
                         {{ b.checkIn }} &rarr; {{ b.checkOut }} &bull; {{ b.nights }} night(s) via
                         {{ b.listing }}
                     </p>
                 </div>
 
                 <!-- Quick Checkout button if leaving today -->
-                <div class="flex items-center gap-3 shrink-0">
+                <div class="flex shrink-0 items-center gap-3">
                     <span class="font-mono text-xs font-semibold text-mist-200">
                         {{ formatIDR(b.payout) }}
                     </span>
@@ -114,7 +114,7 @@ const departedGuests = computed(() =>
                     <button
                         v-if="b.checkOut === today"
                         type="button"
-                        class="rounded bg-amber-500 hover:bg-amber-400 px-2.5 py-1 text-xs font-semibold text-mist-950 transition"
+                        class="rounded bg-amber-500 px-2.5 py-1 text-xs font-semibold text-mist-950 transition hover:bg-amber-400"
                         @click="emit('checkout', b)">
                         Check Out
                     </button>
@@ -125,9 +125,9 @@ const departedGuests = computed(() =>
         <!-- Departed Guests (Moved here after 12:00 or upon clicking Check Out) -->
         <div
             v-if="departedGuests.length > 0"
-            class="pt-2 border-t border-mist-800 space-y-2">
+            class="space-y-2 border-t border-mist-800 pt-2">
             <span
-                class="text-[11px] font-semibold uppercase tracking-wider text-mist-500 flex items-center gap-1.5">
+                class="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-mist-500 uppercase">
                 <fa-icon
                     icon="circle-check"
                     class="text-xs text-lime-400" />
@@ -137,9 +137,9 @@ const departedGuests = computed(() =>
             <div
                 v-for="b in departedGuests"
                 :key="'departed-' + (b.id || b.bookingId)"
-                class="rounded-md border border-mist-800 bg-mist-950/30 p-2.5 flex items-center justify-between opacity-75">
+                class="flex items-center justify-between rounded-md border border-mist-800 bg-mist-950/30 p-2.5 opacity-75">
                 <div class="text-xs">
-                    <span class="font-semibold text-mist-300 line-through mr-2">
+                    <span class="mr-2 font-semibold text-mist-300 line-through">
                         {{ b.guestName }}
                     </span>
                     <span class="text-mist-500">
@@ -147,7 +147,7 @@ const departedGuests = computed(() =>
                     </span>
                 </div>
 
-                <span class="text-[11px] font-mono text-lime-400"> Vacated </span>
+                <span class="font-mono text-[11px] text-lime-400"> Vacated </span>
             </div>
         </div>
     </div>

@@ -93,10 +93,10 @@ function handleSubmit(): void {
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
         <div
-            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+            class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-xl duration-150 zoom-in-95 fade-in">
             <!-- Modal Header -->
             <div
-                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                 <div>
                     <h2 class="text-base font-semibold text-mist-100">
                         {{ isEditing ? 'Edit Property' : 'Add New Property' }}
@@ -123,19 +123,19 @@ function handleSubmit(): void {
             </div>
 
             <form
-                class="max-h-[80vh] overflow-y-auto space-y-4"
+                class="max-h-[80vh] space-y-4 overflow-y-auto"
                 @submit.prevent="handleSubmit">
                 <!-- Name & Code Prefix -->
                 <div class="grid grid-cols-9 items-end">
-                    <div class="w-full col-span-8">
+                    <div class="col-span-8 w-full">
                         <label
                             for="property"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Property
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-mist-500">
                                 <fa-icon
                                     class="text-xs"
                                     icon="house" />
@@ -145,11 +145,11 @@ function handleSubmit(): void {
                                 type="text"
                                 placeholder="Mai House Jogja - Piyungan"
                                 required
-                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6" />
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 py-1 pr-3 pl-9 text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6" />
                         </div>
                     </div>
                     <div class="text-center">
-                        <label class="cursor-pointer block text-xs font-semibold text-mist-400">
+                        <label class="block cursor-pointer text-xs font-semibold text-mist-400">
                             Available
                         </label>
                         <input
@@ -165,7 +165,7 @@ function handleSubmit(): void {
                     <div class="w-full">
                         <label
                             for="prefix"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Prefix
                         </label>
                         <div class="relative rounded-md shadow-sm">
@@ -174,37 +174,37 @@ function handleSubmit(): void {
                                 v-model.trim="form.codePrefix"
                                 type="text"
                                 name="prefix"
-                                class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                 placeholder="MHJ" />
                         </div>
                     </div>
                     <div class="w-full">
                         <label
                             for="color"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Color
                         </label>
                         <div class="relative flex items-center gap-0.5">
                             <input
                                 v-model="form.color"
                                 type="color"
-                                class="h-8.5 w-12 py-1 px-1 cursor-pointer rounded-md border border-mist-800 bg-mist-950/50" />
+                                class="h-8.5 w-12 cursor-pointer rounded-md border border-mist-800 bg-mist-950/50 px-1 py-1" />
                             <input
                                 id="color"
                                 v-model="form.color"
                                 name="color"
-                                class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6" />
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6" />
                         </div>
                     </div>
                     <div class="w-full">
                         <label
                             for="price"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Base Price (IDR)
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-mist-500">
                                 <fa-icon
                                     class="text-xs"
                                     icon="rupiah-sign" />
@@ -214,7 +214,7 @@ function handleSubmit(): void {
                                 :value="form.price"
                                 type="number"
                                 name="price"
-                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 py-1 pr-3 pl-9 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                 placeholder="1000000"
                                 @input="sanitizePrice" />
                         </div>
@@ -225,7 +225,7 @@ function handleSubmit(): void {
                 <div class="w-full">
                     <label
                         for="address"
-                        class="block font-medium text-xs text-mist-400 mb-1">
+                        class="mb-1 block text-xs font-medium text-mist-400">
                         Address
                     </label>
                     <div class="relative rounded-md shadow-sm">
@@ -234,22 +234,22 @@ function handleSubmit(): void {
                             v-model="form.address"
                             type="text"
                             name="address"
-                            class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6"
+                            class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                             placeholder="Street, subdistrict, city" />
                     </div>
                 </div>
 
                 <!-- GPS Coordinates -->
-                <div class="rounded-md border border-mist-800 bg-mist-950/40 p-3 space-y-2">
+                <div class="space-y-2 rounded-md border border-mist-800 bg-mist-950/40 p-3">
                     <span
-                        class="text-[11px] font-semibold uppercase tracking-wider text-mist-400 block">
+                        class="block text-[11px] font-semibold tracking-wider text-mist-400 uppercase">
                         GPS Coordinates
                     </span>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="w-full">
                             <label
                                 for="lat"
-                                class="block text-xs text-mist-400 mb-1">
+                                class="mb-1 block text-xs text-mist-400">
                                 Latitude
                             </label>
                             <div class="relative rounded-md shadow-sm">
@@ -258,14 +258,14 @@ function handleSubmit(): void {
                                     v-model.number="form.coordinates.lat"
                                     type="number"
                                     name="lat"
-                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                     placeholder="Relocating funds" />
                             </div>
                         </div>
                         <div class="w-full">
                             <label
                                 for="lng"
-                                class="block text-xs text-mist-400 mb-1">
+                                class="mb-1 block text-xs text-mist-400">
                                 Longitude
                             </label>
                             <div class="relative rounded-md shadow-sm">
@@ -274,7 +274,7 @@ function handleSubmit(): void {
                                     v-model.number="form.coordinates.lng"
                                     type="number"
                                     name="lng"
-                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                     placeholder="Relocating funds" />
                             </div>
                         </div>
@@ -286,12 +286,12 @@ function handleSubmit(): void {
                     <div class="w-full">
                         <label
                             for="bedroom"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Bedrooms
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-mist-500">
                                 <fa-icon
                                     class="text-xs"
                                     icon="bed" />
@@ -302,7 +302,7 @@ function handleSubmit(): void {
                                 type="text"
                                 name="bedroom"
                                 min="0"
-                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 py-1 pr-3 pl-9 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                 placeholder="3" />
                         </div>
                     </div>
@@ -310,12 +310,12 @@ function handleSubmit(): void {
                     <div class="w-full">
                         <label
                             for="shower"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Bathrooms
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-mist-500">
                                 <fa-icon
                                     class="text-xs"
                                     icon="shower" />
@@ -326,7 +326,7 @@ function handleSubmit(): void {
                                 type="text"
                                 min="0"
                                 name="shower"
-                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 py-1 pr-3 pl-9 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                 placeholder="2" />
                         </div>
                     </div>
@@ -334,12 +334,12 @@ function handleSubmit(): void {
                     <div class="w-full">
                         <label
                             for="size"
-                            class="block font-medium text-xs text-mist-400 mb-1">
+                            class="mb-1 block text-xs font-medium text-mist-400">
                             Plot Size m²
                         </label>
                         <div class="relative rounded-md shadow-sm">
                             <div
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-mist-500">
+                                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-mist-500">
                                 <fa-icon
                                     class="text-xs"
                                     icon="ruler-combined" />
@@ -350,23 +350,23 @@ function handleSubmit(): void {
                                 type="text"
                                 min="0"
                                 name="shower"
-                                class="block w-full py-1 pl-9 pr-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                class="block w-full rounded-md border border-mist-800 bg-mist-950/50 py-1 pr-3 pl-9 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                 placeholder="120" />
                         </div>
                     </div>
                 </div>
 
                 <!-- Guest Wi-Fi Credentials -->
-                <div class="rounded-md border border-mist-800 bg-mist-950/40 p-3 space-y-2">
+                <div class="space-y-2 rounded-md border border-mist-800 bg-mist-950/40 p-3">
                     <span
-                        class="text-[11px] font-semibold uppercase tracking-wider text-mist-400 block">
+                        class="block text-[11px] font-semibold tracking-wider text-mist-400 uppercase">
                         Guest Wi-Fi Details
                     </span>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="w-full">
                             <label
                                 for="ssid"
-                                class="block text-xs text-mist-400 mb-1">
+                                class="mb-1 block text-xs text-mist-400">
                                 Network (SSID)
                             </label>
                             <div class="relative rounded-md shadow-sm">
@@ -375,7 +375,7 @@ function handleSubmit(): void {
                                     v-model.trim="form.wifi.ssid"
                                     type="text"
                                     name="ssid"
-                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors text-mist-200 sm:text-sm sm:leading-6"
+                                    class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                     placeholder="SSID" />
                             </div>
                         </div>
@@ -383,7 +383,7 @@ function handleSubmit(): void {
                         <div class="w-full">
                             <label
                                 for="pwd"
-                                class="block text-xs text-mist-400 mb-1">
+                                class="mb-1 block text-xs text-mist-400">
                                 Password
                             </label>
                             <div class="relative rounded-md shadow-sm">
@@ -392,7 +392,7 @@ function handleSubmit(): void {
                                     v-model.trim="form.wifi.pwd"
                                     type="text"
                                     name="pwd"
-                                    class="block w-full py-1 px-3 rounded-md border border-mist-800 bg-mist-950/50 focus:border-lime-500 focus:outline-none transition-colors font-mono text-mist-200 sm:text-sm sm:leading-6"
+                                    class="block w-full rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 font-mono text-mist-200 transition-colors focus:border-lime-500 focus:outline-none sm:text-sm sm:leading-6"
                                     placeholder="P4ssW0rd!" />
                             </div>
                         </div>

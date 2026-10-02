@@ -119,14 +119,14 @@ function handlePaste(event: ClipboardEvent): void {
         <label
             v-if="inputLabel.length"
             :for="id"
-            class="flex items-center justify-between font-medium text-xs text-mist-400 mb-1">
+            class="mb-1 flex items-center justify-between text-xs font-medium text-mist-400">
             {{ inputLabel }}
             <slot name="extra"></slot>
         </label>
 
         <div
             v-if="slots.icon"
-            class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-mist-500 group-focus-within:text-lime-400 transition-colors"
+            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-mist-500 transition-colors group-focus-within:text-lime-400"
             :class="[inputLabel.length ? 'top-5' : 'top-0.5']">
             <slot name="icon"></slot>
         </div>
@@ -137,11 +137,11 @@ function handlePaste(event: ClipboardEvent): void {
             :inputmode="type === 'number' ? 'numeric' : undefined"
             :value="displayValue"
             :placeholder="placeholder"
-            class="w-full flex items-center justify-between py-1.5 bg-mist-950/50 border border-mist-800 hover:border-mist-700 rounded-md shadow-md text-sm text-mist-300 focus:outline-none focus:ring-lime-500 focus:border-lime-500 transition-colors"
+            class="flex w-full items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 py-1.5 text-sm text-mist-300 shadow-md transition-colors hover:border-mist-700 focus:border-lime-500 focus:ring-lime-500 focus:outline-none"
             :class="[
-                slots.icon ? 'pl-9 pr-3 ' : 'px-3',
+                slots.icon ? 'pr-3 pl-9' : 'px-3',
                 {
-                    'font-mono text-[13px] h-8.5':
+                    'h-8.5 font-mono text-[13px]':
                         type === 'number' || id === 'bookingId' || id === 'goldCert',
                 },
                 { 'cursor-not-allowed disabled:bg-mist-900': disabled },

@@ -225,14 +225,14 @@ async function executeSavingsTransfer(): Promise<void> {
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
-                    class="w-full max-w-xl rounded-md border border-mist-800 bg-mist-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-5 space-y-4 text-mist-100">
+                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Modal Header -->
                     <div
-                        class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
+                        class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                         <h2 class="text-sm font-semibold text-mist-100">Transfer Savings</h2>
                         <button
                             type="button"
-                            class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
+                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
                             @click="closeModal">
                             <fa-icon
                                 class="text-xs"
@@ -241,7 +241,7 @@ async function executeSavingsTransfer(): Promise<void> {
                     </div>
 
                     <form
-                        class="max-h-[80vh] overflow-y-auto space-y-4 text-xs"
+                        class="max-h-[80vh] space-y-4 overflow-y-auto text-xs"
                         @submit.prevent="executeSavingsTransfer">
                         <!-- Source Account Selector -->
                         <SelectDropdown
@@ -257,28 +257,28 @@ async function executeSavingsTransfer(): Promise<void> {
 
                         <!-- Destination Type Selector -->
                         <div>
-                            <label class="block text-xs text-mist-400 mb-1 font-medium">
+                            <label class="mb-1 block text-xs font-medium text-mist-400">
                                 Destination
                             </label>
                             <div class="grid grid-cols-2 gap-2">
                                 <button
                                     type="button"
-                                    class="py-1.5 px-3 rounded border text-center text-xs font-medium transition cursor-pointer"
+                                    class="cursor-pointer rounded border px-3 py-1.5 text-center text-xs font-medium transition"
                                     :class="
                                         transferForm.destinationType === 'checking'
-                                            ? 'bg-blue-400/15 border-blue-400 text-blue-300'
-                                            : 'bg-mist-950 border-mist-800 text-mist-400 hover:bg-mist-800'
+                                            ? 'border-blue-400 bg-blue-400/15 text-blue-300'
+                                            : 'border-mist-800 bg-mist-950 text-mist-400 hover:bg-mist-800'
                                     "
                                     @click="transferForm.destinationType = 'checking'">
                                     Checking / Operational
                                 </button>
                                 <button
                                     type="button"
-                                    class="py-1.5 px-3 rounded border text-center text-xs font-medium transition cursor-pointer"
+                                    class="cursor-pointer rounded border px-3 py-1.5 text-center text-xs font-medium transition"
                                     :class="
                                         transferForm.destinationType === 'savings'
-                                            ? 'bg-blue-400/15 border-blue-400 text-blue-300'
-                                            : 'bg-mist-950 border-mist-800 text-mist-400 hover:bg-mist-800'
+                                            ? 'border-blue-400 bg-blue-400/15 text-blue-300'
+                                            : 'border-mist-800 bg-mist-950 text-mist-400 hover:bg-mist-800'
                                     "
                                     @click="transferForm.destinationType = 'savings'">
                                     Another Savings Account
@@ -300,12 +300,12 @@ async function executeSavingsTransfer(): Promise<void> {
                             </SelectDropdown>
 
                             <div v-if="transferForm.destinationType === 'savings'">
-                                <label class="block text-mist-400 mb-1 font-medium">
+                                <label class="mb-1 block font-medium text-mist-400">
                                     Target Bank
                                 </label>
                                 <select
                                     v-model="transferForm.targetInstitution"
-                                    class="w-full bg-mist-950 border border-mist-700 rounded px-2 py-2 text-mist-200 focus:outline-hidden focus:border-blue-400 font-mono">
+                                    class="w-full rounded border border-mist-700 bg-mist-950 px-2 py-2 font-mono text-mist-200 focus:border-blue-400 focus:outline-hidden">
                                     <option
                                         v-for="inst in SAVINGS_INSTITUTIONS"
                                         :key="inst"
@@ -349,17 +349,17 @@ async function executeSavingsTransfer(): Promise<void> {
                         <div class="flex justify-end gap-2">
                             <button
                                 type="button"
-                                class="text-xs px-3 py-2 font-semibold text-mist-400 hover:text-mist-200"
+                                class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                                 @click="closeModal">
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 :disabled="isSubmitting"
-                                class="bg-blue-400 hover:bg-blue-300 disabled:opacity-50 text-mist-950 px-4 py-2 rounded font-semibold transition cursor-pointer flex items-center gap-1.5">
+                                class="flex cursor-pointer items-center gap-1.5 rounded bg-blue-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-blue-300 disabled:opacity-50">
                                 <span
                                     v-if="isSubmitting"
-                                    class="w-3 h-3 border-2 border-mist-900 border-t-transparent rounded-full animate-spin"></span>
+                                    class="h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
                                 <span>{{ isSubmitting ? 'Processing...' : 'Transfer' }}</span>
                             </button>
                         </div>

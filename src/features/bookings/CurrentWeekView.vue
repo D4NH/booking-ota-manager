@@ -62,12 +62,12 @@ function handleBookingClick(booking: Booking, event: Event) {
 </script>
 
 <template>
-    <div class="rounded-md border border-mist-800 bg-mist-900 shadow-md overflow-hidden">
+    <div class="overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <div
             v-if="showHeader"
-            class="flex items-center justify-between px-4 py-2.5 border-b border-mist-800 bg-mist-950/40">
+            class="flex items-center justify-between border-b border-mist-800 bg-mist-950/40 px-4 py-2.5">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold uppercase tracking-wider text-mist-300">
+                <span class="text-xs font-semibold tracking-wider text-mist-300 uppercase">
                     Current Week
                 </span>
             </div>
@@ -78,12 +78,12 @@ function handleBookingClick(booking: Booking, event: Event) {
 
         <!-- 7-Day Column Headers -->
         <div
-            class="shrink-0 grid grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold uppercase text-mist-400">
+            class="grid shrink-0 grid-cols-7 border-b border-mist-800 bg-mist-950/50 text-center text-xs font-semibold text-mist-400 uppercase">
             <div
                 v-for="day in weekDays"
                 :key="day.dateStr"
                 class="py-2.5"
-                :class="day.isToday ? 'text-lime-400 font-semibold' : 'text-mist-400'">
+                :class="day.isToday ? 'font-semibold text-lime-400' : 'text-mist-400'">
                 {{ day.weekdayName }}
             </div>
         </div>
@@ -93,24 +93,24 @@ function handleBookingClick(booking: Booking, event: Event) {
             <div
                 v-for="(day, dayIndex) in weekDays"
                 :key="day.dateStr"
-                class="min-h-32 p-2 transition cursor-pointer flex flex-col justify-between hover:bg-mist-800/40"
-                :class="{ 'bg-lime-500/5 ring-1 ring-inset ring-lime-500/30': day.isToday }"
+                class="flex min-h-32 cursor-pointer flex-col justify-between p-2 transition hover:bg-mist-800/40"
+                :class="{ 'bg-lime-500/5 ring-1 ring-lime-500/30 ring-inset': day.isToday }"
                 @click="handleCellClick(day.dateStr)">
                 <!-- Cell Header -->
-                <div class="flex items-center justify-between mb-1.5">
+                <div class="mb-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-1">
                         <span
-                            class="text-xs font-semibold rounded-md h-6 w-6 flex items-center justify-center">
+                            class="flex h-6 w-6 items-center justify-center rounded-md text-xs font-semibold">
                             {{ day.dayNumber }}
                         </span>
-                        <span class="text-[10px] text-mist-500 font-medium">
+                        <span class="text-[10px] font-medium text-mist-500">
                             {{ day.monthName }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Stays List -->
-                <div class="space-y-1.5 flex-1 flex flex-col justify-start">
+                <div class="flex flex-1 flex-col justify-start space-y-1.5">
                     <div
                         v-for="b in getStaysForDate(day.dateStr)"
                         :key="'stay-' + (b.id || b.bookingId)"
@@ -118,7 +118,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                         <div
                             :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
                             :class="[
-                                'py-1 px-1.5 text-xs transition shadow-sm cursor-pointer',
+                                'cursor-pointer px-1.5 py-1 text-xs shadow-sm transition',
                                 multiDayStyling(b, day.dateStr, dayIndex),
                                 getStatusStyle(b.status, true),
                             ]"
@@ -126,16 +126,16 @@ function handleBookingClick(booking: Booking, event: Event) {
                             <!-- Initial Day or Left Cap of 7-Day Window -->
                             <div
                                 v-if="b.checkIn === day.dateStr || dayIndex === 0 || b.nights === 1"
-                                class="flex flex-col gap-1 min-h-9">
-                                <div class="flex justify-between items-start">
-                                    <span class="font-semibold text-xs text-mist-100 truncate">
+                                class="flex min-h-9 flex-col gap-1">
+                                <div class="flex items-start justify-between">
+                                    <span class="truncate text-xs font-semibold text-mist-100">
                                         {{ b.guestName }}
                                     </span>
                                     <span
                                         v-if="
                                             b.status !== 'Unavailable' && selectedProperty === 'all'
                                         "
-                                        class="capitalize rounded px-1 py-0.2 text-[10px] font-semibold shrink-0"
+                                        class="py-0.2 shrink-0 rounded px-1 text-[10px] font-semibold capitalize"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
@@ -150,7 +150,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                             <!-- Continuation Strip -->
                             <div
                                 v-else
-                                class="text-xs text-mist-400 font-medium truncate flex items-start gap-1 opacity-75 min-h-9">
+                                class="flex min-h-9 items-start gap-1 truncate text-xs font-medium text-mist-400 opacity-75">
                                 <span class="truncate">{{ b.guestName }}</span>
                             </div>
                         </div>

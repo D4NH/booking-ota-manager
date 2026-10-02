@@ -89,15 +89,15 @@ function openEditModal(item: PropertyFinance): void {
                     class="w-60"
                     :options="categoryOptions" />
                 <button
-                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow-sm cursor-pointer"
+                    class="shrink-0 cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow-sm transition hover:bg-lime-300"
                     @click="openAddModal">
                     <fa-icon
-                        class="text-xs -ml-1"
+                        class="-ml-1 text-xs"
                         icon="plus" />
                     Add Entry
                 </button>
                 <button
-                    class="shrink-0 bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition shadow cursor-pointer"
+                    class="shrink-0 cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow transition hover:bg-lime-300"
                     @click="isTransferModalOpen = true">
                     Transfer Funds
                 </button>
@@ -105,9 +105,9 @@ function openEditModal(item: PropertyFinance): void {
         </div>
 
         <div class="flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full text-left text-sm text-mist-300 table-fixed border-collapse">
+            <table class="w-full table-fixed border-collapse text-left text-sm text-mist-300">
                 <thead
-                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold uppercase text-mist-400">
+                    class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold text-mist-400 uppercase">
                     <tr>
                         <th class="w-30 px-4 py-2.5">Date</th>
                         <th class="w-30 px-4 py-2.5">Property</th>
@@ -122,7 +122,7 @@ function openEditModal(item: PropertyFinance): void {
                         v-for="item in paginatedTransactions"
                         :key="item.id"
                         class="hover:bg-mist-800/40">
-                        <td class="px-4 py-2.5 text-mist-400 text-xs font-mono">
+                        <td class="px-4 py-2.5 font-mono text-xs text-mist-400">
                             {{ item.date }}
                         </td>
                         <td class="px-4 py-2.5">
@@ -132,14 +132,14 @@ function openEditModal(item: PropertyFinance): void {
                                 {{ item.propertyId }}
                             </RouterLink>
                         </td>
-                        <td class="px-4 py-2.5 font-medium truncate">
+                        <td class="truncate px-4 py-2.5 font-medium">
                             {{ item.category }}
                         </td>
-                        <td class="px-4 py-2.5 text-mist-400 truncate">
+                        <td class="truncate px-4 py-2.5 text-mist-400">
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
-                                    class="text-[9px] bg-lime-400/10 text-lime-400 px-1.5 py-0.5 rounded-xs font-mono font-bold shrink-0">
+                                    class="shrink-0 rounded-xs bg-lime-400/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-lime-400">
                                     DEXIE
                                 </span>
                                 <TransactionNote :notes="item.notes" />
@@ -148,7 +148,7 @@ function openEditModal(item: PropertyFinance): void {
                         <td class="px-4 py-2.5 text-right font-mono font-medium">
                             <div class="group relative inline-flex items-center justify-end">
                                 <span
-                                    class="text-xs pr-1"
+                                    class="pr-1 text-xs"
                                     :class="
                                         item.type === 'income'
                                             ? 'text-emerald-400'
@@ -162,7 +162,7 @@ function openEditModal(item: PropertyFinance): void {
 
                                 <div
                                     v-if="item.category === 'Property Payout'"
-                                    class="pointer-events-none absolute right-full top-1/2 z-30 mr-2 w-48 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    class="pointer-events-none absolute top-1/2 right-full z-30 mr-2 w-48 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
                                         class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between font-mono">
@@ -178,12 +178,12 @@ function openEditModal(item: PropertyFinance): void {
                             </div>
                         </td>
                         <td class="px-4 py-2.5">
-                            <div class="flex items-center justify-end gap-1 h-7">
+                            <div class="flex h-7 items-center justify-end gap-1">
                                 <button
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Edit Transaction"
-                                    class="text-mist-400 hover:text-lime-400 p-1 cursor-pointer"
+                                    class="cursor-pointer p-1 text-mist-400 hover:text-lime-400"
                                     @click="openEditModal(item)">
                                     <fa-icon icon="pen-to-square" />
                                 </button>
@@ -196,7 +196,7 @@ function openEditModal(item: PropertyFinance): void {
                                     v-if="!item.id.startsWith('dexie')"
                                     type="button"
                                     title="Delete Transaction"
-                                    class="text-mist-400 hover:text-rose-400 p-1 cursor-pointer"
+                                    class="cursor-pointer p-1 text-mist-400 hover:text-rose-400"
                                     @click="removePropertyTransaction(item.id, item.category)">
                                     <fa-icon icon="trash-can" />
                                 </button>
@@ -207,7 +207,7 @@ function openEditModal(item: PropertyFinance): void {
                         <td
                             colspan="6"
                             class="py-25 text-center text-mist-400">
-                            <div class="flex justify-center items-center">
+                            <div class="flex items-center justify-center">
                                 <fa-icon
                                     icon="calendar-days"
                                     class="text-xl text-mist-700" />
@@ -224,15 +224,15 @@ function openEditModal(item: PropertyFinance): void {
         <!-- Paginator Footer -->
         <div
             v-if="totalItems > 0"
-            class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-xs text-mist-400">
+            class="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-mist-400 sm:flex-row">
             <div class="flex items-center gap-3">
                 <span>
                     Showing
-                    <strong class="text-mist-200 font-mono">{{ startItemIndex }}</strong>
+                    <strong class="font-mono text-mist-200">{{ startItemIndex }}</strong>
                     to
-                    <strong class="text-mist-200 font-mono">{{ endItemIndex }}</strong>
+                    <strong class="font-mono text-mist-200">{{ endItemIndex }}</strong>
                     of
-                    <strong class="text-mist-200 font-mono">{{ totalItems }}</strong>
+                    <strong class="font-mono text-mist-200">{{ totalItems }}</strong>
                     records
                 </span>
 
@@ -241,7 +241,7 @@ function openEditModal(item: PropertyFinance): void {
                     <select
                         id="page-size"
                         v-model="pageSize"
-                        class="bg-mist-800 border border-mist-800 text-mist-200 rounded-md px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-lime-400">
+                        class="rounded-md border border-mist-800 bg-mist-800 px-1.5 py-0.5 font-mono text-xs text-mist-200 focus:border-lime-400 focus:outline-none">
                         <option
                             v-for="opt in [5, 10, 20, 50]"
                             :key="opt"
@@ -255,7 +255,7 @@ function openEditModal(item: PropertyFinance): void {
             <div class="flex items-center gap-1 font-mono">
                 <button
                     :disabled="currentPage <= 1"
-                    class="pl-1 pr-2.5 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 py-1 pr-2.5 pl-1 text-mist-200 transition hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800"
                     @click="goToPage(currentPage - 1)">
                     <fa-icon
                         class="text-[10px]"
@@ -264,13 +264,13 @@ function openEditModal(item: PropertyFinance): void {
                 </button>
 
                 <span class="px-3 py-1 text-mist-300">
-                    Page <strong class="text-lime-400 font-mono">{{ currentPage }}</strong> of
+                    Page <strong class="font-mono text-lime-400">{{ currentPage }}</strong> of
                     <strong class="font-mono">{{ totalPages }}</strong>
                 </span>
 
                 <button
                     :disabled="currentPage >= totalPages"
-                    class="pl-2.5 pr-1 py-1 rounded-md bg-mist-800 border border-mist-800 text-mist-200 hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800 transition cursor-pointer"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 py-1 pr-1 pl-2.5 text-mist-200 transition hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800"
                     @click="goToPage(currentPage + 1)">
                     Next
                     <fa-icon

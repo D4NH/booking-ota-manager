@@ -111,10 +111,10 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
 <template>
     <aside
         :class="[
-            'relative flex flex-col shrink-0 border border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
+            'relative flex shrink-0 flex-col border border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
             isSidebarCollapsed ? 'w-16' : 'w-60',
         ]">
-        <div class="flex h-14 items-center border-b border-mist-800 px-4 overflow-hidden">
+        <div class="flex h-14 items-center overflow-hidden border-b border-mist-800 px-4">
             <div class="flex items-center gap-3">
                 <img
                     class="h-8 w-8 shrink-0 rounded-md"
@@ -122,13 +122,13 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     alt="Mai House" />
                 <span
                     v-show="!isSidebarCollapsed"
-                    class="font-semibold text-mist-100 text-nowrap transition-opacity duration-200">
+                    class="font-semibold text-nowrap text-mist-100 transition-opacity duration-200">
                     Mai House
                 </span>
             </div>
         </div>
 
-        <nav class="flex-1 space-y-1.5 p-3 overflow-y-auto overflow-x-hidden">
+        <nav class="flex-1 space-y-1.5 overflow-x-hidden overflow-y-auto p-3">
             <RouterLink
                 v-for="link in navLinks"
                 :key="link.name"
@@ -136,12 +136,12 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                 :class="[
                     'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                     isLinkActive(link.path)
-                        ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                        ? 'bg-mist-800 font-semibold text-lime-400 shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
                     :icon="link.icon"
-                    class="w-4 h-4 shrink-0 text-center py-2" />
+                    class="h-4 w-4 shrink-0 py-2 text-center" />
                 <span
                     v-show="!isSidebarCollapsed"
                     class="truncate">
@@ -152,17 +152,17 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             <div class="space-y-1 pt-0.5">
                 <div
                     :class="[
-                        'flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition group',
+                        'group flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition',
                         isLinkActive('/properties')
                             ? 'bg-mist-800/80 text-mist-100'
                             : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
                     ]">
                     <RouterLink
                         to="/properties"
-                        class="flex items-center gap-3 flex-1 min-w-0"
-                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/properties') }">
+                        class="flex min-w-0 flex-1 items-center gap-3"
+                        :class="{ 'font-semibold text-lime-400': isLinkActive('/properties') }">
                         <fa-icon
-                            class="w-4 h-4 shrink-0 text-center py-2"
+                            class="h-4 w-4 shrink-0 py-2 text-center"
                             icon="house" />
                         <span
                             v-show="!isSidebarCollapsed"
@@ -174,7 +174,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     <button
                         v-show="!isSidebarCollapsed"
                         type="button"
-                        class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
+                        class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
                         <fa-icon
                             class="text-[10px] transition-transform duration-200"
@@ -186,19 +186,19 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                 <!-- Properties Subitems -->
                 <div
                     v-show="!isSidebarCollapsed && isPropertiesOpen"
-                    class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
+                    class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         v-for="prop in PROPERTY_CONFIGS"
                         :key="prop.id"
                         :to="{ name: 'property-detail', params: { id: prop.id } }"
-                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
                             route.path === `/properties/${prop.id}`
                                 ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
                         <span
-                            class="h-1.5 w-1.5 rounded-full shrink-0"
+                            class="h-1.5 w-1.5 shrink-0 rounded-full"
                             :class="getPropertyStyle(prop.id, true)" />
                         <span class="truncate capitalize">
                             {{ prop.id }}
@@ -210,17 +210,17 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             <div class="space-y-1 pt-0.5">
                 <div
                     :class="[
-                        'flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition group',
+                        'group flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition',
                         isLinkActive('/finance')
                             ? 'bg-mist-800/80 text-mist-100'
                             : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
                     ]">
                     <RouterLink
                         to="/finance"
-                        class="flex items-center gap-3 flex-1 min-w-0"
-                        :class="{ 'text-lime-400 font-semibold': isLinkActive('/finance') }">
+                        class="flex min-w-0 flex-1 items-center gap-3"
+                        :class="{ 'font-semibold text-lime-400': isLinkActive('/finance') }">
                         <fa-icon
-                            class="w-4 h-4 shrink-0 text-center py-2"
+                            class="h-4 w-4 shrink-0 py-2 text-center"
                             icon="sack-dollar" />
                         <span
                             v-show="!isSidebarCollapsed"
@@ -231,7 +231,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     <button
                         v-show="!isSidebarCollapsed"
                         type="button"
-                        class="p-1 text-mist-500 hover:text-mist-200 transition cursor-pointer"
+                        class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
                         <fa-icon
                             class="text-[10px] transition-transform duration-200"
@@ -242,16 +242,16 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                 <!-- Finance Subitems -->
                 <div
                     v-show="!isSidebarCollapsed && isFinanceOpen"
-                    class="ml-4 pl-3.5 border-l border-mist-800 space-y-1 my-1 animate-in fade-in duration-150">
+                    class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         :to="{ name: 'finance-personal' }"
-                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition shadow-sm hover:text-mist-200 hover:bg-mist-800/50"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
                             route.path === `/finance/personal`
                                 ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
-                        <span class="h-1.5 w-1.5 rounded-full bg-mist-400 shrink-0" />
+                        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
                         <span class="truncate capitalize"> Personal </span>
                     </RouterLink>
                 </div>
@@ -263,11 +263,11 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     :class="[
                         'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                         isLinkActive('/settings')
-                            ? 'bg-mist-800 text-lime-400 font-semibold shadow-sm'
+                            ? 'bg-mist-800 font-semibold text-lime-400 shadow-sm'
                             : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                     ]">
                     <fa-icon
-                        class="w-4 h-4 shrink-0 text-center py-2"
+                        class="h-4 w-4 shrink-0 py-2 text-center"
                         icon="gear" />
                     <span
                         v-show="!isSidebarCollapsed"
@@ -289,10 +289,10 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             @edit="handleEditBooking"
             @mark-complete="handleInstantComplete" />
 
-        <div class="border-t border-mist-800 p-3 overflow-hidden">
+        <div class="overflow-hidden border-t border-mist-800 p-3">
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">
                 <fa-icon
-                    class="w-4 h-4 shrink-0"
+                    class="h-4 w-4 shrink-0"
                     icon="copyright" />
                 <span class="truncate"> {{ currentYear }} - Danh Nguyen </span>
             </div>

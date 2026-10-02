@@ -53,21 +53,21 @@ const projectedRevenue = computed(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
+    <div class="flex h-full min-h-0 flex-col">
         <CardTitle>
             <template #title>Monthly Pacing</template>
             <template #subtitle>Target vs. actual trajectory</template>
         </CardTitle>
 
         <div
-            class="flex flex-col flex-1 justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-4">
+            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <!-- Metric Highlight & Pacing Badge -->
             <div class="flex items-baseline justify-between">
                 <div>
-                    <span class="text-lg font-semibold font-mono text-mist-100">
+                    <span class="font-mono text-lg font-semibold text-mist-100">
                         {{ formatIDR(currentRevenue) }}
                     </span>
-                    <span class="text-xs text-mist-400 ml-1.5">
+                    <span class="ml-1.5 text-xs text-mist-400">
                         / {{ formatIDR(effectiveTarget) }} goal
                     </span>
                     <div class="mt-1 flex items-center gap-1 text-xs">
@@ -83,7 +83,7 @@ const projectedRevenue = computed(() => {
                 </div>
 
                 <div class="text-right">
-                    <span class="text-lg font-semibold font-mono text-lime-400">
+                    <span class="font-mono text-lg font-semibold text-lime-400">
                         {{ targetPercentage }}%
                     </span>
                     <span class="block text-xs text-mist-500">
@@ -94,7 +94,7 @@ const projectedRevenue = computed(() => {
 
             <!-- Progress Bar with Clamped "Today" Marker -->
             <div class="space-y-1.5 pt-1">
-                <div class="relative h-1.5 w-full rounded-full bg-mist-950/50 overflow-hidden">
+                <div class="relative h-1.5 w-full overflow-hidden rounded-full bg-mist-950/50">
                     <!-- Actual Revenue Fill -->
                     <div
                         class="h-full rounded-full bg-lime-500 transition-all duration-500 ease-out"
@@ -102,7 +102,7 @@ const projectedRevenue = computed(() => {
 
                     <!-- Current Day Time Marker -->
                     <div
-                        class="absolute top-0 bottom-0 w-1 bg-white shadow-sm z-10 -translate-x-1/2"
+                        class="absolute top-0 bottom-0 z-10 w-1 -translate-x-1/2 bg-white shadow-sm"
                         :style="{ left: `${monthTimeElapsed}%` }"
                         :title="`Day ${dayNumber} of ${totalDaysInMonth} (${monthTimeElapsed}% elapsed)`" />
                 </div>
@@ -119,10 +119,10 @@ const projectedRevenue = computed(() => {
 
             <!-- Financial Run-Rate Grid -->
             <div
-                class="grid grid-cols-2 gap-2 border-t border-mist-800 pt-3 text-xs divide-x divide-mist-800 text-center">
-                <div class="p-2.5 space-y-0.5">
+                class="grid grid-cols-2 gap-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center text-xs">
+                <div class="space-y-0.5 p-2.5">
                     <span
-                        class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
+                        class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
                         Gap to Target
                     </span>
                     <span class="font-mono text-sm font-semibold text-mist-200">
@@ -130,9 +130,9 @@ const projectedRevenue = computed(() => {
                     </span>
                 </div>
 
-                <div class="p-2.5 space-y-0.5">
+                <div class="space-y-0.5 p-2.5">
                     <span
-                        class="block text-xs font-semibold uppercase tracking-wider text-mist-500">
+                        class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
                         Needed Rate ({{ daysRemaining }}d left)
                     </span>
                     <span class="font-mono text-sm font-semibold text-lime-400">

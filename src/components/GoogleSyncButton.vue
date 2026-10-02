@@ -163,7 +163,7 @@ async function handleSync(): Promise<void> {
         <button
             type="button"
             :disabled="isSyncing"
-            class="cursor-pointer flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold border transition disabled:opacity-50"
+            class="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50"
             :class="[
                 isAuthenticated
                     ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'
@@ -171,12 +171,12 @@ async function handleSync(): Promise<void> {
             ]"
             @click="handleSync">
             <span
-                class="h-2 w-2 rounded-full shrink-0"
+                class="h-2 w-2 shrink-0 rounded-full"
                 :class="[
                     isSyncing
-                        ? 'bg-indigo-400 animate-ping'
+                        ? 'animate-ping bg-indigo-400'
                         : isAuthenticated
-                          ? 'bg-lime-400 animate-pulse'
+                          ? 'animate-pulse bg-lime-400'
                           : 'bg-amber-400',
                 ]" />
             <span>{{ buttonLabel }}</span>
@@ -184,7 +184,7 @@ async function handleSync(): Promise<void> {
 
         <div
             v-if="showTimer && isAuthenticated"
-            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border font-mono text-[11px]"
+            class="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[11px]"
             :class="[
                 isEligibleToAutoSync
                     ? 'border-lime-500/30 bg-lime-500/5 text-lime-400'
@@ -196,9 +196,9 @@ async function handleSync(): Promise<void> {
                     : `In cooldown: Next background sync eligible in ${formattedCountdown}`
             ">
             <span
-                class="w-1.5 h-1.5 rounded-full"
-                :class="isEligibleToAutoSync ? 'bg-lime-400 animate-ping' : 'bg-mist-600'" />
-            <span class="font-medium text-[10px] text-mist-400">Auto:</span>
+                class="h-1.5 w-1.5 rounded-full"
+                :class="isEligibleToAutoSync ? 'animate-ping bg-lime-400' : 'bg-mist-600'" />
+            <span class="text-[10px] font-medium text-mist-400">Auto:</span>
             <span class="font-bold">
                 {{ isEligibleToAutoSync ? 'READY' : formattedCountdown }}
             </span>
@@ -207,7 +207,7 @@ async function handleSync(): Promise<void> {
         <button
             v-if="syncLogs.length > 0"
             type="button"
-            class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-2.5 py-1.5 text-xs text-mist-300 hover:bg-mist-700 transition"
+            class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-2.5 py-1.5 text-xs text-mist-300 transition hover:bg-mist-700"
             title="View sync audit log"
             @click="showLogModal = true">
             <fa-icon icon="list-check" />
@@ -219,51 +219,51 @@ async function handleSync(): Promise<void> {
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
             @click.self="showLogModal = false">
             <div
-                class="flex flex-col max-h-[80vh] w-full max-w-2xl rounded-2xl border border-mist-800 bg-mist-900 p-5 shadow-2xl space-y-4">
+                class="flex max-h-[80vh] w-full max-w-2xl flex-col space-y-4 rounded-2xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
-                    <h3 class="font-semibold text-mist-100 text-sm flex items-center gap-2">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold text-mist-100">
                         <span>Sync Audit Diagnostics</span>
                         <span
-                            class="rounded bg-mist-800 px-2 py-0.5 text-xs text-mist-400 font-mono">
+                            class="rounded bg-mist-800 px-2 py-0.5 font-mono text-xs text-mist-400">
                             {{ syncLogs.length }} events
                         </span>
                     </h3>
                     <button
                         type="button"
-                        class="cursor-pointer text-mist-400 hover:text-mist-100 text-base"
+                        class="cursor-pointer text-base text-mist-400 hover:text-mist-100"
                         @click="showLogModal = false">
                         <fa-icon icon="xmark" />
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div class="flex-1 space-y-2 overflow-y-auto pr-1">
                     <div
                         v-for="(log, idx) in syncLogs"
                         :key="idx"
-                        class="rounded-xl border border-mist-800 bg-mist-950/50 p-3 text-xs space-y-1.5">
+                        class="space-y-1.5 rounded-xl border border-mist-800 bg-mist-950/50 p-3 text-xs">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                                    class="rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
                                     :class="[
                                         log.type === 'imported' &&
-                                            'bg-lime-500/10 text-lime-400 border border-lime-500/20',
+                                            'border border-lime-500/20 bg-lime-500/10 text-lime-400',
                                         log.type === 'updated' &&
-                                            'bg-sky-500/10 text-sky-400 border border-sky-500/20',
+                                            'border border-sky-500/20 bg-sky-500/10 text-sky-400',
                                         log.type === 'deleted' &&
-                                            'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+                                            'border border-rose-500/20 bg-rose-500/10 text-rose-400',
                                         log.type === 'finance' &&
-                                            'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+                                            'border border-purple-500/20 bg-purple-500/10 text-purple-400',
                                     ]">
                                     {{ log.type }}
                                 </span>
                                 <span class="font-semibold text-mist-200">{{ log.guestName }}</span>
-                                <span class="font-mono text-mist-500 text-[11px]">
+                                <span class="font-mono text-[11px] text-mist-500">
                                     ({{ log.bookingId }})
                                 </span>
                             </div>
                             <span
-                                class="capitalize text-[10px] text-mist-400 font-semibold font-mono">
+                                class="font-mono text-[10px] font-semibold text-mist-400 capitalize">
                                 {{ log.propertyId }}
                             </span>
                         </div>
@@ -271,26 +271,26 @@ async function handleSync(): Promise<void> {
                         <!-- Diff Viewer -->
                         <div
                             v-if="log.diffs && log.diffs.length > 0"
-                            class="rounded-lg bg-mist-900/60 p-2 space-y-1 font-mono text-[11px]">
+                            class="space-y-1 rounded-lg bg-mist-900/60 p-2 font-mono text-[11px]">
                             <div
                                 v-for="d in log.diffs"
                                 :key="String(d.field)"
                                 class="flex items-center justify-between text-mist-300">
-                                <span class="text-mist-400 font-semibold capitalize">
+                                <span class="font-semibold text-mist-400 capitalize">
                                     {{ String(d.field) }}:
                                 </span>
                                 <div>
                                     <template v-if="log.type === 'finance'">
-                                        <span class="text-lime-400 font-semibold">
+                                        <span class="font-semibold text-lime-400">
                                             {{ d.newValue }} active records
                                         </span>
                                     </template>
                                     <template v-else>
-                                        <span class="text-rose-400 line-through mr-1">
+                                        <span class="mr-1 text-rose-400 line-through">
                                             {{ String(d.oldValue) || '(empty)' }}
                                         </span>
                                         &rarr;
-                                        <span class="text-lime-400 font-semibold ml-1">
+                                        <span class="ml-1 font-semibold text-lime-400">
                                             {{ String(d.newValue) || '(empty)' }}
                                         </span>
                                     </template>

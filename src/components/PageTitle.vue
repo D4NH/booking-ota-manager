@@ -8,7 +8,7 @@
             <h1 class="text-xl font-semibold text-mist-100">
                 <slot name="title">Title</slot>
             </h1>
-            <div class="text-sm text-mist-500 leading-relaxed">
+            <div class="text-sm leading-relaxed text-mist-500">
                 <slot name="subtitle">Subtitle</slot>
             </div>
         </div>

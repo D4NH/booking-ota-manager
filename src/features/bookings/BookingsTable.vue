@@ -51,7 +51,7 @@ function isCurrentBooking(b: Booking): boolean {
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <table class="w-full text-left text-sm text-mist-300">
             <thead
-                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 backdrop-blur-sm text-xs font-semibold uppercase text-mist-400">
+                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
                 <tr>
                     <th class="w-36 px-4 py-2.5">Listing</th>
                     <th class="px-4 py-2.5">Guest</th>
@@ -67,7 +67,7 @@ function isCurrentBooking(b: Booking): boolean {
                 <!-- Group Header -->
                 <tbody
                     :data-month-key="group.key"
-                    class="border-t border-b border-mist-800 bg-mist-950/40 scroll-mt-10">
+                    class="scroll-mt-10 border-t border-b border-mist-800 bg-mist-950/40">
                     <tr>
                         <td :colspan="colSpan">
                             <button
@@ -130,7 +130,7 @@ function isCurrentBooking(b: Booking): boolean {
                             </div>
                         </td>
                         <td class="px-4 py-2.5">
-                            <span class="truncate font-medium text-mist-100 leading-5 block mb-0.5">
+                            <span class="mb-0.5 block truncate leading-5 font-medium text-mist-100">
                                 {{ b.guestName }}
                             </span>
                             <span class="font-mono text-xs text-mist-400">
@@ -162,14 +162,14 @@ function isCurrentBooking(b: Booking): boolean {
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                     <span
-                                        class="mt-1 h-5 inline-flex items-center"
+                                        class="mt-1 inline-flex h-5 items-center"
                                         :class="getStatusStyle(b.status)">
                                         {{ b.status }}
                                     </span>
                                 </div>
                                 <div
                                     v-if="b.payout !== 0"
-                                    class="pointer-events-none absolute bottom-full -left-50 top-1 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                                    class="pointer-events-none absolute top-1 bottom-full -left-50 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
                                         class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
                                         <div class="flex items-center justify-between font-mono">

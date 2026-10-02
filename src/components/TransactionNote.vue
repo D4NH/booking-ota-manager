@@ -12,7 +12,7 @@ const cleanNote = computed(() => notes.replace(/\[RECURRING\]/gi, '').trim());
 </script>
 
 <template>
-    <span class="inline-flex items-center gap-1.5 flex-wrap">
+    <span class="inline-flex flex-wrap items-center gap-1.5">
         <span
             v-if="isRecurring"
             title="Recurring Commitment"

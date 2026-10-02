@@ -69,7 +69,7 @@ const operatingMarginPct = computed<number>(() => {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-0">
+    <div class="flex min-h-0 flex-col">
         <CardTitle>
             <template #title>Property Financial Breakdown</template>
             <template #subtitle>
@@ -77,16 +77,16 @@ const operatingMarginPct = computed<number>(() => {
             </template>
         </CardTitle>
 
-        <div class="h-full border border-mist-800 p-4 rounded-md flex flex-col justify-between">
+        <div class="flex h-full flex-col justify-between rounded-md border border-mist-800 p-4">
             <!-- Cash Flow Waterfall Progression -->
             <div>
-                <span class="text-xs font-semibold text-mist-200 uppercase tracking-wider block">
+                <span class="block text-xs font-semibold tracking-wider text-mist-200 uppercase">
                     Revenue Allocation Progression
                 </span>
-                <div class="grid grid-cols-3 text-xs font-mono space-x-4 divide-x divide-mist-800">
-                    <div class="bg-mist-900 pt-2.5 space-y-1">
-                        <span class="text-mist-400 block">Operating Margin</span>
-                        <span class="font-semibold text-mist-300 font-mono">
+                <div class="grid grid-cols-3 space-x-4 divide-x divide-mist-800 font-mono text-xs">
+                    <div class="space-y-1 bg-mist-900 pt-2.5">
+                        <span class="block text-mist-400">Operating Margin</span>
+                        <span class="font-mono font-semibold text-mist-300">
                             {{ operatingMarginPct }}%
                         </span>
                     </div>
@@ -95,7 +95,7 @@ const operatingMarginPct = computed<number>(() => {
             <!-- Category Ranked Progress List -->
             <div>
                 <div class="flex flex-col justify-between">
-                    <span class="text-xs font-semibold text-mist-300 block mb-2">
+                    <span class="mb-2 block text-xs font-semibold text-mist-300">
                         Expense Share per Category
                     </span>
 
@@ -103,18 +103,18 @@ const operatingMarginPct = computed<number>(() => {
                         <div
                             v-for="item in categoryExpenses"
                             :key="item.category"
-                            class="-mx-2 mb-1.5 px-2 pb-2 pt-0.5 hover:bg-mist-800/40 rounded-md transition cursor-pointer">
-                            <div class="flex justify-between items-center">
+                            class="-mx-2 mb-1.5 cursor-pointer rounded-md px-2 pt-0.5 pb-2 transition hover:bg-mist-800/40">
+                            <div class="flex items-center justify-between">
                                 <span
-                                    class="capitalize font-medium text-mist-200 py-0.5 flex items-center gap-2">
+                                    class="flex items-center gap-2 py-0.5 font-medium text-mist-200 capitalize">
                                     <span
-                                        class="w-2 h-2 rounded-full"
+                                        class="h-2 w-2 rounded-full"
                                         :style="{ backgroundColor: item.color }"></span>
                                     {{ item.category }}
                                 </span>
                                 <div class="flex items-center gap-2 font-mono">
                                     <span class="text-mist-400">{{ formatIDR(item.amount) }}</span>
-                                    <span class="font-semibold text-mist-200 min-w-8 text-right">
+                                    <span class="min-w-8 text-right font-semibold text-mist-200">
                                         {{ item.pct }}%
                                     </span>
                                 </div>
@@ -122,7 +122,7 @@ const operatingMarginPct = computed<number>(() => {
 
                             <!-- Track Bar -->
                             <div
-                                class="w-full bg-mist-950/50 h-1.5 rounded-full overflow-hidden mt-2 space-y-2">
+                                class="mt-2 h-1.5 w-full space-y-2 overflow-hidden rounded-full bg-mist-950/50">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
                                     :style="{
@@ -134,7 +134,7 @@ const operatingMarginPct = computed<number>(() => {
 
                         <div
                             v-if="categoryExpenses.length === 0"
-                            class="py-6 text-center text-mist-400 text-xs">
+                            class="py-6 text-center text-xs text-mist-400">
                             No operational expense entries recorded for this cycle.
                         </div>
                     </div>
@@ -142,11 +142,11 @@ const operatingMarginPct = computed<number>(() => {
             </div>
             <!-- Footer Footnote -->
             <div
-                class="pt-3 mt-4 border-t border-mist-800/70 flex justify-between text-xs text-mist-400">
+                class="mt-4 flex justify-between border-t border-mist-800/70 pt-3 text-xs text-mist-400">
                 <span>* Excludes Owner Payout Outflows</span>
                 <div class="flex items-center gap-2">
                     <span> Total Expenses: </span>
-                    <span class="font-mono text-mist-300 font-semibold">
+                    <span class="font-mono font-semibold text-mist-300">
                         {{ formatIDR(monthlyPropertyExpenses) }}
                     </span>
                 </div>

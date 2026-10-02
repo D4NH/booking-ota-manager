@@ -45,22 +45,22 @@ function handleImageError(e: Event): void {
             name: 'property-detail',
             params: { id: property.id },
         }"
-        class="group relative flex overflow-hidden rounded-md border border-mist-800 bg-mist-900 transition-all duration-200 hover:border-lime-700 hover:shadow-xl shadow-md cursor-pointer">
-        <div class="flex flex-1 flex-col justify-between p-4 min-w-0 space-y-4">
+        class="group relative flex cursor-pointer overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md transition-all duration-200 hover:border-lime-700 hover:shadow-xl">
+        <div class="flex min-w-0 flex-1 flex-col justify-between space-y-4 p-4">
             <!-- Property Name & Location -->
             <!-- <span
                 class="h-2 w-2 rounded-full shrink-0"
                 :class="getPropertyStyle(property.id, true)" /> -->
             <div class="space-y-1">
-                <h3 class="text-sm font-medium text-mist-100 truncate">
+                <h3 class="truncate text-sm font-medium text-mist-100">
                     {{ property.name }}
                 </h3>
                 <p
-                    class="text-xs text-mist-500 leading-relaxed truncate flex items-center gap-1"
+                    class="flex items-center gap-1 truncate text-xs leading-relaxed text-mist-500"
                     :title="property.address">
                     <fa-icon
                         icon="location-dot"
-                        class="text-[10px] text-mist-500 shrink-0" />
+                        class="shrink-0 text-[10px] text-mist-500" />
                     <span class="truncate">{{ property.address }}</span>
                 </p>
             </div>
@@ -89,7 +89,7 @@ function handleImageError(e: Event): void {
                             :key="b.id || b.bookingId">
                             <div class="flex justify-between space-y-1">
                                 <div class="flex flex-col items-start space-y-1">
-                                    <span class="text-sm font-semibold text-mist-100 truncate">
+                                    <span class="truncate text-sm font-semibold text-mist-100">
                                         {{ b.guestName }}
                                     </span>
                                     <span class="text-xs text-mist-400">
@@ -108,13 +108,13 @@ function handleImageError(e: Event): void {
                                         }}
                                         &bull; {{ b.nights }} night(s)
                                     </span>
-                                    <span class="text-xs text-mist-500 font-medium">
+                                    <span class="text-xs font-medium text-mist-500">
                                         via {{ b.listing }}
                                     </span>
                                 </div>
                                 <div class="flex flex-col items-end space-y-1">
                                     <span
-                                        class="text-xs font-semibold font-mono text-mist-100 text-nowrap">
+                                        class="font-mono text-xs font-semibold text-nowrap text-mist-100">
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                     <span
@@ -129,7 +129,7 @@ function handleImageError(e: Event): void {
                 </div>
                 <div
                     v-else-if="!property.available"
-                    class="text-center text-xs text-mist-500 my-6">
+                    class="my-6 text-center text-xs text-mist-500">
                     <fa-icon
                         icon="person-digging"
                         class="text-xl text-mist-700" />
@@ -137,14 +137,14 @@ function handleImageError(e: Event): void {
                 </div>
                 <div
                     v-else
-                    class="text-center text-xs text-mist-500 my-6">
+                    class="my-6 text-center text-xs text-mist-500">
                     <fa-icon
                         icon="house-circle-check"
                         class="text-xl text-mist-700" />
                     <span class="ml-2 font-medium text-mist-400">No active in-house guest</span>
                     <p
                         v-if="nextUpcoming"
-                        class="text-xs mt-1">
+                        class="mt-1 text-xs">
                         Next:
                         {{
                             formatDate(nextUpcoming.checkIn, {
@@ -156,7 +156,7 @@ function handleImageError(e: Event): void {
                     </p>
                     <p
                         v-else
-                        class="text-xs mt-1">
+                        class="mt-1 text-xs">
                         Unit is vacant and ready for check-in
                     </p>
                 </div>
@@ -168,7 +168,7 @@ function handleImageError(e: Event): void {
                     v-if="property.available"
                     class="grid grid-cols-3 divide-x divide-mist-800/80 text-center">
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] font-semibold text-mist-500 uppercase">
                             Occupancy
                         </span>
                         <span class="font-mono text-xs font-semibold text-lime-400">
@@ -176,7 +176,7 @@ function handleImageError(e: Event): void {
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] font-semibold text-mist-500 uppercase">
                             Revenue
                         </span>
                         <span class="font-mono text-xs font-semibold text-mist-100">
@@ -184,7 +184,7 @@ function handleImageError(e: Event): void {
                         </span>
                     </div>
                     <div class="px-1">
-                        <span class="block text-[10px] uppercase font-semibold text-mist-500">
+                        <span class="block text-[10px] font-semibold text-mist-500 uppercase">
                             Bookings
                         </span>
                         <span class="font-mono text-xs font-semibold text-mist-200">
@@ -194,7 +194,7 @@ function handleImageError(e: Event): void {
                 </div>
                 <div
                     v-else
-                    class="text-center text-xs text-mist-500 my-6">
+                    class="my-6 text-center text-xs text-mist-500">
                     <fa-icon
                         icon="person-digging"
                         class="text-xl text-mist-700" />
@@ -203,9 +203,9 @@ function handleImageError(e: Event): void {
             </div>
 
             <!-- House Specs & Price Footer -->
-            <div class="pt-2 mt-2 border-t border-mist-800">
+            <div class="mt-2 border-t border-mist-800 pt-2">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3 text-xs text-mist-400 font-medium">
+                    <div class="flex items-center gap-3 text-xs font-medium text-mist-400">
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="bed"
@@ -228,7 +228,7 @@ function handleImageError(e: Event): void {
                         </span>
                     </div>
                     <div>
-                        <span class="text-sm font-semibold font-mono text-mist-300">
+                        <span class="font-mono text-sm font-semibold text-mist-300">
                             {{ formatIDR(property.price) }}
                         </span>
                         <span class="text-xs text-mist-500"> / night</span>
@@ -238,7 +238,7 @@ function handleImageError(e: Event): void {
         </div>
 
         <!-- Photo -->
-        <div class="relative shrink-0 self-stretch w-50 overflow-hidden bg-mist-950">
+        <div class="relative w-50 shrink-0 self-stretch overflow-hidden bg-mist-950">
             <img
                 :src="`/images/${property.id}.jpg`"
                 :alt="property.name"
@@ -249,7 +249,7 @@ function handleImageError(e: Event): void {
 
         <OccupiedTag
             v-if="property.available"
-            class="absolute top-4 right-4 pointer-events-none"
+            class="pointer-events-none absolute top-4 right-4"
             :is-occupied="isOccupied" />
     </RouterLink>
 </template>

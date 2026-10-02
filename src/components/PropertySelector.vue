@@ -27,7 +27,7 @@ function handleSelect(id: PropertyId | 'all'): void {
 <template>
     <div class="flex items-center gap-2">
         <div
-            class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
+            class="flex shrink-0 items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shadow-sm">
             <button
                 v-if="showAll"
                 type="button"
@@ -45,7 +45,7 @@ function handleSelect(id: PropertyId | 'all'): void {
                 v-for="prop in sortedProperties"
                 :key="prop.id"
                 type="button"
-                class="capitalize rounded-md px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold capitalize transition-colors"
                 :class="[
                     modelValue === prop.id
                         ? 'bg-mist-800 text-lime-400 shadow-md'

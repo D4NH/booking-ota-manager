@@ -135,10 +135,10 @@ function handleSubmit(): void {
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
             <div
-                class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+                class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-xl duration-150 zoom-in-95 fade-in">
                 <!-- Modal Header -->
                 <div
-                    class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                    class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                     <h2 class="font-semibold text-mist-100">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
@@ -154,7 +154,7 @@ function handleSubmit(): void {
 
                 <div
                     v-if="channelWarning"
-                    class="rounded-md border border-amber-500/30 bg-amber-500/10 py-4 px-2 text-xs text-amber-300">
+                    class="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-4 text-xs text-amber-300">
                     <ul class="ml-4 list-disc">
                         <li>{{ channelWarning }}</li>
                     </ul>
@@ -162,12 +162,12 @@ function handleSubmit(): void {
 
                 <div
                     v-if="validationError"
-                    class="rounded-md border border-rose-500/30 bg-rose-500/10 py-4 px-2 text-xs text-rose-300">
+                    class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-4 text-xs text-rose-300">
                     {{ validationError }}
                 </div>
 
                 <form
-                    class="max-h-[80vh] overflow-y-auto space-y-4"
+                    class="max-h-[80vh] space-y-4 overflow-y-auto"
                     @submit.prevent="handleSubmit">
                     <!-- Property Selection -->
                     <SelectDropdown
@@ -216,11 +216,11 @@ function handleSubmit(): void {
                                 :min-date="checkInMinDate" />
                         </div>
                         <div>
-                            <span class="block font-medium text-xs text-mist-400 mb-1">
+                            <span class="mb-1 block text-xs font-medium text-mist-400">
                                 Nights
                             </span>
                             <div
-                                class="flex items-center h-8 px-2 font-mono text-xs font-medium select-none">
+                                class="flex h-8 items-center px-2 font-mono text-xs font-medium select-none">
                                 {{ form.nights }}
                             </div>
                         </div>
@@ -251,7 +251,7 @@ function handleSubmit(): void {
                                     class="text-xs" />
                             </template>
                             <template #extra>
-                                <div class="flex items-center gap-1.5 text-[11px] font-mono">
+                                <div class="flex items-center gap-1.5 font-mono text-[11px]">
                                     <span class="text-mist-500">15%</span>
                                     <span class="font-medium text-mist-300">
                                         {{ formatIDR(ownerPayoutDisplay) }}

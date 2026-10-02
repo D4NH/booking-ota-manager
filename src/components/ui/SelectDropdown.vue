@@ -95,23 +95,23 @@ function handleClickOutside(event: MouseEvent): void {
     <div class="relative">
         <label
             v-if="inputLabel.length"
-            class="block font-medium text-xs text-mist-400 mb-1">
+            class="mb-1 block text-xs font-medium text-mist-400">
             {{ inputLabel }}
         </label>
 
         <div
             v-if="slots.icon"
-            class="absolute inset-y-0 left-0 top-5 flex items-center pl-3.5 pointer-events-none text-mist-500 group-focus-within:text-lime-400 transition-colors">
+            class="pointer-events-none absolute inset-y-0 top-5 left-0 flex items-center pl-3.5 text-mist-500 transition-colors group-focus-within:text-lime-400">
             <slot name="icon"></slot>
         </div>
 
         <button
             ref="triggerButtonRef"
             type="button"
-            class="w-full flex items-center justify-between px-3 py-1.5 bg-mist-950/50 border border-mist-800 rounded-md text-sm text-mist-500 focus:border-lime-500 focus:outline-hidden transition-colors text-left cursor-pointer hover:border-mist-700"
+            class="flex w-full cursor-pointer items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-left text-sm text-mist-500 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
             @click="toggleDropdown">
             <span
-                class="pr-2 truncate"
+                class="truncate pr-2"
                 :class="[
                     { 'pl-7': slots.icon },
                     { 'text-mist-200': modelValue !== undefined && modelValue !== '' },
@@ -119,7 +119,7 @@ function handleClickOutside(event: MouseEvent): void {
                 {{ selectedLabel }}
             </span>
             <fa-icon
-                class="text-xs text-mist-400 shrink-0 ml-2"
+                class="ml-2 shrink-0 text-xs text-mist-400"
                 icon="chevron-down" />
         </button>
 
@@ -127,7 +127,7 @@ function handleClickOutside(event: MouseEvent): void {
             <div
                 v-if="isOpen"
                 ref="dropdownMenuRef"
-                class="teleported-dropdown-menu fixed bg-mist-950/90 backdrop-blur-xl border border-mist-800 rounded-md shadow-2xl z-999 overflow-hidden max-h-60 overflow-y-auto"
+                class="teleported-dropdown-menu fixed z-999 max-h-60 overflow-hidden overflow-y-auto rounded-md border border-mist-800 bg-mist-950/90 shadow-2xl backdrop-blur-xl"
                 :style="{
                     top: `${coords.top + 4}px`,
                     left: `${coords.left}px`,
@@ -137,16 +137,16 @@ function handleClickOutside(event: MouseEvent): void {
                     <li
                         v-for="option in normalizedOptions"
                         :key="String(option.value)"
-                        class="px-3 py-2 text-sm hover:bg-lime-400/10 hover:text-lime-400 cursor-pointer transition-colors"
+                        class="cursor-pointer px-3 py-2 text-sm transition-colors hover:bg-lime-400/10 hover:text-lime-400"
                         :class="{
-                            'font-semibold text-lime-400 ': modelValue === option.value,
+                            'font-semibold text-lime-400': modelValue === option.value,
                         }"
                         @click="selectOption(option)">
                         {{ option.label }}
                     </li>
                     <li
                         v-if="normalizedOptions.length === 0"
-                        class="px-3 py-2 text-xs text-mist-500 text-center">
+                        class="px-3 py-2 text-center text-xs text-mist-500">
                         No options available
                     </li>
                 </ul>

@@ -115,7 +115,7 @@ function calculateHeightPct(amount: number): number {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-0">
+    <div class="flex min-h-0 flex-col">
         <!-- Header & Range Switcher -->
         <div class="flex items-center justify-between">
             <CardTitle>
@@ -154,16 +154,16 @@ function calculateHeightPct(amount: number): number {
             </div>
         </div>
 
-        <div class="h-full border border-mist-800 p-4 rounded-md flex flex-col justify-between">
+        <div class="flex h-full flex-col justify-between rounded-md border border-mist-800 p-4">
             <!-- Legend -->
-            <div class="flex items-center justify-end gap-3 mb-4 text-xs font-medium text-mist-300">
+            <div class="mb-4 flex items-center justify-end gap-3 text-xs font-medium text-mist-300">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
                         <span>Revenue</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                        <span class="h-2 w-2 rounded-full bg-rose-400"></span>
                         <span>Expenses</span>
                     </div>
                 </div>
@@ -172,12 +172,12 @@ function calculateHeightPct(amount: number): number {
             <div class="relative flex flex-1 items-end pt-5 pb-2">
                 <!-- Background Horizontal Gridlines -->
                 <div
-                    class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
+                    class="pointer-events-none absolute inset-0 flex flex-col justify-between pr-2 pb-6">
                     <div
                         v-for="mark in yAxisMarks"
                         :key="mark.val"
-                        class="w-full flex items-center text-[9px] font-mono text-mist-500">
-                        <span class="w-12 text-right pr-2 text-mist-500 select-none">
+                        class="flex w-full items-center font-mono text-[9px] text-mist-500">
+                        <span class="w-12 pr-2 text-right text-mist-500 select-none">
                             {{ mark.label }}
                         </span>
                         <div class="flex-1 border-b border-mist-800/40"></div>
@@ -185,22 +185,22 @@ function calculateHeightPct(amount: number): number {
                 </div>
 
                 <!-- Bars Column Container -->
-                <div class="relative w-full h-full flex items-end justify-between pl-14 pr-2 pb-6">
+                <div class="relative flex h-full w-full items-end justify-between pr-2 pb-6 pl-14">
                     <div
                         v-for="point in chartData"
                         :key="point.monthStr"
-                        class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer px-1"
+                        class="group relative flex h-full flex-1 cursor-pointer flex-col items-center justify-end px-1"
                         @mouseenter="hoveredBar = point"
                         @mouseleave="hoveredBar = null"
                         @click="financeStore.selectedMonth = point.monthStr">
                         <!-- Hover Tooltip Overlay -->
                         <div
                             v-if="hoveredBar?.monthStr === point.monthStr"
-                            class="absolute -top-12 z-30 pointer-events-none bg-mist-950 border border-mist-700 shadow-xl rounded-lg p-2 text-xs font-mono space-y-0.5 whitespace-nowrap">
-                            <div class="font-bold text-mist-100 text-xs mb-1">
+                            class="pointer-events-none absolute -top-12 z-30 space-y-0.5 rounded-lg border border-mist-700 bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-xl">
+                            <div class="mb-1 text-xs font-bold text-mist-100">
                                 {{ point.label }} {{ point.monthStr.slice(0, 4) }}
                             </div>
-                            <div class="flex justify-between gap-3 text-emerald-400 mt-2">
+                            <div class="mt-2 flex justify-between gap-3 text-emerald-400">
                                 <span>Rev:</span>
                                 <span>{{ formatIDR(point.revenue) }}</span>
                             </div>
@@ -209,7 +209,7 @@ function calculateHeightPct(amount: number): number {
                                 <span>{{ formatIDR(point.expenses) }}</span>
                             </div>
                             <div
-                                class="flex justify-between gap-3 text-mist-300 py-1 mt-1.5 border-t border-mist-800">
+                                class="mt-1.5 flex justify-between gap-3 border-t border-mist-800 py-1 text-mist-300">
                                 <span>Net:</span>
                                 <span class="text-mist-200">
                                     {{ formatIDR(point.netMargin) }}
@@ -218,10 +218,10 @@ function calculateHeightPct(amount: number): number {
                         </div>
 
                         <!-- Paired Bars -->
-                        <div class="w-full flex items-end justify-center gap-1 h-full">
+                        <div class="flex h-full w-full items-end justify-center gap-1">
                             <!-- Revenue Bar -->
                             <div
-                                class="w-3.5 sm:w-5 rounded-t-sm transition-all duration-300"
+                                class="w-3.5 rounded-t-sm transition-all duration-300 sm:w-5"
                                 :class="[
                                     point.isActive
                                         ? 'bg-emerald-400 shadow-sm shadow-lime-400/30'
@@ -231,7 +231,7 @@ function calculateHeightPct(amount: number): number {
 
                             <!-- Expense Bar -->
                             <div
-                                class="w-3.5 sm:w-5 rounded-t-sm transition-all duration-300"
+                                class="w-3.5 rounded-t-sm transition-all duration-300 sm:w-5"
                                 :class="[
                                     point.isActive
                                         ? 'bg-rose-400 shadow-sm shadow-rose-400/30'
@@ -242,7 +242,7 @@ function calculateHeightPct(amount: number): number {
 
                         <!-- X-Axis Label -->
                         <span
-                            class="absolute -bottom-5 text-[10px] font-mono transition-colors"
+                            class="absolute -bottom-5 font-mono text-[10px] transition-colors"
                             :class="
                                 point.isActive
                                     ? 'font-bold text-lime-400'
@@ -256,11 +256,11 @@ function calculateHeightPct(amount: number): number {
 
             <!-- Footer Metric / Insight -->
             <div
-                class="pt-3 mt-1 border-t border-mist-800/70 flex justify-between items-center text-xs text-mist-400">
+                class="mt-1 flex items-center justify-between border-t border-mist-800/70 pt-3 text-xs text-mist-400">
                 <span>Click any column to jump active calculated month</span>
                 <div class="flex items-center gap-2">
                     <span> Net Profit: </span>
-                    <span class="font-mono text-mist-300 font-semibold">
+                    <span class="font-mono font-semibold text-mist-300">
                         {{ formatIDR(maxVal) }}
                     </span>
                 </div>

@@ -122,8 +122,8 @@ function getBarHeightPct(amount: number): number {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0">
-        <div class="flex justify-between items-center">
+    <div class="flex h-full min-h-0 flex-col">
+        <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Revenue Performance</template>
                 <template #subtitle>
@@ -133,7 +133,7 @@ function getBarHeightPct(amount: number): number {
             <div class="relative w-23">
                 <select
                     v-model.number="activeQuarterIndex"
-                    class="w-full appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 focus:border-lime-500 focus:outline-none transition-colors cursor-pointer hover:border-mist-700">
+                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">
                     <option
                         v-for="q in quartersList"
                         :key="q.id"
@@ -151,11 +151,11 @@ function getBarHeightPct(amount: number): number {
         </div>
 
         <div
-            class="flex flex-col flex-1 min-h-0 p-4 rounded-md border border-mist-800 bg-mist-900 shadow-md"
+            class="flex min-h-0 flex-1 flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <div class="flex items-start justify-between gap-4">
                 <div class="flex flex-col space-y-1">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ summaryStats.highlightedMonthLabel }}
                     </span>
                     <div class="font-mono text-lg font-semibold text-mist-200">
@@ -182,38 +182,38 @@ function getBarHeightPct(amount: number): number {
                 </div>
             </div>
 
-            <div class="relative mt-6 h-55 w-full flex items-end">
+            <div class="relative mt-6 flex h-55 w-full items-end">
                 <!-- Horizontal Gridlines -->
                 <div
-                    class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pr-2">
+                    class="pointer-events-none absolute inset-0 flex flex-col justify-between pr-2 pb-6">
                     <div
                         v-for="tick in yAxisTicks"
                         :key="tick.value"
-                        class="w-full flex items-center text-[10px] font-mono text-mist-500">
-                        <span class="w-10 text-right pr-2 select-none">{{ tick.label }}</span>
+                        class="flex w-full items-center font-mono text-[10px] text-mist-500">
+                        <span class="w-10 pr-2 text-right select-none">{{ tick.label }}</span>
                         <div class="flex-1 border-b border-mist-800/40" />
                     </div>
                 </div>
                 <!-- Bars Columns -->
-                <div class="relative w-full h-full flex items-end justify-between pl-12 pr-4 pb-6">
+                <div class="relative flex h-full w-full items-end justify-between pr-4 pb-6 pl-12">
                     <div
                         v-for="(item, idx) in fourMonthSequence"
                         :key="item.monthName"
-                        class="flex-1 flex flex-col items-center h-full justify-end group relative cursor-pointer px-2"
+                        class="group relative flex h-full flex-1 cursor-pointer flex-col items-center justify-end px-2"
                         @mouseenter="hoveredIndex = idx">
                         <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="absolute -top-14 z-30 pointer-events-none bg-mist-950 border border-mist-750 shadow-2xl rounded-md px-2.5 py-1.5 text-xs font-mono whitespace-nowrap space-y-0.5">
+                            class="border-mist-750 pointer-events-none absolute -top-14 z-30 space-y-0.5 rounded-md border bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
                             <div class="text-xs text-mist-400">
                                 {{ item.monthName }} {{ item.year }}
                             </div>
-                            <div class="text-mist-200 font-semibold">
+                            <div class="font-semibold text-mist-200">
                                 {{ formatIDR(item.revenue) }}
                             </div>
                         </div>
                         <!-- Bar Column -->
-                        <div class="w-full max-w-12 flex items-end justify-center h-full">
+                        <div class="flex h-full w-full max-w-12 items-end justify-center">
                             <div
                                 class="w-full rounded-t-sm transition-all duration-300"
                                 :class="[

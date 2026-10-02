@@ -36,12 +36,12 @@ function triggerDatePicker(event: MouseEvent): void {
 
 <template>
     <div
-        class="flex items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shrink-0 shadow-sm">
+        class="flex shrink-0 items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shadow-sm">
         <div class="flex items-center space-x-1">
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 border border-mist-800 hover:border-mist-700"
+                class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs text-mist-400 transition-colors hover:border-mist-700"
                 @click="shiftMonth(-1)">
                 <fa-icon icon="chevron-left" />
             </button>
@@ -50,7 +50,7 @@ function triggerDatePicker(event: MouseEvent): void {
                 <input
                     :value="financeStore.selectedMonth"
                     type="month"
-                    class="cursor-pointer w-full appearance-none rounded-md border border-mist-800 hover:border-mist-700 bg-mist-950/50 pl-3 pr-1 py-1.5 text-xs font-mono text-mist-200 focus:border-lime-500 focus:outline-none transition-colors"
+                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 py-1.5 pr-1 pl-3 font-mono text-xs text-mist-200 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none"
                     required
                     @change="handleMonthChange"
                     @click="triggerDatePicker" />
@@ -65,7 +65,7 @@ function triggerDatePicker(event: MouseEvent): void {
             <button
                 type="button"
                 title="Previous Month"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors bg-mist-800 text-mist-400 border border-mist-800 hover:border-mist-700"
+                class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-1.5 text-xs text-mist-400 transition-colors hover:border-mist-700"
                 @click="shiftMonth(1)">
                 <fa-icon icon="chevron-right" />
             </button>

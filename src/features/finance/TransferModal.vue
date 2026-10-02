@@ -76,9 +76,9 @@ async function handleTransfer(): Promise<void> {
         v-if="modelValue"
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
         <div
-            class="w-full max-w-2xl rounded-md border border-mist-800 bg-mist-900 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 space-y-4 p-4">
+            class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-xl duration-150 zoom-in-95 fade-in">
             <div
-                class="flex items-center justify-between border-b border-mist-800 -mt-4 -mr-4 -ml-4 p-4 bg-mist-950/60">
+                class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                 <h2 class="text-base font-semibold text-mist-100">Transfer Funds</h2>
                 <button
                     type="button"
@@ -88,13 +88,13 @@ async function handleTransfer(): Promise<void> {
                 </button>
             </div>
 
-            <p class="text-xs text-mist-400 leading-relaxed">
+            <p class="text-xs leading-relaxed text-mist-400">
                 Transfers create a 3-way record: An outflow under Property Ledger, an inflow under
                 the target ledger, and a permanent entry in the Transfers audit table.
             </p>
 
             <form
-                class="max-h-[80vh] overflow-y-auto space-y-4"
+                class="max-h-[80vh] space-y-4 overflow-y-auto"
                 @submit.prevent="handleTransfer">
                 <SelectDropdown
                     v-model="sourcePropertyId"
@@ -148,10 +148,10 @@ async function handleTransfer(): Promise<void> {
                     <button
                         type="submit"
                         :disabled="isLoading || isSubmitting"
-                        class="bg-lime-400 hover:bg-lime-300 text-mist-950 text-xs px-4 py-2 rounded-md font-semibold transition flex items-center gap-1.5 disabled:opacity-50">
+                        class="flex items-center gap-1.5 rounded-md bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-300 disabled:opacity-50">
                         <span
                             v-if="isSubmitting"
-                            class="w-3 h-3 border-2 border-mist-950 border-t-transparent rounded-full animate-spin"></span>
+                            class="h-3 w-3 animate-spin rounded-full border-2 border-mist-950 border-t-transparent"></span>
                         <span>{{ isBothMode ? 'Payout Both' : 'Confirm Payout' }}</span>
                     </button>
                 </div>

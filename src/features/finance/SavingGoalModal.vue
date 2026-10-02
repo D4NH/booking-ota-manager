@@ -117,16 +117,16 @@ async function handleDeleteGoal(): Promise<void> {
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
-                    class="w-full max-w-xl rounded-md border border-mist-800 bg-mist-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-5 space-y-4 text-mist-100">
+                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Header -->
                     <div
-                        class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
-                        <h2 class="text-sm font-semibold text-mist-100 uppercase tracking-wider">
+                        class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
+                        <h2 class="text-sm font-semibold tracking-wider text-mist-100 uppercase">
                             {{ isEditing ? 'Edit Savings Goal' : 'Add Savings Goal' }}
                         </h2>
                         <button
                             type="button"
-                            class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
+                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
                             @click="closeModal">
                             <fa-icon
                                 class="text-sm"
@@ -135,7 +135,7 @@ async function handleDeleteGoal(): Promise<void> {
                     </div>
 
                     <form
-                        class="max-h-[80vh] overflow-y-auto space-y-3.5 text-xs"
+                        class="max-h-[80vh] space-y-3.5 overflow-y-auto text-xs"
                         @submit.prevent="handleSaveGoal">
                         <TextInput
                             id="goalName"
@@ -220,14 +220,14 @@ async function handleDeleteGoal(): Promise<void> {
                             <div class="flex items-center gap-3">
                                 <button
                                     type="button"
-                                    class="text-xs px-3 py-2 font-medium text-mist-400 hover:text-mist-200 cursor-pointer"
+                                    class="cursor-pointer px-3 py-2 text-xs font-medium text-mist-400 hover:text-mist-200"
                                     @click="closeModal">
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     :disabled="isSubmitting"
-                                    class="bg-blue-400 hover:bg-blue-300 text-mist-950 px-4 py-2 rounded-md font-semibold cursor-pointer transition disabled:opacity-50">
+                                    class="cursor-pointer rounded-md bg-blue-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-blue-300 disabled:opacity-50">
                                     {{
                                         isSubmitting
                                             ? 'Saving...'

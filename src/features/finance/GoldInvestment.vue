@@ -69,13 +69,13 @@ async function handleRefreshGoldPrice() {
 
 <template>
     <div
-        class="bg-mist-900 border border-mist-800 rounded-md p-4 shadow-lg flex flex-col justify-between">
+        class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-lg">
         <div>
             <!-- Header Tag -->
-            <div class="flex items-center justify-between gap-2 mb-4 h-7">
+            <div class="mb-4 flex h-7 items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-300"></span>
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    <span class="h-2.5 w-2.5 rounded-full bg-amber-300"></span>
+                    <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         Gold Reserve
                     </h3>
                 </div>
@@ -109,7 +109,7 @@ async function handleRefreshGoldPrice() {
                     </div>
                     <button
                         v-if="activeView === 'logs'"
-                        class="bg-amber-300 hover:bg-amber-400 text-mist-950 text-xs font-semibold px-3 py-2 rounded-md transition"
+                        class="rounded-md bg-amber-300 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-amber-400"
                         @click="openAddGoldModal">
                         + Add Gold
                     </button>
@@ -119,13 +119,13 @@ async function handleRefreshGoldPrice() {
             <div v-if="activeView === 'info'">
                 <!-- Account Selector Tabs -->
                 <div
-                    class="flex items-center gap-1.5 mb-3.5 pb-2 border-b border-mist-800/60 text-xs">
+                    class="mb-3.5 flex items-center gap-1.5 border-b border-mist-800/60 pb-2 text-xs">
                     <button
                         type="button"
-                        class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                        class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                         :class="
                             selectedAccount === 'all'
-                                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                                ? 'border border-amber-400/30 bg-amber-400/20 text-amber-300'
                                 : 'text-mist-400 hover:text-mist-200'
                         "
                         @click="selectedAccount = 'all'">
@@ -135,10 +135,10 @@ async function handleRefreshGoldPrice() {
                         v-for="acc in goldAccountAllocation"
                         :key="acc.owner"
                         type="button"
-                        class="px-2 py-0.5 rounded text-[11px] font-mono transition cursor-pointer"
+                        class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                         :class="
                             selectedAccount === acc.owner
-                                ? 'bg-mist-800 text-amber-300 border border-mist-700'
+                                ? 'border border-mist-700 bg-mist-800 text-amber-300'
                                 : 'text-mist-400 hover:text-mist-200'
                         "
                         @click="selectedAccount = acc.owner">
@@ -147,46 +147,46 @@ async function handleRefreshGoldPrice() {
                 </div>
                 <!-- Virtual Gold Ingot Display -->
                 <div
-                    class="relative overflow-hidden rounded-md p-4 mb-4 bg-mist-800/50 space-y-6 font-mono">
-                    <div class="flex justify-between items-start">
+                    class="relative mb-4 space-y-6 overflow-hidden rounded-md bg-mist-800/50 p-4 font-mono">
+                    <div class="flex items-start justify-between">
                         <div>
-                            <span class="text-xs text-mist-400 uppercase block">
+                            <span class="block text-xs text-mist-400 uppercase">
                                 {{ activeData.label }} Holdings
                             </span>
-                            <span class="text-xs font-semibold text-amber-300 tracking-wider">
+                            <span class="text-xs font-semibold tracking-wider text-amber-300">
                                 {{ activeData.brands.map((b) => b.brand).join(' / ') || 'None' }}
                             </span>
                         </div>
                         <div class="text-right">
-                            <div class="flex items-center justify-end gap-1.5 -my-1">
+                            <div class="-my-1 flex items-center justify-end gap-1.5">
                                 <div
                                     class="flex items-center justify-end gap-1.5 text-xs text-mist-400">
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse">
+                                        class="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400">
                                     </span>
                                     Antam Live
                                 </div>
                                 <button
                                     type="button"
                                     :disabled="isFetchingGoldPrice"
-                                    class="text-mist-500 hover:text-amber-300 transition cursor-pointer"
+                                    class="cursor-pointer text-mist-500 transition hover:text-amber-300"
                                     @click="handleRefreshGoldPrice">
                                     <fa-icon
                                         icon="arrows-rotate"
-                                        class="text-[10px] mb-0.5"
+                                        class="mb-0.5 text-[10px]"
                                         :class="{
                                             'animate-spin text-amber-300': isFetchingGoldPrice,
                                         }" />
                                 </button>
                             </div>
-                            <span class="text-xs font-semibold text-mist-300 tracking-wider">
+                            <span class="text-xs font-semibold tracking-wider text-mist-300">
                                 {{ formatIDR(currentGoldPricePerGram) }}/g
                             </span>
                         </div>
                     </div>
                     <!-- Horizontal Stacked Bar -->
                     <div class="space-y-1.5">
-                        <div class="flex justify-between text-xs font-mono text-mist-400">
+                        <div class="flex justify-between font-mono text-xs text-mist-400">
                             <span>Brand Allocation</span>
                             <div class="flex items-center gap-2 text-mist-200">
                                 <span
@@ -194,14 +194,14 @@ async function handleRefreshGoldPrice() {
                                     :key="b.brand"
                                     class="flex items-center gap-1">
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full"
+                                        class="h-1.5 w-1.5 rounded-full"
                                         :style="{ backgroundColor: b.color }"></span>
                                     {{ b.pctOfTotal }}% {{ b.brand }}
                                 </span>
                             </div>
                         </div>
                         <!-- Segmented Stack Bar -->
-                        <div class="w-full bg-mist-950 h-1.5 rounded-full overflow-hidden flex">
+                        <div class="flex h-1.5 w-full overflow-hidden rounded-full bg-mist-950">
                             <div
                                 v-for="b in activeData.brands"
                                 :key="b.brand"
@@ -213,8 +213,8 @@ async function handleRefreshGoldPrice() {
 
                     <div class="flex items-baseline justify-between font-mono">
                         <div>
-                            <span class="text-xs text-mist-400 block">Current Valuation</span>
-                            <div class="text-lg font-black text-mist-100 tracking-tight mt-0.5">
+                            <span class="block text-xs text-mist-400">Current Valuation</span>
+                            <div class="mt-0.5 text-lg font-black tracking-tight text-mist-100">
                                 {{ formatIDR(activeData.valuation) }}
                             </div>
                         </div>
@@ -229,15 +229,15 @@ async function handleRefreshGoldPrice() {
                     </div>
 
                     <div
-                        class="grid grid-cols-2 gap-2 pt-3 mt-3 border-t border-mist-750/70 text-xs font-mono">
+                        class="border-mist-750/70 mt-3 grid grid-cols-2 gap-2 border-t pt-3 font-mono text-xs">
                         <div>
-                            <span class="text-mist-400 text-[11px] block">Cost Basis:</span>
-                            <span class="text-mist-300 font-semibold">
+                            <span class="block text-[11px] text-mist-400">Cost Basis:</span>
+                            <span class="font-semibold text-mist-300">
                                 {{ formatIDR(activeData.costBasis) }}
                             </span>
                         </div>
                         <div class="text-right">
-                            <span class="text-mist-400 text-[11px] block"> Unrealized P&L: </span>
+                            <span class="block text-[11px] text-mist-400"> Unrealized P&L: </span>
                             <span
                                 class="font-semibold"
                                 :class="activeData.pnl >= 0 ? 'text-amber-300' : 'text-rose-400'">
@@ -251,41 +251,41 @@ async function handleRefreshGoldPrice() {
             <div
                 v-else
                 class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-mist-200 table-fixed border-collapse">
+                <table class="w-full table-fixed border-collapse text-left text-xs text-mist-200">
                     <thead
-                        class="bg-mist-950/50 text-mist-400 uppercase font-semibold border-y border-mist-800">
+                        class="border-y border-mist-800 bg-mist-950/50 font-semibold text-mist-400 uppercase">
                         <tr>
-                            <th class="w-25 py-2.5 px-3">Date</th>
-                            <th class="w-26 py-2.5 px-3">Owner</th>
-                            <th class="py-2.5 px-3">Type</th>
-                            <th class="py-2.5 px-3 text-right">Cost Basis</th>
+                            <th class="w-25 px-3 py-2.5">Date</th>
+                            <th class="w-26 px-3 py-2.5">Owner</th>
+                            <th class="px-3 py-2.5">Type</th>
+                            <th class="px-3 py-2.5 text-right">Cost Basis</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-mist-800/60 font-mono">
                         <tr
                             v-for="g in goldAssets"
                             :key="g.id"
-                            class="hover:bg-mist-800/50 cursor-pointer"
+                            class="cursor-pointer hover:bg-mist-800/50"
                             @click="openEditGoldModal(g)">
-                            <td class="py-2 px-3 text-mist-400">
+                            <td class="px-3 py-2 text-mist-400">
                                 {{ g.purchaseDate }}
                             </td>
-                            <td class="py-2 px-3">
+                            <td class="px-3 py-2">
                                 <span class="font-medium text-mist-100">
                                     {{ g.owner }}
                                 </span>
                             </td>
-                            <td class="py-2 px-3">
+                            <td class="px-3 py-2">
                                 <span class="text-mist-400">{{ g.type }}</span> &bull;
                                 <span class="text-amber-300">{{ g.weightGrams }}g</span>
                             </td>
-                            <td class="py-2 px-3 text-mist-300">
+                            <td class="px-3 py-2 text-mist-300">
                                 <div class="flex items-baseline justify-end gap-2">
-                                    <span class="block mb-1 text-nowrap">
+                                    <span class="mb-1 block text-nowrap">
                                         {{ formatIDR(g.buyPriceTotal) }}
                                     </span>
                                     <span
-                                        class="text-mist-400 hover:text-amber-300 pl-1 py-1 transition-color">
+                                        class="transition-color py-1 pl-1 text-mist-400 hover:text-amber-300">
                                         <fa-icon
                                             class="text-xs"
                                             icon="pen-to-square" />
@@ -308,10 +308,10 @@ async function handleRefreshGoldPrice() {
         </div>
         <!-- Metric Footer -->
         <div
-            class="pt-3 border-t border-mist-800/80 flex items-center justify-between text-xs font-mono">
+            class="flex items-center justify-between border-t border-mist-800/80 pt-3 font-mono text-xs">
             <span class="text-mist-400">
                 Avg Cost:
-                <strong class="text-mist-200 font-mono">
+                <strong class="font-mono text-mist-200">
                     {{
                         activeData.grams > 0
                             ? formatIDR(Math.round(activeData.costBasis / activeData.grams))
@@ -320,7 +320,7 @@ async function handleRefreshGoldPrice() {
                 </strong>
             </span>
             <span class="text-mist-400">
-                Status: <strong class="text-amber-300 font-mono">Secured</strong>
+                Status: <strong class="font-mono text-amber-300">Secured</strong>
             </span>
         </div>
 

@@ -69,9 +69,9 @@ const propertyRack = computed(() =>
 
 <template>
     <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-        <div class="flex items-center justify-between mb-4 border-b border-mist-800 pb-2.5">
+        <div class="mb-4 flex items-center justify-between border-b border-mist-800 pb-2.5">
             <div class="flex items-center gap-2">
-                <h3 class="text-sm font-semibold text-mist-100 uppercase tracking-wider">
+                <h3 class="text-sm font-semibold tracking-wider text-mist-100 uppercase">
                     Live Property Rack
                 </h3>
                 <span class="rounded-full bg-mist-800 px-2 py-0.5 text-[10px] text-mist-400">
@@ -81,32 +81,32 @@ const propertyRack = computed(() =>
             <span class="text-xs text-mist-500">Live for {{ today }}</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div
                 v-for="item in propertyRack"
                 :key="item.property.id"
-                class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-950/50 p-3.5 hover:border-mist-800 transition">
+                class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-950/50 p-3.5 transition hover:border-mist-800">
                 <!-- Unit Name & Status Badge -->
                 <div>
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 truncate">
                             <span
-                                class="h-2 w-2 rounded-full shrink-0"
+                                class="h-2 w-2 shrink-0 rounded-full"
                                 :class="[
                                     item.state === 'occupied'
                                         ? 'bg-lime-400'
                                         : item.state === 'turnover' || item.state === 'arriving'
-                                          ? 'bg-amber-400 animate-pulse'
+                                          ? 'animate-pulse bg-amber-400'
                                           : 'bg-mist-600',
                                 ]" />
-                            <h4 class="font-semibold text-sm text-mist-100 truncate">
+                            <h4 class="truncate text-sm font-semibold text-mist-100">
                                 {{ item.property.name }}
                             </h4>
                         </div>
 
                         <span
                             :class="[
-                                'rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border shrink-0',
+                                'shrink-0 rounded border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase',
                                 item.statusBadgeClass,
                             ]">
                             {{ item.statusLabel }}
@@ -119,10 +119,10 @@ const propertyRack = computed(() =>
                         <div
                             v-if="item.currentStay"
                             class="text-xs">
-                            <p class="font-semibold text-mist-200 truncate">
+                            <p class="truncate font-semibold text-mist-200">
                                 {{ item.currentStay.guestName }}
                             </p>
-                            <p class="text-[11px] text-mist-400 mt-1">
+                            <p class="mt-1 text-[11px] text-mist-400">
                                 Departs {{ item.currentStay.checkOut }} &bull; via
                                 {{ item.currentStay.listing }}
                             </p>
@@ -132,10 +132,10 @@ const propertyRack = computed(() =>
                         <div
                             v-else-if="item.arrivingToday"
                             class="text-xs">
-                            <p class="font-semibold text-cyan-300 truncate">
+                            <p class="truncate font-semibold text-cyan-300">
                                 {{ item.arrivingToday.guestName }}
                             </p>
-                            <p class="text-[11px] text-mist-400 mt-1">
+                            <p class="mt-1 text-[11px] text-mist-400">
                                 Arriving today &bull; {{ item.arrivingToday.nights }} night(s)
                             </p>
                         </div>
@@ -144,8 +144,8 @@ const propertyRack = computed(() =>
                         <div
                             v-else-if="item.nextUpcoming"
                             class="text-xs text-mist-400">
-                            <p class="text-mist-500 italic text-[11px]">Vacant now</p>
-                            <p class="text-[11px] text-mist-300 mt-1 truncate">
+                            <p class="text-[11px] text-mist-500 italic">Vacant now</p>
+                            <p class="mt-1 truncate text-[11px] text-mist-300">
                                 Next: {{ item.nextUpcoming.checkIn }} ({{
                                     item.nextUpcoming.guestName
                                 }})
@@ -155,7 +155,7 @@ const propertyRack = computed(() =>
                         <!-- Fully vacant -->
                         <div
                             v-else
-                            class="text-xs text-mist-500 italic py-1">
+                            class="py-1 text-xs text-mist-500 italic">
                             No active or upcoming reservations
                         </div>
                     </div>

@@ -58,20 +58,20 @@ const displaySections = computed<MonthSection[]>(() => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full min-h-0 overflow-y-auto">
+    <div class="flex h-full min-h-0 flex-col overflow-y-auto">
         <CardTitle>
             <template #title>Upcoming Bookings</template>
             <template #subtitle>Next confirmed reservations across all units</template>
         </CardTitle>
 
         <div
-            class="flex-1 min-h-0 overflow-y-auto flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md">
+            class="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div
                 v-if="sortedUpcomingBookings.length === 0"
                 class="flex flex-1 flex-col items-center justify-center p-8 text-xs text-mist-400">
                 <fa-icon
                     icon="receipt"
-                    class="text-xl text-mist-600 mb-2" />
+                    class="mb-2 text-xl text-mist-600" />
                 <p>No upcoming reservations scheduled</p>
             </div>
             <div
@@ -83,35 +83,35 @@ const displaySections = computed<MonthSection[]>(() => {
                     <!-- Month Header -->
                     <div
                         v-if="showMonthHeaders && section.label"
-                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/50 backdrop-blur-sm px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-mist-400">
+                        class="sticky top-0 z-10 shrink-0 border-y border-mist-800 bg-mist-950/50 px-4 py-2.5 text-xs font-semibold tracking-wider text-mist-400 uppercase backdrop-blur-sm">
                         {{ section.label }}
                     </div>
-                    <div class="flex-1 flex flex-col divide-y divide-mist-800">
+                    <div class="flex flex-1 flex-col divide-y divide-mist-800">
                         <div
                             v-for="b in section.items"
                             :key="b.id || b.bookingId"
-                            class="flex items-center justify-between px-3 py-3 hover:bg-mist-800/40 transition cursor-pointer group"
+                            class="group flex cursor-pointer items-center justify-between px-3 py-3 transition hover:bg-mist-800/40"
                             @click="emit('edit-booking', b)">
                             <!-- Guest Info & Property -->
-                            <div class="min-w-0 flex items-center gap-3">
+                            <div class="flex min-w-0 items-center gap-3">
                                 <div
-                                    class="h-10 w-10 rounded-md bg-mist-800 flex items-center justify-center text-xs font-semibold text-mist-300 shrink-0">
+                                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mist-800 text-xs font-semibold text-mist-300">
                                     {{ b.guestName.charAt(0).toUpperCase() }}
                                 </div>
                                 <div class="truncate">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="font-medium text-sm text-mist-100 truncate group-hover:text-lime-400 transition">
+                                            class="truncate text-sm font-medium text-mist-100 transition group-hover:text-lime-400">
                                             {{ b.guestName }}
                                         </span>
                                         <span
                                             v-if="showProperty"
-                                            class="capitalize rounded-sm px-1.5 py-0.5 text-xs font-medium shrink-0"
+                                            class="shrink-0 rounded-sm px-1.5 py-0.5 text-xs font-medium capitalize"
                                             :class="getPropertyStyle(b.propertyId)">
                                             {{ b.propertyId }}
                                         </span>
                                     </div>
-                                    <p class="text-[11px] text-mist-400 mt-1">
+                                    <p class="mt-1 text-[11px] text-mist-400">
                                         {{
                                             formatDate(b.checkIn, {
                                                 shortWeekday: true,
@@ -120,19 +120,19 @@ const displaySections = computed<MonthSection[]>(() => {
                                             })
                                         }}
                                         &bull; {{ b.nights }} night(s) via
-                                        <span class="text-mist-300 font-medium">
+                                        <span class="font-medium text-mist-300">
                                             {{ b.listing }}
                                         </span>
                                     </p>
                                 </div>
                             </div>
                             <!-- Payout & Status -->
-                            <div class="text-right shrink-0">
-                                <span class="font-mono text-xs font-semibold text-mist-300 block">
+                            <div class="shrink-0 text-right">
+                                <span class="block font-mono text-xs font-semibold text-mist-300">
                                     {{ formatIDR(b.payout) }}
                                 </span>
                                 <span
-                                    class="text-xs inline-block mt-1"
+                                    class="mt-1 inline-block text-xs"
                                     :class="getStatusStyle(b.status)">
                                     {{ b.status }}
                                 </span>

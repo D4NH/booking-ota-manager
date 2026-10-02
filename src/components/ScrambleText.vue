@@ -22,7 +22,7 @@ const scrambledText = computed(() => {
 
 <template>
     <span
-        class="cursor-pointer select-none font-mono text-sm font-semibold text-mist-100"
+        class="cursor-pointer font-mono text-sm font-semibold text-mist-100 select-none"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false">
         {{ isHovered ? text : scrambledText }}

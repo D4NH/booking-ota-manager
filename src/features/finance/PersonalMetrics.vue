@@ -14,11 +14,11 @@ const {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="flex items-center justify-between">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Danh Nguyen
                 </h3>
             </div>
@@ -51,10 +51,10 @@ const {
             </p>
         </div>
 
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="flex items-center justify-between">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Citra Ayu Wardani
                 </h3>
             </div>
@@ -66,10 +66,10 @@ const {
             <p class="text-xs text-mist-500">Monthly Revenue</p>
         </div>
 
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="flex items-center justify-between">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Shared Household
                 </h3>
             </div>
@@ -79,10 +79,10 @@ const {
             <p class="text-xs text-mist-500">Monthly Revenue</p>
         </div>
 
-        <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md space-y-1">
-            <div class="flex justify-between items-center">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="flex items-center justify-between">
                 <h3
-                    class="flex justify-between text-xs font-semibold uppercase tracking-wider text-mist-400">
+                    class="flex justify-between text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Combined Revenue
                 </h3>
             </div>

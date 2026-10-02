@@ -225,16 +225,16 @@ async function submitRecord(): Promise<void> {
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
-                    class="w-full max-w-xl rounded-md border border-mist-800 bg-mist-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-5 space-y-4 text-mist-100">
+                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Modal Header -->
                     <div
-                        class="flex items-center justify-between border-b border-mist-800 -mt-5 -mr-5 -ml-5 p-4 bg-mist-950/60">
+                        class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                         <h2 class="font-semibold text-mist-100">
                             {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ owner }}
                         </h2>
                         <button
                             type="button"
-                            class="text-mist-400 hover:text-mist-200 text-lg leading-none cursor-pointer"
+                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
                             @click="closeModal">
                             <fa-icon
                                 class="text-xs"
@@ -243,7 +243,7 @@ async function submitRecord(): Promise<void> {
                     </div>
 
                     <form
-                        class="max-h-[80vh] overflow-y-auto space-y-4 text-xs"
+                        class="max-h-[80vh] space-y-4 overflow-y-auto text-xs"
                         @submit.prevent="submitRecord">
                         <div class="grid grid-cols-2 gap-3">
                             <SelectDropdown
@@ -260,13 +260,13 @@ async function submitRecord(): Promise<void> {
                         <!-- Savings Destination Selector -->
                         <div
                             v-if="isSavingsCategory"
-                            class="bg-mist-950/70 border border-mist-800 p-3 rounded-md space-y-1.5">
-                            <label class="text-xs font-semibold text-blue-400 block">
+                            class="space-y-1.5 rounded-md border border-mist-800 bg-mist-950/70 p-3">
+                            <label class="block text-xs font-semibold text-blue-400">
                                 Destination Savings Account
                             </label>
                             <select
                                 v-model="formSavingsInstitution"
-                                class="w-full text-xs border border-mist-700 bg-mist-900 text-mist-100 rounded-md p-2 focus:outline-hidden focus:border-blue-400 font-mono">
+                                class="w-full rounded-md border border-mist-700 bg-mist-900 p-2 font-mono text-xs text-mist-100 focus:border-blue-400 focus:outline-hidden">
                                 <option
                                     v-for="inst in savingsInstitutions"
                                     :key="inst"
@@ -274,7 +274,7 @@ async function submitRecord(): Promise<void> {
                                     {{ inst }}
                                 </option>
                             </select>
-                            <p class="text-[11px] text-mist-400 font-mono">
+                            <p class="font-mono text-[11px] text-mist-400">
                                 Inflows automatically update your Liquid Savings breakdown.
                             </p>
                         </div>
@@ -311,17 +311,17 @@ async function submitRecord(): Promise<void> {
                         <div class="flex justify-end gap-2">
                             <button
                                 type="button"
-                                class="text-xs px-3 py-2 font-semibold text-mist-400 hover:text-mist-200"
+                                class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
                                 @click="closeModal">
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 :disabled="isLoading || isSubmitting"
-                                class="bg-lime-400 hover:bg-lime-300 disabled:opacity-50 disabled:cursor-not-allowed text-mist-950 px-4 py-2 rounded font-semibold transition cursor-pointer flex items-center gap-1.5">
+                                class="flex cursor-pointer items-center gap-1.5 rounded bg-lime-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50">
                                 <span
                                     v-if="isSubmitting"
-                                    class="w-3 h-3 border-2 border-mist-900 border-t-transparent rounded-full animate-spin"></span>
+                                    class="h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
                                 <span>{{ isEditing ? 'Save Changes' : 'Add Entry' }}</span>
                             </button>
                         </div>
