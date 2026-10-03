@@ -3,6 +3,8 @@ import { ref, watch, computed } from 'vue';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Property, PropertyId } from '@/types/property';
 
+import AppButton from '@/components/ui/AppButton.vue';
+
 const createFormData = (source?: Partial<Property> | null): PropertyFormState => ({
     id: source?.id || ('' as PropertyId),
     name: source?.name || '',
@@ -112,14 +114,13 @@ function handleSubmit(): void {
                         Manage listing details, pricing, and access
                     </p>
                 </div>
-                <button
-                    type="button"
-                    class="cursor-pointer text-mist-400 hover:text-mist-200"
+                <AppButton
+                    variant="icon"
                     @click="emit('close')">
-                    <fa-icon
-                        icon="xmark"
-                        class="text-sm" />
-                </button>
+                    <template #icon>
+                        <fa-icon icon="xmark" />
+                    </template>
+                </AppButton>
             </div>
 
             <form
@@ -403,20 +404,20 @@ function handleSubmit(): void {
                 <div
                     class="flex items-center gap-3"
                     :class="[isEditing ? 'justify-between' : 'justify-end']">
-                    <button
+                    <AppButton
                         v-if="isEditing"
-                        type="button"
-                        class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                        label="Delete Property"
+                        variant="danger-text"
                         @click="handleDeleteProperty">
-                        <fa-icon icon="trash-can" /> Delete Property
-                    </button>
+                        <template #icon>
+                            <fa-icon icon="trash-can" />
+                        </template>
+                    </AppButton>
                     <div class="flex items-center gap-4">
-                        <button
-                            type="button"
-                            class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                            @click="emit('close')">
-                            Cancel
-                        </button>
+                        <AppButton
+                            label="Cancel"
+                            variant="text"
+                            @click="emit('close')" />
                         <button
                             type="submit"
                             class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">

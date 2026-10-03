@@ -12,6 +12,7 @@ import { calculateOwnerPayout } from '@/utils/financeCalculators';
 import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -258,12 +259,13 @@ async function handleReject(): Promise<void> {
                                 records.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
+                        <AppButton
+                            variant="icon"
                             @click="closeModal">
-                            <fa-icon icon="xmark" />
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="xmark" />
+                            </template>
+                        </AppButton>
                     </div>
 
                     <!-- Review & Edit Form -->
@@ -393,29 +395,32 @@ async function handleReject(): Promise<void> {
                         <!-- Actions -->
                         <div
                             class="flex items-center justify-between border-t border-mist-800 pt-3">
-                            <button
-                                type="button"
-                                class="cursor-pointer text-xs font-semibold text-rose-400 transition hover:text-rose-300"
+                            <AppButton
+                                label="Reject & Discard"
+                                variant="danger-text"
                                 @click="handleReject">
-                                Reject & Discard
-                            </button>
+                                <template #icon>
+                                    <fa-icon icon="trash-can" />
+                                </template>
+                            </AppButton>
 
                             <div class="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    class="cursor-pointer px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                    @click="closeModal">
-                                    Cancel
-                                </button>
-                                <button
+                                <AppButton
+                                    label="Cancel"
+                                    variant="text"
+                                    @click="closeModal" />
+                                <AppButton
                                     type="submit"
                                     :disabled="isProcessing"
-                                    class="flex cursor-pointer items-center gap-1.5 rounded-md bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-300 disabled:opacity-50">
-                                    <span
+                                    label="Approve Reservation">
+                                    <template
                                         v-if="isProcessing"
-                                        class="h-3 w-3 animate-spin rounded-full border-2 border-mist-950 border-t-transparent" />
-                                    <span>Approve Reservation</span>
-                                </button>
+                                        #icon>
+                                        <span
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                    </template>
+                                    <span v-if="isProcessing">Processing..</span>
+                                </AppButton>
                             </div>
                         </div>
                     </form>

@@ -7,6 +7,8 @@ import type { Booking, BookingGroup } from '@/types/booking';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 
+import AppButton from '@/components/ui/AppButton.vue';
+
 interface Props {
     groups: BookingGroup[];
     showPropertyColumn?: boolean;
@@ -185,22 +187,22 @@ function isCurrentBooking(b: Booking): boolean {
                             </div>
                         </td>
                         <td class="px-4 py-2.5 text-right text-nowrap">
-                            <div class="flex items-center justify-end gap-2">
-                                <button
-                                    type="button"
-                                    class="cursor-pointer text-mist-400 transition hover:text-mist-100 focus:outline-none"
-                                    title="Edit Booking"
-                                    @click.stop="emit('edit', b)">
-                                    <fa-icon icon="pen-to-square" />
-                                </button>
+                            <div class="flex items-center justify-end gap-1">
+                                <AppButton
+                                    variant="icon"
+                                    @click="emit('edit', b)">
+                                    <template #icon>
+                                        <fa-icon icon="pen-to-square" />
+                                    </template>
+                                </AppButton>
                                 <span class="text-mist-700">|</span>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer text-rose-400 transition hover:text-rose-300 focus:outline-none"
-                                    title="Delete Booking"
-                                    @click.stop="emit('delete', b)">
-                                    <fa-icon icon="trash-can" />
-                                </button>
+                                <AppButton
+                                    variant="danger-icon"
+                                    @click="emit('delete', b)">
+                                    <template #icon>
+                                        <fa-icon icon="trash-can" />
+                                    </template>
+                                </AppButton>
                             </div>
                         </td>
                     </tr>

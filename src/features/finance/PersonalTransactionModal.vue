@@ -11,6 +11,7 @@ import type {
     PersonalOwner,
 } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -53,6 +54,7 @@ interface Props {
 const { owner = 'Danh Nguyen', itemToEdit = null } = defineProps<Props>();
 const emit = defineEmits<{
     closed: [];
+    'delete-item': [PersonalFinance | SharedFinance];
 }>();
 const isOpen = defineModel<boolean>({ default: false });
 
@@ -232,14 +234,13 @@ async function submitRecord(): Promise<void> {
                         <h2 class="font-semibold text-mist-100">
                             {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ owner }}
                         </h2>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
+                        <AppButton
+                            variant="icon"
                             @click="closeModal">
-                            <fa-icon
-                                class="text-xs"
-                                icon="xmark" />
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="xmark" />
+                            </template>
+                        </AppButton>
                     </div>
 
                     <form
@@ -308,22 +309,38 @@ async function submitRecord(): Promise<void> {
                             type="text"
                             placeholder="Description, reference..." />
 
-                        <div class="flex justify-end gap-2">
-                            <button
-                                type="button"
-                                class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="closeModal">
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="isLoading || isSubmitting"
-                                class="flex cursor-pointer items-center gap-1.5 rounded bg-lime-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-50">
-                                <span
-                                    v-if="isSubmitting"
-                                    class="h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
-                                <span>{{ isEditing ? 'Save Changes' : 'Add Entry' }}</span>
-                            </button>
+                        <div
+                            class="flex gap-3"
+                            :class="isEditing ? 'justify-between' : 'justify-end'">
+                            <AppButton
+                                v-if="isEditing && itemToEdit"
+                                label="Delete entry"
+                                variant="danger-text"
+                                class="-ml-3"
+                                @click="emit('delete-item', itemToEdit)">
+                                <template #icon>
+                                    <fa-icon icon="trash-can" />
+                                </template>
+                            </AppButton>
+
+                            <div class="flex justify-end gap-2">
+                                <AppButton
+                                    label="Cancel"
+                                    variant="text"
+                                    @click="closeModal" />
+                                <AppButton
+                                    type="submit"
+                                    :disabled="isLoading || isSubmitting"
+                                    :label="isEditing ? 'Save Changes' : 'Add Entry'">
+                                    <template
+                                        v-if="isSubmitting"
+                                        #icon>
+                                        <span
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                    </template>
+                                    <span v-if="isSubmitting">Submitting..</span>
+                                </AppButton>
+                            </div>
                         </div>
                     </form>
                 </div>

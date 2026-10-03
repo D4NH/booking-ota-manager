@@ -7,6 +7,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { PropertyFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
@@ -88,19 +89,22 @@ function openEditModal(item: PropertyFinance): void {
                     input-label=""
                     class="w-60"
                     :options="categoryOptions" />
-                <button
-                    class="shrink-0 cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow-sm transition hover:bg-lime-300"
+                <AppButton
+                    label="Add Entry"
+                    variant="primary"
                     @click="openAddModal">
-                    <fa-icon
-                        class="-ml-1 text-xs"
-                        icon="plus" />
-                    Add Entry
-                </button>
-                <button
-                    class="shrink-0 cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow transition hover:bg-lime-300"
+                    <template #icon>
+                        <fa-icon icon="plus" />
+                    </template>
+                </AppButton>
+                <AppButton
+                    label="Transfer Funds"
+                    variant="primary"
                     @click="isTransferModalOpen = true">
-                    Transfer Funds
-                </button>
+                    <template #icon>
+                        <fa-icon icon="arrow-right-arrow-left" />
+                    </template>
+                </AppButton>
             </div>
         </div>
 
@@ -156,7 +160,7 @@ function openEditModal(item: PropertyFinance): void {
                                     ">
                                     {{ item.type === 'expense' ? '-' : '+' }}
                                 </span>
-                                <span class="text-sm">
+                                <span class="text-xs">
                                     {{ formatIDR(item.amount) }}
                                 </span>
 
@@ -177,29 +181,25 @@ function openEditModal(item: PropertyFinance): void {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2.5">
-                            <div class="flex h-7 items-center justify-end gap-1">
-                                <button
-                                    v-if="!item.id.startsWith('dexie')"
-                                    type="button"
-                                    title="Edit Transaction"
-                                    class="cursor-pointer p-1 text-mist-400 hover:text-lime-400"
+                        <td class="h-7 px-4 py-2.5">
+                            <div
+                                v-if="!item.id.startsWith('dexie')"
+                                class="flex items-center justify-end gap-1">
+                                <AppButton
+                                    variant="icon"
                                     @click="openEditModal(item)">
-                                    <fa-icon icon="pen-to-square" />
-                                </button>
-                                <span
-                                    v-if="!item.id.startsWith('dexie')"
-                                    class="text-mist-700">
-                                    |
-                                </span>
-                                <button
-                                    v-if="!item.id.startsWith('dexie')"
-                                    type="button"
-                                    title="Delete Transaction"
-                                    class="cursor-pointer p-1 text-mist-400 hover:text-rose-400"
+                                    <template #icon>
+                                        <fa-icon icon="pen-to-square" />
+                                    </template>
+                                </AppButton>
+                                <span class="text-mist-700">|</span>
+                                <AppButton
+                                    variant="danger-icon"
                                     @click="removePropertyTransaction(item.id, item.category)">
-                                    <fa-icon icon="trash-can" />
-                                </button>
+                                    <template #icon>
+                                        <fa-icon icon="trash-can" />
+                                    </template>
+                                </AppButton>
                             </div>
                         </td>
                     </tr>
@@ -221,7 +221,7 @@ function openEditModal(item: PropertyFinance): void {
             </table>
         </div>
 
-        <!-- Paginator Footer -->
+        <!-- Paginator -->
         <div
             v-if="totalItems > 0"
             class="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-mist-400 sm:flex-row">
@@ -280,7 +280,6 @@ function openEditModal(item: PropertyFinance): void {
             </div>
         </div>
 
-        <!-- External Modals -->
         <PropertyTransactionModal
             v-model="isModalOpen"
             :item-to-edit="editingItem"

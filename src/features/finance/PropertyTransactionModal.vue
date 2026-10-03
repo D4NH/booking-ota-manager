@@ -4,6 +4,7 @@ import { useFinanceSync } from '@/composables/useFinanceSync';
 import { getCurrentDate } from '@/utils/date';
 import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -49,7 +50,8 @@ const emit = defineEmits<{
 }>();
 const isOpen = defineModel<boolean>({ default: false });
 
-const { addPropertyTransaction, editPropertyTransaction } = useFinanceSync();
+const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
+    useFinanceSync();
 
 const formPropertyId = ref(defaultPropertyId);
 const formType = ref<PropertyFinanceType>('expense');
@@ -61,7 +63,6 @@ const isSubmitting = ref(false);
 
 const isEditing = computed(() => Boolean(itemToEdit));
 
-// Populate form when opening or changing edit item
 watch(
     () => [isOpen.value, itemToEdit] as const,
     ([open, item]) => {
@@ -124,6 +125,13 @@ async function submitTransaction(): Promise<void> {
         isSubmitting.value = false;
     }
 }
+async function handleDeleteEntry(): Promise<void> {
+    const item = itemToEdit;
+    if (!item) return;
+
+    await removePropertyTransaction(item.id, item.category);
+    closeModal();
+}
 </script>
 
 <template>
@@ -146,14 +154,13 @@ async function submitTransaction(): Promise<void> {
                         <h2 class="font-semibold text-mist-100">
                             {{ isEditing ? 'Edit Property Record' : 'Add Property Record' }}
                         </h2>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
+                        <AppButton
+                            variant="icon"
                             @click="closeModal">
-                            <fa-icon
-                                class="text-xs"
-                                icon="xmark" />
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="xmark" />
+                            </template>
+                        </AppButton>
                     </div>
 
                     <form
@@ -200,25 +207,37 @@ async function submitTransaction(): Promise<void> {
                             type="text"
                             placeholder="Extra deep cleaning after stay" />
 
-                        <div class="flex justify-end gap-2">
-                            <button
-                                type="button"
-                                class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="closeModal">
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="isSubmitting"
-                                class="cursor-pointer rounded-sm bg-lime-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-lime-300 disabled:opacity-50">
-                                {{
-                                    isSubmitting
-                                        ? 'Saving...'
-                                        : isEditing
-                                          ? 'Update Record'
-                                          : 'Add Record'
-                                }}
-                            </button>
+                        <div
+                            class="flex gap-3"
+                            :class="isEditing ? 'justify-between' : 'justify-end'">
+                            <AppButton
+                                v-if="isEditing"
+                                label="Delete booking"
+                                variant="danger-text"
+                                @click="handleDeleteEntry">
+                                <template #icon>
+                                    <fa-icon icon="trash-can" />
+                                </template>
+                            </AppButton>
+
+                            <div class="flex justify-end gap-2">
+                                <AppButton
+                                    label="Cancel"
+                                    variant="text"
+                                    @click="closeModal" />
+                                <AppButton
+                                    type="submit"
+                                    :disabled="isSubmitting"
+                                    :label="isEditing ? 'Update Record' : 'Add Record'">
+                                    <template
+                                        v-if="isSubmitting"
+                                        #icon>
+                                        <span
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                    </template>
+                                    <span v-if="isSubmitting">Saving..</span>
+                                </AppButton>
+                            </div>
                         </div>
                     </form>
                 </div>

@@ -1,7 +1,7 @@
 import './assets/styles/vendor.css';
 import './assets/styles/main.scss';
 
-import { createApp } from 'vue';
+import { createApp, h } from 'vue';
 import { createHead } from '@unhead/vue/client';
 import { createPinia } from 'pinia';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -32,6 +32,7 @@ import {
     faCalendarCheck,
     faCalendarDays,
     faChartPie,
+    faCheck,
     faChevronDown,
     faChevronLeft,
     faChevronRight,
@@ -95,6 +96,7 @@ library.add(
     faCalendarCheck,
     faCalendarDays,
     faChartPie,
+    faCheck,
     faChevronDown,
     faChevronLeft,
     faChevronRight,
@@ -144,7 +146,12 @@ app.use(createPinia());
 app.use(router);
 app.use(head);
 
-app.component('FaIcon', FontAwesomeIcon);
+// app.component('FaIcon', FontAwesomeIcon);
+
+app.component('FaIcon', (props, context) => {
+    return h(FontAwesomeIcon, { ...props, fixedWidth: true }, context.slots);
+});
+
 app.use(
     createToastflow({
         closeButton: false,

@@ -12,6 +12,7 @@ import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 
 import GoogleSyncButton from '@/components/GoogleSyncButton.vue';
+import AppButton from '@/components/ui/AppButton.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import PropertyDataBackup from '@/features/settings/PropertyDataBackup.vue';
@@ -165,15 +166,15 @@ async function handleWipeDatabase(): Promise<void> {
                         Configure physical rental units and baseline pricing
                     </template>
                 </CardTitle>
-                <button
-                    type="button"
-                    class="cursor-pointer rounded-md bg-lime-500 px-3 py-1.5 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
+                <AppButton
+                    label="Add Property"
+                    variant="primary"
+                    size="md"
                     @click="handleAddProperty">
                     <fa-icon
-                        icon="plus"
-                        class="mr-1 text-xs" />
-                    Add Property
-                </button>
+                        class="text-xs"
+                        icon="plus" />
+                </AppButton>
             </div>
 
             <!-- Properties -->

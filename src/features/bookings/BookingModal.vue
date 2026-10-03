@@ -12,6 +12,7 @@ import { calculateNights, getCurrentDate } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/financeCalculators';
 import { formatIDR } from '@/utils/money';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -142,14 +143,13 @@ function handleSubmit(): void {
                     <h2 class="font-semibold text-mist-100">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
-                    <button
-                        type="button"
-                        class="cursor-pointer text-mist-400 hover:text-mist-200"
+                    <AppButton
+                        variant="icon"
                         @click="emit('close')">
-                        <fa-icon
-                            class="text-xs"
-                            icon="xmark" />
-                    </button>
+                        <template #icon>
+                            <fa-icon icon="xmark" />
+                        </template>
+                    </AppButton>
                 </div>
 
                 <div
@@ -273,30 +273,25 @@ function handleSubmit(): void {
                     <div
                         class="flex gap-3"
                         :class="[Boolean(bookingToEdit) ? 'justify-between' : 'justify-end']">
-                        <button
+                        <AppButton
                             v-if="Boolean(bookingToEdit)"
-                            type="button"
-                            class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                            label="Delete booking"
+                            variant="danger-text"
                             @click="handleDeleteBooking">
-                            <fa-icon
-                                class="text-xs"
-                                icon="trash-can" />
-                            Delete booking
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="trash-can" />
+                            </template>
+                        </AppButton>
 
                         <div class="flex items-center gap-3">
-                            <button
-                                type="button"
-                                class="cursor-pointer px-4 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="emit('close')">
-                                Cancel
-                            </button>
-                            <button
+                            <AppButton
+                                label="Cancel"
+                                variant="text"
+                                @click="emit('close')" />
+                            <AppButton
                                 type="submit"
                                 :disabled="Boolean(validationError)"
-                                class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
-                                {{ bookingToEdit ? 'Update Booking' : 'Save Booking' }}
-                            </button>
+                                :label="bookingToEdit ? 'Update Booking' : 'Save Booking'" />
                         </div>
                     </div>
                 </form>

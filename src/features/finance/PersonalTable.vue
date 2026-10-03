@@ -6,6 +6,7 @@ import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { PersonalFinance, SharedFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
 import RecurringChecklist from '@/features/finance/RecurringChecklist.vue';
@@ -48,6 +49,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
     } else {
         await removePersonalTransaction(item.id, item.category);
     }
+    isModalOpen.value = false;
 }
 </script>
 
@@ -90,11 +92,14 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                         icon="arrows-rotate" />
                     Recurring Payments ({{ totalRecurringCount }})
                 </button>
-                <button
-                    class="cursor-pointer rounded-md bg-lime-400 px-3 py-2 text-xs font-semibold text-mist-950 shadow-sm transition hover:bg-lime-300"
+                <AppButton
+                    label="Add Record"
+                    variant="primary"
                     @click="openAddModal">
-                    + Add Record
-                </button>
+                    <template #icon>
+                        <fa-icon icon="plus" />
+                    </template>
+                </AppButton>
             </div>
         </div>
 
@@ -102,7 +107,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
 
         <div
             class="min-h-0 flex-1 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full table-fixed border-collapse text-left text-xs text-mist-200">
+            <table class="w-full table-fixed border-collapse text-left text-sm text-mist-200">
                 <thead
                     class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
                     <tr>
@@ -118,7 +123,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                         v-for="item in currentList"
                         :key="item.id"
                         class="group hover:bg-mist-800/50">
-                        <td class="px-4 py-2.5 align-middle font-mono text-mist-400">
+                        <td class="px-4 py-2.5 align-middle font-mono text-xs text-mist-400">
                             {{ item.date }}
                         </td>
                         <td class="px-4 py-2.5 align-middle font-medium text-mist-100">
@@ -144,7 +149,8 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
-                        <td class="px-4 py-2.5 text-right align-middle font-mono font-semibold">
+                        <td
+                            class="px-4 py-2.5 text-right align-middle font-mono text-xs font-medium">
                             <span
                                 :class="
                                     item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
@@ -153,27 +159,23 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                             </span>
                             {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="px-4 py-2.5 text-center align-middle">
-                            <div class="flex h-7 items-center justify-end gap-1">
-                                <button
-                                    type="button"
-                                    title="Edit Transaction"
-                                    class="cursor-pointer rounded p-1 text-mist-400 opacity-70 transition group-hover:opacity-100 hover:bg-mist-800 hover:text-lime-400"
+                        <td class="h-7 px-4 py-2.5 text-center align-middle">
+                            <div class="flex items-center justify-end gap-1">
+                                <AppButton
+                                    variant="icon"
                                     @click="openEditModal(item)">
-                                    <fa-icon
-                                        icon="pen-to-square"
-                                        class="text-xs" />
-                                </button>
+                                    <template #icon>
+                                        <fa-icon icon="pen-to-square" />
+                                    </template>
+                                </AppButton>
                                 <span class="text-mist-700">|</span>
-                                <button
-                                    type="button"
-                                    title="Delete Transaction"
-                                    class="cursor-pointer rounded p-1 text-mist-400 opacity-70 transition group-hover:opacity-100 hover:bg-mist-800 hover:text-rose-400"
+                                <AppButton
+                                    variant="danger-icon"
                                     @click="handleDelete(item)">
-                                    <fa-icon
-                                        icon="trash-can"
-                                        class="text-xs" />
-                                </button>
+                                    <template #icon>
+                                        <fa-icon icon="trash-can" />
+                                    </template>
+                                </AppButton>
                             </div>
                         </td>
                     </tr>
@@ -193,6 +195,7 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
             v-model="isModalOpen"
             :owner="activeTab"
             :item-to-edit="editingItem"
+            @delete-item="handleDelete"
             @closed="editingItem = null" />
     </div>
 </template>
