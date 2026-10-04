@@ -68,13 +68,13 @@ const maturity = computed(() =>
             <!-- Header Tag -->
             <div class="mb-4 flex h-7 items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                    <span class="h-2.5 w-2.5 rounded-full bg-teal-400"></span>
                     <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         SBN Investment
                     </h3>
                 </div>
                 <span
-                    class="rounded bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-300">
+                    class="rounded bg-teal-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-teal-300">
                     Fixed Coupon {{ activeData.couponRate }}% p.a.
                 </span>
             </div>
@@ -86,7 +86,7 @@ const maturity = computed(() =>
                     class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                     :class="
                         selectedAccount === 'all'
-                            ? 'border border-emerald-400/30 bg-emerald-400/20 text-emerald-300'
+                            ? 'border border-teal-400/30 bg-teal-400/20 text-teal-300'
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="selectedAccount = 'all'">
@@ -99,7 +99,7 @@ const maturity = computed(() =>
                     class="cursor-pointer rounded px-2 py-0.5 font-mono text-[11px] transition"
                     :class="
                         selectedAccount === acc.owner
-                            ? 'border border-mist-700 bg-mist-800 text-emerald-300'
+                            ? 'border border-mist-700 bg-mist-800 text-teal-300'
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="selectedAccount = acc.owner">
@@ -112,7 +112,7 @@ const maturity = computed(() =>
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="block text-xs text-mist-400 uppercase">Series</span>
-                        <span class="text-xs font-semibold tracking-wider text-emerald-400">
+                        <span class="text-xs font-semibold tracking-wider text-teal-400">
                             {{ activeData.series }}
                         </span>
                     </div>
@@ -134,7 +134,7 @@ const maturity = computed(() =>
                     </div>
                     <div class="h-1.5 w-full overflow-hidden rounded-full bg-mist-950/50">
                         <div
-                            class="h-full bg-emerald-500 transition-all duration-500"
+                            class="h-full bg-teal-500 transition-all duration-500"
                             :style="{ width: `${maturity.progressPct}%` }"></div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@ const maturity = computed(() =>
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-semibold text-emerald-400">
+                        <div class="text-sm font-semibold text-teal-400">
                             +{{ formatIDR(activeData.monthlyNet) }} / month
                         </div>
                         <span class="text-xs text-mist-400">Net after 10% tax</span>
@@ -164,7 +164,7 @@ const maturity = computed(() =>
                     </div>
                     <div class="text-right">
                         <span class="block text-[11px] text-mist-400">Total Collected Yield:</span>
-                        <span class="font-semibold text-emerald-400">
+                        <span class="font-semibold text-teal-400">
                             {{ formatIDR(activeData.collected) }}
                         </span>
                     </div>
@@ -179,7 +179,7 @@ const maturity = computed(() =>
                 Asset: <strong class="text-mist-200">Government Sukuk</strong>
             </span>
             <span class="text-mist-400">
-                Status: <strong class="text-emerald-400">Active</strong>
+                Status: <strong class="text-teal-400">Active</strong>
             </span>
         </div>
     </div>
