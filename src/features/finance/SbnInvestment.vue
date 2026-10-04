@@ -90,7 +90,7 @@ const maturity = computed(() =>
                             : 'text-mist-400 hover:text-mist-200'
                     "
                     @click="selectedAccount = 'all'">
-                    All ({{ formatIDR(sbnTotalPrincipal) }})
+                    All
                 </button>
                 <button
                     v-for="acc in sbnAccountAllocation"

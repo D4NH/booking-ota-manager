@@ -102,7 +102,7 @@ const openEditGoal = (goal: SavingGoal) => {
             </div>
             <button
                 type="button"
-                class="cursor-pointer rounded border border-mist-700 bg-mist-800 px-2 py-1 text-xs font-semibold text-blue-400 transition hover:bg-mist-700"
+                class="flex cursor-pointer items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1 text-xs font-semibold text-blue-400 transition hover:bg-mist-700"
                 @click="openAddGoal">
                 <fa-icon
                     class="text-[10px]"
@@ -169,7 +169,9 @@ const openEditGoal = (goal: SavingGoal) => {
                 <div class="flex items-center justify-between font-mono text-xs text-mist-400">
                     <span>
                         <template v-if="goal.isCompleted">
-                            <strong class="text-blue-400">✓ Goal Achieved</strong>
+                            <strong class="text-blue-400">
+                                <fa-icon icon="check" /> Goal Achieved
+                            </strong>
                         </template>
                         <template v-else>
                             Need:

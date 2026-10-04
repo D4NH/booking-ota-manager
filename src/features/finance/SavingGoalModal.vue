@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { SavingGoal, PersonalOwner } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -124,14 +125,13 @@ async function handleDeleteGoal(): Promise<void> {
                         <h2 class="text-sm font-semibold tracking-wider text-mist-100 uppercase">
                             {{ isEditing ? 'Edit Savings Goal' : 'Add Savings Goal' }}
                         </h2>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
+                        <AppButton
+                            variant="icon"
                             @click="closeModal">
-                            <fa-icon
-                                class="text-sm"
-                                icon="xmark" />
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="xmark" />
+                            </template>
+                        </AppButton>
                     </div>
 
                     <form
@@ -206,36 +206,35 @@ async function handleDeleteGoal(): Promise<void> {
                         <div
                             class="flex gap-2"
                             :class="[isEditing ? 'justify-between' : 'justify-end']">
-                            <button
+                            <AppButton
                                 v-if="isEditing"
-                                type="button"
-                                class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                                class="-ml-2"
+                                label="Delete Goal"
+                                variant="danger-text"
                                 @click="handleDeleteGoal">
-                                <fa-icon
-                                    class="text-xs"
-                                    icon="trash-can" />
-                                Delete Goal
-                            </button>
+                                <template #icon>
+                                    <fa-icon icon="trash-can" />
+                                </template>
+                            </AppButton>
 
-                            <div class="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    class="cursor-pointer px-3 py-2 text-xs font-medium text-mist-400 hover:text-mist-200"
-                                    @click="closeModal">
-                                    Cancel
-                                </button>
-                                <button
+                            <div class="flex justify-end gap-2">
+                                <AppButton
+                                    label="Cancel"
+                                    variant="text"
+                                    @click="closeModal" />
+                                <AppButton
+                                    color="blue"
                                     type="submit"
                                     :disabled="isSubmitting"
-                                    class="cursor-pointer rounded-md bg-blue-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-blue-300 disabled:opacity-50">
-                                    {{
-                                        isSubmitting
-                                            ? 'Saving...'
-                                            : isEditing
-                                              ? 'Update Goal'
-                                              : 'Create Goal'
-                                    }}
-                                </button>
+                                    :label="isEditing ? 'Update Goal' : 'Create Goal'">
+                                    <template
+                                        v-if="isSubmitting"
+                                        #icon>
+                                        <span
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                    </template>
+                                    <span v-if="isSubmitting">Saving..</span>
+                                </AppButton>
                             </div>
                         </div>
                     </form>

@@ -103,9 +103,12 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
             </div>
         </div>
 
-        <RecurringChecklist v-if="showRecurring" />
+        <RecurringChecklist
+            v-if="showRecurring"
+            class="min-h-0 flex-1 overflow-auto" />
 
         <div
+            v-else
             class="min-h-0 flex-1 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <table class="w-full table-fixed border-collapse text-left text-sm text-mist-200">
                 <thead

@@ -8,6 +8,7 @@ import { formatIDR } from '@/utils/money';
 import { getCurrentDate } from '@/utils/date';
 import type { PersonalOwner } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -347,21 +348,22 @@ async function executeSavingsTransfer(): Promise<void> {
 
                         <!-- Form Actions -->
                         <div class="flex justify-end gap-2">
-                            <button
-                                type="button"
-                                class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                                @click="closeModal">
-                                Cancel
-                            </button>
-                            <button
+                            <AppButton
+                                label="Cancel"
+                                variant="text"
+                                @click="closeModal" />
+                            <AppButton
+                                color="blue"
                                 type="submit"
                                 :disabled="isSubmitting"
-                                class="flex cursor-pointer items-center gap-1.5 rounded bg-blue-400 px-4 py-2 font-semibold text-mist-950 transition hover:bg-blue-300 disabled:opacity-50">
-                                <span
+                                :label="isSubmitting ? 'Processing...' : 'Transfer'">
+                                <template
                                     v-if="isSubmitting"
-                                    class="h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
-                                <span>{{ isSubmitting ? 'Processing...' : 'Transfer' }}</span>
-                            </button>
+                                    #icon>
+                                    <span
+                                        class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                </template>
+                            </AppButton>
                         </div>
                     </form>
                 </div>

@@ -408,6 +408,7 @@ function handleSubmit(): void {
                         v-if="isEditing"
                         label="Delete Property"
                         variant="danger-text"
+                        class="-ml-2"
                         @click="handleDeleteProperty">
                         <template #icon>
                             <fa-icon icon="trash-can" />
@@ -418,11 +419,10 @@ function handleSubmit(): void {
                             label="Cancel"
                             variant="text"
                             @click="emit('close')" />
-                        <button
+                        <AppButton
                             type="submit"
-                            class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50">
-                            {{ isEditing ? 'Save Changes' : 'Create Property' }}
-                        </button>
+                            :label="isEditing ? 'Save Changes' : 'Create Property'">
+                        </AppButton>
                     </div>
                 </div>
             </form>

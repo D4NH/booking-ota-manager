@@ -36,7 +36,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
 
 <template>
     <div class="flex flex-col">
-        <div class="flex justify-between">
+        <div class="-mt-5 flex justify-between">
             <CardTitle>
                 <template #title>
                     Recurring Cash Flow & Inflows

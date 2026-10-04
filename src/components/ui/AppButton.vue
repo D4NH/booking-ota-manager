@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 
-export type ButtonColor = 'default' | 'blue' | 'amber';
+export type ButtonColor = 'default' | 'blue' | 'amber' | 'mist';
 
 export type VariantType =
     | 'primary'
@@ -37,6 +37,11 @@ const solidColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig
         text: 'text-mist-950',
         hover: 'hover:bg-amber-400',
     },
+    mist: {
+        bg: 'bg-mist-400',
+        text: 'text-mist-950',
+        hover: 'hover:bg-mist-500',
+    },
 };
 
 const outlineColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig> = {
@@ -52,11 +57,18 @@ const outlineColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConf
         border: 'border border-amber-500/40',
         hover: 'hover:bg-amber-500/10 hover:border-amber-400',
     },
+    mist: {
+        bg: 'bg-transparent',
+        text: 'text-mist-400',
+        border: 'border border-mist-500/40',
+        hover: 'hover:bg-blue-500/10 hover:border-mist-400',
+    },
 };
 
 const textColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig> = {
     blue: { text: 'text-blue-400', hover: 'hover:text-blue-300' },
     amber: { text: 'text-amber-400', hover: 'hover:text-amber-300' },
+    mist: { text: 'text-mist-400', hover: 'hover:text-mist-300' },
 };
 
 interface Props {

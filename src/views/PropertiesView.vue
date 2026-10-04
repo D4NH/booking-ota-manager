@@ -89,10 +89,10 @@ function handleAddProperty(): void {
 
                     <button
                         type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 px-4 py-2 text-xs font-semibold text-mist-950 transition-colors hover:bg-lime-400"
+                        class="cursor-pointer rounded-md bg-lime-500 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
                         @click="handleAddProperty">
                         <fa-icon
-                            class="mr-1 text-xs"
+                            class="-ml-1 text-xs"
                             icon="plus" />
                         Add Property
                     </button>

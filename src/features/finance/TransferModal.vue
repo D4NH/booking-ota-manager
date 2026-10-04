@@ -5,6 +5,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { TransferTargetAccount } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -80,12 +81,13 @@ async function handleTransfer(): Promise<void> {
             <div
                 class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                 <h2 class="text-base font-semibold text-mist-100">Transfer Funds</h2>
-                <button
-                    type="button"
-                    class="cursor-pointer text-mist-400 hover:text-mist-200"
+                <AppButton
+                    variant="icon"
                     @click="closeModal">
-                    <fa-icon icon="xmark" />
-                </button>
+                    <template #icon>
+                        <fa-icon icon="xmark" />
+                    </template>
+                </AppButton>
             </div>
 
             <p class="text-xs leading-relaxed text-mist-400">
@@ -139,21 +141,22 @@ async function handleTransfer(): Promise<void> {
                     placeholder="..." />
 
                 <div class="flex justify-end space-x-2">
-                    <button
-                        type="button"
-                        class="px-3 py-2 text-xs font-semibold text-mist-400 hover:text-mist-200"
-                        @click="closeModal">
-                        Cancel
-                    </button>
-                    <button
+                    <AppButton
+                        label="Cancel"
+                        variant="text"
+                        @click="closeModal" />
+                    <AppButton
                         type="submit"
                         :disabled="isLoading || isSubmitting"
-                        class="flex items-center gap-1.5 rounded-md bg-lime-400 px-4 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-300 disabled:opacity-50">
-                        <span
+                        :label="isBothMode ? 'Payout Both' : 'Confirm Payout'">
+                        <template
                             v-if="isSubmitting"
-                            class="h-3 w-3 animate-spin rounded-full border-2 border-mist-950 border-t-transparent"></span>
-                        <span>{{ isBothMode ? 'Payout Both' : 'Confirm Payout' }}</span>
-                    </button>
+                            #icon>
+                            <span
+                                class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                        </template>
+                        <span v-if="isSubmitting">Saving..</span>
+                    </AppButton>
                 </div>
             </form>
         </div>

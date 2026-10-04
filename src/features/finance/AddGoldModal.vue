@@ -6,6 +6,7 @@ import { useFinanceStore } from '@/stores/useFinanceStore';
 import { getCurrentDate } from '@/utils/date';
 import type { PersonalOwner, GoldType, GoldAsset } from '@/types/finance';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
@@ -147,14 +148,13 @@ async function handleDeleteGold(): Promise<void> {
                         <h2 class="font-semibold text-mist-100">
                             {{ isEditing ? 'Edit Gold Holding' : 'Add Gold Holding' }}
                         </h2>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-lg leading-none text-mist-400 hover:text-mist-200"
+                        <AppButton
+                            variant="icon"
                             @click="closeModal">
-                            <fa-icon
-                                class="text-xs"
-                                icon="xmark" />
-                        </button>
+                            <template #icon>
+                                <fa-icon icon="xmark" />
+                            </template>
+                        </AppButton>
                     </div>
 
                     <form
@@ -228,30 +228,35 @@ async function handleDeleteGold(): Promise<void> {
                         <div
                             class="flex gap-2"
                             :class="[isEditing ? 'justify-between' : 'justify-end']">
-                            <button
+                            <AppButton
                                 v-if="isEditing"
-                                type="button"
-                                class="cursor-pointer py-2 text-xs font-semibold text-rose-400 hover:text-rose-300"
+                                class="-ml-2"
+                                label="Delete Gold"
+                                variant="danger-text"
                                 @click="handleDeleteGold">
-                                <fa-icon
-                                    class="text-xs"
-                                    icon="trash-can" />
-                                Delete booking
-                            </button>
+                                <template #icon>
+                                    <fa-icon icon="trash-can" />
+                                </template>
+                            </AppButton>
 
                             <div class="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    class="px-3 py-2 text-xs text-mist-400 hover:text-mist-200"
-                                    @click="closeModal">
-                                    Cancel
-                                </button>
-                                <button
+                                <AppButton
+                                    label="Cancel"
+                                    variant="text"
+                                    @click="closeModal" />
+                                <AppButton
+                                    color="amber"
                                     type="submit"
                                     :disabled="isSubmitting"
-                                    class="rounded-md bg-amber-300 px-4 py-2 text-xs font-semibold text-mist-950 hover:bg-amber-400">
-                                    {{ isSubmitting ? 'Saving...' : 'Save Holding' }}
-                                </button>
+                                    :label="isEditing ? 'Edit Gold' : 'Add Gold'">
+                                    <template
+                                        v-if="isSubmitting"
+                                        #icon>
+                                        <span
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                    </template>
+                                    <span v-if="isSubmitting">Saving..</span>
+                                </AppButton>
                             </div>
                         </div>
                     </form>

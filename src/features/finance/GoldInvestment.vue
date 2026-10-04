@@ -107,11 +107,15 @@ async function handleRefreshGoldPrice() {
                             Cert
                         </button>
                     </div>
+
                     <button
-                        v-if="activeView === 'logs'"
-                        class="rounded-md bg-amber-300 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-amber-400"
+                        type="button"
+                        class="flex cursor-pointer items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1 text-xs font-semibold text-amber-300 transition hover:bg-mist-700"
                         @click="openAddGoldModal">
-                        + Add Gold
+                        <fa-icon
+                            class="text-[10px]"
+                            icon="plus" />
+                        Add Goal
                     </button>
                 </div>
             </div>
@@ -129,7 +133,7 @@ async function handleRefreshGoldPrice() {
                                 : 'text-mist-400 hover:text-mist-200'
                         "
                         @click="selectedAccount = 'all'">
-                        All ({{ totalGoldGrams }}g)
+                        All
                     </button>
                     <button
                         v-for="acc in goldAccountAllocation"
@@ -142,7 +146,7 @@ async function handleRefreshGoldPrice() {
                                 : 'text-mist-400 hover:text-mist-200'
                         "
                         @click="selectedAccount = acc.owner">
-                        {{ acc.label }} ({{ acc.weightGrams }}g)
+                        {{ acc.label }}
                     </button>
                 </div>
                 <!-- Virtual Gold Ingot Display -->
