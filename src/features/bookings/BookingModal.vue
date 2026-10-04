@@ -35,9 +35,14 @@ const { sortedProperties } = storeToRefs(propertyStore);
 const bookingStore = useBookingStore();
 const { deleteBooking } = useBookingSync();
 
-const { bookingToEdit = null, currentProperty = 'all' } = defineProps<{
+const {
+    bookingToEdit = null,
+    currentProperty = 'all',
+    checkInDate = null,
+} = defineProps<{
     bookingToEdit?: Booking | null;
     currentProperty?: PropertyId | 'all';
+    checkInDate?: string;
 }>();
 const emit = defineEmits<{
     close: [];
@@ -54,7 +59,7 @@ const form = ref({
     propertyId: resolveInitialProperty(),
     bookingId: bookingToEdit?.bookingId || '',
     guestName: bookingToEdit?.guestName || '',
-    checkIn: bookingToEdit?.checkIn || getCurrentDate(),
+    checkIn: bookingToEdit?.checkIn || checkInDate || getCurrentDate(),
     checkOut: bookingToEdit?.checkOut || '',
     nights: bookingToEdit?.nights || 1,
     payout: bookingToEdit?.payout || '',
