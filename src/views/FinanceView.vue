@@ -4,7 +4,7 @@ import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePropertyMetrics from '@/features/finance/PropertyMetrics.vue';
 import FinancePropertyTable from '@/features/finance/PropertyTable.vue';
 import FinancePropertyBreakdown from '@/features/finance/PropertyBreakdown.vue';
-import CashFlow from '@/features/finance/CashFlow.vue';
+import PropertyCashFlow from '@/features/finance/PropertyCashFlow.vue';
 </script>
 
 <template>
@@ -21,10 +21,11 @@ import CashFlow from '@/features/finance/CashFlow.vue';
         <div class="space-y-4">
             <FinancePropertyMetrics />
 
-            <div class="grid h-115 grid-cols-2 gap-4">
-                <CashFlow />
+            <div class="grid grid-cols-2 gap-4">
+                <PropertyCashFlow />
                 <FinancePropertyBreakdown />
             </div>
+
             <FinancePropertyTable class="max-h-162" />
         </div>
     </div>
