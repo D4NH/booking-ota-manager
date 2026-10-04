@@ -5,6 +5,8 @@ import { getPropertyStyle } from '@/config/properties';
 import type { Booking, StagedBooking } from '@/types/booking';
 import { formatDate } from '@/utils/date';
 
+import AppButton from '@/components/ui/AppButton.vue';
+
 interface Props {
     isCollapsed: boolean;
     pendingPayments?: Booking[];
@@ -222,20 +224,23 @@ const totalCount = computed(
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="cursor-pointer text-mist-400 hover:text-mist-100"
-                            @click.stop="emit('edit', b)">
-                            <fa-icon icon="pen-to-square" />
-                        </button>
+                    <div class="-mr-2 flex items-center">
+                        <AppButton
+                            variant="icon"
+                            @click="emit('edit', b)">
+                            <template #icon>
+                                <fa-icon icon="pen-to-square" />
+                            </template>
+                        </AppButton>
                         <span class="text-mist-700">|</span>
-                        <button
-                            type="button"
-                            class="cursor-pointer text-mist-400 hover:text-mist-100"
-                            @click.stop="emit('mark-complete', b)">
-                            <fa-icon icon="clipboard-check" />
-                        </button>
+                        <AppButton
+                            color="lime"
+                            variant="icon"
+                            @click="emit('mark-complete', b)">
+                            <template #icon>
+                                <fa-icon icon="clipboard-check" />
+                            </template>
+                        </AppButton>
                     </div>
                 </div>
             </div>

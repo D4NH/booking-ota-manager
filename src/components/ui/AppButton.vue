@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 
-export type ButtonColor = 'default' | 'blue' | 'amber' | 'mist';
+export type ButtonColor = 'default' | 'blue' | 'amber' | 'mist' | 'lime';
 
 export type VariantType =
     | 'primary'
@@ -42,6 +42,11 @@ const solidColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig
         text: 'text-mist-950',
         hover: 'hover:bg-mist-500',
     },
+    lime: {
+        bg: 'bg-lime-400',
+        text: 'text-mist-950',
+        hover: 'hover:bg-lime-500',
+    },
 };
 
 const outlineColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig> = {
@@ -63,12 +68,19 @@ const outlineColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConf
         border: 'border border-mist-500/40',
         hover: 'hover:bg-blue-500/10 hover:border-mist-400',
     },
+    lime: {
+        bg: 'bg-transparent',
+        text: 'text-lime-400',
+        border: 'border border-lime-500/40',
+        hover: 'hover:bg-lime-500/10 hover:border-lime-400',
+    },
 };
 
 const textColorMap: Record<Exclude<ButtonColor, 'default'>, ButtonVariantConfig> = {
     blue: { text: 'text-blue-400', hover: 'hover:text-blue-300' },
     amber: { text: 'text-amber-400', hover: 'hover:text-amber-300' },
     mist: { text: 'text-mist-400', hover: 'hover:text-mist-300' },
+    lime: { text: 'text-lime-400', hover: 'hover:text-lime-300' },
 };
 
 interface Props {

@@ -20,24 +20,26 @@ const DEFAULT_PERSONAL_CATEGORY = 'Food & Drinks';
 const DEFAULT_SHARED_CATEGORY = 'House';
 const categoriesPersonal = [
     'Creditcard',
-    'Investments',
-    'Other',
     'Food & Drinks',
     'Groceries',
+    'Investments',
+    'Other',
     'Savings',
-    'Travel & Transport',
     'Subscription',
+    'Travel & Transport',
 ] as const;
 const categoriesShared = [
     'BPJS',
-    'Creditcard',
     'Electricity',
+    'Food & Drinks',
+    'Groceries',
+    'House',
     'Internet',
     'Investments',
     'Kirana',
-    'House',
     'Other',
     'Subscription',
+    'Travel & Transport',
 ] as const;
 const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
 const entryType = [

@@ -92,7 +92,6 @@ export function usePropertyFinance(
                 notes: `${b.listing} | ${b.guestName}`,
             }))
     );
-
     const unifiedPropertyFinances = computed<PropertyFinance[]>(() => {
         const unrecorded = extractUnrecordedBookings(
             sheetPropertyFinances.value,
@@ -100,7 +99,6 @@ export function usePropertyFinance(
         );
         return [...sheetPropertyFinances.value, ...unrecorded];
     });
-
     const filteredPropertyFinances = computed(() =>
         unifiedPropertyFinances.value
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
@@ -156,7 +154,6 @@ export function usePropertyFinance(
         sheetPropertyFinances.value = [...sheetPropertyFinances.value, item];
         await db.propertyFinances.put(item);
     }
-
     async function updatePropertyTransaction(
         id: string,
         payload: Omit<PropertyFinance, 'id'>
@@ -188,7 +185,6 @@ export function usePropertyFinance(
         );
         await db.propertyFinances.put(updatedRecord);
     }
-
     async function persistDexieBookingsToRemoteSheet(): Promise<number> {
         const unrecorded = extractUnrecordedBookings(
             sheetPropertyFinances.value,

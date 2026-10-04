@@ -345,7 +345,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                             font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
                             text-anchor="middle"
                             class="pointer-events-none"
-                            :class="{ 'fill-lime-400 font-black': hoveredIndex === idx }">
+                            :class="{ 'fill-lime-400': hoveredIndex === idx }">
                             {{ activeLabels[idx] }}
                         </text>
                     </g>

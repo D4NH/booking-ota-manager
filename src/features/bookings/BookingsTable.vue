@@ -187,7 +187,7 @@ function isCurrentBooking(b: Booking): boolean {
                             </div>
                         </td>
                         <td class="px-4 py-2.5 text-right text-nowrap">
-                            <div class="flex items-center justify-end gap-1">
+                            <div class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"
                                     @click="emit('edit', b)">
