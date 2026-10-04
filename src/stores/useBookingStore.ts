@@ -18,19 +18,21 @@ export const useBookingStore = defineStore('booking', () => {
     ): (string | number)[] => {
         const payout = Number(b.payout) || 0;
         const ownerPayout = b.ownerPayout ?? calculateOwnerPayout(payout);
+        const safeStatus =
+            b.status && String(b.status).trim().length > 0 ? String(b.status).trim() : 'Booked';
 
         return [
-            b.bookingId,
-            b.listing,
-            b.guestName,
-            b.checkIn,
-            b.checkOut,
-            b.nights,
-            b.payout,
-            ownerPayout > 0 ? ownerPayout : '',
-            b.status,
-            b.notes || '',
-            b.calendarEventId || '',
+            b.bookingId, // Col A (0)
+            b.listing, // Col B (1)
+            b.guestName, // Col C (2)
+            b.checkIn, // Col D (3)
+            b.checkOut, // Col E (4)
+            b.nights, // Col F (5)
+            b.payout, // Col G (6)
+            ownerPayout > 0 ? ownerPayout : '', // Col H (7)
+            safeStatus, // Col I (8)
+            b.notes || '', // Col J (9)
+            b.calendarEventId || '', // Col K (10)
         ];
     };
 
@@ -186,7 +188,17 @@ export const useBookingStore = defineStore('booking', () => {
         }
 
         const nights = calculateNights(updated.checkIn, updated.checkOut);
-        const updatedWithNights = { ...updated, nights };
+
+        const existing = bookings.value.find(
+            (b) => b.bookingId === updated.bookingId && b.propertyId === updated.propertyId
+        );
+        const resolvedStatus = updated.status || existing?.status || 'Booked';
+
+        const updatedWithNights: Booking = {
+            ...updated,
+            nights,
+            status: resolvedStatus,
+        };
 
         await sheetsApi.updateSheetRowById(
             targetSheetId,

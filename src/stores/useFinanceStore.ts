@@ -929,17 +929,35 @@ export const useFinanceStore = defineStore('finance', () => {
                     }));
             }
 
+            const REGEX_MHJ_BOOKING = /\[MHJ-BOOKING:\s*([^\]]+)\]/;
+
             const parsedPropFinances = (batchResults[1] || [])
                 .filter((r) => r[0] && String(r[0]).trim())
-                .map((r) => ({
-                    id: String(r[0]),
-                    propertyId: String(r[1] || ''),
-                    type: (r[2] as PropertyFinance['type']) || 'expense',
-                    category: String(r[3] || ''),
-                    amount: Number(r[4]) || 0,
-                    date: normalizeDate(r[5]),
-                    notes: String(r[6] || ''),
-                }));
+                .map((r): PropertyFinance => {
+                    const rawType = String(r[2] || '')
+                        .trim()
+                        .toLowerCase();
+                    const type: PropertyFinance['type'] =
+                        rawType === 'income' ? 'income' : 'expense';
+
+                    // Strip "Rp", spaces, and non-numeric punctuation (preserves negative sign & decimals)
+                    const rawAmount = String(r[4] ?? '').replace(/[^0-9.-]+/g, '');
+                    const amount = Number(rawAmount) || 0;
+
+                    const notes = String(r[6] || '').trim();
+                    const bookingMatch = REGEX_MHJ_BOOKING.exec(notes);
+
+                    return {
+                        id: String(r[0]).trim(),
+                        propertyId: String(r[1] || '').trim(),
+                        bookingId: bookingMatch ? bookingMatch[1]?.trim() : undefined,
+                        type,
+                        category: String(r[3] || '').trim(),
+                        amount,
+                        date: normalizeDate(r[5]),
+                        notes,
+                    };
+                });
 
             const parsedPersonal = (batchResults[2] || [])
                 .filter((r) => r[0] && String(r[0]).trim())

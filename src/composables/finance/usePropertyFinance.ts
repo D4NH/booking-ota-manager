@@ -14,7 +14,13 @@ import type { PropertyFinance } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
 
-const ELIGIBLE_STATUSES = new Set(['Completed', 'Waiting for payout', 'Checked-in', 'No show']);
+const ELIGIBLE_STATUSES = new Set([
+    'Booked',
+    'Completed',
+    'Waiting for payout',
+    'Checked-in',
+    'No show',
+]);
 
 /**
  * Single helper to extract Dexie bookings that have not yet been written to Property_Finances
@@ -28,15 +34,20 @@ function extractUnrecordedBookings(
     for (let i = 0; i < existingFinances.length; i++) {
         const item = existingFinances[i];
         if (!item) continue;
-        if (item.bookingId) {
-            recordedIds.add(item.bookingId);
+        if (item.bookingId && item.bookingId.trim()) {
+            recordedIds.add(item.bookingId.trim());
         } else if (item.notes) {
             const match = REGEX_MHJ_BOOKING.exec(item.notes);
-            if (match?.[1]) recordedIds.add(match[1].trim());
+            if (match?.[1]?.trim()) {
+                recordedIds.add(match[1].trim());
+            }
         }
     }
 
-    return bookingRecords.filter((b) => !recordedIds.has(b.bookingId || ''));
+    return bookingRecords.filter((b) => {
+        const id = b.bookingId?.trim();
+        return id ? !recordedIds.has(id) : true;
+    });
 }
 
 /**
