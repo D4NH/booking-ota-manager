@@ -20,12 +20,33 @@ function isTokenValid(): boolean {
 
 const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
 const isAuthenticated = ref<boolean>(isTokenValid());
-
-// Prevents multiple concurrent OAuth prompt popups
 let activeAuthPromise: Promise<string> | null = null;
 
 const inFlightRequests = new Map<string, Promise<any>>();
 
+const MAX_CONCURRENT_REQUESTS = 3;
+let activeRequestCount = 0;
+const requestQueue: (() => void)[] = [];
+
+function acquireRequestSlot(): Promise<void> {
+    if (activeRequestCount < MAX_CONCURRENT_REQUESTS) {
+        activeRequestCount++;
+        return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+        requestQueue.push(() => {
+            activeRequestCount++;
+            resolve();
+        });
+    });
+}
+function releaseRequestSlot(): void {
+    activeRequestCount--;
+    if (requestQueue.length > 0) {
+        const next = requestQueue.shift();
+        if (next) next();
+    }
+}
 function loadGoogleSdk(): Promise<void> {
     return new Promise((resolve, reject) => {
         if (typeof google !== 'undefined' && google?.accounts?.oauth2) {
@@ -60,13 +81,9 @@ if (typeof window !== 'undefined') {
     loadGoogleSdk().catch(() => {});
 }
 
-/**
- * Exponential backoff helper for rate limits (429) and temporary Google server glitches (503)
- */
 async function wait(ms: number): Promise<void> {
     return new Promise((res) => setTimeout(res, ms));
 }
-
 export function useGoogleSheets() {
     function logout(): void {
         accessToken.value = null;
@@ -76,14 +93,20 @@ export function useGoogleSheets() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(EXPIRY_KEY);
     }
+
     function refreshAuthStatus(): boolean {
         const valid = isTokenValid();
         if (!valid && isAuthenticated.value) {
-            logout();
+            accessToken.value = null;
+            isAuthenticated.value = false;
+        } else if (valid && !isAuthenticated.value) {
+            accessToken.value = localStorage.getItem(TOKEN_KEY);
+            isAuthenticated.value = true;
         }
         return valid;
     }
-    async function initAuth(): Promise<string> {
+
+    async function initAuth(prompt: 'none' | 'select_account' = 'select_account'): Promise<string> {
         await loadGoogleSdk();
 
         return new Promise((resolve, reject) => {
@@ -97,7 +120,10 @@ export function useGoogleSheets() {
                 scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar.events',
                 callback: (response: any) => {
                     if (response.error) {
-                        logout();
+                        if (prompt === 'none') {
+                            // Silent token renewal failed, prompt user next
+                            logout();
+                        }
                         reject(new Error(response.error_description || response.error));
                         return;
                     }
@@ -114,71 +140,69 @@ export function useGoogleSheets() {
                 },
             });
 
-            client.requestAccessToken({ prompt: 'select_account' });
+            // If prompt is 'none', attempt silent renewal without popup window
+            client.requestAccessToken({ prompt: prompt === 'none' ? '' : 'select_account' });
         });
     }
+
     async function ensureAuth(): Promise<string> {
         if (refreshAuthStatus() && accessToken.value) {
             return accessToken.value;
         }
 
-        // Return existing promise if an auth flow is already in progress
         if (activeAuthPromise) return activeAuthPromise;
 
-        activeAuthPromise = initAuth().finally(() => {
-            activeAuthPromise = null;
-        });
+        activeAuthPromise = initAuth('none')
+            .catch(() => initAuth('select_account'))
+            .finally(() => {
+                activeAuthPromise = null;
+            });
 
         return activeAuthPromise;
     }
-    /**
-     * - Automatic 401 token refresh
-     * - Automatic Exponential Backoff + Jitter for 429 (Rate Limit) and 503 (Server Busy)
-     */
+
     async function fetchWithAuth(
         url: string,
         options: RequestInit = {},
         maxRetries = 3
     ): Promise<Response> {
-        let token = await ensureAuth();
+        await acquireRequestSlot();
 
-        for (let attempt = 0; attempt <= maxRetries; attempt++) {
-            let res = await fetch(url, {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        try {
+            let token = await ensureAuth();
 
-            // Token Expired (401)
-            if (res.status === 401) {
-                logout();
-                token = await initAuth();
-                res = await fetch(url, {
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                const res = await fetch(url, {
                     ...options,
                     headers: {
                         ...options.headers,
                         Authorization: `Bearer ${token}`,
                     },
                 });
+
+                // 401 Token Expired: Renew silently
+                if (res.status === 401) {
+                    token = await initAuth('select_account');
+                    continue;
+                }
+
+                // 429 Rate Limit or 503 Server Busy: Exponential Backoff with Jitter
+                if ((res.status === 429 || res.status === 503) && attempt < maxRetries) {
+                    const backoffMs = Math.pow(2, attempt) * 1000 + Math.random() * 800;
+                    console.warn(
+                        `[Google API ${res.status}] Rate limit reached. Backing off for ${Math.round(backoffMs)}ms (retry ${attempt + 1}/${maxRetries})...`
+                    );
+                    await wait(backoffMs);
+                    continue;
+                }
+
+                return res;
             }
 
-            // Rate Limit (429) or Temporary Google Service Outage (503)
-            if ((res.status === 429 || res.status === 503) && attempt < maxRetries) {
-                // Backoff: 1s -> 2s -> 4s + random jitter
-                const backoffMs = Math.pow(2, attempt) * 1000 + Math.random() * 500;
-                console.warn(
-                    `[Google API ${res.status}] Rate limit hit. Backing off for ${Math.round(backoffMs)}ms (attempt ${attempt + 1}/${maxRetries})...`
-                );
-                await wait(backoffMs);
-                continue;
-            }
-
-            return res;
+            throw new Error('Google API rate limit exceeded maximum backoff retries.');
+        } finally {
+            releaseRequestSlot();
         }
-
-        throw new Error('Google API request aborted after exceeding maximum rate-limit retries.');
     }
 
     function cleanGoogleCalendarEventId(rawId: string): string {
@@ -188,6 +212,7 @@ export function useGoogleSheets() {
         if (clean.includes(':')) clean = clean.split(':')[0] || '';
         return clean.trim();
     }
+
     async function createCalendarEvent(
         calendarId: string,
         summary: string,
@@ -219,6 +244,7 @@ export function useGoogleSheets() {
         const data = await res.json();
         return cleanGoogleCalendarEventId(data.id || '');
     }
+
     async function updateCalendarEventSummary(
         calendarId: string,
         eventId: string,
@@ -250,6 +276,7 @@ export function useGoogleSheets() {
             console.warn('Calendar API PATCH error:', error);
         }
     }
+
     async function deleteCalendarEvent(calendarId: string, eventId: string): Promise<void> {
         const cleanId = cleanGoogleCalendarEventId(eventId);
         if (!cleanId || !calendarId) return;
@@ -264,6 +291,7 @@ export function useGoogleSheets() {
             console.warn('Calendar API DELETE error:', error);
         }
     }
+
     async function syncCalendarForBookingValues(
         values: (string | number)[],
         calendarId?: string,
@@ -300,7 +328,7 @@ export function useGoogleSheets() {
 
     async function fetchSheetRows(
         spreadsheetId: string,
-        range: string = 'A2:L'
+        range: string = 'A2:K'
     ): Promise<(string | number)[][]> {
         const cacheKey = `${spreadsheetId}_${range}`;
         if (inFlightRequests.has(cacheKey)) {
@@ -323,6 +351,7 @@ export function useGoogleSheets() {
         inFlightRequests.set(cacheKey, requestPromise);
         return requestPromise;
     }
+
     async function batchFetchSheetRows(
         spreadsheetId: string,
         ranges: string[]
@@ -335,6 +364,7 @@ export function useGoogleSheets() {
         const data = await res.json();
         return (data.valueRanges || []).map((vr: any) => vr.values || []);
     }
+
     async function appendSheetRow(
         spreadsheetId: string,
         values: (string | number)[],
@@ -367,9 +397,7 @@ export function useGoogleSheets() {
 
         return calEventId;
     }
-    /**
-     * Searches strictly 'A2:A' for non-calendar rows
-     */
+
     async function updateSheetRowById(
         spreadsheetId: string,
         id: string,
@@ -377,7 +405,6 @@ export function useGoogleSheets() {
         sheetName: string = '',
         calendarId?: string
     ): Promise<void> {
-        // If calendar syncing is not used, only download Column A (ID)
         const searchRange = sheetName
             ? calendarId
                 ? `'${sheetName}'!A2:K`
@@ -418,9 +445,7 @@ export function useGoogleSheets() {
 
         if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
     }
-    /**
-     * Only downloads Column A unless calendar event deletion is required
-     */
+
     async function deleteSheetRowById(
         spreadsheetId: string,
         id: string,
@@ -452,10 +477,10 @@ export function useGoogleSheets() {
 
         const idRange = sheetName
             ? calendarId
-                ? `'${sheetName}'!A2:L`
+                ? `'${sheetName}'!A2:K`
                 : `'${sheetName}'!A2:A`
             : calendarId
-              ? 'A2:L'
+              ? 'A2:K'
               : 'A2:A';
 
         const rows = await fetchSheetRows(spreadsheetId, idRange);
@@ -468,15 +493,14 @@ export function useGoogleSheets() {
         if (calendarId) {
             let calEventId = explicitEventId ? cleanGoogleCalendarEventId(explicitEventId) : '';
 
-            // If not explicitly passed, safely detect from row
             if (!calEventId && rows[rowIndex]) {
                 const row = rows[rowIndex];
-                const valK = String(row[10] || '').trim(); // Official Booking Sheet: Col K
-                const valL = String(row[11] || '').trim(); // Staging Sheet: Col L
+                const valK = String(row[10] || '').trim(); // Col K (index 10) in Booking Sheets
+                const valL = String(row[11] || '').trim(); // Col L (index 11) in Staging Sheets
 
-                if (valK && !valK.includes(' ')) {
+                if (valK && !valK.includes(' ') && !valK.startsWith('+')) {
                     calEventId = cleanGoogleCalendarEventId(valK);
-                } else if (valL && !valL.includes(' ')) {
+                } else if (valL && !valL.includes(' ') && !valL.startsWith('+')) {
                     calEventId = cleanGoogleCalendarEventId(valL);
                 }
             }
@@ -488,7 +512,6 @@ export function useGoogleSheets() {
             }
         }
 
-        // Clear row in Google Sheets
         const targetRange = sheetName
             ? `'${sheetName}'!A${targetRowNumber}:Z${targetRowNumber}`
             : `A${targetRowNumber}:Z${targetRowNumber}`;

@@ -1,93 +1,113 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { toast } from 'vue-toastflow';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useStagingStore } from '@/stores/useStagingStore';
-import { PROPERTY_CONFIGS } from '@/config/properties';
-import type { PropertyId } from '@/types/property';
 
-const isMenuOpen = ref(true);
-
-const { isAuthenticated, fetchSheetRows } = useGoogleSheets();
+const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
 const { isSyncing: isMasterSyncing, formattedCountdown, syncAllData } = useAppAutoSync();
 const { syncAllFinancialData } = useFinanceSync();
-
-const bookingStore = useBookingStore();
 const stagingStore = useStagingStore();
 
-const isSyncingBookings = ref(false);
-const isSyncingEmails = ref(false);
+const isMenuOpen = ref<boolean>(true);
+const isSyncingBookings = ref<boolean>(false);
+const isSyncingEmails = ref<boolean>(false);
 
-// Sync everything
-async function handleMasterSync() {
-    await toast.loading(() => syncAllData({ force: true }), {
-        loading: {
-            title: 'Syncing Entire System...',
-            description: 'Updating bookings, financials, staging, and calendar blocks.',
-        },
-        success: {
-            title: 'System Synchronized',
-            description: 'All remote sheets, Dexie storage, and assets are up to date.',
-        },
-        error: {
-            title: 'Sync Interrupted',
-            description: 'Failed to complete full system sync.',
-        },
-    });
+onMounted(() => {
+    refreshAuthStatus();
+});
+
+async function handleAuthToggle(): Promise<void> {
+    if (!isAuthenticated.value) {
+        await initAuth('select_account').catch(() => null);
+    }
 }
-// Sync bookings Only
-async function handleSyncBookings() {
+
+async function handleMasterSync(): Promise<void> {
+    if (!refreshAuthStatus()) {
+        await initAuth('select_account').catch(() => null);
+        if (!isAuthenticated.value) return;
+    }
+
+    await toast.loading(
+        async () => {
+            const res = await syncAllData({ force: true, silent: false, scope: 'all' });
+            if (!res.success) {
+                throw new Error('System sync was interrupted.');
+            }
+            return res;
+        },
+        {
+            loading: {
+                title: 'Syncing Entire System...',
+                description: 'Updating bookings, financials, staging, and calendar blocks.',
+            },
+            success: (res) => ({
+                title: 'System Synchronized',
+                description: `Updated all systems (${res.totalImported} imported, ${res.totalUpdated} updated).`,
+            }),
+            error: (err: unknown) => ({
+                title: 'Sync Interrupted',
+                description:
+                    err instanceof Error ? err.message : 'Failed to complete full system sync.',
+            }),
+        }
+    );
+}
+
+async function handleSyncBookings(): Promise<void> {
+    if (!refreshAuthStatus()) {
+        await initAuth('select_account').catch(() => null);
+        if (!isAuthenticated.value) return;
+    }
+
     isSyncingBookings.value = true;
     try {
         await toast.loading(
             async () => {
-                const propertyIds = Object.keys(PROPERTY_CONFIGS) as PropertyId[];
-                let totalImported = 0;
-                let totalUpdated = 0;
-
-                await Promise.all(
-                    propertyIds.map(async (propId) => {
-                        const spreadsheetId = PROPERTY_CONFIGS[propId]?.spreadsheetId;
-                        if (!spreadsheetId) return;
-
-                        const rows = await fetchSheetRows(spreadsheetId, 'A2:L');
-                        if (rows && rows.length > 0) {
-                            const res = await bookingStore.importBookingsFromGoogleSheets(
-                                propId,
-                                rows
-                            );
-                            totalImported += res.importedCount;
-                            totalUpdated += res.updatedCount;
-                        }
-                    })
-                );
-
-                return { totalImported, totalUpdated };
+                const res = await syncAllData({
+                    force: true,
+                    silent: false,
+                    scope: 'bookings',
+                });
+                if (!res.success) {
+                    throw new Error('Unable to synchronize multi-year booking sheets.');
+                }
+                return res;
             },
             {
                 loading: {
                     title: 'Pulling Bookings...',
-                    description: 'Syncing confirmed reservations from Google Sheets.',
+                    description: 'Syncing multi-year reservations via throttled queue.',
                 },
                 success: (res) => ({
                     title: 'Bookings Up to Date',
-                    description: `Imported ${res?.totalImported || 0}, updated ${res?.totalUpdated || 0} reservations.`,
+                    description: `Imported ${res.totalImported}, updated ${res.totalUpdated}, removed ${res.totalDeleted}.`,
                 }),
-                error: {
+                error: (err: unknown) => ({
                     title: 'Sync Failed',
-                    description: 'Unable to fetch booking sheets.',
-                },
+                    description:
+                        err instanceof Error ? err.message : 'Unable to fetch booking sheets.',
+                }),
             }
         );
     } finally {
         isSyncingBookings.value = false;
     }
 }
-// Scan Gmail & Poll Staging
-async function handleScanEmails() {
+
+async function handleSyncFinancials(): Promise<void> {
+    if (!refreshAuthStatus()) {
+        await initAuth('select_account').catch(() => null);
+        if (!isAuthenticated.value) return;
+    }
+
+    await syncAllFinancialData({ silent: false });
+}
+
+async function handleScanEmails(): Promise<void> {
     isSyncingEmails.value = true;
     try {
         await toast.loading(
@@ -104,39 +124,42 @@ async function handleScanEmails() {
                     title: 'Email Scan Complete',
                     description:
                         Number(count) > 0
-                            ? `Staged ${count} new booking(s) for review.`
+                            ? `Staged ${Number(count)} new booking(s) for review.`
                             : 'No new confirmation emails found.',
                 }),
-                error: {
+                error: (err: unknown) => ({
                     title: 'Scan Interrupted',
-                    description: 'Failed to connect to email scraper webhook.',
-                },
+                    description:
+                        err instanceof Error
+                            ? err.message
+                            : 'Failed to connect to email scraper webhook.',
+                }),
             }
         );
     } finally {
         isSyncingEmails.value = false;
     }
 }
-// Sync Financials Only
-function handleSyncFinancials() {
-    syncAllFinancialData({ silent: false });
-}
 </script>
 
 <template>
     <div class="border-t border-mist-800/80 bg-mist-950/40 p-3 font-sans text-mist-200 select-none">
-        <!-- Auth & Status Indicator -->
         <div class="mb-2 flex items-center justify-between font-mono text-[11px] text-mist-400">
-            <span class="flex items-center gap-1.5">
+            <button
+                type="button"
+                class="flex cursor-pointer items-center gap-1.5 transition hover:text-mist-200"
+                :title="
+                    isAuthenticated ? 'Connected to Google API' : 'Click to authorize Google API'
+                "
+                @click="handleAuthToggle">
                 <span
                     class="h-2 w-2 rounded-full"
-                    :class="isAuthenticated ? 'bg-lime-400' : 'bg-rose-400'"></span>
-                {{ isAuthenticated ? 'Google API' : 'Disconnected' }}
-            </span>
+                    :class="isAuthenticated ? 'bg-lime-400' : 'bg-rose-400'" />
+                <span>{{ isAuthenticated ? 'Google API' : 'Connect API' }}</span>
+            </button>
             <span class="text-[10px] text-mist-500"> SWR: {{ formattedCountdown }} </span>
         </div>
 
-        <!-- Master Sync Button -->
         <div class="flex items-center gap-1">
             <button
                 type="button"
@@ -151,7 +174,6 @@ function handleSyncFinancials() {
                 <span>{{ isMasterSyncing ? 'Syncing...' : 'Sync All' }}</span>
             </button>
 
-            <!-- Toggle Options Dropdown -->
             <button
                 type="button"
                 class="bg-mist-850 cursor-pointer rounded border border-mist-700 px-2 py-1.5 text-xs text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
@@ -164,24 +186,22 @@ function handleSyncFinancials() {
             </button>
         </div>
 
-        <!-- Sync Options Panel -->
         <div
             v-if="isMenuOpen"
             class="mt-2 space-y-1 font-mono text-xs">
-            <!-- Sync Bookings -->
             <button
                 type="button"
-                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
+                :disabled="isSyncingBookings"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300 disabled:opacity-50"
                 @click="handleSyncBookings">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
                         icon="calendar-check"
                         class="text-[11px] text-mist-400" />
-                    Bookings
+                    <span>{{ isSyncingBookings ? 'Syncing Bookings...' : 'Bookings' }}</span>
                 </span>
             </button>
 
-            <!-- Sync Financials -->
             <button
                 type="button"
                 class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
@@ -190,20 +210,20 @@ function handleSyncFinancials() {
                     <fa-icon
                         icon="receipt"
                         class="text-[11px] text-mist-400" />
-                    Financials
+                    <span>Financials</span>
                 </span>
             </button>
 
-            <!-- Scan Gmail & Staging -->
             <button
                 type="button"
-                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
+                :disabled="isSyncingEmails"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300 disabled:opacity-50"
                 @click="handleScanEmails">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
                         icon="inbox"
                         class="text-[11px] text-mist-400" />
-                    Scan Gmail (OTAs)
+                    <span>{{ isSyncingEmails ? 'Scanning...' : 'Scan Gmail (OTAs)' }}</span>
                 </span>
             </button>
         </div>

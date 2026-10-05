@@ -169,11 +169,12 @@ async function handleWipeDatabase(): Promise<void> {
                 <AppButton
                     label="Add Property"
                     variant="primary"
-                    size="md"
                     @click="handleAddProperty">
-                    <fa-icon
-                        class="text-xs"
-                        icon="plus" />
+                    <template #icon>
+                        <fa-icon
+                            class="text-xs"
+                            icon="plus" />
+                    </template>
                 </AppButton>
             </div>
 
@@ -245,21 +246,21 @@ async function handleWipeDatabase(): Promise<void> {
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-mist-400 transition hover:text-mist-100"
-                                        title="Edit property"
+                                    <AppButton
+                                        variant="icon"
                                         @click="handleEditProperty(p)">
-                                        <fa-icon icon="pen-to-square" />
-                                    </button>
+                                        <template #icon>
+                                            <fa-icon icon="pen-to-square" />
+                                        </template>
+                                    </AppButton>
                                     <span class="text-mist-700">|</span>
-                                    <button
-                                        type="button"
-                                        class="cursor-pointer text-rose-400 transition hover:text-rose-300"
-                                        title="Delete property"
+                                    <AppButton
+                                        variant="danger-icon"
                                         @click="handleDeleteProperty(p.id)">
-                                        <fa-icon icon="trash-can" />
-                                    </button>
+                                        <template #icon>
+                                            <fa-icon icon="trash-can" />
+                                        </template>
+                                    </AppButton>
                                 </div>
                             </td>
                         </tr>

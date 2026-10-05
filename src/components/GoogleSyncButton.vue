@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
-import { useBookingStore } from '@/stores/useBookingStore';
-import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useAppAutoSync } from '@/composables/useAppAutoSync';
-import { PROPERTY_CONFIGS } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
-import type { SyncLogEntry } from '@/types/sync';
 import { toast } from 'vue-toastflow';
 
 interface Props {
@@ -17,132 +13,65 @@ interface Props {
 
 const { scope = 'all', propertyId = 'all', showTimer = false } = defineProps<Props>();
 
-const bookingStore = useBookingStore();
-const financeStore = useFinanceStore();
-const { isAuthenticated, refreshAuthStatus, initAuth, fetchSheetRows } = useGoogleSheets();
-const { isEligibleToAutoSync, formattedCountdown, lastSyncTime } = useAppAutoSync();
+const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
+const { isSyncing, isEligibleToAutoSync, formattedCountdown, lastSyncLogs, syncAllData } =
+    useAppAutoSync();
 
-const isSyncing = ref(false);
 const showLogModal = ref(false);
-const syncLogs = ref<SyncLogEntry[]>([]);
 
 const buttonLabel = computed(() => {
     if (isSyncing.value) return 'Syncing...';
     if (!isAuthenticated.value) return 'Connect & Sync';
     if (scope === 'finance') return 'Sync Finances';
-    if (scope === 'bookings')
+    if (scope === 'bookings') {
         return propertyId !== 'all'
             ? `Sync ${propertyId.replace(/^./, (match) => match.toUpperCase())}`
             : 'Sync Bookings';
+    }
     return 'Sync All';
 });
 
 onMounted(() => {
     refreshAuthStatus();
-    window.addEventListener('focus', refreshAuthStatus);
 });
 
 async function handleSync(): Promise<void> {
     if (isSyncing.value) return;
 
-    refreshAuthStatus();
-    if (!isAuthenticated.value) {
+    if (!refreshAuthStatus()) {
         try {
-            await initAuth();
+            await initAuth('select_account');
         } catch (authErr) {
             console.warn('[Sync] Auth aborted or failed:', authErr);
             return;
         }
     }
 
-    isSyncing.value = true;
-    syncLogs.value = [];
-
-    const tasks: Promise<unknown>[] = [];
-    let totalImported = 0;
-    let totalUpdated = 0;
-    let totalDeleted = 0;
-
-    if (scope === 'all' || scope === 'bookings') {
-        const targetProperties: PropertyId[] =
-            propertyId === 'all' ? (Object.keys(PROPERTY_CONFIGS) as PropertyId[]) : [propertyId];
-
-        tasks.push(
-            (async () => {
-                for (const id of targetProperties) {
-                    const config = PROPERTY_CONFIGS[id];
-                    const spreadsheetId = config?.spreadsheetId;
-                    if (!spreadsheetId?.trim()) continue;
-
-                    const range = config.defaultRange || 'A2:J';
-                    const rows = await fetchSheetRows(spreadsheetId, range);
-                    if (!rows || rows.length === 0) continue;
-
-                    const stats = await bookingStore.importBookingsFromGoogleSheets(id, rows);
-                    totalImported += stats.importedCount;
-                    totalUpdated += stats.updatedCount;
-                    totalDeleted += stats.deletedCount;
-                    syncLogs.value.push(...stats.logs);
-                }
-            })()
-        );
-    }
-
-    if (scope === 'all' || scope === 'finance') {
-        tasks.push(
-            (async () => {
-                await financeStore.fetchFinancialData();
-                syncLogs.value.push({
-                    type: 'finance',
-                    bookingId: 'FINANCE-SYNC',
-                    guestName: 'Ledgers Synchronized',
-                    propertyId: 'Keuangan 2026',
-                    diffs: [
-                        {
-                            field: 'propertyLedger',
-                            oldValue: 0,
-                            newValue: financeStore.sheetPropertyFinances.length,
-                        },
-                        {
-                            field: 'personalTransactions',
-                            oldValue: 0,
-                            newValue: financeStore.personalFinances.length,
-                        },
-                        {
-                            field: 'sharedTransactions',
-                            oldValue: 0,
-                            newValue: financeStore.sharedFinances.length,
-                        },
-                        {
-                            field: 'transfers',
-                            oldValue: 0,
-                            newValue: financeStore.transfers.length,
-                        },
-                    ],
-                });
-            })()
-        );
-    }
-
     try {
         await toast.loading(
             async () => {
-                await Promise.all(tasks);
-                const now = Date.now();
-                lastSyncTime.value = now;
-                localStorage.setItem('app_global_last_sync', String(now));
-                return { totalImported, totalUpdated, totalDeleted };
+                const res = await syncAllData({
+                    force: true,
+                    silent: false,
+                    scope,
+                    propertyId,
+                });
+
+                if (!res.success) {
+                    throw new Error('Sync was interrupted or encountered network errors.');
+                }
+                return res;
             },
             {
                 loading: {
                     title: `Syncing ${scope === 'finance' ? 'Finances' : scope === 'bookings' ? 'Bookings' : 'All Data'}...`,
-                    description: 'Updating local cache from Google Sheets.',
+                    description: 'Updating local cache with Google Sheets.',
                 },
                 success: (data) => ({
                     title: 'Sync Complete',
                     description:
                         scope === 'finance'
-                            ? 'All finance tabs updated.'
+                            ? 'Financial wallets up to date.'
                             : `Imported ${data.totalImported}, updated ${data.totalUpdated}, removed ${data.totalDeleted}.`,
                 }),
                 error: (err) => ({
@@ -152,9 +81,7 @@ async function handleSync(): Promise<void> {
                 }),
             }
         );
-    } finally {
-        isSyncing.value = false;
-    }
+    } catch {}
 }
 </script>
 
@@ -163,7 +90,7 @@ async function handleSync(): Promise<void> {
         <button
             type="button"
             :disabled="isSyncing"
-            class="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50"
+            class="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition select-none disabled:opacity-50"
             :class="[
                 isAuthenticated
                     ? 'border-lime-500/30 bg-lime-500/10 text-lime-300 hover:bg-lime-500/20'
@@ -182,9 +109,10 @@ async function handleSync(): Promise<void> {
             <span>{{ buttonLabel }}</span>
         </button>
 
+        <!-- Cooldown / Auto-Sync Timer Badge -->
         <div
             v-if="showTimer && isAuthenticated"
-            class="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[11px]"
+            class="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 font-mono text-[11px] select-none"
             :class="[
                 isEligibleToAutoSync
                     ? 'border-lime-500/30 bg-lime-500/5 text-lime-400'
@@ -192,8 +120,8 @@ async function handleSync(): Promise<void> {
             ]"
             :title="
                 isEligibleToAutoSync
-                    ? 'Cooldown elapsed: Next window focus will trigger background sync'
-                    : `In cooldown: Next background sync eligible in ${formattedCountdown}`
+                    ? 'Cooldown elapsed: Next interval will sync automatically'
+                    : `In cooldown: Next automatic background sync in ${formattedCountdown}`
             ">
             <span
                 class="h-1.5 w-1.5 rounded-full"
@@ -204,8 +132,9 @@ async function handleSync(): Promise<void> {
             </span>
         </div>
 
+        <!-- Audit Log View Trigger -->
         <button
-            v-if="syncLogs.length > 0"
+            v-if="lastSyncLogs.length > 0"
             type="button"
             class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-2.5 py-1.5 text-xs text-mist-300 transition hover:bg-mist-700"
             title="View sync audit log"
@@ -225,7 +154,7 @@ async function handleSync(): Promise<void> {
                         <span>Sync Audit Diagnostics</span>
                         <span
                             class="rounded bg-mist-800 px-2 py-0.5 font-mono text-xs text-mist-400">
-                            {{ syncLogs.length }} events
+                            {{ lastSyncLogs.length }} events
                         </span>
                     </h3>
                     <button
@@ -238,7 +167,7 @@ async function handleSync(): Promise<void> {
 
                 <div class="flex-1 space-y-2 overflow-y-auto pr-1">
                     <div
-                        v-for="(log, idx) in syncLogs"
+                        v-for="(log, idx) in lastSyncLogs"
                         :key="idx"
                         class="space-y-1.5 rounded-xl border border-mist-800 bg-mist-950/50 p-3 text-xs">
                         <div class="flex items-center justify-between">
@@ -280,20 +209,13 @@ async function handleSync(): Promise<void> {
                                     {{ String(d.field) }}:
                                 </span>
                                 <div>
-                                    <template v-if="log.type === 'finance'">
-                                        <span class="font-semibold text-lime-400">
-                                            {{ d.newValue }} active records
-                                        </span>
-                                    </template>
-                                    <template v-else>
-                                        <span class="mr-1 text-rose-400 line-through">
-                                            {{ String(d.oldValue) || '(empty)' }}
-                                        </span>
-                                        &rarr;
-                                        <span class="ml-1 font-semibold text-lime-400">
-                                            {{ String(d.newValue) || '(empty)' }}
-                                        </span>
-                                    </template>
+                                    <span class="mr-1 text-rose-400 line-through">
+                                        {{ String(d.oldValue) || '(empty)' }}
+                                    </span>
+                                    &rarr;
+                                    <span class="ml-1 font-semibold text-lime-400">
+                                        {{ String(d.newValue) || '(empty)' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
