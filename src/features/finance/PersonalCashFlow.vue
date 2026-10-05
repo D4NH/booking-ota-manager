@@ -292,32 +292,22 @@ const barGroups = computed(() => {
                     :style="{
                         left: `${(barGroups[hoveredIndex]!.centerX / SVG_WIDTH) * 100}%`,
                     }"
-                    class="pointer-events-none absolute -top-3 z-30 -translate-x-1/2 space-y-1 rounded-md border border-mist-700 bg-mist-950/95 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                    class="pointer-events-none absolute -top-3 z-30 -translate-x-1/2 space-y-1 rounded-md border border-mist-800 bg-mist-900 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
                     <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
                         {{ barGroups[hoveredIndex]!.label }}
                     </div>
-                    <div class="flex justify-between gap-3">
-                        <span class="text-emerald-400">Income:</span>
-                        <span class="font-medium text-mist-300">
-                            {{ formatIDR(barGroups[hoveredIndex]!.income) }}
-                        </span>
+                    <div class="flex justify-between gap-3 font-medium text-emerald-400">
+                        <span>Income: </span>
+                        <span>{{ formatIDR(barGroups[hoveredIndex]!.income) }}</span>
                     </div>
-                    <div class="flex justify-between gap-3">
-                        <span class="text-rose-400">Expenses:</span>
-                        <span class="font-medium text-mist-300">
-                            {{ formatIDR(barGroups[hoveredIndex]!.expenses) }}
-                        </span>
+                    <div class="flex justify-between gap-3 font-medium text-rose-400">
+                        <span>Expenses: </span>
+                        <span>{{ formatIDR(barGroups[hoveredIndex]!.expenses) }}</span>
                     </div>
                     <div
-                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
+                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-medium text-mist-300">
                         <span>Net:</span>
-                        <span
-                            class="font-medium"
-                            :class="
-                                barGroups[hoveredIndex]!.netMargin >= 0
-                                    ? 'text-emerald-400'
-                                    : 'text-rose-400'
-                            ">
+                        <span>
                             {{ formatIDR(barGroups[hoveredIndex]!.netMargin) }}
                         </span>
                     </div>
