@@ -11,9 +11,10 @@ import FinancePersonalMetrics from '@/features/finance/PersonalMetrics.vue';
 import FinancePersonalTable from '@/features/finance/PersonalTable.vue';
 import SbnInvestment from '@/features/finance/SbnInvestment.vue';
 import GoldInvestment from '@/features/finance/GoldInvestment.vue';
-import InvestmentChart from '@/features/finance/InvestmentChart.vue';
 import SavingsList from '@/features/finance/SavingsList.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
+import PersonalCashFlow from '@/features/finance/PersonalCashFlow.vue';
+import PersonalSpendingPacingChart from '@/features/finance/PersonalSpendingPacingChart.vue';
 
 const bcaCardNo = import.meta.env.VITE_BCA_CARD_NO;
 const bcaCardExpDate = import.meta.env.VITE_BCA_CARD_EXP;
@@ -172,7 +173,10 @@ const isTransferModalOpen = ref(false);
                 <FinancePersonalTable class="col-span-3" />
             </div>
 
-            <InvestmentChart />
+            <div class="grid grid-cols-2 gap-4">
+                <PersonalCashFlow owner="Danh Nguyen" />
+                <PersonalSpendingPacingChart owner="Danh Nguyen" />
+            </div>
 
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <SbnInvestment />
