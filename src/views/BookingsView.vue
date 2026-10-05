@@ -196,7 +196,6 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
 
                 <AppButton
                     label="Add Booking"
-                    variant="primary"
                     @click="handleAddBooking">
                     <template #icon>
                         <fa-icon icon="plus" />

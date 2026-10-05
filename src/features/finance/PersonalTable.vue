@@ -94,7 +94,6 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                 </button>
                 <AppButton
                     label="Add Record"
-                    variant="primary"
                     @click="openAddModal">
                     <template #icon>
                         <fa-icon icon="plus" />
@@ -173,7 +172,8 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
                                 </AppButton>
                                 <span class="text-mist-700">|</span>
                                 <AppButton
-                                    variant="danger-icon"
+                                    variant="icon"
+                                    color="rose"
                                     @click="handleDelete(item)">
                                     <template #icon>
                                         <fa-icon icon="trash-can" />

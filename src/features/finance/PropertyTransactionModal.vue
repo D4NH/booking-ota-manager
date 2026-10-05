@@ -212,8 +212,10 @@ async function handleDeleteEntry(): Promise<void> {
                             :class="isEditing ? 'justify-between' : 'justify-end'">
                             <AppButton
                                 v-if="isEditing"
+                                class="-ml-2"
                                 label="Delete booking"
-                                variant="danger-text"
+                                variant="text"
+                                color="rose"
                                 @click="handleDeleteEntry">
                                 <template #icon>
                                     <fa-icon icon="trash-can" />

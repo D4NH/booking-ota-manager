@@ -280,8 +280,10 @@ function handleSubmit(): void {
                         :class="[Boolean(bookingToEdit) ? 'justify-between' : 'justify-end']">
                         <AppButton
                             v-if="Boolean(bookingToEdit)"
+                            class="-ml-2"
                             label="Delete booking"
-                            variant="danger-text"
+                            variant="text"
+                            color="rose"
                             @click="handleDeleteBooking">
                             <template #icon>
                                 <fa-icon icon="trash-can" />

@@ -232,7 +232,8 @@ async function handleDeleteGold(): Promise<void> {
                                 v-if="isEditing"
                                 class="-ml-2"
                                 label="Delete Gold"
-                                variant="danger-text"
+                                variant="text"
+                                color="rose"
                                 @click="handleDeleteGold">
                                 <template #icon>
                                     <fa-icon icon="trash-can" />

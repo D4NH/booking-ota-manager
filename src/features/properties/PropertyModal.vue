@@ -407,7 +407,8 @@ function handleSubmit(): void {
                     <AppButton
                         v-if="isEditing"
                         label="Delete Property"
-                        variant="danger-text"
+                        variant="text"
+                        color="rose"
                         class="-ml-2"
                         @click="handleDeleteProperty">
                         <template #icon>

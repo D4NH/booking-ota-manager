@@ -210,7 +210,8 @@ async function handleDeleteGoal(): Promise<void> {
                                 v-if="isEditing"
                                 class="-ml-2"
                                 label="Delete Goal"
-                                variant="danger-text"
+                                variant="text"
+                                color="rose"
                                 @click="handleDeleteGoal">
                                 <template #icon>
                                     <fa-icon icon="trash-can" />

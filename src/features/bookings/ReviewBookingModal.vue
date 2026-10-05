@@ -397,7 +397,9 @@ async function handleReject(): Promise<void> {
                             class="flex items-center justify-between border-t border-mist-800 pt-3">
                             <AppButton
                                 label="Reject & Discard"
-                                variant="danger-text"
+                                class="-ml-2"
+                                variant="text"
+                                color="rose"
                                 @click="handleReject">
                                 <template #icon>
                                     <fa-icon icon="trash-can" />

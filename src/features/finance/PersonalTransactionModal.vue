@@ -317,8 +317,9 @@ async function submitRecord(): Promise<void> {
                             <AppButton
                                 v-if="isEditing && itemToEdit"
                                 label="Delete entry"
-                                variant="danger-text"
-                                class="-ml-3"
+                                variant="text"
+                                color="rose"
+                                class="-ml-2"
                                 @click="emit('delete-item', itemToEdit)">
                                 <template #icon>
                                     <fa-icon icon="trash-can" />

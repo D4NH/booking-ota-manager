@@ -197,7 +197,8 @@ function isCurrentBooking(b: Booking): boolean {
                                 </AppButton>
                                 <span class="text-mist-700">|</span>
                                 <AppButton
-                                    variant="danger-icon"
+                                    variant="icon"
+                                        color="rose"
                                     @click="emit('delete', b)">
                                     <template #icon>
                                         <fa-icon icon="trash-can" />

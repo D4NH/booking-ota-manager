@@ -91,7 +91,6 @@ function openEditModal(item: PropertyFinance): void {
                     :options="categoryOptions" />
                 <AppButton
                     label="Add Entry"
-                    variant="primary"
                     @click="openAddModal">
                     <template #icon>
                         <fa-icon icon="plus" />
@@ -99,7 +98,6 @@ function openEditModal(item: PropertyFinance): void {
                 </AppButton>
                 <AppButton
                     label="Transfer Funds"
-                    variant="primary"
                     @click="isTransferModalOpen = true">
                     <template #icon>
                         <fa-icon icon="arrow-right-arrow-left" />
@@ -194,7 +192,8 @@ function openEditModal(item: PropertyFinance): void {
                                 </AppButton>
                                 <span class="text-mist-700">|</span>
                                 <AppButton
-                                    variant="danger-icon"
+                                    variant="icon"
+                                    color="rose"
                                     @click="removePropertyTransaction(item.id, item.category)">
                                     <template #icon>
                                         <fa-icon icon="trash-can" />

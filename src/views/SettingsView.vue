@@ -168,7 +168,6 @@ async function handleWipeDatabase(): Promise<void> {
                 </CardTitle>
                 <AppButton
                     label="Add Property"
-                    variant="primary"
                     @click="handleAddProperty">
                     <template #icon>
                         <fa-icon
@@ -255,7 +254,8 @@ async function handleWipeDatabase(): Promise<void> {
                                     </AppButton>
                                     <span class="text-mist-700">|</span>
                                     <AppButton
-                                        variant="danger-icon"
+                                        variant="icon"
+                                        color="rose"
                                         @click="handleDeleteProperty(p.id)">
                                         <template #icon>
                                             <fa-icon icon="trash-can" />
