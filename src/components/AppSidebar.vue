@@ -244,6 +244,21 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     v-show="!isSidebarCollapsed && isFinanceOpen"
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
+                        :to="{ name: 'finance-property' }"
+                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
+                        :class="[
+                            route.path === `/finance/property`
+                                ? 'font-semibold text-lime-400'
+                                : 'text-mist-400',
+                        ]">
+                        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
+                        <span class="truncate capitalize">Property</span>
+                    </RouterLink>
+                </div>
+                <div
+                    v-show="!isSidebarCollapsed && isFinanceOpen"
+                    class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
+                    <RouterLink
                         :to="{ name: 'finance-personal' }"
                         class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
@@ -252,7 +267,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                                 : 'text-mist-400',
                         ]">
                         <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
-                        <span class="truncate capitalize"> Personal </span>
+                        <span class="truncate capitalize">Personal</span>
                     </RouterLink>
                 </div>
             </div>
