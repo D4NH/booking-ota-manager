@@ -32,13 +32,24 @@ const router = createRouter({
         },
         {
             path: '/finance',
-            name: 'finance',
-            component: () => import('../views/FinanceView.vue'),
-        },
-        {
-            path: '/finance/personal',
-            name: 'finance-personal',
-            component: () => import('@/views/FinancePersonalView.vue'),
+            component: () => import('@/views/finance/FinanceLayout.vue'),
+            children: [
+                {
+                    path: '',
+                    name: 'finance-overview',
+                    component: () => import('@/views/finance/FinanceOverviewView.vue'),
+                },
+                {
+                    path: 'property',
+                    name: 'finance-property',
+                    component: () => import('@/views/finance/PropertyFinanceView.vue'),
+                },
+                {
+                    path: 'personal',
+                    name: 'finance-personal',
+                    component: () => import('@/views/finance/PersonalFinanceView.vue'),
+                },
+            ],
         },
         {
             path: '/settings',
