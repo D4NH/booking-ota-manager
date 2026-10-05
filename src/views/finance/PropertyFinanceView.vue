@@ -54,7 +54,7 @@ function handlePropertyChange(propId: PropertyId): void {
                     ]"
                     @click="handlePropertyChange(tab.id)">
                     <fa-icon
-                        icon="building"
+                        icon="house"
                         class="text-xs" />
                     <span>{{ tab.label }}</span>
                 </button>
