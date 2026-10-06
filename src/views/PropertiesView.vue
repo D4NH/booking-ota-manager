@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { PropertyId } from '@/types/property';
 
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
-import PropertySelector from '@/components/PropertySelector.vue';
 import ChannelDistribution from '@/features/properties/ChannelDistribution.vue';
 import PortfolioMetrics from '@/features/properties/PortfolioMetrics.vue';
 import PropertyCard from '@/features/properties/PropertyCard.vue';
@@ -19,7 +16,6 @@ import PropertyPerformance from '@/features/properties/PropertyPerformance.vue';
 import MonthlyEarnings from '@/features/properties/MonthlyEarnings.vue';
 import AnnualRevenue from '@/features/properties/AnnualRevenue.vue';
 
-const router = useRouter();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
@@ -35,10 +31,6 @@ const visibleProperties = computed(() =>
     isPropertiesExpanded.value ? sortedProperties.value : sortedProperties.value.slice(0, 2)
 );
 
-function handleNavigate(target: PropertyId | 'all'): void {
-    if (target === 'all') return;
-    router.push({ name: 'property-detail', params: { id: target } });
-}
 function handleAddProperty(): void {
     modalStore.openPropertyModal();
 }
@@ -51,9 +43,6 @@ function handleAddProperty(): void {
             <template #subtitle>
                 Portfolio performance, listing settings and unit comparisons
             </template>
-            <PropertySelector
-                model-value="all"
-                @change="handleNavigate" />
         </PageTitle>
 
         <PortfolioMetrics

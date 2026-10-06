@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
@@ -14,7 +13,6 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
-import PropertySelector from '@/components/PropertySelector.vue';
 import OccupiedTag from '@/components/OccupiedTag.vue';
 import UpcomingBookings from '@/features/bookings/UpcomingBookings.vue';
 import CurrentWeekView from '@/features/bookings/CurrentWeekView.vue';
@@ -28,7 +26,6 @@ interface Props {
 
 const { id } = defineProps<Props>();
 
-const router = useRouter();
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
@@ -82,10 +79,6 @@ function handleEditBooking(booking: Booking): void {
 function handleEditProperty(): void {
     modalStore.openPropertyModal({ property: selectedProperty.value });
 }
-function handleNavigate(target: PropertyId | 'all'): void {
-    if (target === 'all') router.push({ name: 'properties' });
-    else router.push({ name: 'property-detail', params: { id: target } });
-}
 </script>
 
 <template>
@@ -108,10 +101,6 @@ function handleNavigate(target: PropertyId | 'all'): void {
                 <span class="capitalize">{{ selectedProperty.id }}</span>
             </template>
             <template #subtitle>Portfolio health, listing settings and unit operations</template>
-
-            <PropertySelector
-                :model-value="id"
-                @change="handleNavigate" />
         </PageTitle>
 
         <!-- Metric Stats -->
