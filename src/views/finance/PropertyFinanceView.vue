@@ -38,8 +38,9 @@ function handlePropertyChange(propId: PropertyId): void {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div class="-mt-1 flex items-center justify-between">
+    <div class="-mt-4 space-y-4">
+        <div
+            class="sticky -top-4 z-20 -mx-4 flex items-center justify-between bg-mist-900/25 px-4 py-2.5 backdrop-blur-lg">
             <div
                 class="flex items-center overflow-x-auto rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -58,24 +59,23 @@ function handlePropertyChange(propId: PropertyId): void {
             </div>
         </div>
 
-        <div class="space-y-4">
-            <FinancePropertyMetrics
-                :key="`metrics-${selectedProperty}`"
+        <FinancePropertyMetrics
+            :key="`metrics-${selectedProperty}`"
+            class="-mt-2"
+            :property-id="selectedProperty" />
+
+        <div class="grid h-105 grid-cols-1 gap-4 lg:grid-cols-2">
+            <FinancePropertyBreakdown
+                :key="`breakdown-${selectedProperty}`"
                 :property-id="selectedProperty" />
-
-            <div class="grid h-105 grid-cols-1 gap-4 lg:grid-cols-2">
-                <FinancePropertyBreakdown
-                    :key="`breakdown-${selectedProperty}`"
-                    :property-id="selectedProperty" />
-                <PropertyCashFlow
-                    :key="`cashflow-${selectedProperty}`"
-                    :property-id="selectedProperty" />
-            </div>
-
-            <FinancePropertyTable
-                :key="`table-${selectedProperty}`"
-                :property-id="selectedProperty"
-                class="max-h-162" />
+            <PropertyCashFlow
+                :key="`cashflow-${selectedProperty}`"
+                :property-id="selectedProperty" />
         </div>
+
+        <FinancePropertyTable
+            :key="`table-${selectedProperty}`"
+            :property-id="selectedProperty"
+            class="max-h-162" />
     </div>
 </template>

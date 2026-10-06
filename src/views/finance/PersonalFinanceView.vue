@@ -107,8 +107,9 @@ function handleUserTabChange(tabId: UserTabId): void {
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div class="-mt-1 flex items-center justify-between">
+    <div class="-mt-4 space-y-4">
+        <div
+            class="sticky -top-4 z-20 -mx-4 flex items-center justify-between bg-mist-900/25 px-4 py-2.5 backdrop-blur-lg">
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -129,6 +130,7 @@ function handleUserTabChange(tabId: UserTabId): void {
 
         <FinancePersonalMetrics
             :key="`metrics-${activeOwner}`"
+            class="-mt-2"
             :owner="activeOwner" />
 
         <div class="grid h-110 grid-cols-1 gap-4 lg:grid-cols-4">
@@ -141,12 +143,12 @@ function handleUserTabChange(tabId: UserTabId): void {
                     class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
                     <div class="relative mt-4 mr-4 h-48 select-none">
                         <div
-                            class="absolute -top-3 -right-3 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">
-                            <div class="mt-4 h-7 w-full bg-mist-950/60 opacity-80" />
+                            class="absolute -top-3 -right-4 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">
+                            <div class="mt-4 h-8 w-full bg-mist-950/60 opacity-80" />
                         </div>
 
                         <div
-                            class="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-mist-800 bg-mist-900 p-4 shadow-2xl">
+                            class="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
                             <div
                                 class="flex items-center justify-between text-xs font-medium text-mist-300">
                                 <span>{{ activeCard.bankName }}</span>
@@ -157,7 +159,7 @@ function handleUserTabChange(tabId: UserTabId): void {
 
                             <div class="my-auto flex items-center gap-3">
                                 <div
-                                    class="relative h-7 w-8 overflow-hidden rounded border border-amber-600/50 bg-linear-to-br from-amber-200 via-amber-400 to-amber-500 shadow-sm">
+                                    class="relative h-7 w-9 overflow-hidden rounded border border-amber-600/50 bg-linear-to-br from-amber-200 via-amber-400 to-amber-500 shadow-sm">
                                     <div
                                         class="absolute inset-0 grid grid-cols-2 divide-x divide-amber-700/40 opacity-60">
                                         <div class="border-b border-amber-700/40" />
@@ -166,7 +168,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                                 </div>
                                 <fa-icon
                                     icon="wifi"
-                                    class="rotate-90 text-xs text-mist-400" />
+                                    class="rotate-90 text-sm text-mist-400" />
                             </div>
 
                             <div
@@ -195,7 +197,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                                 </div>
                                 <div class="flex items-center">
                                     <svg
-                                        class="h-6 w-auto"
+                                        class="h-7 w-auto"
                                         viewBox="0 0 36 24"
                                         fill="none">
                                         <circle
