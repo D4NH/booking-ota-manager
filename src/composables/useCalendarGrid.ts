@@ -1,61 +1,77 @@
 import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
-import { getCurrentDate, getOffsetDate } from '@/utils/date';
+import {
+    getCurrentDate,
+    getCurrentMonth,
+    getPreviousMonth,
+    getDaysInMonth,
+    parseISODate,
+    getOffsetDate,
+} from '@/utils/date';
 
 export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
-    const currentDate = ref<Date>(new Date());
-    const selectedMonth = ref<number>(currentDate.value.getMonth());
-    const selectedYear = ref<number>(currentDate.value.getFullYear());
+    const todayIso = getCurrentDate();
+    const todayParsed = parseISODate(todayIso);
 
-    // 42-cell matrix (6 weeks) including previous and next month padding
+    const currentDate = ref<Date>(todayParsed);
+    const selectedMonth = ref<number>(todayParsed.getMonth());
+    const selectedYear = ref<number>(todayParsed.getFullYear());
+
+    const currentMonth = computed<string>(() => getCurrentMonth());
+
+    const selectedCycle = computed<string>(
+        () => `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, '0')}`
+    );
+
+    const isCurrentMonth = computed<boolean>(() => selectedCycle.value === currentMonth.value);
+
     const calendarDays = computed<CalendarDay[]>(() => {
         const year = selectedYear.value;
         const month = selectedMonth.value;
+        const activeCycleStr = selectedCycle.value;
 
-        const firstDayOfMonth = new Date(year, month, 1);
-        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const firstDayOfMonth = parseISODate(`${activeCycleStr}-01`);
+        const startingOffset = (firstDayOfMonth.getDay() + 6) % 7;
+        const totalDaysInMonth = getDaysInMonth(activeCycleStr);
 
-        // Shift to Monday-first (Mon = 0, Sun = 6)
-        const rawDayIndex = firstDayOfMonth.getDay();
-        const startingDayOfWeek = (rawDayIndex + 6) % 7;
-        const totalDaysInMonth = lastDayOfMonth.getDate();
-
-        const todayStr = getCurrentDate(new Date());
+        const todayStr = getCurrentDate();
         const days: CalendarDay[] = [];
 
-        // Previous month padding
-        const prevMonthLastDay = new Date(year, month, 0).getDate();
-        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-            const prevDate = new Date(year, month - 1, prevMonthLastDay - i);
-            const dateStr = getCurrentDate(prevDate);
+        const prevCycle = getPreviousMonth(firstDayOfMonth);
+        const prevMonthLastDay = getDaysInMonth(prevCycle);
+
+        for (let i = startingOffset - 1; i >= 0; i--) {
+            const d = prevMonthLastDay - i;
+            const dateStr = `${prevCycle}-${String(d).padStart(2, '0')}`;
             days.push({
                 dateStr,
-                dayNumber: prevMonthLastDay - i,
+                dayNumber: d,
                 isCurrentMonth: false,
                 isToday: dateStr === todayStr,
             });
         }
 
-        // Current month active days
-        for (let day = 1; day <= totalDaysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        for (let d = 1; d <= totalDaysInMonth; d++) {
+            const dateStr = `${activeCycleStr}-${String(d).padStart(2, '0')}`;
             days.push({
                 dateStr,
-                dayNumber: day,
+                dayNumber: d,
                 isCurrentMonth: true,
                 isToday: dateStr === todayStr,
             });
         }
 
-        // Next month padding to fulfill 42 cells
-        const remainingCells = 42 - days.length;
-        for (let day = 1; day <= remainingCells; day++) {
-            const nextDate = new Date(year, month + 1, day);
-            const dateStr = getCurrentDate(nextDate);
+        const nextMonthIndex = month === 11 ? 0 : month + 1;
+        const nextYear = month === 11 ? year + 1 : year;
+        const nextCycle = `${nextYear}-${String(nextMonthIndex + 1).padStart(2, '0')}`;
+
+        const remaining = 42 - days.length;
+        for (let d = 1; d <= remaining; d++) {
+            const dateStr = `${nextCycle}-${String(d).padStart(2, '0')}`;
             days.push({
                 dateStr,
-                dayNumber: day,
+                dayNumber: d,
                 isCurrentMonth: false,
                 isToday: dateStr === todayStr,
             });
@@ -63,30 +79,32 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
 
         return days;
     });
-    // Years extracted from bookings
+
     const yearOptions = computed<number[]>(() => {
-        const list = toValue(bookingsSource);
+        const list = toValue(bookingsSource) || [];
         const years = new Set<number>();
 
-        for (const b of list) {
-            if (b.checkIn && b.checkIn.length >= 4) {
+        for (let i = 0; i < list.length; i++) {
+            const b = list[i];
+            if (b?.checkIn && b.checkIn.length >= 4) {
                 const inYear = Number(b.checkIn.slice(0, 4));
                 if (!Number.isNaN(inYear)) years.add(inYear);
             }
-            if (b.checkOut && b.checkOut.length >= 4) {
+            if (b?.checkOut && b.checkOut.length >= 4) {
                 const outYear = Number(b.checkOut.slice(0, 4));
                 if (!Number.isNaN(outYear)) years.add(outYear);
             }
         }
 
         if (years.size === 0) {
-            years.add(new Date().getFullYear());
+            years.add(parseISODate(getCurrentDate()).getFullYear());
         } else if (!years.has(selectedYear.value)) {
             years.add(selectedYear.value);
         }
 
         return Array.from(years).sort((a, b) => a - b);
     });
+
     const staysByDateMap = computed<Map<string, Booking[]>>(() => {
         const list = toValue(bookingsSource) || [];
         const map = new Map<string, Booking[]>();
@@ -125,7 +143,6 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
         return map;
     });
 
-    // Sync dropdown selectors when currentDate shifts
     watch(
         currentDate,
         (d) => {
@@ -140,7 +157,7 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
     }
 
     function multiDayStyling(b: Booking, dateStr: string, dayIndex: number): string {
-        const dayOfWeek = dayIndex % 7; // Mon = 0, Sun = 6
+        const dayOfWeek = dayIndex % 7;
         const isCheckIn = b.checkIn === dateStr;
         const lastNight = getOffsetDate(b.checkOut, -1);
         const isLastNight = lastNight === dateStr;
@@ -165,22 +182,39 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
     }
 
     function prevMonth(): void {
-        currentDate.value = new Date(selectedYear.value, selectedMonth.value - 1, 1);
+        const prev = getPreviousMonth(parseISODate(`${selectedCycle.value}-01`));
+        const [y, m] = prev.split('-').map(Number);
+        if (y && m) {
+            selectedYear.value = y;
+            selectedMonth.value = m - 1;
+            currentDate.value = new Date(y, m - 1, 1);
+        }
     }
 
     function nextMonth(): void {
-        currentDate.value = new Date(selectedYear.value, selectedMonth.value + 1, 1);
+        if (selectedMonth.value === 11) {
+            selectedMonth.value = 0;
+            selectedYear.value++;
+        } else {
+            selectedMonth.value++;
+        }
+        currentDate.value = new Date(selectedYear.value, selectedMonth.value, 1);
     }
 
     function goToToday(): void {
-        currentDate.value = new Date();
+        const today = parseISODate(getCurrentDate());
+        currentDate.value = today;
+        selectedMonth.value = today.getMonth();
+        selectedYear.value = today.getFullYear();
     }
 
     function setMonth(newMonth: number): void {
+        selectedMonth.value = newMonth;
         currentDate.value = new Date(selectedYear.value, newMonth, 1);
     }
 
     function setYear(newYear: number): void {
+        selectedYear.value = newYear;
         currentDate.value = new Date(newYear, selectedMonth.value, 1);
     }
 
@@ -188,6 +222,9 @@ export function useCalendarGrid(bookingsSource: MaybeRefOrGetter<Booking[]>) {
         currentDate,
         selectedMonth,
         selectedYear,
+        currentMonth,
+        selectedCycle,
+        isCurrentMonth,
         calendarDays,
         yearOptions,
         getStaysForDate,

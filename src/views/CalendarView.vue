@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { MONTH_NAMES } from '@/config/constants';
 import { getPropertyStyle } from '@/config/properties';
@@ -10,7 +10,7 @@ import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { CalendarDay } from '@/types/calendar';
 import type { PropertyId } from '@/types/property';
-import { formatDate } from '@/utils/date';
+import { formatDate, getCurrentMonth } from '@/utils/date';
 
 import PageTitle from '@/components/PageTitle.vue';
 import PropertySelector from '@/components/PropertySelector.vue';
@@ -26,6 +26,7 @@ const { unitBookings: filteredBookings } = usePropertyDetails(selectedProperty, 
 });
 
 const {
+    isCurrentMonth,
     selectedMonth,
     selectedYear,
     calendarDays,
@@ -38,6 +39,8 @@ const {
     setMonth,
     setYear,
 } = useCalendarGrid(filteredBookings);
+
+console.log('currentDate', isCurrentMonth.value);
 
 watch(
     () => route.params.id,
@@ -83,7 +86,8 @@ function handleBookingClick(booking: Booking, event: Event): void {
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md border border-mist-800 px-3 py-2 text-xs font-semibold text-mist-300 shadow-sm transition-colors hover:border-mist-700"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 px-3 py-2 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700"
+                    :class="{ 'cursor-default bg-mist-900 text-mist-500': isCurrentMonth }"
                     @click="goToToday">
                     Today
                 </button>
