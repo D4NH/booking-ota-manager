@@ -143,7 +143,7 @@ async function handleScanEmails(): Promise<void> {
 </script>
 
 <template>
-    <div class="border-t border-mist-800/80 bg-mist-950/40 p-3 font-sans text-mist-200 select-none">
+    <div class="border-t border-mist-800/80 bg-mist-950/40 p-3 text-mist-200 select-none">
         <div class="mb-2 flex items-center justify-between font-mono text-[11px] text-mist-400">
             <button
                 type="button"

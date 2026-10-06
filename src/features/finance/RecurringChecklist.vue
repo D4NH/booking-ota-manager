@@ -3,43 +3,56 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import type { ProjectedRecurringItem } from '@/types/finance';
+import type { ProjectedRecurringItem, PersonalOwner } from '@/types/finance';
 import { formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
-
 import CardTitle from '@/components/CardTitle.vue';
+
+interface Props {
+    owner?: PersonalOwner | 'Shared';
+}
+
+const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
 const { settleRecurringCommitment } = useFinanceSync();
 const { monthlyProjectedIncome, monthlyProjectedExpenses, isLoading, selectedMonth } =
     storeToRefs(financeStore);
 
-const activeSectionTab = ref<'all' | 'income' | 'expenses'>('all');
-const showSettled = ref(false);
+const showSettled = ref<boolean>(false);
 
 const baseList = computed<ProjectedRecurringItem[]>(() => {
-    if (activeSectionTab.value === 'income') return monthlyProjectedIncome.value;
-    if (activeSectionTab.value === 'expenses') return monthlyProjectedExpenses.value;
-    return [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
+    let source: ProjectedRecurringItem[] = [];
+    source = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
+
+    return source.filter((item) => matchesOwner(item));
 });
 const visibleList = computed<ProjectedRecurringItem[]>(() => {
     if (showSettled.value) return baseList.value;
     return baseList.value.filter((item) => !item.isSettled);
 });
-const totalPendingCount = computed(() => baseList.value.filter((i) => !i.isSettled).length);
-const totalSettledCount = computed(() => baseList.value.filter((i) => i.isSettled).length);
+const totalPendingCount = computed<number>(
+    () => baseList.value.filter((item) => !item.isSettled).length
+);
+const totalSettledCount = computed<number>(
+    () => baseList.value.filter((item) => item.isSettled).length
+);
 
+function matchesOwner(item: ProjectedRecurringItem): boolean {
+    if (owner === 'Shared') return item.targetLedger === 'Shared';
+    return item.targetLedger === 'Personal' && item.owner === owner;
+}
 async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
     await settleRecurringCommitment(item);
 }
 </script>
 
 <template>
-    <div class="flex flex-col">
+    <div class="flex min-h-0 flex-1 flex-col overflow-auto">
         <div class="-mt-5 flex justify-between">
             <CardTitle>
                 <template #title>
-                    Recurring Cash Flow & Inflows
+                    Recurring Commitments & Inflows
                     <span
                         class="rounded px-2 py-0.5 font-mono text-[10px] font-semibold"
                         :class="
@@ -52,7 +65,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                 </template>
                 <template #subtitle>
                     <p class="mt-0.5 text-xs text-mist-400">
-                        Unbilled commitments and uncollected returns for
+                        Unbilled obligations and expected receipts for {{ owner }} in
                         {{ formatDate(selectedMonth, { monthHeader: true }) }}
                     </p>
                 </template>
@@ -60,17 +73,17 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
             <button
                 v-if="totalSettledCount > 0"
                 type="button"
-                class="flex items-center gap-1.5 text-[11px] font-semibold text-mist-400 transition hover:text-mist-200"
+                class="flex cursor-pointer items-center gap-1.5 text-[11px] font-semibold text-mist-400 transition hover:text-mist-200"
                 @click="showSettled = !showSettled">
                 <span
                     class="h-2 w-2 rounded-full"
-                    :class="showSettled ? 'bg-lime-400' : 'bg-mist-700'"></span>
+                    :class="showSettled ? 'bg-lime-400' : 'bg-mist-700'" />
                 {{ showSettled ? 'Hide Settled' : `Show ${totalSettledCount} Settled` }}
             </button>
         </div>
 
-        <!-- Filter Subtabs & Settled Toggle -->
-        <div class="mb-4 flex flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md">
+        <div
+            class="flex h-full flex-1 flex-col rounded-md border border-mist-800 bg-mist-900 shadow-md">
             <div class="flex flex-col divide-y divide-mist-800/60">
                 <div
                     v-for="item in visibleList"
@@ -86,23 +99,21 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                         <div class="truncate">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="gap-1 truncate text-sm font-semibold text-mist-100 transition group-hover:text-lime-400">
-                                    <!-- {{ item.notes || item.category }} -->
+                                    class="truncate text-sm font-semibold text-mist-100 transition group-hover:text-lime-400">
                                     {{ item.category }}
                                 </span>
                                 <span
-                                    v-if="item.notes !== 'Savings'"
-                                    class="gap-1 truncate text-sm text-mist-100 transition group-hover:text-lime-400">
-                                    <!-- {{ item.notes || item.category }} -->
+                                    v-if="item.notes && item.notes !== 'Savings'"
+                                    class="truncate text-sm text-mist-300 transition group-hover:text-mist-100">
                                     {{ item.notes }}
                                 </span>
                                 <span
                                     v-if="item.frequency === 'yearly'"
-                                    class="py-0.2 rounded border border-amber-500/20 bg-amber-500/10 px-1.5 font-mono text-[9px] font-bold text-amber-300 uppercase">
+                                    class="rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-300 uppercase">
                                     Annual
                                 </span>
                                 <span
-                                    class="py-0.2 rounded px-1.5 font-mono text-[11px] font-semibold uppercase"
+                                    class="rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase"
                                     :class="
                                         item.type === 'income'
                                             ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
@@ -111,19 +122,24 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                                     {{ item.type === 'income' ? 'Inflow' : 'Bill' }}
                                 </span>
                             </div>
-                            <div class="mt-1 flex items-center gap-1">
+                            <div
+                                class="mt-1 flex items-center gap-1 font-mono text-[11px] text-mist-400">
                                 <span
-                                    class="py-0.2 rounded border border-mist-800 bg-mist-800 px-1.5 font-mono text-[11px] font-medium text-mist-300">
+                                    class="rounded border border-mist-800 bg-mist-800 px-1.5 py-0.5 text-mist-300">
                                     {{ item.targetLedger }}
                                 </span>
-                                <span
-                                    v-if="item.owner"
-                                    class="text-[11px] text-mist-400">
+                                <span v-if="item.owner">
                                     &bull; {{ item.owner.split(' ')[0] }}
+                                </span>
+                                <span
+                                    v-if="item.dueDate"
+                                    class="text-mist-500">
+                                    &bull; Due {{ item.dueDate.slice(8, 10) }}th
                                 </span>
                             </div>
                         </div>
                     </div>
+
                     <div class="shrink-0 text-right">
                         <span class="block font-mono text-xs font-semibold text-mist-100">
                             {{ item.type === 'income' ? '+' : '-' }}{{ formatIDR(item.amount) }}
@@ -133,10 +149,11 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                             class="font-mono text-xs font-semibold text-lime-400">
                             ✓ Settled
                         </span>
-                        <span
+                        <button
                             v-else
+                            type="button"
                             :disabled="isLoading"
-                            class="cursor-pointer text-xs font-semibold shadow-sm transition disabled:opacity-50"
+                            class="cursor-pointer text-xs font-semibold transition disabled:opacity-50"
                             :class="
                                 item.type === 'income'
                                     ? 'text-emerald-400 hover:text-emerald-300'
@@ -144,89 +161,26 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                             "
                             @click="handleSettle(item)">
                             {{ item.type === 'income' ? 'Collect' : 'Pay' }}
-                        </span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Pending Items Grid -->
-            <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div
-                    v-for="item in visibleList"
-                    :key="item.id"
-                    class="p-3.5 rounded-md border border-mist-800 bg-mist-800 transition flex items-center justify-between">
-                    <div class="pr-2 min-w-0">
-                        <div class="flex items-center gap-1.5 mb-1 flex-wrap">
-                            <span
-                                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-semibold uppercase"
-                                :class="
-                                    item.type === 'income'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                ">
-                                {{ item.type === 'income' ? 'Inflow' : 'Bill' }}
-                            </span>
-                            <span
-                                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-medium text-mist-300 bg-mist-800 border border-mist-800">
-                                {{ item.targetLedger }}
-                            </span>
-                            <span
-                                v-if="item.owner"
-                                class="text-mist-300 mr-1">
-                                &bull; {{ item.owner.split(' ')[0] }}
-                            </span>
-                        </div>
-                        <span
-                            class="text-xs font-semibold text-mist-100 truncate max-w-[130px]"
-                            :title="item.notes || item.category">
-                            {{ item.notes || item.category }}
-                        </span>
-
-                        <div class="text-[11px] text-mist-400 font-mono">
-                            <strong class="text-mist-100">
-                                {{ item.type === 'income' ? '+' : '-' }}{{ formatIDR(item.amount) }}
-                            </strong>
-                        </div>
-                    </div>
-
-                    <div class="shrink-0">
-                        <span
-                            v-if="item.isSettled"
-                            class="text-xs font-semibold text-lime-400 font-mono">
-                            ✓ Settled
-                        </span>
-                        <button
-                            v-else
-                            :disabled="isLoading"
-                            class="text-mist-950 text-xs font-semibold px-3 py-1.5 rounded-md transition shadow-sm disabled:opacity-50"
-                            :class="
-                                item.type === 'income'
-                                    ? 'bg-emerald-400 hover:bg-emerald-300'
-                                    : 'bg-lime-400 hover:bg-lime-300'
-                            "
-                            @click="handleSettle(item)">
-                            {{ item.type === 'income' ? 'Collect' : 'Pay' }}
-                        </button>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- All Clear State -->
             <div
                 v-if="visibleList.length === 0"
                 class="rounded-md border border-mist-800 bg-mist-800/40 py-8 text-center">
                 <p class="mb-1 text-xs font-semibold text-lime-400">
                     {{
                         totalSettledCount > 0 && !showSettled
-                            ? 'All recurring items for this cycle are settled.'
-                            : 'No recurring obligations found.'
+                            ? `All recurring items for ${owner} are settled.`
+                            : `No recurring obligations found for ${owner}.`
                     }}
                 </p>
                 <p class="text-[11px] text-mist-400">
                     {{
                         totalSettledCount > 0 && !showSettled
                             ? 'Click "Show Settled" to inspect posted entries.'
-                            : 'Add active templates in the Recurring_Templates tab.'
+                            : 'Add active templates in the Recurring_Templates sheet.'
                     }}
                 </p>
             </div>

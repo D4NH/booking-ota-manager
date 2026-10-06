@@ -237,7 +237,7 @@ async function handleReject(): Promise<void> {
             leave-to-class="opacity-0">
             <div
                 v-if="modelValue && booking"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 font-sans backdrop-blur-xs">
+                class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
                     class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Modal Header -->
