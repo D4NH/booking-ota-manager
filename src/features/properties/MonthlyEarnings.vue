@@ -169,9 +169,9 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
             class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
             @mouseleave="hoveredIndex = null">
             <!-- Header Metrics -->
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
-                <div class="flex flex-col items-baseline gap-1">
-                    <p class="font-mono text-lg font-semibold text-mist-100">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div class="flex flex-col gap-1">
+                    <p class="font-mono text-sm font-semibold text-mist-100">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">

@@ -4,8 +4,9 @@ import { storeToRefs } from 'pinia';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { getPropertyStyle } from '@/config/properties';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import type { PropertyFinance } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
+import type { PropertyFinance } from '@/types/finance';
+import type { PropertyId } from '@/types/property';
 
 import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -13,6 +14,10 @@ import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
 import TransferModal from '@/features/finance/TransferModal.vue';
 import PropertyTransactionModal from '@/features/finance/PropertyTransactionModal.vue';
+
+interface Props {
+    propertyId?: PropertyId | 'all';
+}
 
 const categoryOptions = [
     'All categories',
@@ -29,36 +34,48 @@ const categoryOptions = [
     'Taxes, Permits & Insurance',
 ];
 
+const { propertyId = 'piyungan' } = defineProps<Props>();
+
 const financeStore = useFinanceStore();
 const { removePropertyTransaction } = useFinanceSync();
 const { filteredPropertyFinances } = storeToRefs(financeStore);
 
-const isModalOpen = ref(false);
-const isTransferModalOpen = ref(false);
+const isModalOpen = ref<boolean>(false);
+const isTransferModalOpen = ref<boolean>(false);
 const filterCategory = ref<string>('All categories');
 const editingItem = ref<PropertyFinance | null>(null);
-const currentPage = ref(1);
-const pageSize = ref(10);
+const currentPage = ref<number>(1);
+const pageSize = ref<number>(10);
 
-const displayedTransactions = computed(() => {
-    if (filterCategory.value === 'All categories') return filteredPropertyFinances.value;
-    return filteredPropertyFinances.value.filter((i) => i.category === filterCategory.value);
+const scopedPropertyFinances = computed<PropertyFinance[]>(() => {
+    const list = filteredPropertyFinances.value || [];
+    if (propertyId === 'all') return list;
+    return list.filter((item) => item.propertyId === propertyId);
 });
-const totalItems = computed(() => displayedTransactions.value.length);
-const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value) || 1);
-const paginatedTransactions = computed(() => {
+const displayedTransactions = computed<PropertyFinance[]>(() => {
+    if (filterCategory.value === 'All categories') return scopedPropertyFinances.value;
+    return scopedPropertyFinances.value.filter((i) => i.category === filterCategory.value);
+});
+const totalItems = computed<number>(() => displayedTransactions.value.length);
+const totalPages = computed<number>(() => Math.ceil(totalItems.value / pageSize.value) || 1);
+const paginatedTransactions = computed<PropertyFinance[]>(() => {
     const start = (currentPage.value - 1) * pageSize.value;
     return displayedTransactions.value.slice(start, start + pageSize.value);
 });
-const startItemIndex = computed(() => {
+const startItemIndex = computed<number>(() => {
     if (totalItems.value === 0) return 0;
     return (currentPage.value - 1) * pageSize.value + 1;
 });
-const endItemIndex = computed(() => Math.min(currentPage.value * pageSize.value, totalItems.value));
+const endItemIndex = computed<number>(() =>
+    Math.min(currentPage.value * pageSize.value, totalItems.value)
+);
 
-watch([filterCategory, pageSize, () => filteredPropertyFinances.value.length], () => {
-    currentPage.value = 1;
-});
+watch(
+    [filterCategory, pageSize, () => scopedPropertyFinances.value.length, () => propertyId],
+    () => {
+        currentPage.value = 1;
+    }
+);
 
 function goToPage(page: number): void {
     if (page >= 1 && page <= totalPages.value) {
@@ -74,6 +91,12 @@ function openEditModal(item: PropertyFinance): void {
     editingItem.value = item;
     isModalOpen.value = true;
 }
+function openTransferModal(): void {
+    isTransferModalOpen.value = true;
+}
+function handleCloseModal(): void {
+    editingItem.value = null;
+}
 </script>
 
 <template>
@@ -81,7 +104,9 @@ function openEditModal(item: PropertyFinance): void {
         <div class="flex items-center justify-between">
             <CardTitle>
                 <template #title>Transaction Overview</template>
-                <template #subtitle> Bookings auto populated from DexieDB and expenses </template>
+                <template #subtitle>
+                    Bookings auto populated from DexieDB and operational expenses
+                </template>
             </CardTitle>
             <div class="flex items-center gap-2">
                 <SelectDropdown
@@ -98,7 +123,7 @@ function openEditModal(item: PropertyFinance): void {
                 </AppButton>
                 <AppButton
                     label="Transfer Funds"
-                    @click="isTransferModalOpen = true">
+                    @click="openTransferModal">
                     <template #icon>
                         <fa-icon icon="arrow-right-arrow-left" />
                     </template>
@@ -110,34 +135,40 @@ function openEditModal(item: PropertyFinance): void {
             <table class="w-full table-fixed border-collapse text-left text-sm text-mist-300">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold text-mist-400 uppercase">
-                    <tr>
-                        <th class="w-30 px-4 py-2.5">Date</th>
-                        <th class="w-30 px-4 py-2.5">Property</th>
-                        <th class="w-52 px-4 py-2.5">Category</th>
-                        <th class="w-auto px-4 py-2.5">Source</th>
-                        <th class="w-40 px-4 py-2.5 text-right">Amount</th>
-                        <th class="w-28 px-4 py-2.5 text-right">Actions</th>
+                    <tr class="h-12">
+                        <th class="w-30 px-4 py-0 align-middle">Date</th>
+                        <th class="w-30 px-4 py-0 align-middle">Property</th>
+                        <th class="w-52 px-4 py-0 align-middle">Category</th>
+                        <th class="w-auto px-4 py-0 align-middle">Source</th>
+                        <th class="w-40 px-4 py-0 text-right align-middle">Amount</th>
+                        <th class="w-28 px-4 py-0 text-right align-middle">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60">
                     <tr
                         v-for="item in paginatedTransactions"
                         :key="item.id"
-                        class="hover:bg-mist-800/40">
-                        <td class="px-4 py-2.5 font-mono text-xs text-mist-400">
+                        class="h-12 hover:bg-mist-800/40">
+                        <td class="px-4 py-0 align-middle font-mono text-xs text-mist-400">
                             {{ item.date }}
                         </td>
-                        <td class="px-4 py-2.5">
-                            <RouterLink
-                                :to="{ name: 'property-detail', params: { id: item.propertyId } }"
-                                :class="getPropertyStyle(item.propertyId)">
-                                {{ item.propertyId }}
-                            </RouterLink>
+                        <td class="h-10 px-4 py-0 align-middle">
+                            <div class="flex h-full items-center">
+                                <RouterLink
+                                    :to="{
+                                        name: 'property-detail',
+                                        params: { id: item.propertyId },
+                                    }"
+                                    class="inline-flex items-center"
+                                    :class="getPropertyStyle(item.propertyId)">
+                                    {{ item.propertyId }}
+                                </RouterLink>
+                            </div>
                         </td>
-                        <td class="truncate px-4 py-2.5 font-medium">
+                        <td class="truncate px-4 py-0 align-middle font-medium">
                             {{ item.category }}
                         </td>
-                        <td class="truncate px-4 py-2.5 text-mist-400">
+                        <td class="truncate px-4 py-0 align-middle text-mist-400">
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
@@ -147,7 +178,7 @@ function openEditModal(item: PropertyFinance): void {
                                 <TransactionNote :notes="item.notes" />
                             </div>
                         </td>
-                        <td class="px-4 py-2.5 text-right font-mono font-medium">
+                        <td class="px-4 py-0 text-right align-middle font-mono font-medium">
                             <div class="group relative inline-flex items-center justify-end">
                                 <span
                                     class="pr-1 text-xs"
@@ -179,10 +210,10 @@ function openEditModal(item: PropertyFinance): void {
                                 </div>
                             </div>
                         </td>
-                        <td class="h-7 px-4 py-2.5">
+                        <td class="px-4 py-0 align-middle">
                             <div
                                 v-if="!item.id.startsWith('dexie')"
-                                class="flex items-center justify-end gap-1">
+                                class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"
                                     @click="openEditModal(item)">
@@ -205,13 +236,13 @@ function openEditModal(item: PropertyFinance): void {
                     <tr v-if="displayedTransactions.length === 0">
                         <td
                             colspan="6"
-                            class="py-25 text-center text-mist-400">
+                            class="py-24 text-center text-mist-400">
                             <div class="flex items-center justify-center">
                                 <fa-icon
                                     icon="calendar-days"
                                     class="text-xl text-mist-700" />
                                 <span class="ml-2 font-medium text-mist-400">
-                                    No records for this month
+                                    No records for this unit and month cycle
                                 </span>
                             </div>
                         </td>
@@ -220,7 +251,6 @@ function openEditModal(item: PropertyFinance): void {
             </table>
         </div>
 
-        <!-- Paginator -->
         <div
             v-if="totalItems > 0"
             class="mt-4 flex flex-col items-center justify-between gap-3 text-xs text-mist-400 sm:flex-row">
@@ -240,7 +270,7 @@ function openEditModal(item: PropertyFinance): void {
                     <select
                         id="page-size"
                         v-model="pageSize"
-                        class="rounded-md border border-mist-800 bg-mist-800 px-1.5 py-0.5 font-mono text-xs text-mist-200 focus:border-lime-400 focus:outline-none">
+                        class="rounded-md border border-mist-800 bg-mist-950/50 py-0.5 pr-1.5 pl-1 font-mono text-xs text-mist-200 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden">
                         <option
                             v-for="opt in [5, 10, 20, 50]"
                             :key="opt"
@@ -251,10 +281,11 @@ function openEditModal(item: PropertyFinance): void {
                 </div>
             </div>
 
-            <div class="flex items-center gap-1 font-mono">
+            <div class="flex items-center gap-1">
                 <button
+                    type="button"
                     :disabled="currentPage <= 1"
-                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 py-1 pr-2.5 pl-1 text-mist-200 transition hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 pt-0.5 pr-3 pb-1 pl-2 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700 disabled:cursor-default disabled:border-0 disabled:opacity-40"
                     @click="goToPage(currentPage - 1)">
                     <fa-icon
                         class="text-[10px]"
@@ -268,8 +299,9 @@ function openEditModal(item: PropertyFinance): void {
                 </span>
 
                 <button
+                    type="button"
                     :disabled="currentPage >= totalPages"
-                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 py-1 pr-1 pl-2.5 text-mist-200 transition hover:bg-mist-800 disabled:opacity-40 disabled:hover:bg-mist-800"
+                    class="cursor-pointer rounded-md border border-mist-800 bg-mist-800 pt-0.5 pr-2 pb-1 pl-3 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700 disabled:cursor-default disabled:border-0 disabled:opacity-40"
                     @click="goToPage(currentPage + 1)">
                     Next
                     <fa-icon
@@ -282,7 +314,7 @@ function openEditModal(item: PropertyFinance): void {
         <PropertyTransactionModal
             v-model="isModalOpen"
             :item-to-edit="editingItem"
-            @closed="editingItem = null" />
+            @closed="handleCloseModal" />
 
         <TransferModal v-model="isTransferModalOpen" />
     </div>

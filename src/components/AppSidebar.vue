@@ -177,7 +177,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
                         <fa-icon
-                            class="text-[10px] transition-transform duration-200"
+                            class="text-xs transition-transform duration-200"
                             :class="{ 'rotate-180': isPropertiesOpen }"
                             icon="chevron-down" />
                     </button>
@@ -191,7 +191,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         v-for="prop in PROPERTY_CONFIGS"
                         :key="prop.id"
                         :to="{ name: 'property-detail', params: { id: prop.id } }"
-                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
+                        class="-ml-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
                             route.path === `/properties/${prop.id}`
                                 ? 'font-semibold text-lime-400'
@@ -234,7 +234,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
                         <fa-icon
-                            class="text-[10px] transition-transform duration-200"
+                            class="text-xs transition-transform duration-200"
                             :class="{ 'rotate-180': isFinanceOpen }"
                             icon="chevron-down" />
                     </button>
@@ -245,13 +245,15 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         :to="{ name: 'finance-property' }"
-                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
+                        class="-ml-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
                             route.path === `/finance/property`
                                 ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
-                        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
+                        <fa-icon
+                            class="shrink-0 text-center"
+                            icon="house" />
                         <span class="truncate capitalize">Properties</span>
                     </RouterLink>
                 </div>
@@ -260,13 +262,15 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         :to="{ name: 'finance-personal' }"
-                        class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
+                        class="-ml-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-mist-800/50 hover:text-mist-200"
                         :class="[
                             route.path === `/finance/personal`
                                 ? 'font-semibold text-lime-400'
                                 : 'text-mist-400',
                         ]">
-                        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
+                        <fa-icon
+                            class="shrink-0 text-center"
+                            icon="user" />
                         <span class="truncate capitalize">Personal</span>
                     </RouterLink>
                 </div>

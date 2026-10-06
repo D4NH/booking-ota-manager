@@ -180,7 +180,7 @@ async function handleScanEmails(): Promise<void> {
                 :title="isMenuOpen ? 'Hide granular sync options' : 'Show granular sync options'"
                 @click="isMenuOpen = !isMenuOpen">
                 <fa-icon
-                    icon="chevron-up"
+                    icon="chevron-down"
                     class="transition-transform duration-200"
                     :class="{ 'rotate-180': !isMenuOpen }" />
             </button>

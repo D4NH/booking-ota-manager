@@ -180,28 +180,25 @@ function getSegmentHeightPct(value: number): number {
             class="flex h-full flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <!-- Summary & Legend -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-start justify-between">
                 <div class="flex flex-col space-y-1">
                     <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ displayHeaderMonth }}
                     </span>
-                    <div class="font-mono text-lg font-semibold text-mist-100">
+                    <div class="text-md font-mono font-semibold text-mist-100">
                         {{ formatIDR(displayHeaderValue) }}
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="hidden gap-4 text-xs font-medium text-mist-200 sm:flex">
                     <div
-                        class="hidden items-center gap-4 text-xs font-medium text-mist-200 sm:flex">
-                        <div
-                            v-for="item in activeConfigs"
-                            :key="item.id"
-                            class="flex items-center">
-                            <div class="flex items-center gap-1.5">
-                                <span
-                                    class="h-2 w-2 shrink-0 rounded-full"
-                                    :style="{ backgroundColor: item.color }" />
-                                <span class="capitalize">{{ item.id }}</span>
-                            </div>
+                        v-for="item in activeConfigs"
+                        :key="item.id"
+                        class="flex items-center">
+                        <div class="flex items-center gap-1.5">
+                            <span
+                                class="h-2 w-2 shrink-0 rounded-full"
+                                :style="{ backgroundColor: item.color }" />
+                            <span class="capitalize">{{ item.id }}</span>
                         </div>
                     </div>
                 </div>
