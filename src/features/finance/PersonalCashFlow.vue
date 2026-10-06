@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { MONTH_NAMES_SHORT } from '@/config/constants';
-import { normalizeDate, formatDate } from '@/utils/date';
+import { normalizeDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
 import CardTitle from '@/components/CardTitle.vue';
 import type { PersonalOwner } from '@/types/finance';
@@ -253,19 +253,16 @@ function handleSelectMonth(targetMonthStr: string): void {
             @mouseleave="hoveredIndex = null">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <div class="flex flex-col items-baseline gap-1">
-                    <span class="font-mono text-lg font-semibold">
+                    <div class="text-md flex gap-2 font-mono font-semibold">
                         <span
-                            class="pr-2"
-                            :class="
-                                currentMonthPoint.netMargin >= 0 ? 'text-lime-400' : 'text-rose-400'
-                            ">
-                            {{ currentMonthPoint.netMargin >= 0 ? '+' : '-' }}
+                            v-if="currentMonthPoint.netMargin < 0"
+                            class="text-rose-400">
+                            -
                         </span>
                         <span>{{ formatIDR(Math.abs(currentMonthPoint.netMargin)) }}</span>
-                    </span>
-
+                    </div>
                     <p class="flex items-center gap-1 text-xs text-mist-500">
-                        Net this month {{ formatDate(selectedMonth, { monthHeader: true }) }}
+                        Net income this month
                     </p>
                 </div>
 
@@ -281,6 +278,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                 </div>
             </div>
 
+            <!-- Popup -->
             <div class="relative flex w-full items-center justify-center">
                 <div
                     v-if="hoveredIndex !== null && barGroups[hoveredIndex]"
@@ -313,7 +311,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                     <div
                         class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
                         <span>Net:</span>
-                        <span class="text-mist-300">
+                        <span>
                             {{ formatIDR(barGroups[hoveredIndex]!.netMargin) }}
                         </span>
                     </div>
