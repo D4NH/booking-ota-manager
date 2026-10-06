@@ -252,7 +252,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                                 : 'text-mist-400',
                         ]">
                         <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-mist-400" />
-                        <span class="truncate capitalize">Property</span>
+                        <span class="truncate capitalize">Properties</span>
                     </RouterLink>
                 </div>
                 <div

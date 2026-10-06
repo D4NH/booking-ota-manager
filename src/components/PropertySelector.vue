@@ -3,6 +3,11 @@ import { storeToRefs } from 'pinia';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { PropertyId } from '@/types/property';
 
+interface PropertyTabOption {
+    id: PropertyId;
+    label: string;
+}
+
 interface Props {
     modelValue: PropertyId | 'all';
     showAll?: boolean;
@@ -17,6 +22,11 @@ const emit = defineEmits<{
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
+const PROPERTY_TABS: readonly PropertyTabOption[] = sortedProperties.value.map((p) => ({
+    id: p.id,
+    label: p.name.replace('Mai House Jogja - ', '').replace('Mai House Bali - ', ''),
+}));
+
 function handleSelect(id: PropertyId | 'all'): void {
     if (id === modelValue) return;
     emit('update:modelValue', id);
@@ -27,32 +37,32 @@ function handleSelect(id: PropertyId | 'all'): void {
 <template>
     <div class="flex items-center gap-2">
         <div
-            class="flex shrink-0 items-center gap-1 rounded-md border border-mist-800 bg-mist-900 p-1 shadow-sm">
+            class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
             <button
                 v-if="showAll"
                 type="button"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold transition-colors"
+                class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition"
                 :class="[
                     modelValue === 'all'
-                        ? 'bg-mist-800 text-lime-400 shadow-md'
-                        : 'text-mist-400 hover:text-mist-200',
+                        ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'
+                        : 'border border-transparent text-mist-400 hover:text-mist-200',
                 ]"
                 @click="handleSelect('all')">
                 All
             </button>
             <!-- Property Tabs -->
             <button
-                v-for="prop in sortedProperties"
+                v-for="prop in PROPERTY_TABS"
                 :key="prop.id"
                 type="button"
-                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold capitalize transition-colors"
+                class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold capitalize transition"
                 :class="[
                     modelValue === prop.id
-                        ? 'bg-mist-800 text-lime-400 shadow-md'
-                        : 'text-mist-400 hover:text-mist-200',
+                        ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'
+                        : 'border border-transparent text-mist-400 hover:text-mist-200',
                 ]"
                 @click="handleSelect(prop.id)">
-                {{ prop.id }}
+                {{ prop.label }}
             </button>
         </div>
     </div>
