@@ -44,7 +44,7 @@ const {
     selectTodayByDefault = false,
     minDate = null,
     maxDate = null,
-    width = 420,
+    width = 320,
     placeholder = '',
 } = defineProps<Props>();
 
@@ -378,7 +378,7 @@ function handleClickOutside(event: MouseEvent): void {
         <button
             ref="triggerButtonRef"
             type="button"
-            class="flex h-8.5 w-full cursor-pointer items-center rounded-md bg-mist-950/50 px-3 py-2 text-left font-mono text-[13px] text-mist-200 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
+            class="flex h-8.5 w-full cursor-pointer items-center rounded-md bg-mist-950/50 px-3 py-2 text-left font-mono text-xs text-mist-200 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
             :class="[
                 mode === 'month'
                     ? 'justify-center hover:text-lime-400'
@@ -405,19 +405,19 @@ function handleClickOutside(event: MouseEvent): void {
                 <div
                     v-if="isOpen"
                     ref="popoverRef"
-                    class="fixed z-999 box-border max-w-[calc(100vw-24px)] rounded-lg border border-mist-800 bg-mist-950/95 p-3.5 text-mist-100 shadow-2xl backdrop-blur-xl select-none"
+                    class="fixed z-100 max-w-[calc(100vw-24px)] rounded-md border border-mist-800 bg-mist-950/75 p-4 pt-2 text-mist-100 shadow-md backdrop-blur-md select-none"
                     :style="{
-                        top: `${coords.top}px`,
-                        left: `${coords.left}px`,
-                        width: `${Math.min(width, 360)}px`,
+                        top: `${coords.top + 1}px`,
+                        left: `${mode === 'month' ? coords.left - 3.5 : coords.left - 1}px`,
+                        width: `${width}px`,
                     }">
                     <div
                         v-if="mode === 'month'"
-                        class="space-y-3">
+                        class="space-y-2">
                         <div class="flex items-center justify-between">
                             <button
                                 type="button"
-                                class="cursor-pointer rounded p-1.5 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
+                                class="-mt-1 cursor-pointer rounded p-1.5 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
                                 @click="prevYear">
                                 <fa-icon
                                     class="text-xs"
@@ -430,7 +430,7 @@ function handleClickOutside(event: MouseEvent): void {
 
                             <button
                                 type="button"
-                                class="cursor-pointer rounded p-1.5 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
+                                class="-mt-1 cursor-pointer rounded p-1.5 text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
                                 @click="nextYear">
                                 <fa-icon
                                     class="text-xs"
@@ -444,16 +444,16 @@ function handleClickOutside(event: MouseEvent): void {
                                 :key="name"
                                 type="button"
                                 :disabled="isMonthDisabled(mIdx)"
-                                class="rounded-md border py-2.5 text-center font-mono text-xs font-semibold transition"
+                                class="rounded-sm border py-2.5 text-center font-mono text-xs font-medium transition"
                                 :class="[
                                     isMonthDisabled(mIdx)
                                         ? 'cursor-not-allowed border-transparent text-mist-700 opacity-40'
                                         : singleDate ===
                                             `${viewYear}-${String(mIdx + 1).padStart(2, '0')}`
-                                          ? 'border-lime-400 bg-lime-400 font-bold text-mist-950 shadow-sm'
+                                          ? 'bg-lime-500 font-bold text-mist-950 shadow-sm'
                                           : viewYear === todayDate.getFullYear() &&
                                               mIdx === todayDate.getMonth()
-                                            ? 'border-lime-500/40 bg-mist-900 text-mist-100 hover:border-lime-400'
+                                            ? 'border-lime-600 bg-mist-900 text-mist-100 hover:border-lime-400'
                                             : 'border-mist-800 bg-mist-900/60 text-mist-300 hover:border-mist-700 hover:bg-mist-800 hover:text-mist-100',
                                 ]"
                                 @click="selectMonth(mIdx)">
