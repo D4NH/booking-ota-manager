@@ -39,7 +39,7 @@ function handlePropertyChange(propId: PropertyId): void {
 
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between border-b border-mist-800/80 pb-3">
+        <div class="flex items-center justify-between">
             <div
                 class="flex items-center overflow-x-auto rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -67,11 +67,11 @@ function handlePropertyChange(propId: PropertyId): void {
                 :property-id="selectedProperty" />
 
             <div class="grid h-105 grid-cols-1 gap-4 lg:grid-cols-2">
-                <PropertyCashFlow
-                    :key="`cashflow-${selectedProperty}`"
-                    :property-id="selectedProperty" />
                 <FinancePropertyBreakdown
                     :key="`breakdown-${selectedProperty}`"
+                    :property-id="selectedProperty" />
+                <PropertyCashFlow
+                    :key="`cashflow-${selectedProperty}`"
                     :property-id="selectedProperty" />
             </div>
 

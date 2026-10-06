@@ -115,8 +115,7 @@ function handleOpenTransferModal(): void {
 
 <template>
     <div class="space-y-4">
-        <div
-            class="flex flex-wrap items-center justify-between gap-3 border-b border-mist-800/80 pb-3">
+        <div class="flex flex-wrap items-center justify-between gap-4">
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -275,11 +274,11 @@ function handleOpenTransferModal(): void {
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <PersonalSpendingPacingChart
-                :key="`spending-${activeOwner}`"
-                :owner="activeOwner" />
             <PersonalCashFlow
                 :key="`cashflow-${activeOwner}`"
+                :owner="activeOwner" />
+            <PersonalSpendingPacingChart
+                :key="`spending-${activeOwner}`"
                 :owner="activeOwner" />
         </div>
 

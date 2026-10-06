@@ -53,7 +53,7 @@ function isCurrentBooking(b: Booking): boolean {
     <div class="min-h-0 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
         <table class="w-full text-left text-sm text-mist-300">
             <thead
-                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
+                class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/75 text-xs font-semibold text-mist-400 uppercase backdrop-blur-md">
                 <tr>
                     <th class="w-36 px-4 py-2.5">Listing</th>
                     <th class="px-4 py-2.5">Guest</th>
@@ -198,7 +198,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 <span class="text-mist-700">|</span>
                                 <AppButton
                                     variant="icon"
-                                        color="rose"
+                                    color="rose"
                                     @click="emit('delete', b)">
                                     <template #icon>
                                         <fa-icon icon="trash-can" />

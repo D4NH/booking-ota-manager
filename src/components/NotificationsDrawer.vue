@@ -181,7 +181,7 @@ const totalCount = computed(
                 </div>
 
                 <div
-                    class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-2">
+                    class="mt-2.5 flex items-center justify-between gap-2 border-t border-mist-800/60 pt-1">
                     <div class="shrink-0">
                         <span
                             class="group relative z-10 font-mono text-xs font-semibold text-mist-200">
@@ -224,7 +224,7 @@ const totalCount = computed(
                             </div>
                         </div>
                     </div>
-                    <div class="-mr-2 flex items-center">
+                    <div class="-mr-1.5 flex items-center">
                         <AppButton
                             variant="icon"
                             @click="emit('edit', b)">

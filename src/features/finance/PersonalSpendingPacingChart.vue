@@ -17,8 +17,8 @@ const PADDING_RIGHT = 20;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
-const { owner = 'All' } = defineProps<{
-    owner?: PersonalOwner | 'Shared' | 'All';
+const { owner = 'Danh Nguyen' } = defineProps<{
+    owner?: PersonalOwner | 'Shared';
 }>();
 
 const financeStore = useFinanceStore();
@@ -53,7 +53,7 @@ function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
 
     const checkAndAdd = (item: PersonalFinance | SharedFinance) => {
         if (!item?.date) return;
-        if (owner !== 'All' && 'owner' in item && item.owner !== owner) return;
+        if ('owner' in item && item.owner !== owner) return;
 
         const normalized = normalizeDate(item.date);
         if (!normalized.startsWith(cycleStr)) return;
@@ -69,10 +69,10 @@ function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
         }
     };
 
-    if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
+    if (owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
         personal.forEach(checkAndAdd);
     }
-    if (owner === 'All' || owner === 'Shared') {
+    if (owner === 'Shared') {
         shared.forEach(checkAndAdd);
     }
 

@@ -216,6 +216,7 @@ function handleSubmit(): void {
                             <DatePicker
                                 v-model="stayDates"
                                 mode="range"
+                                :width="420"
                                 input-label="Stay Dates (Check In → Check Out)"
                                 placeholder="Select check-in & check-out dates"
                                 :min-date="checkInMinDate" />
