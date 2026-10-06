@@ -193,7 +193,7 @@ const xAxisLabels = computed(() => {
 <template>
     <div class="flex h-full min-h-0 flex-col">
         <CardTitle>
-            <template #title>Spending</template>
+            <template #title>Spendings</template>
             <template #subtitle>Cumulative MTD outflow trajectory</template>
         </CardTitle>
 

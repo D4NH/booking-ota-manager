@@ -12,7 +12,7 @@ import SbnInvestment from '@/features/finance/SbnInvestment.vue';
 import GoldInvestment from '@/features/finance/GoldInvestment.vue';
 import SavingsList from '@/features/finance/SavingsList.vue';
 import PersonalCashFlow from '@/features/finance/PersonalCashFlow.vue';
-import PersonalSpendingPacingChart from '@/features/finance/PersonalSpendingPacingChart.vue';
+import PersonalSpending from '@/features/finance/PersonalSpending.vue';
 
 type UserTabId = 'danh' | 'citra' | 'shared';
 
@@ -259,20 +259,20 @@ function handleUserTabChange(tabId: UserTabId): void {
             <PersonalCashFlow
                 :key="`cashflow-${activeOwner}`"
                 :owner="activeOwner" />
-            <PersonalSpendingPacingChart
+            <PersonalSpending
                 :key="`spending-${activeOwner}`"
                 :owner="activeOwner" />
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <SbnInvestment
-                :key="`sbn-${activeOwner}`"
-                :owner="activeOwner" />
             <GoldInvestment
                 :key="`gold-${activeOwner}`"
                 :owner="activeOwner" />
             <SavingsList
                 :key="`savings-${activeOwner}`"
+                :owner="activeOwner" />
+            <SbnInvestment
+                :key="`sbn-${activeOwner}`"
                 :owner="activeOwner" />
         </div>
     </div>

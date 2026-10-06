@@ -3,11 +3,10 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { MONTH_NAMES_SHORT } from '@/config/constants';
-import type { PersonalOwner } from '@/types/finance';
 import { normalizeDate, formatDate } from '@/utils/date';
 import { formatIDR } from '@/utils/money';
-
 import CardTitle from '@/components/CardTitle.vue';
+import type { PersonalOwner } from '@/types/finance';
 
 const SVG_WIDTH = 600;
 const SVG_HEIGHT = 200;
@@ -18,17 +17,19 @@ const PADDING_RIGHT = 20;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
-const { owner = 'All' } = defineProps<{
-    owner?: PersonalOwner | 'Shared' | 'All';
-}>();
+interface Props {
+    owner?: PersonalOwner | 'Shared';
+}
 
 interface MonthlyPoint {
-    monthStr: string; // "YYYY-MM"
-    label: string; // "May"
+    monthStr: string;
+    label: string;
     income: number;
     expenses: number;
     netMargin: number;
 }
+
+const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
 const { personalFinances, sharedFinances, selectedMonth } = storeToRefs(financeStore);
@@ -36,8 +37,7 @@ const { personalFinances, sharedFinances, selectedMonth } = storeToRefs(financeS
 const activeView = ref<'6M' | 'YTD'>('6M');
 const hoveredIndex = ref<number | null>(null);
 
-const activeYear = computed(() => selectedMonth.value.slice(0, 4));
-
+const activeYear = computed<string>(() => selectedMonth.value.slice(0, 4));
 const monthsToInspect = computed<string[]>(() => {
     if (activeView.value === 'YTD') {
         return Array.from({ length: 12 }, (_, i) => {
@@ -59,7 +59,6 @@ const monthsToInspect = computed<string[]>(() => {
     }
     return list;
 });
-
 const chartData = computed<MonthlyPoint[]>(() => {
     const personal = personalFinances.value || [];
     const shared = sharedFinances.value || [];
@@ -68,11 +67,11 @@ const chartData = computed<MonthlyPoint[]>(() => {
         let inc = 0;
         let exp = 0;
 
-        if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
+        if (owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
             for (let i = 0; i < personal.length; i++) {
                 const item = personal[i];
                 if (!item?.date) continue;
-                if (owner !== 'All' && item.owner !== owner) continue;
+                if (item.owner !== owner) continue;
 
                 const itemCycle = normalizeDate(item.date).slice(0, 7);
                 if (itemCycle !== cycle) continue;
@@ -86,7 +85,7 @@ const chartData = computed<MonthlyPoint[]>(() => {
             }
         }
 
-        if (owner === 'All' || owner === 'Shared') {
+        if (owner === 'Shared') {
             for (let i = 0; i < shared.length; i++) {
                 const item = shared[i];
                 if (!item?.date) continue;
@@ -117,18 +116,18 @@ const chartData = computed<MonthlyPoint[]>(() => {
         };
     });
 });
-
-const currentMonthPoint = computed(() => {
+const currentMonthPoint = computed<MonthlyPoint>(() => {
     return (
         chartData.value.find((d) => d.monthStr === selectedMonth.value) || {
+            monthStr: selectedMonth.value,
+            label: selectedMonth.value,
             netMargin: 0,
             income: 0,
             expenses: 0,
         }
     );
 });
-
-const maxVal = computed(() => {
+const maxVal = computed<number>(() => {
     let highest = 0;
     chartData.value.forEach((d) => {
         if (d.income > highest) highest = d.income;
@@ -138,7 +137,6 @@ const maxVal = computed(() => {
     const step = highest > 10_000_000 ? 5_000_000 : 1_000_000;
     return Math.ceil(highest / step) * step;
 });
-
 const yAxisTicks = computed(() => {
     const max = maxVal.value;
     const step = max / 4;
@@ -166,7 +164,6 @@ const yAxisTicks = computed(() => {
         },
     ];
 });
-
 const barGroups = computed(() => {
     const len = chartData.value.length;
     if (len === 0) return [];
@@ -202,6 +199,10 @@ const barGroups = computed(() => {
         };
     });
 });
+
+function handleSelectMonth(targetMonthStr: string): void {
+    financeStore.selectedMonth = targetMonthStr;
+}
 </script>
 
 <template>
@@ -214,7 +215,6 @@ const barGroups = computed(() => {
                 </template>
             </CardTitle>
 
-            <!-- View Switcher Toggle -->
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
@@ -251,16 +251,13 @@ const barGroups = computed(() => {
         <div
             class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
             @mouseleave="hoveredIndex = null">
-            <!-- Header Metrics -->
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <div class="flex flex-col items-baseline gap-1">
                     <span class="font-mono text-lg font-semibold">
                         <span
-                            class="pr-1"
+                            class="pr-2"
                             :class="
-                                currentMonthPoint.netMargin >= 0
-                                    ? 'text-emerald-400'
-                                    : 'text-rose-400'
+                                currentMonthPoint.netMargin >= 0 ? 'text-lime-400' : 'text-rose-400'
                             ">
                             {{ currentMonthPoint.netMargin >= 0 ? '+' : '-' }}
                         </span>
@@ -272,42 +269,51 @@ const barGroups = computed(() => {
                     </p>
                 </div>
 
-                <!-- Legend -->
                 <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
                     <div class="flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                        <span class="text-mist-200">Income</span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-400" />
+                        <span>Income</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-full bg-rose-400"></span>
+                        <span class="h-2 w-2 rounded-full bg-rose-400" />
                         <span>Expenses</span>
                     </div>
                 </div>
             </div>
 
             <div class="relative flex w-full items-center justify-center">
-                <!-- Tooltip -->
                 <div
                     v-if="hoveredIndex !== null && barGroups[hoveredIndex]"
                     :style="{
                         left: `${(barGroups[hoveredIndex]!.centerX / SVG_WIDTH) * 100}%`,
                     }"
-                    class="pointer-events-none absolute -top-3 z-30 -translate-x-1/2 space-y-1 rounded-md border border-mist-800 bg-mist-900 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                    :class="[
+                        hoveredIndex === 0
+                            ? 'translate-x-0'
+                            : hoveredIndex === barGroups.length - 1
+                              ? '-translate-x-full'
+                              : '-translate-x-1/2',
+                    ]"
+                    class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
                     <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
                         {{ barGroups[hoveredIndex]!.label }}
                     </div>
-                    <div class="flex justify-between gap-3 font-medium text-emerald-400">
-                        <span>Income: </span>
-                        <span>{{ formatIDR(barGroups[hoveredIndex]!.income) }}</span>
+                    <div class="flex justify-between gap-3 text-emerald-400">
+                        <span>Income:</span>
+                        <span class="font-bold">
+                            {{ formatIDR(barGroups[hoveredIndex]!.income) }}
+                        </span>
                     </div>
-                    <div class="flex justify-between gap-3 font-medium text-rose-400">
-                        <span>Expenses: </span>
-                        <span>{{ formatIDR(barGroups[hoveredIndex]!.expenses) }}</span>
+                    <div class="flex justify-between gap-3 text-rose-400">
+                        <span>Expenses:</span>
+                        <span class="font-bold">
+                            {{ formatIDR(barGroups[hoveredIndex]!.expenses) }}
+                        </span>
                     </div>
                     <div
-                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-medium text-mist-300">
+                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
                         <span>Net:</span>
-                        <span>
+                        <span class="text-mist-300">
                             {{ formatIDR(barGroups[hoveredIndex]!.netMargin) }}
                         </span>
                     </div>
@@ -317,7 +323,6 @@ const barGroups = computed(() => {
                     class="h-full w-full overflow-visible select-none"
                     :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
                     preserveAspectRatio="none">
-                    <!-- Horizontal Grid Lines & Y-Axis Labels -->
                     <g
                         v-for="tick in yAxisTicks"
                         :key="tick.value">
@@ -337,11 +342,9 @@ const barGroups = computed(() => {
                         </text>
                     </g>
 
-                    <!-- Render Paired Bars & Interactive Zones -->
                     <g
                         v-for="(group, idx) in barGroups"
                         :key="group.monthStr">
-                        <!-- Vertical Crosshair line on hover -->
                         <line
                             v-if="hoveredIndex === idx"
                             :x1="group.centerX"
@@ -352,7 +355,6 @@ const barGroups = computed(() => {
                             stroke-width="1"
                             stroke-dasharray="2 2" />
 
-                        <!-- Income Bar -->
                         <rect
                             :x="group.incomeX"
                             :y="group.incomeY"
@@ -364,7 +366,6 @@ const barGroups = computed(() => {
                                 hoveredIndex === idx ? 'fill-emerald-300' : 'fill-emerald-500/70'
                             " />
 
-                        <!-- Expense Bar -->
                         <rect
                             :x="group.expenseX"
                             :y="group.expenseY"
@@ -374,7 +375,6 @@ const barGroups = computed(() => {
                             class="transition-all duration-200"
                             :class="hoveredIndex === idx ? 'fill-rose-400' : 'fill-rose-500/50'" />
 
-                        <!-- Full-height invisible hover trigger -->
                         <rect
                             :x="group.triggerX"
                             :y="0"
@@ -383,9 +383,8 @@ const barGroups = computed(() => {
                             fill="transparent"
                             class="cursor-pointer"
                             @mouseenter="hoveredIndex = idx"
-                            @click="financeStore.selectedMonth = group.monthStr" />
+                            @click="handleSelectMonth(group.monthStr)" />
 
-                        <!-- X-Axis Labels -->
                         <text
                             :x="group.centerX"
                             :y="SVG_HEIGHT - 6"
