@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
@@ -11,7 +11,6 @@ import FinancePersonalTable from '@/features/finance/PersonalTable.vue';
 import SbnInvestment from '@/features/finance/SbnInvestment.vue';
 import GoldInvestment from '@/features/finance/GoldInvestment.vue';
 import SavingsList from '@/features/finance/SavingsList.vue';
-import TransferModal from '@/features/finance/TransferModal.vue';
 import PersonalCashFlow from '@/features/finance/PersonalCashFlow.vue';
 import PersonalSpendingPacingChart from '@/features/finance/PersonalSpendingPacingChart.vue';
 
@@ -21,7 +20,6 @@ interface UserTabOption {
     id: UserTabId;
     label: string;
     owner: PersonalOwner | 'Shared';
-    icon: string;
 }
 
 interface CardDisplayInfo {
@@ -33,9 +31,9 @@ interface CardDisplayInfo {
 }
 
 const USER_TABS: readonly UserTabOption[] = [
-    { id: 'danh', label: 'Danh Nguyen', owner: 'Danh Nguyen', icon: 'user' },
-    { id: 'citra', label: 'Citra Ayu Wardani', owner: 'Citra Ayu Wardani', icon: 'user' },
-    { id: 'shared', label: 'Shared', owner: 'Shared', icon: 'users' },
+    { id: 'danh', label: 'Danh Nguyen', owner: 'Danh Nguyen' },
+    { id: 'citra', label: 'Citra Ayu Wardani', owner: 'Citra Ayu Wardani' },
+    { id: 'shared', label: 'Shared', owner: 'Shared' },
 ] as const;
 
 const bcaCardNo = import.meta.env.VITE_BCA_CARD_NO;
@@ -57,8 +55,6 @@ const {
     sharedMonthlyRevenue,
     sharedMonthlyExpenses,
 } = storeToRefs(financeStore);
-
-const isTransferModalOpen = ref<boolean>(false);
 
 const activeUserTab = computed<UserTabId>(() => {
     const queryUser = String(route.query.user || '').toLowerCase();
@@ -108,14 +104,11 @@ function handleUserTabChange(tabId: UserTabId): void {
         },
     });
 }
-function handleOpenTransferModal(): void {
-    isTransferModalOpen.value = true;
-}
 </script>
 
 <template>
     <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="-mt-1 flex items-center justify-between">
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -129,22 +122,9 @@ function handleOpenTransferModal(): void {
                             : 'border border-transparent text-mist-400 hover:text-mist-200',
                     ]"
                     @click="handleUserTabChange(tab.id)">
-                    <fa-icon
-                        :icon="tab.icon"
-                        class="text-xs" />
                     <span>{{ tab.label }}</span>
                 </button>
             </div>
-
-            <button
-                type="button"
-                class="hover:bg-mist-750 flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-700 bg-mist-800 px-3 py-1.5 text-xs font-semibold text-mist-200 transition hover:border-lime-500/40 hover:text-mist-100"
-                @click="handleOpenTransferModal">
-                <fa-icon
-                    icon="money-bill-transfer"
-                    class="text-xs text-lime-400" />
-                <span>Execute Transfer</span>
-            </button>
         </div>
 
         <FinancePersonalMetrics
@@ -293,7 +273,5 @@ function handleOpenTransferModal(): void {
                 :key="`savings-${activeOwner}`"
                 :owner="activeOwner" />
         </div>
-
-        <TransferModal v-model="isTransferModalOpen" />
     </div>
 </template>

@@ -39,7 +39,7 @@ function handlePropertyChange(propId: PropertyId): void {
 
 <template>
     <div class="space-y-4">
-        <div class="flex items-center justify-between">
+        <div class="-mt-1 flex items-center justify-between">
             <div
                 class="flex items-center overflow-x-auto rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
@@ -53,9 +53,6 @@ function handlePropertyChange(propId: PropertyId): void {
                             : 'border border-transparent text-mist-400 hover:text-mist-200',
                     ]"
                     @click="handlePropertyChange(tab.id)">
-                    <fa-icon
-                        icon="house"
-                        class="text-xs" />
                     <span>{{ tab.label }}</span>
                 </button>
             </div>
