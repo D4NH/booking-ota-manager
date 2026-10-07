@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
-import { isDateInMonth, calculateGrowthPct } from '@/utils/financeCalculators';
+import { isDateInMonth, calculateGrowthPct } from '@/utils/finance';
 import type { PersonalOwner, PersonalFinance, SharedFinance } from '@/types/finance';
 
 interface Props {

@@ -3,7 +3,7 @@ import { PROPERTY_LIST } from '@/config/properties';
 import { MONTH_NAMES_SHORT } from '@/config/constants';
 import { getBookedPropertiesCount } from '@/composables/useOccupancy';
 import { getCurrentMonth, getPreviousMonth, getDaysInMonth, parseISODate } from '@/utils/date';
-import { calculateGrowthPct } from '@/utils/financeCalculators';
+import { calculateGrowthPct } from '@/utils/finance';
 import type { Booking } from '@/types/booking';
 import type { PropertyId, MonthlyPropertyRevenue } from '@/types/property';
 

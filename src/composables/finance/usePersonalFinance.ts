@@ -7,7 +7,7 @@ import {
     isDateInMonth,
     sortNewestFirst,
     calculateGrowthPct,
-} from '@/utils/financeCalculators';
+} from '@/utils/finance';
 import type { PersonalFinance, SharedFinance, AggregatedSavingsAccount } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
@@ -191,7 +191,14 @@ export function usePersonalFinance(
 
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
-        const item: PersonalFinance = { ...payload, id, date: cleanDate };
+        const createdAt = new Date().toISOString();
+
+        const item: PersonalFinance = {
+            ...payload,
+            id,
+            date: cleanDate,
+            createdAt,
+        };
 
         await appendSheetRow(
             SPREADSHEET_ID,
@@ -215,13 +222,21 @@ export function usePersonalFinance(
     async function addSharedTransaction(payload: Omit<SharedFinance, 'id'>): Promise<void> {
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
-        const item: SharedFinance = { ...payload, id, date: cleanDate };
+        const createdAt = new Date().toISOString(); // Local timestamp
+
+        const item: SharedFinance = {
+            ...payload,
+            id,
+            date: cleanDate,
+            createdAt,
+        };
 
         await appendSheetRow(
             SPREADSHEET_ID,
             [id, item.type, item.category, item.amount, cleanDate, item.notes],
             "'Shared_Transactions'!A1"
         );
+
         sharedFinances.value = [...sharedFinances.value, item];
         await db.sharedFinances.put(item);
     }

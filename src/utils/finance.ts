@@ -22,14 +22,18 @@ export function isDateInMonth(dateStr: string, targetMonth: string): boolean {
     return Boolean(dateStr && normalizeDate(dateStr).startsWith(targetMonth));
 }
 
-export function sortNewestFirst<T extends { date: string; amount: number; id: string }>(
-    a: T,
-    b: T
-): number {
+export function sortNewestFirst<
+    T extends { date: string; amount?: number; id: string; createdAt?: string },
+>(a: T, b: T): number {
     const dateComp = b.date.localeCompare(a.date);
     if (dateComp !== 0) return dateComp;
-    const amountDiff = Number(b.amount) - Number(a.amount);
-    if (amountDiff !== 0) return amountDiff;
+    if (b.createdAt && a.createdAt) {
+        const createdComp = b.createdAt.localeCompare(a.createdAt);
+        if (createdComp !== 0) return createdComp;
+    } else if (b.createdAt || a.createdAt) {
+        return b.createdAt ? 1 : -1;
+    }
+
     return b.id.localeCompare(a.id);
 }
 

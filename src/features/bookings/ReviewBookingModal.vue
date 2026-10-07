@@ -8,7 +8,7 @@ import { PROPERTY_LIST, PROPERTY_CONFIGS } from '@/config/properties';
 import type { BookingChannel, StagedBooking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights } from '@/utils/date';
-import { calculateOwnerPayout } from '@/utils/financeCalculators';
+import { calculateOwnerPayout } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
 import { toast } from 'vue-toastflow';
 

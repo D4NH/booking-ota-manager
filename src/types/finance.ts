@@ -18,6 +18,7 @@ export interface PropertyFinance {
     amount: number;
     date: string;
     notes: string;
+    createdAt?: string;
 }
 
 export type PersonalOwner = 'Danh Nguyen' | 'Citra Ayu Wardani';
@@ -36,6 +37,7 @@ export interface PersonalFinance {
     notes: string;
     savingsInstitution?: string;
     goldWeightGrams?: number;
+    createdAt?: string;
 }
 
 export interface PersonalSavings {
@@ -79,6 +81,7 @@ export interface SharedFinance {
     notes: string;
     savingsInstitution?: string;
     goldWeightGrams?: number;
+    createdAt?: string;
 }
 
 export type TransferTargetAccount = 'Danh Nguyen' | 'Citra Ayu Wardani' | 'Shared' | 'Split';

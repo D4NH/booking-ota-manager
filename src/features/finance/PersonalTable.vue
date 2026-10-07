@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
-import { sortNewestFirst } from '@/utils/financeCalculators';
+import { sortNewestFirst } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
 import type { PersonalFinance, SharedFinance, PersonalOwner } from '@/types/finance';
 import AppButton from '@/components/ui/AppButton.vue';

@@ -6,12 +6,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyFinance } from '@/composables/finance/usePropertyFinance';
 import { usePersonalFinance } from '@/composables/finance/usePersonalFinance';
 import { getCurrentMonth, normalizeDate } from '@/utils/date';
-import {
-    capitalize,
-    getPreviousMonthStr,
-    isDateInMonth,
-    sortNewestFirst,
-} from '@/utils/financeCalculators';
+import { capitalize, getPreviousMonthStr, isDateInMonth, sortNewestFirst } from '@/utils/finance';
 import type {
     PropertyFinance,
     PersonalFinance,
@@ -301,7 +296,7 @@ export const useFinanceStore = defineStore('finance', () => {
         };
     });
     const dynamicAllocatedGoals = computed<ComputedSavingGoal[]>(() => {
-        // Compute total available liquid savings per owner
+        // Compute total available savings per owner
         const pools: Record<string, number> = {
             'Danh Nguyen': 0,
             'Citra Ayu Wardani': 0,
@@ -931,9 +926,20 @@ export const useFinanceStore = defineStore('finance', () => {
 
             const REGEX_MHJ_BOOKING = /\[MHJ-BOOKING:\s*([^\]]+)\]/;
 
+            const existingPropTimestamps = new Map(
+                sheetPropertyFinances.value.map((i) => [i.id, i.createdAt])
+            );
+            const existingPersTimestamps = new Map(
+                personalFinances.value.map((i) => [i.id, i.createdAt])
+            );
+            const existingSharedTimestamps = new Map(
+                sharedFinances.value.map((i) => [i.id, i.createdAt])
+            );
+
             const parsedPropFinances = (batchResults[1] || [])
                 .filter((r) => r[0] && String(r[0]).trim())
                 .map((r): PropertyFinance => {
+                    const id = String(r[0]).trim();
                     const rawType = String(r[2] || '')
                         .trim()
                         .toLowerCase();
@@ -943,12 +949,11 @@ export const useFinanceStore = defineStore('finance', () => {
                     // Strip "Rp", spaces, and non-numeric punctuation (preserves negative sign & decimals)
                     const rawAmount = String(r[4] ?? '').replace(/[^0-9.-]+/g, '');
                     const amount = Number(rawAmount) || 0;
-
                     const notes = String(r[6] || '').trim();
                     const bookingMatch = REGEX_MHJ_BOOKING.exec(notes);
 
                     return {
-                        id: String(r[0]).trim(),
+                        id,
                         propertyId: String(r[1] || '').trim(),
                         bookingId: bookingMatch ? bookingMatch[1]?.trim() : undefined,
                         type,
@@ -956,33 +961,42 @@ export const useFinanceStore = defineStore('finance', () => {
                         amount,
                         date: normalizeDate(r[5]),
                         notes,
+                        createdAt: existingPropTimestamps.get(id), // Retains local timestamp
                     };
                 });
 
             const parsedPersonal = (batchResults[2] || [])
                 .filter((r) => r[0] && String(r[0]).trim())
-                .map((r) => ({
-                    id: String(r[0]),
-                    owner: (r[1] as PersonalFinance['owner']) || 'Danh Nguyen',
-                    type: (r[2] as PersonalFinance['type']) || 'expense',
-                    category: String(r[3] || ''),
-                    amount: Number(r[4]) || 0,
-                    date: normalizeDate(r[5]),
-                    notes: String(r[6] || ''),
-                    savingsInstitution: String(r[7] || ''),
-                    goldWeightGrams: Number(r[8]) || undefined,
-                }));
+                .map((r): PersonalFinance => {
+                    const id = String(r[0]);
+                    return {
+                        id,
+                        owner: (r[1] as PersonalFinance['owner']) || 'Danh Nguyen',
+                        type: (r[2] as PersonalFinance['type']) || 'expense',
+                        category: String(r[3] || ''),
+                        amount: Number(String(r[4] ?? '').replace(/[^0-9.-]+/g, '')) || 0,
+                        date: normalizeDate(r[5]),
+                        notes: String(r[6] || ''),
+                        savingsInstitution: String(r[7] || ''),
+                        goldWeightGrams: Number(r[8]) || undefined,
+                        createdAt: existingPersTimestamps.get(id), // Retains local timestamp
+                    };
+                });
 
             const parsedShared = (batchResults[3] || [])
                 .filter((r) => r[0] && String(r[0]).trim())
-                .map((r) => ({
-                    id: String(r[0]),
-                    type: (r[1] as SharedFinance['type']) || 'expense',
-                    category: String(r[2] || ''),
-                    amount: Number(r[3]) || 0,
-                    date: normalizeDate(r[4]),
-                    notes: String(r[5] || ''),
-                }));
+                .map((r): SharedFinance => {
+                    const id = String(r[0]);
+                    return {
+                        id,
+                        type: (r[1] as SharedFinance['type']) || 'expense',
+                        category: String(r[2] || ''),
+                        amount: Number(String(r[3] ?? '').replace(/[^0-9.-]+/g, '')) || 0,
+                        date: normalizeDate(r[4]),
+                        notes: String(r[5] || ''),
+                        createdAt: existingSharedTimestamps.get(id), // Retains local timestamp
+                    };
+                });
 
             const parsedTransfers = (batchResults[4] || [])
                 .filter((r) => r[0] && String(r[0]).trim())

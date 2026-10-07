@@ -134,7 +134,7 @@ export function useFinanceSync() {
                   ? 'Recording Gold Purchase...'
                   : 'Saving Personal Record...',
             loadingDesc: isSavings
-                ? `Updating ${payload.owner}'s liquid savings reserve.`
+                ? `Updating ${payload.owner}'s savings reserve.`
                 : `Logging ${payload.category} transaction for ${payload.owner}.`,
             successTitle: isSavings
                 ? 'Savings Updated'

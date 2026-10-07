@@ -141,7 +141,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                 </CardTitle>
                 <div
                     class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
-                    <div class="relative mt-4 mr-4 h-48 select-none">
+                    <div class="relative mt-4 mr-4 h-48 w-78 self-center select-none">
                         <div
                             class="absolute -top-3 -right-4 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">
                             <div class="mt-4 h-8 w-full bg-mist-950/60 opacity-80" />

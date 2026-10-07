@@ -10,7 +10,7 @@ import type { Booking, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { calculateNights } from '@/utils/date';
-import { calculateOwnerPayout } from '@/utils/financeCalculators';
+import { calculateOwnerPayout } from '@/utils/finance';
 
 export const useBookingStore = defineStore('booking', () => {
     const formatSheetRow = (

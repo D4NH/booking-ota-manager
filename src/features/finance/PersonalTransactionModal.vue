@@ -278,7 +278,7 @@ async function submitRecord(): Promise<void> {
                                 </option>
                             </select>
                             <p class="font-mono text-[11px] text-mist-400">
-                                Inflows automatically update your Liquid Savings breakdown.
+                                Inflows automatically update your Savings breakdown.
                             </p>
                         </div>
 

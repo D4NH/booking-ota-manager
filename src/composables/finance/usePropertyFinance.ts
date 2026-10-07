@@ -8,7 +8,7 @@ import {
     isDateInMonth,
     sortNewestFirst,
     calculateGrowthPct,
-} from '@/utils/financeCalculators';
+} from '@/utils/finance';
 import type { Booking } from '@/types/booking';
 import type { PropertyFinance } from '@/types/finance';
 
@@ -144,13 +144,21 @@ export function usePropertyFinance(
     async function addPropertyTransaction(payload: Omit<PropertyFinance, 'id'>): Promise<void> {
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
-        const item: PropertyFinance = { ...payload, id, date: cleanDate };
+        const createdAt = new Date().toISOString(); // Local timestamp
+
+        const item: PropertyFinance = {
+            ...payload,
+            id,
+            date: cleanDate,
+            createdAt,
+        };
 
         await appendSheetRow(
             SPREADSHEET_ID,
             [id, item.propertyId, item.type, item.category, item.amount, cleanDate, item.notes],
             "'Property_Finances'!A1"
         );
+
         sheetPropertyFinances.value = [...sheetPropertyFinances.value, item];
         await db.propertyFinances.put(item);
     }

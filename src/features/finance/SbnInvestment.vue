@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import { calculateSbnMaturity } from '@/utils/financeCalculators';
+import { calculateSbnMaturity } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
 import type { PersonalOwner } from '@/types/finance';
 

@@ -9,7 +9,7 @@ import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights, getCurrentDate } from '@/utils/date';
-import { calculateOwnerPayout } from '@/utils/financeCalculators';
+import { calculateOwnerPayout } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
 
 import AppButton from '@/components/ui/AppButton.vue';
