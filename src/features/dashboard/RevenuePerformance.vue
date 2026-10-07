@@ -130,7 +130,7 @@ function getBarHeightPct(amount: number): number {
                     Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
                 </template>
             </CardTitle>
-            <div class="relative w-23">
+            <div class="relative w-24">
                 <select
                     v-model.number="activeQuarterIndex"
                     class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">

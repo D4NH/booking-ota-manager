@@ -219,7 +219,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                    class="cursor-pointer rounded-xs px-3 py-1.5 transition"
                     :class="[
                         activeView === '6M'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'

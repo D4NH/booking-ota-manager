@@ -191,7 +191,7 @@ function handleSelectMonth(targetMonthStr: string): void {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <div class="flex items-center justify-between">
+        <div class="flex shrink-0 items-center justify-between">
             <CardTitle>
                 <template #title>Cash Flow</template>
                 <template #subtitle>
@@ -200,7 +200,7 @@ function handleSelectMonth(targetMonthStr: string): void {
             </CardTitle>
 
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
+                class="flex items-center rounded-lg border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 transition"
@@ -233,7 +233,7 @@ function handleSelectMonth(targetMonthStr: string): void {
         </div>
 
         <div
-            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <div class="flex flex-wrap items-start justify-between gap-2">
                 <!-- Summary -->
@@ -264,8 +264,8 @@ function handleSelectMonth(targetMonthStr: string): void {
                 </div>
             </div>
 
-            <!-- Popup -->
-            <div class="relative flex w-full items-center justify-center">
+            <div class="relative flex min-h-0 w-full flex-1 items-center justify-center">
+                <!-- Popup -->
                 <div
                     v-if="hoveredIndex !== null && barGroups[hoveredIndex]"
                     :style="{
@@ -292,10 +292,11 @@ function handleSelectMonth(targetMonthStr: string): void {
                     </div>
                 </div>
 
+                <!-- Chart -->
                 <svg
                     class="h-full w-full overflow-visible select-none"
                     :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
-                    preserveAspectRatio="none">
+                    preserveAspectRatio="xMidYMid meet">
                     <g
                         v-for="tick in yAxisTicks"
                         :key="tick.value">

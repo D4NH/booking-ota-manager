@@ -111,7 +111,7 @@ const currentVariantConfig = computed<StyleTokens>(() => {
 
 const buttonClass = computed<string>(() => {
     const base =
-        'inline-flex items-center gap-2 cursor-pointer rounded-md transition font-semibold text-xs select-none';
+        'inline-flex items-center gap-2 cursor-pointer rounded-sm transition font-semibold text-xs select-none';
     const spacing = variant === 'icon' ? 'p-1.5' : slots.icon ? 'py-2 pl-2.5 pr-3' : 'py-2 px-3';
     const disabledClass = disabled ? 'disabled:cursor-not-allowed disabled:opacity-50' : '';
     const layoutClass = fullWidth ? 'w-full justify-center' : 'justify-center';

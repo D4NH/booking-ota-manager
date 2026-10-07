@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useFinanceStore } from '@/stores/useFinanceStore';
 import { useFinanceSync } from '@/composables/useFinanceSync';
+import { useFinanceStore } from '@/stores/useFinanceStore';
+import type { PersonalFinance, SharedFinance, PersonalOwner } from '@/types/finance';
+import { formatDate } from '@/utils/date';
 import { sortNewestFirst } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
-import type { PersonalFinance, SharedFinance, PersonalOwner } from '@/types/finance';
+
 import AppButton from '@/components/ui/AppButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
@@ -124,7 +126,13 @@ function handleCloseModal(): void {
                         :key="item.id"
                         class="group hover:bg-mist-800/50">
                         <td class="px-4 py-2.5 align-middle font-mono text-xs text-mist-400">
-                            {{ item.date }}
+                            {{
+                                formatDate(item.date, {
+                                    relativeDay: true,
+                                    shortMonth: true,
+                                    includeYear: true,
+                                })
+                            }}
                         </td>
                         <td class="px-4 py-2.5 align-middle font-medium text-mist-100">
                             <div class="flex items-center gap-1.5">

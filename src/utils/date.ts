@@ -106,10 +106,7 @@ export function getTomorrow(d: Date = new Date()): string {
 /**
  * Returns "Today", "Tomorrow", "Yesterday", or null if the date is outside the 3-day relative window.
  */
-export function getRelativeDayLabel(
-    isoDateStr: string,
-    referenceDate: Date = new Date()
-): string | null {
+function getRelativeDayLabel(isoDateStr: string, referenceDate: Date = new Date()): string | null {
     if (!isoDateStr) return null;
 
     const targetDateStr = isoDateStr.slice(0, 10);

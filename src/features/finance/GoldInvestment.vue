@@ -71,7 +71,7 @@ function handleCloseModal(): void {
                         class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                         <button
                             type="button"
-                            class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                            class="cursor-pointer rounded-xs px-3 py-1 transition"
                             :class="[
                                 activeView === 'info'
                                     ? 'bg-mist-800 text-amber-300 shadow-sm'
@@ -82,7 +82,7 @@ function handleCloseModal(): void {
                         </button>
                         <button
                             type="button"
-                            class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                            class="cursor-pointer rounded-md px-3 py-1 transition"
                             :class="[
                                 activeView === 'cert'
                                     ? 'bg-mist-800 text-amber-300 shadow-sm'
@@ -95,12 +95,15 @@ function handleCloseModal(): void {
 
                     <button
                         type="button"
-                        class="flex cursor-pointer items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1.5 text-xs font-semibold text-amber-300 transition hover:bg-mist-700"
+                        class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs"
                         @click="openAddGoldModal">
-                        <fa-icon
-                            class="text-xs"
-                            icon="plus" />
-                        <span>Add Gold</span>
+                        <span
+                            class="cursor-pointer rounded-xs bg-mist-800 py-1 pr-3 pl-2 font-semibold text-amber-300 transition hover:bg-mist-700">
+                            <fa-icon
+                                class="mr-1"
+                                icon="plus" />
+                            Add Gold
+                        </span>
                     </button>
                 </div>
             </div>

@@ -117,8 +117,8 @@ function handleBookingClick(booking: Booking, event: Event) {
                         class="group relative z-10">
                         <div
                             :title="`${b.guestName} (${b.checkIn} to ${b.checkOut})`"
+                            class="cursor-pointer px-2 pt-1.5 pb-1 text-xs shadow-sm transition"
                             :class="[
-                                'cursor-pointer px-1.5 py-1 text-xs shadow-sm transition',
                                 multiDayStyling(b, day.dateStr, dayIndex),
                                 getStatusStyle(b.status, true),
                             ]"
@@ -135,7 +135,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                                         v-if="
                                             b.status !== 'Unavailable' && selectedProperty === 'all'
                                         "
-                                        class="py-0.2 shrink-0 rounded px-1 text-[10px] font-semibold capitalize"
+                                        class="h-4"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
                                     </span>
@@ -146,7 +146,6 @@ function handleBookingClick(booking: Booking, event: Event) {
                                     {{ b.listing }}
                                 </div>
                             </div>
-
                             <!-- Continuation Strip -->
                             <div
                                 v-else

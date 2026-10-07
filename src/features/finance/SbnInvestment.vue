@@ -51,8 +51,10 @@ const maturity = computed(() =>
                     </h3>
                 </div>
                 <span
-                    class="flex items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1.5 text-xs font-semibold text-teal-300">
-                    Coupon {{ activeData.couponRate }}% p.a.
+                    class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
+                    <span class="rounded-xs bg-mist-800 py-1 pr-3 pl-2 font-semibold text-teal-400">
+                        Coupon {{ activeData.couponRate }}% p.a.
+                    </span>
                 </span>
             </div>
 
@@ -60,17 +62,17 @@ const maturity = computed(() =>
                 class="relative mb-4 space-y-5 overflow-hidden rounded-md bg-mist-800/50 p-4 font-mono">
                 <div class="flex items-start justify-between">
                     <div>
-                        <span class="block text-[10px] tracking-wider text-mist-400 uppercase"
-                            >Series</span
-                        >
+                        <span class="block text-[10px] tracking-wider text-mist-400 uppercase">
+                            Series
+                        </span>
                         <span class="text-xs font-semibold tracking-wider text-teal-400">
                             {{ activeData.series }}
                         </span>
                     </div>
                     <div class="text-right">
-                        <span class="block text-[10px] tracking-wider text-mist-400 uppercase"
-                            >Coupon Payout</span
-                        >
+                        <span class="block text-[10px] tracking-wider text-mist-400 uppercase">
+                            Coupon Payout
+                        </span>
                         <span class="text-xs font-semibold text-mist-200">
                             Day {{ activeData.payoutDay }} of month
                         </span>

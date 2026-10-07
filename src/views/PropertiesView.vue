@@ -7,6 +7,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 
+import AppButton from '@/components/ui/AppButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import PageTitle from '@/components/PageTitle.vue';
 import ChannelDistribution from '@/features/properties/ChannelDistribution.vue';
@@ -76,15 +77,15 @@ function handleAddProperty(): void {
                             :class="{ 'rotate-180': isPropertiesExpanded }" />
                     </button>
 
-                    <button
-                        type="button"
-                        class="cursor-pointer rounded-md bg-lime-500 px-3 py-2 text-xs font-semibold text-mist-950 transition hover:bg-lime-400"
+                    <AppButton
+                        label="Add Property"
                         @click="handleAddProperty">
-                        <fa-icon
-                            class="-ml-1 text-xs"
-                            icon="plus" />
-                        Add Property
-                    </button>
+                        <template #icon>
+                            <fa-icon
+                                class="text-xs"
+                                icon="plus" />
+                        </template>
+                    </AppButton>
                 </div>
             </div>
 

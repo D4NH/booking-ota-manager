@@ -116,7 +116,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                     v-for="tab in USER_TABS"
                     :key="tab.id"
                     type="button"
-                    class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition"
                     :class="[
                         activeUserTab === tab.id
                             ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'
@@ -140,7 +140,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                     <template #subtitle>{{ activeCard.holderName }} credentials</template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
                     <div class="relative mt-4 mr-4 h-48 w-78 self-center select-none">
                         <div
                             class="absolute -top-3 -right-4 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">

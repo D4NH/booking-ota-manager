@@ -60,14 +60,16 @@ function handleCloseTransferModal(): void {
                 </h3>
             </div>
             <button
-                v-if="scopedAccounts.length > 0"
                 type="button"
-                class="flex cursor-pointer items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1.5 text-xs font-semibold text-blue-400 transition hover:bg-mist-700"
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs"
                 @click="openTransferModal()">
-                <fa-icon
-                    class="text-[10px]"
-                    icon="arrow-right-arrow-left" />
-                <span>Transfer Savings</span>
+                <span
+                    class="cursor-pointer rounded-xs bg-mist-800 py-1 pr-3 pl-2 font-semibold text-blue-400 transition hover:bg-mist-700">
+                    <fa-icon
+                        class="mr-1"
+                        icon="arrow-right-arrow-left" />
+                    Transfer Savings
+                </span>
             </button>
         </div>
 
@@ -114,12 +116,15 @@ function handleCloseTransferModal(): void {
             </div>
             <button
                 type="button"
-                class="flex cursor-pointer items-center gap-1.5 rounded border border-mist-700 bg-mist-800 px-2 py-1 text-xs font-semibold text-blue-400 transition hover:bg-mist-700"
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs"
                 @click="openAddGoal">
-                <fa-icon
-                    class="text-[10px]"
-                    icon="plus" />
-                <span>Add Goal</span>
+                <span
+                    class="cursor-pointer rounded-xs bg-mist-800 py-1 pr-3 pl-2 font-semibold text-blue-400 transition hover:bg-mist-700">
+                    <fa-icon
+                        class="mr-1"
+                        icon="plus" />
+                    Add Goal
+                </span>
             </button>
         </div>
 

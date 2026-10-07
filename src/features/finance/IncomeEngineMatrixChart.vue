@@ -270,7 +270,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
                     type="button"
-                    class="cursor-pointer rounded-md px-3 py-1.5 transition"
+                    class="cursor-pointer rounded-xs px-3 py-1.5 transition"
                     :class="[
                         activeView === '6M'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
@@ -453,7 +453,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                             :x="seg.centerX"
                             :y="SVG_HEIGHT - 6"
                             text-anchor="middle"
-                            class="pointer-events-none font-sans text-[11px] font-medium transition-colors"
+                            class="pointer-events-none text-[11px] font-medium transition-colors"
                             :class="
                                 hoveredIndex === idx || seg.monthStr === selectedMonth
                                     ? 'fill-lime-400 font-bold'

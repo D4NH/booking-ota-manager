@@ -4,9 +4,10 @@ import { storeToRefs } from 'pinia';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { getPropertyStyle } from '@/config/properties';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import { formatIDR } from '@/utils/money';
 import type { PropertyFinance } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
+import { formatDate } from '@/utils/date';
+import { formatIDR } from '@/utils/money';
 
 import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -150,7 +151,13 @@ function handleCloseModal(): void {
                         :key="item.id"
                         class="h-12 hover:bg-mist-800/40">
                         <td class="px-4 py-0 align-middle font-mono text-xs text-mist-400">
-                            {{ item.date }}
+                            {{
+                                formatDate(item.date, {
+                                    relativeDay: true,
+                                    shortMonth: true,
+                                    includeYear: true,
+                                })
+                            }}
                         </td>
                         <td class="h-10 px-4 py-0 align-middle">
                             <div class="flex h-full items-center">

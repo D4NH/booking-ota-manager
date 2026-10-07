@@ -83,7 +83,7 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
 </script>
 
 <template>
-    <div class="flex min-h-0 flex-col">
+    <div class="flex h-full min-h-0 flex-col">
         <CardTitle>
             <template #title>Financial Breakdown</template>
             <template #subtitle>
@@ -92,7 +92,7 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
         </CardTitle>
 
         <div
-            class="flex h-full flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4">
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4">
             <div class="flex flex-col items-baseline gap-1">
                 <span class="text-md font-mono font-semibold">
                     {{ formatIDR(Math.abs(monthlyPropertyExpenses)) }}
@@ -103,36 +103,34 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
             </div>
 
             <div class="flex flex-col justify-between">
-                <div class="text-xs">
-                    <div
-                        v-for="item in categoryExpenses"
-                        :key="item.category"
-                        class="-mx-2 mb-1.5 cursor-pointer rounded-md px-2 pt-0.5 pb-2 transition hover:bg-mist-800/40">
-                        <div class="flex items-center justify-between">
+                <div
+                    v-for="item in categoryExpenses"
+                    :key="item.category"
+                    class="-mx-2 mb-1.5 cursor-pointer rounded-md px-2 pt-0.5 pb-2 text-xs transition hover:bg-mist-800/40">
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="flex items-center gap-2 py-0.5 font-medium text-mist-200 capitalize">
                             <span
-                                class="flex items-center gap-2 py-0.5 font-medium text-mist-200 capitalize">
-                                <span
-                                    class="h-2 w-2 rounded-full"
-                                    :style="{ backgroundColor: item.color }" />
-                                {{ item.category }}
+                                class="h-2 w-2 rounded-full"
+                                :style="{ backgroundColor: item.color }" />
+                            {{ item.category }}
+                        </span>
+                        <div class="flex items-center gap-2 font-mono">
+                            <span class="text-mist-400">{{ formatIDR(item.amount) }}</span>
+                            <span class="min-w-8 text-right font-semibold text-mist-200">
+                                {{ item.pct }}%
                             </span>
-                            <div class="flex items-center gap-2 font-mono">
-                                <span class="text-mist-400">{{ formatIDR(item.amount) }}</span>
-                                <span class="min-w-8 text-right font-semibold text-mist-200">
-                                    {{ item.pct }}%
-                                </span>
-                            </div>
                         </div>
+                    </div>
 
+                    <div
+                        class="mt-2 h-1.5 w-full space-y-2 overflow-hidden rounded-full bg-mist-950/50">
                         <div
-                            class="mt-2 h-1.5 w-full space-y-2 overflow-hidden rounded-full bg-mist-950/50">
-                            <div
-                                class="h-full rounded-full transition-all duration-500"
-                                :style="{
-                                    width: `${item.pct}%`,
-                                    backgroundColor: item.color,
-                                }" />
-                        </div>
+                            class="h-full rounded-full transition-all duration-500"
+                            :style="{
+                                width: `${item.pct}%`,
+                                backgroundColor: item.color,
+                            }" />
                     </div>
 
                     <div

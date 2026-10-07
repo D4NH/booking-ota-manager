@@ -41,11 +41,11 @@ function handleSelect(id: PropertyId | 'all'): void {
             <button
                 v-if="showAll"
                 type="button"
-                class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition"
+                class="flex cursor-pointer items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition"
                 :class="[
                     modelValue === 'all'
                         ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'
-                        : 'border border-transparent text-mist-400 hover:text-mist-200',
+                        : 'text-mist-400 hover:text-mist-200',
                 ]"
                 @click="handleSelect('all')">
                 All
@@ -55,7 +55,7 @@ function handleSelect(id: PropertyId | 'all'): void {
                 v-for="prop in PROPERTY_TABS"
                 :key="prop.id"
                 type="button"
-                class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold capitalize transition"
+                class="flex cursor-pointer items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold capitalize transition"
                 :class="[
                     modelValue === prop.id
                         ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'

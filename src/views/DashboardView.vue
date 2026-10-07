@@ -143,7 +143,7 @@ function handleEditBooking(booking: Booking): void {
                 <button
                     v-if="sortedProperties.length > 2"
                     type="button"
-                    class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-300 shadow-sm transition-colors hover:border-mist-700 hover:text-mist-100"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-400 shadow-sm transition-colors hover:border-mist-700"
                     @click="isPropertiesExpanded = !isPropertiesExpanded">
                     <span>
                         {{
@@ -154,7 +154,7 @@ function handleEditBooking(booking: Booking): void {
                     </span>
                     <fa-icon
                         icon="chevron-down"
-                        class="text-[10px] transition-transform duration-200"
+                        class="text-xs transition-transform duration-200"
                         :class="{ 'rotate-180': isPropertiesExpanded }" />
                 </button>
             </div>

@@ -184,17 +184,17 @@ function handleBookingClick(booking: Booking, event: Event): void {
                             :key="'stay-' + (b.id || b.bookingId)"
                             class="group relative z-10">
                             <div
-                                class="flex h-12 cursor-pointer flex-col justify-center px-1.5 shadow-sm transition"
+                                class="flex h-13 cursor-pointer flex-col justify-center px-2 py-1.5 shadow-sm transition"
                                 :class="[
                                     multiDayStyling(b, day.dateStr, dayIndex),
                                     getStatusStyle(b.status, true),
                                 ]"
                                 @click="handleBookingClick(b, $event)">
                                 <div class="flex min-w-0 items-center justify-between">
-                                    <span class="truncate text-xs font-semibold text-mist-100">
+                                    <div class="truncate text-xs font-semibold text-mist-100">
                                         {{ b.guestName }}
-                                    </span>
-                                    <span
+                                    </div>
+                                    <div
                                         v-if="
                                             (b.checkIn === day.dateStr ||
                                                 dayIndex % 7 === 0 ||
@@ -202,10 +202,10 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                             b.status !== 'Unavailable' &&
                                             selectedProperty === 'all'
                                         "
-                                        class="py-0.2 shrink-0 rounded px-1 text-[10px] font-semibold capitalize"
+                                        class="h-4"
                                         :class="getPropertyStyle(b.propertyId)">
                                         {{ b.propertyId }}
-                                    </span>
+                                    </div>
                                 </div>
                                 <div
                                     v-if="
@@ -217,9 +217,10 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                     class="mt-1 truncate text-[10px] text-mist-400">
                                     {{ b.listing }}
                                 </div>
+                                <!-- Continuation Strip -->
                                 <div
                                     v-else-if="b.nights > 1"
-                                    class="mt-1 text-[10px] text-mist-500 opacity-60">
+                                    class="mt-1 text-[8px] text-mist-400">
                                     &bull;&bull;&bull;
                                 </div>
                             </div>
