@@ -244,7 +244,7 @@ async function handleWipeDatabase(): Promise<void> {
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <div class="flex items-center justify-end gap-2">
+                                <div class="flex items-center justify-end">
                                     <AppButton
                                         variant="icon"
                                         @click="handleEditProperty(p)">
