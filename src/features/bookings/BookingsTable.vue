@@ -57,7 +57,7 @@ function isCurrentBooking(b: Booking): boolean {
                 <tr>
                     <th class="w-36 px-4 py-2.5">Listing</th>
                     <th class="px-4 py-2.5">Guest</th>
-                    <th class="w-40 px-4 py-2.5 text-center">Stay Date</th>
+                    <th class="w-60 px-4 py-2.5 text-center">Stay Date</th>
                     <th class="w-10 px-4 py-2.5 text-center">Nights</th>
                     <th class="w-40 px-4 py-2.5 text-right">Payout</th>
                     <th class="w-26 px-4 py-2.5 text-right">Actions</th>
@@ -103,16 +103,18 @@ function isCurrentBooking(b: Booking): boolean {
                     <tr
                         v-for="b in group.bookings"
                         :key="b.id || b.bookingId"
-                        class="transition"
+                        class="h-18 cursor-pointer transition"
                         :class="[
                             isCurrentBooking(b) && b.status === 'Booked'
                                 ? 'bg-lime-500/5 text-lime-400 ring-1 ring-lime-500/30 hover:bg-lime-500/15'
                                 : 'hover:bg-mist-800/40',
                         ]"
                         @click="emit('edit', b)">
-                        <td class="px-4 py-2.5">
-                            <div class="flex flex-col space-y-1">
-                                <span class="ml-1">{{ b.listing }}</span>
+                        <td class="px-4 py-0 align-middle">
+                            <div class="flex flex-col items-start justify-center gap-1">
+                                <span class="ml-1 leading-none text-mist-200">
+                                    {{ b.listing }}
+                                </span>
                                 <div v-if="showPropertyColumn">
                                     <span
                                         v-if="b.bookingId.includes('UNAVAILABLE')"
@@ -131,16 +133,19 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2.5">
-                            <span class="mb-0.5 block truncate leading-5 font-medium text-mist-100">
-                                {{ b.guestName }}
-                            </span>
-                            <span class="font-mono text-xs text-mist-400">
-                                {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
-                            </span>
+                        <td class="px-4 py-0 align-middle">
+                            <div class="flex flex-col justify-center gap-2.5">
+                                <span class="leading-none font-medium text-mist-100">
+                                    {{ b.guestName }}
+                                </span>
+                                <span class="font-mono text-xs leading-none text-mist-400">
+                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                                </span>
+                            </div>
                         </td>
-                        <td class="px-4 py-2.5 text-center text-nowrap">
-                            <span>
+                        <td class="px-4 py-0 align-middle">
+                            <div
+                                class="flex items-center justify-center font-mono leading-none font-medium text-mist-300">
                                 {{
                                     formatDate(b.checkIn, {
                                         shortWeekday: true,
@@ -154,18 +159,20 @@ function isCurrentBooking(b: Booking): boolean {
                                         shortMonth: true,
                                     })
                                 }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-0 text-center align-middle">
+                            <span class="font-mono text-xs leading-none text-mist-300">
+                                {{ b.nights }}
                             </span>
                         </td>
-                        <td class="px-4 py-2.5 text-center">{{ b.nights }}</td>
-                        <td class="px-4 py-2.5 text-right">
-                            <div class="group relative -mt-1">
-                                <div class="flex flex-col items-end justify-center text-right">
-                                    <span class="font-mono text-sm font-medium">
+                        <td class="px-4 py-0 text-right align-middle">
+                            <div class="group relative">
+                                <div class="flex flex-col items-end justify-center gap-1">
+                                    <div class="font-mono text-sm leading-none text-mist-100">
                                         {{ formatIDR(b.payout) }}
-                                    </span>
-                                    <span
-                                        class="mt-1 inline-flex h-5 items-center"
-                                        :class="getStatusStyle(b.status)">
+                                    </div>
+                                    <span :class="getStatusStyle(b.status)">
                                         {{ b.status }}
                                     </span>
                                 </div>
@@ -186,7 +193,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2.5 text-right text-nowrap">
+                        <td class="px-2 py-0 text-right align-middle">
                             <div class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"
