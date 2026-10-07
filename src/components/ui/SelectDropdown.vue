@@ -6,11 +6,18 @@ export interface DropdownOption<V = DropdownValue> {
     label: string;
     value: V;
 }
-export type DropdownItem<V = DropdownValue> = DropdownOption<V> | string | number;
+export type DropdownItem<V = DropdownValue> =
+    DropdownOption<V> | { readonly label: string; readonly value: V } | string | number;
+
+interface DropdownCoordinates {
+    top: number;
+    left: number;
+    width: number;
+}
 
 interface Props {
     inputLabel?: string;
-    options?: DropdownItem<T>[];
+    options?: readonly DropdownItem<T>[];
     placeholder?: string;
 }
 
@@ -22,17 +29,14 @@ const slots = useSlots();
 const isOpen = ref<boolean>(false);
 const triggerButtonRef = ref<HTMLButtonElement | null>(null);
 const dropdownMenuRef = ref<HTMLDivElement | null>(null);
-const coords = ref({ top: 0, left: 0, width: 0 });
+const coords = ref<DropdownCoordinates>({ top: 0, left: 0, width: 0 });
 
-/**
- * Normalizes options: supports [{ label, value }], ['A', 'B'], and [1, 2, 3]
- */
 const normalizedOptions = computed<DropdownOption<T | DropdownValue>[]>(() => {
     return options.map((item) => {
         if (typeof item === 'string' || typeof item === 'number') {
             return { label: String(item), value: item as T };
         }
-        return item as DropdownOption<T | DropdownValue>;
+        return { label: item.label, value: item.value as T };
     });
 });
 
@@ -79,8 +83,9 @@ function selectOption(option: DropdownOption<T | DropdownValue>): void {
     isOpen.value = false;
 }
 function handleClickOutside(event: MouseEvent): void {
-    const target = event.target as Node;
+    const target = event.target as Node | null;
     if (
+        target &&
         triggerButtonRef.value &&
         !triggerButtonRef.value.contains(target) &&
         dropdownMenuRef.value &&
@@ -102,7 +107,7 @@ function handleClickOutside(event: MouseEvent): void {
         <div
             v-if="slots.icon"
             class="pointer-events-none absolute inset-y-0 top-5 left-0 flex items-center pl-3.5 text-mist-500 transition-colors group-focus-within:text-lime-400">
-            <slot name="icon"></slot>
+            <slot name="icon" />
         </div>
 
         <button
