@@ -1,20 +1,39 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useFinanceSync } from '@/composables/useFinanceSync';
+import { PROPERTY_LIST } from '@/config/properties';
 import { getCurrentDate } from '@/utils/date';
 import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
-
+import type { PropertyId } from '@/types/property';
 import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-const transactionOptions = [
+interface DropdownOption<T = string> {
+    label: string;
+    value: T;
+}
+
+interface Props {
+    itemToEdit?: PropertyFinance | null;
+    defaultPropertyId?: PropertyId | 'all' | '';
+}
+
+const PROPERTY_OPTIONS: readonly DropdownOption<PropertyId | ''>[] = [
+    { label: 'Select Property', value: '' },
+    ...PROPERTY_LIST.map((p) => ({
+        label: p.name.replace(/^Mai House (?:Jogja|Bali) - /, ''),
+        value: p.id,
+    })),
+];
+
+const TRANSACTION_OPTIONS: readonly DropdownOption<PropertyFinanceType>[] = [
     { label: 'Expense', value: 'expense' },
     { label: 'Income', value: 'income' },
 ];
 
-const categoryOptions = [
+const CATEGORY_OPTIONS: readonly string[] = [
     // Operations & Guest Amenities
     'Cleaning',
     'Guest Amenities & Toiletries',
@@ -37,12 +56,7 @@ const categoryOptions = [
     'Taxes, Permits & Insurance',
     'Supplies',
     'Other',
-];
-
-interface Props {
-    itemToEdit?: PropertyFinance | null;
-    defaultPropertyId?: string;
-}
+] as const;
 
 const { itemToEdit = null, defaultPropertyId = 'piyungan' } = defineProps<Props>();
 const emit = defineEmits<{
@@ -53,15 +67,18 @@ const isOpen = defineModel<boolean>({ default: false });
 const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
     useFinanceSync();
 
-const formPropertyId = ref(defaultPropertyId);
+const initialPropertyId =
+    !defaultPropertyId || defaultPropertyId === 'all' ? '' : defaultPropertyId;
+
+const formPropertyId = ref<PropertyId | ''>(initialPropertyId);
 const formType = ref<PropertyFinanceType>('expense');
 const formCategory = ref<PropertyCategory>('Supplies');
 const formAmount = ref<number | null>(null);
-const formDate = ref(getCurrentDate());
-const formNotes = ref('');
-const isSubmitting = ref(false);
+const formDate = ref<string>(getCurrentDate());
+const formNotes = ref<string>('');
+const isSubmitting = ref<boolean>(false);
 
-const isEditing = computed(() => Boolean(itemToEdit));
+const isEditing = computed<boolean>(() => Boolean(itemToEdit));
 
 watch(
     () => [isOpen.value, itemToEdit] as const,
@@ -69,14 +86,15 @@ watch(
         if (!open) return;
 
         if (item) {
-            formPropertyId.value = item.propertyId;
+            formPropertyId.value = item.propertyId as PropertyId;
             formType.value = item.type;
             formCategory.value = item.category;
             formAmount.value = item.amount;
             formDate.value = item.date;
             formNotes.value = item.notes || '';
         } else {
-            formPropertyId.value = defaultPropertyId;
+            formPropertyId.value =
+                !defaultPropertyId || defaultPropertyId === 'all' ? '' : defaultPropertyId;
             formType.value = 'expense';
             formCategory.value = 'Supplies';
             formAmount.value = null;
@@ -148,7 +166,6 @@ async function handleDeleteEntry(): Promise<void> {
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
                     class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
-                    <!-- Modal Header -->
                     <div
                         class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                         <h2 class="font-semibold text-mist-100">
@@ -168,37 +185,42 @@ async function handleDeleteEntry(): Promise<void> {
                         @submit.prevent="submitTransaction">
                         <div class="grid grid-cols-2 gap-3">
                             <SelectDropdown
-                                v-model="formType"
-                                input-label="Transaction Type"
-                                :options="transactionOptions" />
+                                v-model="formPropertyId"
+                                input-label="Property Unit"
+                                :options="PROPERTY_OPTIONS" />
 
                             <SelectDropdown
-                                v-model="formCategory"
-                                input-label="Category"
-                                :options="categoryOptions" />
+                                v-model="formType"
+                                input-label="Transaction Type"
+                                :options="TRANSACTION_OPTIONS" />
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
+                            <SelectDropdown
+                                v-model="formCategory"
+                                input-label="Category"
+                                :options="CATEGORY_OPTIONS" />
+
                             <DatePicker
                                 v-model="formDate"
                                 input-label="Date"
                                 :width="261"
                                 :select-today-by-default="true" />
-
-                            <TextInput
-                                id="propertyAmount"
-                                v-model.number="formAmount"
-                                input-label="Amount"
-                                type="number"
-                                placeholder="150000"
-                                required>
-                                <template #icon>
-                                    <fa-icon
-                                        icon="rupiah-sign"
-                                        class="text-xs" />
-                                </template>
-                            </TextInput>
                         </div>
+
+                        <TextInput
+                            id="propertyAmount"
+                            v-model.number="formAmount"
+                            input-label="Amount"
+                            type="number"
+                            placeholder="150000"
+                            required>
+                            <template #icon>
+                                <fa-icon
+                                    icon="rupiah-sign"
+                                    class="text-xs" />
+                            </template>
+                        </TextInput>
 
                         <TextInput
                             id="propertyNotes"
@@ -213,7 +235,7 @@ async function handleDeleteEntry(): Promise<void> {
                             <AppButton
                                 v-if="isEditing"
                                 class="-ml-2"
-                                label="Delete booking"
+                                label="Delete entry"
                                 variant="text"
                                 color="rose"
                                 @click="handleDeleteEntry">
@@ -235,9 +257,9 @@ async function handleDeleteEntry(): Promise<void> {
                                         v-if="isSubmitting"
                                         #icon>
                                         <span
-                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent" />
                                     </template>
-                                    <span v-if="isSubmitting">Saving..</span>
+                                    <span v-if="isSubmitting">Saving...</span>
                                 </AppButton>
                             </div>
                         </div>

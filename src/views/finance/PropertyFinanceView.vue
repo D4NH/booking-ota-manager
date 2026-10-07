@@ -9,29 +9,32 @@ import FinancePropertyBreakdown from '@/features/finance/PropertyBreakdown.vue';
 import PropertyCashFlow from '@/features/finance/PropertyCashFlow.vue';
 
 interface PropertyTabOption {
-    id: PropertyId;
+    id: PropertyId | 'all';
     label: string;
 }
 
-const PROPERTY_TABS: readonly PropertyTabOption[] = PROPERTY_LIST.map((p) => ({
-    id: p.id,
-    label: p.name.replace('Mai House Jogja - ', '').replace('Mai House Bali - ', ''),
-}));
+const PROPERTY_TABS: readonly PropertyTabOption[] = [
+    { id: 'all', label: 'All' },
+    ...PROPERTY_LIST.map((p) => ({
+        id: p.id,
+        label: p.name.replace(/^Mai House (?:Jogja|Bali) - /, ''),
+    })),
+] as const;
 
 const route = useRoute();
 const router = useRouter();
 
-const selectedProperty = computed<PropertyId>(() => {
+const selectedProperty = computed<PropertyId | 'all'>(() => {
     const queryProp = String(route.query.property || '').toLowerCase();
     const match = PROPERTY_TABS.find((t) => t.id === queryProp);
-    return match ? match.id : 'piyungan';
+    return match ? match.id : 'all';
 });
 
-function handlePropertyChange(propId: PropertyId): void {
+function handlePropertyChange(propId: PropertyId | 'all'): void {
     router.replace({
         query: {
             ...route.query,
-            property: propId === 'piyungan' ? undefined : propId,
+            property: propId === 'all' ? undefined : propId,
         },
     });
 }

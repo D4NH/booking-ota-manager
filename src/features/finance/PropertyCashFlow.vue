@@ -8,17 +8,8 @@ import { formatIDR } from '@/utils/money';
 import CardTitle from '@/components/CardTitle.vue';
 import type { PropertyId } from '@/types/property';
 
-const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
-const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
-const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
-
 interface Props {
-    propertyId?: PropertyId;
+    propertyId?: PropertyId | 'all';
 }
 
 interface MonthlyPoint {
@@ -28,6 +19,34 @@ interface MonthlyPoint {
     expenses: number;
     netMargin: number;
 }
+
+interface YAxisTick {
+    value: number;
+    y: number;
+    label: string;
+}
+
+interface BarGroupItem extends MonthlyPoint {
+    centerX: number;
+    incomeX: number;
+    incomeY: number;
+    incomeHeight: number;
+    expenseX: number;
+    expenseY: number;
+    expenseHeight: number;
+    barWidth: number;
+    stepX: number;
+    triggerX: number;
+}
+
+const SVG_WIDTH = 600;
+const SVG_HEIGHT = 200;
+const PADDING_TOP = 20;
+const PADDING_BOTTOM = 30;
+const PADDING_LEFT = 45;
+const PADDING_RIGHT = 20;
+const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
 const { propertyId = 'piyungan' } = defineProps<Props>();
 
@@ -62,14 +81,14 @@ const monthsToInspect = computed<string[]>(() => {
 const chartData = computed<MonthlyPoint[]>(() => {
     const list = unifiedPropertyFinances.value || [];
 
-    return monthsToInspect.value.map((cycle) => {
+    return monthsToInspect.value.map((cycle): MonthlyPoint => {
         let inc = 0;
         let exp = 0;
 
         for (let i = 0; i < list.length; i++) {
             const item = list[i];
             if (!item?.date) continue;
-            if (item.propertyId !== propertyId) continue;
+            if (propertyId !== 'all' && item.propertyId !== propertyId) continue;
 
             const itemCycle = normalizeDate(item.date).slice(0, 7);
             if (itemCycle !== cycle) continue;
@@ -121,7 +140,7 @@ const maxVal = computed<number>(() => {
     const step = highest > 10_000_000 ? 5_000_000 : 1_000_000;
     return Math.ceil(highest / step) * step;
 });
-const yAxisTicks = computed(() => {
+const yAxisTicks = computed<YAxisTick[]>(() => {
     const max = maxVal.value;
     const step = max / 4;
     return [
@@ -148,14 +167,14 @@ const yAxisTicks = computed(() => {
         },
     ];
 });
-const barGroups = computed(() => {
+const barGroups = computed<BarGroupItem[]>(() => {
     const len = chartData.value.length;
     if (len === 0) return [];
     const stepX = chartPlotWidth / len;
     const barWidth = Math.min(18, Math.max(10, stepX * 0.28));
     const gap = 2;
 
-    return chartData.value.map((d, i) => {
+    return chartData.value.map((d, i): BarGroupItem => {
         const groupCenterX = PADDING_LEFT + i * stepX + stepX / 2;
 
         const incomeNorm = maxVal.value > 0 ? d.income / maxVal.value : 0;
@@ -199,8 +218,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                 </template>
             </CardTitle>
 
-            <div
-                class="flex items-center rounded-lg border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
+            <div class="flex items-center rounded-lg border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 transition"
@@ -247,7 +265,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                         <span>{{ formatIDR(Math.abs(currentMonthPoint.netMargin)) }}</span>
                     </div>
                     <p class="flex items-center gap-1 text-xs text-mist-500">
-                        Net income this month
+                        Net income this month {{ propertyId !== 'all' ? `(${propertyId})` : '(All Units)' }}
                     </p>
                 </div>
 
@@ -283,8 +301,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                         <span>Expenses:</span>
                         <span>{{ formatIDR(barGroups[hoveredIndex]!.expenses) }}</span>
                     </div>
-                    <div
-                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
+                    <div class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
                         <span>Net:</span>
                         <span>
                             {{ formatIDR(barGroups[hoveredIndex]!.netMargin) }}

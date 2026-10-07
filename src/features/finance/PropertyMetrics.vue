@@ -9,10 +9,10 @@ import type { PropertyId } from '@/types/property';
 import type { PropertyFinance } from '@/types/finance';
 
 interface Props {
-    propertyId?: PropertyId;
+    propertyId?: PropertyId | 'all';
 }
 
-const { propertyId = 'piyungan' } = defineProps<Props>();
+const { propertyId = 'all' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
 const { unifiedPropertyFinances, selectedMonth, previousMonth } = storeToRefs(financeStore);
@@ -22,7 +22,7 @@ const currentMonthItems = computed<PropertyFinance[]>(() => {
     const list = unifiedPropertyFinances.value || [];
     return list.filter((item) => {
         if (!item?.date) return false;
-        if (item.propertyId !== propertyId) return false;
+        if (propertyId !== 'all' && item.propertyId !== propertyId) return false;
         return isDateInMonth(item.date, selectedMonth.value);
     });
 });
@@ -30,7 +30,7 @@ const previousMonthItems = computed<PropertyFinance[]>(() => {
     const list = unifiedPropertyFinances.value || [];
     return list.filter((item) => {
         if (!item?.date) return false;
-        if (item.propertyId !== propertyId) return false;
+        if (propertyId !== 'all' && item.propertyId !== propertyId) return false;
         return isDateInMonth(item.date, previousMonth.value);
     });
 });

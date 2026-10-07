@@ -30,11 +30,11 @@ const PALETTE: readonly string[] = [
 const { propertyId = 'piyungan' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
-const { filteredPropertyFinances, selectedMonth, monthlyPropertyExpenses } =
-    storeToRefs(financeStore);
+const { filteredPropertyFinances, selectedMonth } = storeToRefs(financeStore);
 
 const scopedFinances = computed<PropertyFinance[]>(() => {
     const list = filteredPropertyFinances.value || [];
+    if (propertyId === 'all') return list;
     return list.filter((i) => i.propertyId === propertyId);
 });
 const scopedExpenses = computed<number>(() => {
@@ -95,10 +95,11 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
             class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4">
             <div class="flex flex-col items-baseline gap-1">
                 <span class="text-md font-mono font-semibold">
-                    {{ formatIDR(Math.abs(monthlyPropertyExpenses)) }}
+                    {{ formatIDR(Math.abs(scopedExpenses)) }}
                 </span>
                 <p class="flex items-center gap-1 text-xs text-mist-500">
                     Total expenses this month
+                    {{ propertyId !== 'all' ? `(${propertyId})` : '(All Units)' }}
                 </p>
             </div>
 
@@ -132,12 +133,12 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
                                 backgroundColor: item.color,
                             }" />
                     </div>
+                </div>
 
-                    <div
-                        v-if="categoryExpenses.length === 0"
-                        class="py-6 text-center text-xs text-mist-400">
-                        No operational expense entries recorded for this cycle.
-                    </div>
+                <div
+                    v-if="categoryExpenses.length === 0"
+                    class="py-6 text-center text-xs text-mist-400">
+                    No operational expense entries recorded for this cycle.
                 </div>
             </div>
 

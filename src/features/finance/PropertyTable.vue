@@ -320,6 +320,7 @@ function handleCloseModal(): void {
 
         <PropertyTransactionModal
             v-model="isModalOpen"
+            :default-property-id="propertyId"
             :item-to-edit="editingItem"
             @closed="handleCloseModal" />
 
