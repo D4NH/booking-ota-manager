@@ -56,7 +56,7 @@ const metrics = computed(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Portfolio Revenue
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-100">
+            <p class="font-mono text-lg font-semibold">
                 {{ formatIDR(metrics.revenue) }}
             </p>
             <p class="text-xs text-mist-500">Total earnings in {{ year }}</p>
@@ -67,9 +67,9 @@ const metrics = computed(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Active Listings
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-100">
+            <p class="font-mono text-lg font-semibold">
                 <span class="text-lime-400">{{ metrics.activeUnits }}</span>
-                <span class="text-lg text-mist-100"> / {{ properties.length }} Units</span>
+                <span class="text-lg"> / {{ properties.length }} Units</span>
             </p>
             <p class="text-xs text-mist-500">Generating revenue</p>
         </div>
@@ -79,7 +79,7 @@ const metrics = computed(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Average Daily Rate
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-100">
+            <p class="font-mono text-lg font-semibold">
                 {{ formatIDR(metrics.adr) }}
             </p>
             <p class="text-xs text-mist-500">Across {{ metrics.nights }} booked nights</p>

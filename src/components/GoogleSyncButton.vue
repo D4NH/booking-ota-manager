@@ -150,7 +150,7 @@ async function handleSync(): Promise<void> {
             <div
                 class="flex max-h-[80vh] w-full max-w-2xl flex-col space-y-4 rounded-2xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
-                    <h3 class="flex items-center gap-2 text-sm font-semibold text-mist-100">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold">
                         <span>Sync Audit Diagnostics</span>
                         <span
                             class="rounded bg-mist-800 px-2 py-0.5 font-mono text-xs text-mist-400">

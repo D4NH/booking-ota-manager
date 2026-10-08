@@ -203,7 +203,7 @@ const xAxisLabels = computed(() => {
             <!-- Header Metrics -->
             <div class="flex flex-wrap items-start justify-between gap-2">
                 <div class="flex flex-col gap-1">
-                    <p class="text-md font-mono font-semibold text-mist-100">
+                    <p class="text-md font-mono font-semibold">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">

@@ -54,7 +54,7 @@ const departedGuests = computed(() =>
     <div class="space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
-                <h3 class="text-base font-semibold text-mist-100">Active Stays</h3>
+                <h3 class="text-base font-semibold">Active Stays</h3>
                 <p class="text-xs text-mist-400">Current in-house guests & today's departures</p>
             </div>
             <span class="rounded bg-mist-800 px-2 py-0.5 font-mono text-xs text-mist-300">
@@ -82,7 +82,7 @@ const departedGuests = computed(() =>
                 <!-- Guest Info -->
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="truncate text-sm font-semibold text-mist-100">
+                        <span class="truncate text-sm font-semibold">
                             {{ b.guestName }}
                         </span>
                         <span

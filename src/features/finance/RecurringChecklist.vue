@@ -99,7 +99,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                         <div class="truncate">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="truncate text-sm font-semibold text-mist-100 transition group-hover:text-lime-400">
+                                    class="truncate text-sm font-semibold transition group-hover:text-lime-400">
                                     {{ item.category }}
                                 </span>
                                 <span
@@ -141,7 +141,7 @@ async function handleSettle(item: ProjectedRecurringItem): Promise<void> {
                     </div>
 
                     <div class="shrink-0 text-right">
-                        <span class="block font-mono text-xs font-semibold text-mist-100">
+                        <span class="block font-mono text-xs font-semibold">
                             {{ item.type === 'income' ? '+' : '-' }}{{ formatIDR(item.amount) }}
                         </span>
                         <span

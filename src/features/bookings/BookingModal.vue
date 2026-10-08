@@ -145,7 +145,7 @@ function handleSubmit(): void {
                 <!-- Modal Header -->
                 <div
                     class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
-                    <h2 class="font-semibold text-mist-100">
+                    <h2 class="font-semibold">
                         {{ bookingToEdit ? 'Edit Booking' : 'New Booking' }}
                     </h2>
                     <AppButton

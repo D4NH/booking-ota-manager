@@ -128,7 +128,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                                 v-if="b.checkIn === day.dateStr || dayIndex === 0 || b.nights === 1"
                                 class="flex min-h-9 flex-col gap-1">
                                 <div class="flex items-start justify-between">
-                                    <span class="truncate text-xs font-semibold text-mist-100">
+                                    <span class="truncate text-xs font-semibold">
                                         {{ b.guestName }}
                                     </span>
                                     <span

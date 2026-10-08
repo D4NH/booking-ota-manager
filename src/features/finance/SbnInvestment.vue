@@ -98,7 +98,7 @@ const maturity = computed(() =>
                         <span class="block text-[10px] tracking-wider text-mist-400 uppercase"
                             >Principal</span
                         >
-                        <div class="mt-0.5 text-lg font-black tracking-tight text-mist-100">
+                        <div class="mt-0.5 text-lg font-black tracking-tight">
                             {{ formatIDR(activeData.principal) }}
                         </div>
                     </div>

@@ -141,11 +141,11 @@ async function handleDeleteGold(): Promise<void> {
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
-                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
+                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Header -->
                     <div
                         class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
-                        <h2 class="font-semibold text-mist-100">
+                        <h2 class="font-semibold">
                             {{ isEditing ? 'Edit Gold Holding' : 'Add Gold Holding' }}
                         </h2>
                         <AppButton

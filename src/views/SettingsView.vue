@@ -136,7 +136,7 @@ async function handleWipeDatabase(): Promise<void> {
                         class="h-3 w-3 shrink-0 rounded-full"
                         :class="isAuthenticated ? 'animate-pulse bg-lime-400' : 'bg-amber-400'" />
                     <div>
-                        <h4 class="text-xs font-semibold text-mist-100">
+                        <h4 class="text-xs font-semibold">
                             {{
                                 isAuthenticated
                                     ? 'OAuth Token Active'
@@ -209,7 +209,7 @@ async function handleWipeDatabase(): Promise<void> {
                             <td class="truncate px-4 py-3 font-mono text-xs text-lime-400">
                                 {{ p.id }}
                             </td>
-                            <td class="truncate px-4 py-3 font-medium text-mist-100">
+                            <td class="truncate px-4 py-3 font-medium">
                                 <div>{{ p.name }}</div>
                                 <div class="truncate text-[11px] text-mist-500">
                                     {{ p.address }}

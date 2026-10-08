@@ -204,7 +204,7 @@ function getBarHeightPct(amount: number): number {
                         <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="border-mist-750 pointer-events-none absolute -top-14 z-30 space-y-0.5 rounded-md border bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
+                            class="pointer-events-none absolute -top-4 z-30 space-y-0.5 rounded-md border border-mist-700 bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
                             <div class="text-xs text-mist-400">
                                 {{ item.monthName }} {{ item.year }}
                             </div>

@@ -191,7 +191,7 @@ async function handleScanEmails(): Promise<void> {
                 v-if="!isSidebarCollapsed"
                 type="button"
                 :disabled="isMasterSyncing"
-                class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-100 transition hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
+                class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold transition hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
                 @click="handleMasterSync">
                 <fa-icon
                     icon="arrows-rotate"

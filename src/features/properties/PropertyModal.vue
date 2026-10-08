@@ -100,7 +100,7 @@ function handleSubmit(): void {
             <div
                 class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                 <div>
-                    <h2 class="text-base font-semibold text-mist-100">
+                    <h2 class="text-base font-semibold">
                         {{ isEditing ? 'Edit Property' : 'Add New Property' }}
                     </h2>
                     <p

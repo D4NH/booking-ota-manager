@@ -5,7 +5,7 @@
 <template>
     <div class="flex shrink-0 items-center justify-between">
         <div class="space-y-1">
-            <h1 class="text-xl font-semibold text-mist-100">
+            <h1 class="text-xl font-semibold">
                 <slot name="title">Title</slot>
             </h1>
             <div class="text-sm leading-relaxed text-mist-500">

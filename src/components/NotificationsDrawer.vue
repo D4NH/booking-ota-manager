@@ -61,7 +61,7 @@ function handleMarkComplete(b: Booking): void {
                     class="shrink-0 text-sm text-mist-400 transition-[padding] duration-300 ease-in-out"
                     :class="{ 'pl-2.5': isSidebarCollapsed }" />
                 <span
-                    class="overflow-hidden text-sm font-semibold text-nowrap text-mist-100 transition-all duration-300 ease-in-out"
+                    class="overflow-hidden text-sm font-semibold text-nowrap transition-all duration-300 ease-in-out"
                     :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
                     Notifications
                 </span>
@@ -115,7 +115,7 @@ function handleMarkComplete(b: Booking): void {
                 </div>
 
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm leading-tight font-semibold text-mist-100">
+                    <p class="text-sm leading-tight font-semibold">
                         {{ staged.guestName }}
                     </p>
                     <p class="font-mono text-xs text-mist-400">
@@ -157,7 +157,7 @@ function handleMarkComplete(b: Booking): void {
                     </span>
                 </div>
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm leading-tight font-semibold text-mist-100">
+                    <p class="text-sm leading-tight font-semibold">
                         {{ b.guestName }}
                     </p>
                     <p class="font-mono text-xs text-mist-400">
@@ -195,7 +195,7 @@ function handleMarkComplete(b: Booking): void {
                 </div>
 
                 <div class="flex flex-col items-start justify-between gap-1">
-                    <p class="text-sm leading-tight font-semibold text-mist-100">
+                    <p class="text-sm leading-tight font-semibold">
                         {{ b.guestName }}
                     </p>
                     <p class="font-mono text-xs text-mist-400">
@@ -217,7 +217,7 @@ function handleMarkComplete(b: Booking): void {
                         <div
                             class="pointer-events-none absolute bottom-full left-1/2 z-50 mt-1.5 w-52 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                             <div
-                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
                                 <div>
                                     <span class="mb-1 block font-semibold text-mist-200">
                                         {{ b.guestName }}

@@ -105,7 +105,7 @@ const cashFlowBars = computed(() => {
                         </svg>
                         <div
                             class="absolute inset-0 flex flex-col items-center justify-center font-mono">
-                            <span class="text-xs font-bold text-mist-100">2 Assets</span>
+                            <span class="text-xs font-bold">2 Assets</span>
                             <span class="text-[9px] text-mist-400">Targeted</span>
                         </div>
                     </div>

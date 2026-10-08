@@ -110,7 +110,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 : 'hover:bg-mist-800/40',
                         ]"
                         @click="emit('edit', b)">
-                        <td class="px-4 py-0 align-middle">
+                        <td class="px-4 py-0">
                             <div class="flex flex-col items-start justify-center gap-1">
                                 <span class="ml-1 leading-none text-mist-200">
                                     {{ b.listing }}
@@ -133,9 +133,9 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-0 align-middle">
-                            <div class="flex flex-col justify-center gap-2.5">
-                                <span class="leading-none font-medium text-mist-100">
+                        <td class="px-4 py-0">
+                            <div class="flex flex-col justify-center gap-2">
+                                <span class="leading-none font-medium">
                                     {{ b.guestName }}
                                 </span>
                                 <span class="font-mono text-xs leading-none text-mist-400">
@@ -143,7 +143,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 </span>
                             </div>
                         </td>
-                        <td class="px-4 py-0 align-middle">
+                        <td class="px-4 py-0">
                             <div
                                 class="flex items-center justify-center font-mono text-[13px] leading-none font-medium text-mist-300">
                                 {{
@@ -161,15 +161,15 @@ function isCurrentBooking(b: Booking): boolean {
                                 }}
                             </div>
                         </td>
-                        <td class="px-4 py-0 text-center align-middle">
+                        <td class="px-4 py-0 text-center">
                             <span class="font-mono leading-none text-mist-300">
                                 {{ b.nights }}
                             </span>
                         </td>
-                        <td class="px-4 py-0 text-right align-middle">
+                        <td class="px-4 py-0 text-right">
                             <div class="group relative">
                                 <div class="flex flex-col items-end justify-center gap-1">
-                                    <div class="font-mono text-sm leading-none text-mist-100">
+                                    <div class="font-mono text-sm leading-none">
                                         {{ formatIDR(b.payout) }}
                                     </div>
                                     <span :class="getStatusStyle(b.status)">
@@ -180,7 +180,7 @@ function isCurrentBooking(b: Booking): boolean {
                                     v-if="b.payout !== 0"
                                     class="pointer-events-none absolute top-1 bottom-full -left-50 z-30 mb-1.5 w-48 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
-                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
                                         <div class="flex items-center justify-between font-mono">
                                             <span class="font-medium text-mist-400">
                                                 Payout 15%
@@ -193,7 +193,7 @@ function isCurrentBooking(b: Booking): boolean {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-2 py-0 text-right align-middle">
+                        <td class="px-2 py-0 text-right">
                             <div class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"

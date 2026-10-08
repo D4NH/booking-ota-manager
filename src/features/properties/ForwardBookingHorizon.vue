@@ -161,7 +161,7 @@ const total90dBookedNights = computed(() =>
                     <!-- Window Header -->
                     <div class="flex items-start justify-between">
                         <div>
-                            <span class="block text-xs font-semibold text-mist-100">
+                            <span class="block text-xs font-semibold">
                                 {{ win.label }}
                             </span>
                             <span class="text-xs font-medium text-mist-500">
@@ -178,9 +178,7 @@ const total90dBookedNights = computed(() =>
                     <!-- Pace Metric & Progress Bar -->
                     <div class="space-y-1">
                         <div class="flex items-baseline justify-between font-mono">
-                            <span class="text-lg font-semibold text-mist-100">
-                                {{ win.occupancyPace }}%
-                            </span>
+                            <span class="text-lg font-semibold"> {{ win.occupancyPace }}% </span>
                             <span class="text-xs text-mist-400">
                                 {{ win.bookedNights }} / {{ win.capacityNights }} nights
                             </span>
@@ -216,7 +214,7 @@ const total90dBookedNights = computed(() =>
 
                 <div class="flex items-center gap-2">
                     <span class="text-mist-500">Secured OTB Revenue:</span>
-                    <span class="font-mono text-sm font-semibold text-mist-100">
+                    <span class="font-mono text-sm font-semibold">
                         {{ formatIDR(totalConfirmed90dRevenue) }}
                     </span>
                 </div>

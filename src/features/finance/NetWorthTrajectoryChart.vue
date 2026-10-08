@@ -294,7 +294,7 @@ function handleSelectMonth(targetMonthStr: string): void {
             @mouseleave="hoveredIndex = null">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <div class="flex flex-col items-baseline gap-1">
-                    <span class="font-mono text-lg font-semibold text-mist-100">
+                    <span class="font-mono text-lg font-semibold">
                         {{ formatIDR(currentMonthPoint.totalNetWorth) }}
                     </span>
                     <p class="flex items-center gap-1 text-xs">

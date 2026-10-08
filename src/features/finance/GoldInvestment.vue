@@ -173,7 +173,7 @@ function handleCloseModal(): void {
                             <span class="block text-xs tracking-wider text-mist-400 uppercase">
                                 Current Valuation
                             </span>
-                            <div class="mt-0.5 text-lg font-black tracking-tight text-mist-100">
+                            <div class="mt-0.5 text-lg font-black tracking-tight">
                                 {{ formatIDR(activeData.valuation) }}
                             </div>
                         </div>

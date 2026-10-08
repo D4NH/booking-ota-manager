@@ -304,7 +304,7 @@ function handleSelectMonth(targetMonthStr: string): void {
             @mouseleave="hoveredIndex = null">
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <div class="flex flex-col items-baseline gap-1">
-                    <span class="font-mono text-lg font-semibold text-mist-100">
+                    <span class="font-mono text-lg font-semibold">
                         {{ formatIDR(currentMonthPoint.totalInflow) }}
                     </span>
                     <p class="flex items-center gap-1.5 text-xs">
@@ -372,7 +372,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                         }}</span>
                     </div>
                     <div
-                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-bold text-mist-100">
+                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-bold">
                         <span>Total Receipts:</span>
                         <span>{{ formatIDR(barSegments[hoveredIndex]!.data.totalInflow) }}</span>
                     </div>

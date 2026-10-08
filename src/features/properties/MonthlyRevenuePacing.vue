@@ -64,7 +64,7 @@ const projectedRevenue = computed(() => {
             <!-- Metric Highlight & Pacing Badge -->
             <div class="flex items-baseline justify-between">
                 <div>
-                    <span class="font-mono text-lg font-semibold text-mist-100">
+                    <span class="font-mono text-lg font-semibold">
                         {{ formatIDR(currentRevenue) }}
                     </span>
                     <span class="ml-1.5 text-xs text-mist-400">

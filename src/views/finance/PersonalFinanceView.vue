@@ -171,8 +171,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                                     class="rotate-90 text-sm text-mist-400" />
                             </div>
 
-                            <div
-                                class="mb-4 font-mono text-lg font-semibold tracking-widest text-mist-100">
+                            <div class="mb-4 font-mono text-lg font-semibold tracking-widest">
                                 {{ activeCard.cardNumber }}
                             </div>
 

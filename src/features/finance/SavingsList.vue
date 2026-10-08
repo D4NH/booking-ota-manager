@@ -137,7 +137,7 @@ function handleCloseTransferModal(): void {
                 <div class="flex items-center justify-between gap-2">
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-semibold text-mist-100">{{ goal.name }}</span>
+                            <span class="text-xs font-semibold">{{ goal.name }}</span>
                             <span
                                 class="py-0.2 rounded px-1.5 font-mono text-[9px] font-semibold uppercase"
                                 :class="[

@@ -187,7 +187,7 @@ function clearHighlight(): void {
                     <!-- Center KPI -->
                     <div
                         class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
-                        <span class="font-mono text-xl font-bold text-mist-100">
+                        <span class="font-mono text-xl font-bold">
                             {{
                                 hoveredIndex !== null && channelStats.entries[hoveredIndex]
                                     ? channelStats.entries[hoveredIndex]?.count

@@ -101,7 +101,7 @@ const displaySections = computed<MonthSection[]>(() => {
                                 <div class="truncate">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="truncate text-sm font-medium text-mist-100 transition group-hover:text-lime-400">
+                                            class="truncate text-sm font-medium transition group-hover:text-lime-400">
                                             {{ b.guestName }}
                                         </span>
                                         <span

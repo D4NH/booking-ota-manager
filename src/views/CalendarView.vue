@@ -191,7 +191,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                 ]"
                                 @click="handleBookingClick(b, $event)">
                                 <div class="flex min-w-0 items-center justify-between">
-                                    <div class="truncate text-xs font-semibold text-mist-100">
+                                    <div class="truncate text-xs font-semibold">
                                         {{ b.guestName }}
                                     </div>
                                     <div
@@ -228,7 +228,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                             <div
                                 class="pointer-events-none absolute top-full left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
-                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs text-mist-100 shadow-xl">
+                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
                                     <div>
                                         <span class="mb-1 block font-semibold text-mist-200">
                                             {{ b.guestName }}

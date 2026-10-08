@@ -61,7 +61,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">
+                <p class="font-mono text-lg font-semibold">
                     {{ formatIDR(totalPayout) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -81,9 +81,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Occupancy Rate
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">
-                    {{ occupancyPercentage }}%
-                </p>
+                <p class="font-mono text-lg font-semibold">{{ occupancyPercentage }}%</p>
                 <!-- <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
@@ -97,7 +95,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Bookings
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">
+                <p class="font-mono text-lg font-semibold">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500">Active bookings</p>
@@ -106,7 +104,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Today's Turnover
                 </h3>
-                <p class="flex gap-3 text-lg font-semibold text-mist-100">
+                <p class="flex gap-3 text-lg font-semibold">
                     <span class="flex items-center gap-1 text-lime-400">
                         <fa-icon
                             class="text-sm"

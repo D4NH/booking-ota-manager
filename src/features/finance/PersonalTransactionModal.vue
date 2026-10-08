@@ -229,11 +229,11 @@ async function submitRecord(): Promise<void> {
                 v-if="isOpen"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
-                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 text-mist-100 shadow-2xl duration-150 zoom-in-95 fade-in">
+                    class="w-full max-w-xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 shadow-2xl duration-150 zoom-in-95 fade-in">
                     <!-- Modal Header -->
                     <div
                         class="-mt-5 -mr-5 -ml-5 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
-                        <h2 class="font-semibold text-mist-100">
+                        <h2 class="font-semibold">
                             {{ isEditing ? 'Edit Entry for' : 'Add Entry for' }} {{ owner }}
                         </h2>
                         <AppButton
@@ -269,7 +269,7 @@ async function submitRecord(): Promise<void> {
                             </label>
                             <select
                                 v-model="formSavingsInstitution"
-                                class="w-full rounded-md border border-mist-700 bg-mist-900 p-2 font-mono text-xs text-mist-100 focus:border-blue-400 focus:outline-hidden">
+                                class="w-full rounded-md border border-mist-700 bg-mist-900 p-2 font-mono text-xs focus:border-blue-400 focus:outline-hidden">
                                 <option
                                     v-for="inst in savingsInstitutions"
                                     :key="inst"

@@ -109,7 +109,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Annual Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">
+                <p class="font-mono text-lg font-semibold">
                     {{ formatIDR(totalYearRevenue) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -137,7 +137,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">
+                <p class="font-mono text-lg font-semibold">
                     {{ formatIDR(totalPayout) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -173,7 +173,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Average Daily Rate
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-100">{{ formatIDR(adr) }}</p>
+                <p class="font-mono text-lg font-semibold">{{ formatIDR(adr) }}</p>
                 <p class="text-xs text-mist-500">Per booked night</p>
             </div>
 
@@ -224,7 +224,7 @@ function handleEditProperty(): void {
                                 @click="handleEditBooking(b)">
                                 <div class="flex justify-between space-y-1">
                                     <div class="flex flex-col items-start space-y-1">
-                                        <span class="truncate text-sm font-semibold text-mist-100">
+                                        <span class="truncate text-sm font-semibold">
                                             {{ b.guestName }}
                                         </span>
                                         <span class="text-xs text-mist-400">
@@ -248,8 +248,7 @@ function handleEditProperty(): void {
                                         </span>
                                     </div>
                                     <div class="flex flex-col items-end space-y-1">
-                                        <span
-                                            class="font-mono text-xs font-semibold text-nowrap text-mist-100">
+                                        <span class="font-mono text-xs font-semibold text-nowrap">
                                             {{ formatIDR(b.payout) }}
                                         </span>
                                         <span
@@ -304,7 +303,7 @@ function handleEditProperty(): void {
                             type="text"
                             inputmode="numeric"
                             placeholder="----"
-                            class="mt-0.5 w-24 rounded border border-transparent bg-transparent py-0.5 text-center font-mono text-sm font-semibold text-mist-100 transition placeholder:text-mist-600 hover:border-mist-700 hover:bg-mist-800/60 focus:border-lime-400 focus:bg-mist-800 focus:ring-1 focus:ring-lime-400 focus:outline-none"
+                            class="mt-0.5 w-24 rounded border border-transparent bg-transparent py-0.5 text-center font-mono text-sm font-semibold transition placeholder:text-mist-600 hover:border-mist-700 hover:bg-mist-800/60 focus:border-lime-400 focus:bg-mist-800 focus:ring-1 focus:ring-lime-400 focus:outline-none"
                             @input="handlePinInput" />
                     </div>
                     <div class="px-1">
@@ -315,7 +314,7 @@ function handleEditProperty(): void {
                                 class="text-xs" />
                             {{ selectedProperty.wifi?.ssid }}
                         </span>
-                        <span class="font-mono text-sm font-semibold text-mist-100">
+                        <span class="font-mono text-sm font-semibold">
                             {{ selectedProperty.wifi?.pwd || '----' }}
                         </span>
                     </div>
@@ -338,7 +337,7 @@ function handleEditProperty(): void {
                     <div class="relative z-10 mt-12 space-y-2">
                         <div class="border-b border-mist-600/50 pb-3">
                             <div class="flex gap-2">
-                                <h3 class="truncate text-lg font-semibold text-mist-100">
+                                <h3 class="truncate text-lg font-semibold">
                                     {{ selectedProperty.name }}
                                 </h3>
                                 <button
@@ -380,7 +379,7 @@ function handleEditProperty(): void {
                                 </span>
                             </div>
                             <div>
-                                <span class="font-mono text-sm font-semibold text-mist-100">
+                                <span class="font-mono text-sm font-semibold">
                                     {{ formatIDR(selectedProperty.price) }}
                                 </span>
                                 <span class="text-[11px] text-mist-500"> / night</span>

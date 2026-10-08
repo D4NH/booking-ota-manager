@@ -71,9 +71,7 @@ const propertyRack = computed(() =>
     <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="mb-4 flex items-center justify-between border-b border-mist-800 pb-2.5">
             <div class="flex items-center gap-2">
-                <h3 class="text-sm font-semibold tracking-wider text-mist-100 uppercase">
-                    Live Property Rack
-                </h3>
+                <h3 class="text-sm font-semibold tracking-wider uppercase">Live Property Rack</h3>
                 <span class="rounded-full bg-mist-800 px-2 py-0.5 text-[10px] text-mist-400">
                     Real-time Availability
                 </span>
@@ -99,7 +97,7 @@ const propertyRack = computed(() =>
                                           ? 'animate-pulse bg-amber-400'
                                           : 'bg-mist-600',
                                 ]" />
-                            <h4 class="truncate text-sm font-semibold text-mist-100">
+                            <h4 class="truncate text-sm font-semibold">
                                 {{ item.property.name }}
                             </h4>
                         </div>

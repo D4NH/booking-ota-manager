@@ -185,7 +185,7 @@ function getSegmentHeightPct(value: number): number {
                     <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ displayHeaderMonth }}
                     </span>
-                    <div class="text-md font-mono font-semibold text-mist-100">
+                    <div class="text-md font-mono font-semibold">
                         {{ formatIDR(displayHeaderValue) }}
                     </div>
                 </div>
@@ -228,8 +228,7 @@ function getSegmentHeightPct(value: number): number {
                         <div
                             v-if="hoveredIndex === idx"
                             class="border-mist-750 pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-2xl">
-                            <div
-                                class="border-b border-mist-800 pb-1 text-[11px] font-bold text-mist-100">
+                            <div class="border-b border-mist-800 pb-1 text-[11px] font-bold">
                                 {{ row.label }} {{ selectedYear }}
                             </div>
                             <div
@@ -242,7 +241,7 @@ function getSegmentHeightPct(value: number): number {
                                         :style="{ backgroundColor: config.color }" />
                                     {{ config.id }}:
                                 </span>
-                                <span class="font-semibold text-mist-100">
+                                <span class="font-semibold">
                                     {{ formatIDR(Number(row[config.id]) || 0) }}
                                 </span>
                             </div>

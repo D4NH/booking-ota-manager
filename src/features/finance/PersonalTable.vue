@@ -120,12 +120,12 @@ function handleCloseModal(): void {
                         <th class="w-24 px-4 py-2.5 text-center">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-mist-800/60 align-middle">
+                <tbody class="divide-y divide-mist-800/60">
                     <tr
                         v-for="item in currentList"
                         :key="item.id"
                         class="group hover:bg-mist-800/50">
-                        <td class="px-4 py-2.5 align-middle font-mono text-xs text-mist-400">
+                        <td class="px-4 py-2.5 font-mono text-xs text-mist-400">
                             {{
                                 formatDate(item.date, {
                                     relativeDay: true,
@@ -134,7 +134,7 @@ function handleCloseModal(): void {
                                 })
                             }}
                         </td>
-                        <td class="px-4 py-2.5 align-middle font-medium text-mist-100">
+                        <td class="px-4 py-2.5 font-medium">
                             <div class="flex items-center gap-1.5">
                                 <span>{{ item.category }}</span>
                                 <span
@@ -144,7 +144,7 @@ function handleCloseModal(): void {
                                 </span>
                             </div>
                         </td>
-                        <td class="truncate px-4 py-2.5 align-middle text-mist-400">
+                        <td class="truncate px-4 py-2.5 text-mist-400">
                             <span
                                 v-if="'savingsInstitution' in item && item.savingsInstitution"
                                 class="mr-1 font-semibold text-blue-400">
@@ -157,8 +157,7 @@ function handleCloseModal(): void {
                             </span>
                             <TransactionNote :notes="item.notes" />
                         </td>
-                        <td
-                            class="px-4 py-2.5 text-right align-middle font-mono text-xs font-medium">
+                        <td class="px-4 py-2.5 text-right font-mono text-xs font-medium">
                             <span
                                 :class="
                                     item.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
@@ -167,7 +166,7 @@ function handleCloseModal(): void {
                             </span>
                             {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="h-7 px-4 py-2.5 text-center align-middle">
+                        <td class="h-7 px-4 py-2.5 text-center">
                             <div class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"

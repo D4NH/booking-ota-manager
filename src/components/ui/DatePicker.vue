@@ -405,7 +405,7 @@ function handleClickOutside(event: MouseEvent): void {
                 <div
                     v-if="isOpen"
                     ref="popoverRef"
-                    class="fixed z-100 max-w-[calc(100vw-24px)] rounded-md border border-mist-800 bg-mist-950/75 p-4 pt-2 text-mist-100 shadow-md backdrop-blur-md select-none"
+                    class="fixed z-100 max-w-[calc(100vw-24px)] rounded-md border border-mist-800 bg-mist-950/75 p-4 pt-2 shadow-md backdrop-blur-md select-none"
                     :style="{
                         top: `${coords.top + 1}px`,
                         left: `${mode === 'month' ? coords.left - 3.5 : coords.left - 1}px`,
@@ -424,7 +424,7 @@ function handleClickOutside(event: MouseEvent): void {
                                     icon="chevron-left" />
                             </button>
 
-                            <span class="font-mono text-sm font-bold text-mist-100">
+                            <span class="font-mono text-sm font-bold">
                                 {{ viewYear }}
                             </span>
 
@@ -453,7 +453,7 @@ function handleClickOutside(event: MouseEvent): void {
                                           ? 'bg-lime-500 font-bold text-mist-950 shadow-sm'
                                           : viewYear === todayDate.getFullYear() &&
                                               mIdx === todayDate.getMonth()
-                                            ? 'border-lime-600 bg-mist-900 text-mist-100 hover:border-lime-400'
+                                            ? 'border-lime-600 bg-mist-900 hover:border-lime-400'
                                             : 'border-mist-800 bg-mist-900/60 text-mist-300 hover:border-mist-700 hover:bg-mist-800 hover:text-mist-100',
                                 ]"
                                 @click="selectMonth(mIdx)">

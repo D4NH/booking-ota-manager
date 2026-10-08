@@ -52,7 +52,7 @@ function handleImageError(e: Event): void {
                 class="h-2 w-2 rounded-full shrink-0"
                 :class="getPropertyStyle(property.id, true)" /> -->
             <div class="space-y-1">
-                <h3 class="truncate text-sm font-medium text-mist-100">
+                <h3 class="truncate text-sm font-medium">
                     {{ property.name }}
                 </h3>
                 <p
@@ -89,7 +89,7 @@ function handleImageError(e: Event): void {
                             :key="b.id || b.bookingId">
                             <div class="flex justify-between space-y-1">
                                 <div class="flex flex-col items-start space-y-1">
-                                    <span class="truncate text-sm font-semibold text-mist-100">
+                                    <span class="truncate text-sm font-semibold">
                                         {{ b.guestName }}
                                     </span>
                                     <span class="text-xs text-mist-400">
@@ -113,8 +113,7 @@ function handleImageError(e: Event): void {
                                     </span>
                                 </div>
                                 <div class="flex flex-col items-end space-y-1">
-                                    <span
-                                        class="font-mono text-xs font-semibold text-nowrap text-mist-100">
+                                    <span class="font-mono text-xs font-semibold text-nowrap">
                                         {{ formatIDR(b.payout) }}
                                     </span>
                                     <span
@@ -179,7 +178,7 @@ function handleImageError(e: Event): void {
                         <span class="block text-[10px] font-semibold text-mist-500 uppercase">
                             Revenue
                         </span>
-                        <span class="font-mono text-xs font-semibold text-mist-100">
+                        <span class="font-mono text-xs font-semibold">
                             {{ formatIDR(totalPayout) }}
                         </span>
                     </div>
@@ -205,7 +204,7 @@ function handleImageError(e: Event): void {
             <!-- House Specs & Price Footer -->
             <div class="mt-2 border-t border-mist-800 pt-2">
                 <div class="flex items-end justify-between">
-                    <div class="flex items-center gap-3 text-xs font-medium text-mist-400">
+                    <div class="flex items-center gap-2 text-xs font-medium text-mist-400">
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="bed"
@@ -227,7 +226,7 @@ function handleImageError(e: Event): void {
                             {{ property.plotSize }} m²
                         </span>
                     </div>
-                    <div>
+                    <div class="flex items-end gap-1">
                         <span class="font-mono text-sm font-semibold text-mist-300">
                             {{ formatIDR(property.price) }}
                         </span>

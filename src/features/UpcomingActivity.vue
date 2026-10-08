@@ -55,7 +55,7 @@ const upcomingEvents = computed(() => {
         class="flex flex-col justify-between rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md">
         <div class="flex items-center justify-between border-b border-mist-800 pb-3">
             <div>
-                <h3 class="text-base font-semibold text-mist-100">Upcoming Activity</h3>
+                <h3 class="text-base font-semibold">Upcoming Activity</h3>
                 <p class="text-xs text-mist-400">Scheduled arrivals & departures (Next 7 days)</p>
             </div>
             <RouterLink
@@ -105,7 +105,7 @@ const upcomingEvents = computed(() => {
                     </span>
                     <div class="truncate">
                         <div class="flex items-center gap-2">
-                            <span class="truncate text-sm font-semibold text-mist-100">
+                            <span class="truncate text-sm font-semibold">
                                 {{ event.booking.guestName }}
                             </span>
                             <!-- Property Badge -->

@@ -126,7 +126,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     src="/images/maihouse_logo.jpg"
                     alt="Mai House" />
                 <span
-                    class="overflow-hidden font-semibold text-nowrap text-mist-100 transition-all duration-300 ease-in-out"
+                    class="overflow-hidden font-semibold text-nowrap transition-all duration-300 ease-in-out"
                     :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-32 opacity-100'">
                     Mai House
                 </span>
@@ -159,7 +159,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     :class="[
                         'group flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition',
                         isLinkActive('/properties')
-                            ? 'bg-mist-800/80 text-mist-100'
+                            ? 'bg-mist-800/80'
                             : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
                     ]">
                     <RouterLink
@@ -223,7 +223,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     :class="[
                         'group flex items-center justify-between rounded-md px-3 py-1 text-sm font-medium transition',
                         isLinkActive('/finance')
-                            ? 'bg-mist-800/80 text-mist-100'
+                            ? 'bg-mist-800/80'
                             : 'text-mist-400 hover:bg-mist-800/50 hover:text-mist-200',
                     ]">
                     <RouterLink
