@@ -204,7 +204,7 @@ function handleImageError(e: Event): void {
 
             <!-- House Specs & Price Footer -->
             <div class="mt-2 border-t border-mist-800 pt-2">
-                <div class="flex items-center justify-between">
+                <div class="flex items-end justify-between">
                     <div class="flex items-center gap-3 text-xs font-medium text-mist-400">
                         <span class="flex items-center gap-1.5">
                             <fa-icon

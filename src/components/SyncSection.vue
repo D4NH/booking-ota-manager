@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { toast } from 'vue-toastflow';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useAppAutoSync } from '@/composables/useAppAutoSync';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useStagingStore } from '@/stores/useStagingStore';
+
+interface Props {
+    isSidebarCollapsed: boolean;
+}
+
+const { isSidebarCollapsed } = defineProps<Props>();
 
 const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
 const { isSyncing: isMasterSyncing, formattedCountdown, syncAllData } = useAppAutoSync();
@@ -15,6 +21,15 @@ const isMenuOpen = ref<boolean>(true);
 const isSyncingBookings = ref<boolean>(false);
 const isSyncingEmails = ref<boolean>(false);
 
+watch(
+    () => isSidebarCollapsed,
+    (collapsed: boolean) => {
+        if (collapsed) {
+            isMenuOpen.value = false;
+        }
+    }
+);
+
 onMounted(() => {
     refreshAuthStatus();
 });
@@ -24,7 +39,6 @@ async function handleAuthToggle(): Promise<void> {
         await initAuth('select_account').catch(() => null);
     }
 }
-
 async function handleMasterSync(): Promise<void> {
     if (!refreshAuthStatus()) {
         await initAuth('select_account').catch(() => null);
@@ -56,7 +70,6 @@ async function handleMasterSync(): Promise<void> {
         }
     );
 }
-
 async function handleSyncBookings(): Promise<void> {
     if (!refreshAuthStatus()) {
         await initAuth('select_account').catch(() => null);
@@ -97,7 +110,6 @@ async function handleSyncBookings(): Promise<void> {
         isSyncingBookings.value = false;
     }
 }
-
 async function handleSyncFinancials(): Promise<void> {
     if (!refreshAuthStatus()) {
         await initAuth('select_account').catch(() => null);
@@ -106,7 +118,6 @@ async function handleSyncFinancials(): Promise<void> {
 
     await syncAllFinancialData({ silent: false });
 }
-
 async function handleScanEmails(): Promise<void> {
     isSyncingEmails.value = true;
     try {
@@ -143,8 +154,11 @@ async function handleScanEmails(): Promise<void> {
 </script>
 
 <template>
-    <div class="border-t border-mist-800/80 bg-mist-950/40 p-3 text-mist-200 select-none">
-        <div class="mb-2 flex items-center justify-between font-mono text-[11px] text-mist-400">
+    <div
+        class="border-t border-mist-800/80 bg-mist-950/40 p-3 text-nowrap text-mist-200 transition-all duration-300 ease-in-out select-none">
+        <div
+            class="flex items-center justify-between font-mono text-xs text-mist-400 transition-all duration-300"
+            :class="{ 'mb-2': !isSidebarCollapsed }">
             <button
                 type="button"
                 class="flex cursor-pointer items-center gap-1.5 transition hover:text-mist-200"
@@ -153,31 +167,45 @@ async function handleScanEmails(): Promise<void> {
                 "
                 @click="handleAuthToggle">
                 <span
-                    class="h-2 w-2 rounded-full"
-                    :class="isAuthenticated ? 'bg-lime-400' : 'bg-rose-400'" />
-                <span>{{ isAuthenticated ? 'Google API' : 'Connect API' }}</span>
+                    class="h-2 w-2 shrink-0 rounded-full transition-[margin] duration-300 ease-in-out"
+                    :class="[
+                        isAuthenticated ? 'bg-lime-400' : 'bg-rose-400',
+                        { 'ml-3.5': isSidebarCollapsed },
+                    ]" />
+                <span
+                    class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-28 opacity-100'">
+                    {{ isAuthenticated ? 'Google API' : 'Connect API' }}
+                </span>
             </button>
-            <span class="text-[10px] text-mist-500"> SWR: {{ formattedCountdown }} </span>
+
+            <span
+                class="overflow-hidden text-xs text-mist-500 transition-all duration-300 ease-in-out"
+                :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-24 opacity-100'">
+                SWR: {{ formattedCountdown }}
+            </span>
         </div>
 
         <div class="flex items-center gap-1">
             <button
+                v-if="!isSidebarCollapsed"
                 type="button"
                 :disabled="isMasterSyncing"
                 class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold text-mist-100 transition hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
-                title="Force full system sync across all data"
                 @click="handleMasterSync">
                 <fa-icon
                     icon="arrows-rotate"
-                    class="text-xs text-lime-400"
+                    class="shrink-0 text-xs text-lime-400"
                     :class="{ 'animate-spin': isMasterSyncing }" />
-                <span>{{ isMasterSyncing ? 'Syncing...' : 'Sync All' }}</span>
+                <span class="text-nowrap">
+                    {{ isMasterSyncing ? 'Syncing...' : 'Sync All' }}
+                </span>
             </button>
 
             <button
+                v-if="!isSidebarCollapsed"
                 type="button"
                 class="bg-mist-850 cursor-pointer rounded border border-mist-700 px-2 py-1.5 text-xs text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
-                :title="isMenuOpen ? 'Hide granular sync options' : 'Show granular sync options'"
                 @click="isMenuOpen = !isMenuOpen">
                 <fa-icon
                     icon="chevron-down"
@@ -187,7 +215,7 @@ async function handleScanEmails(): Promise<void> {
         </div>
 
         <div
-            v-if="isMenuOpen"
+            v-if="isMenuOpen && !isSidebarCollapsed"
             class="mt-2 space-y-1 font-mono text-xs">
             <button
                 type="button"

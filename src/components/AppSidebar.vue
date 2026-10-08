@@ -16,30 +16,35 @@ import SyncSection from '@/components/SyncSection.vue';
 import NotificationsDrawer from '@/components/NotificationsDrawer.vue';
 import ReviewBookingModal from '@/features/bookings/ReviewBookingModal.vue';
 
-const navLinks: NavItem[] = [
+const navLinks: readonly NavItem[] = [
     { name: 'Dashboard', path: '/', icon: 'table-cells-large' },
     { name: 'Bookings', path: '/bookings', icon: 'calendar-check' },
     { name: 'Calendar', path: '/calendar', icon: 'calendar-days' },
-];
+] as const;
+
 const currentYear = new Date().getFullYear();
-const stagingSpreadsheetId = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
+const stagingSpreadsheetId = (import.meta.env.VITE_STAGING_SPREADSHEET_ID as string) || '';
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
 const { markBookingComplete } = useBookingSync();
-const isSidebarCollapsed = useStorage('sidebar-collapsed', false);
-const isNotificationCollapsed = useStorage('notifications-collapsed', false);
+const isSidebarCollapsed = useStorage<boolean>('sidebar-collapsed', false);
+const isNotificationCollapsed = useStorage<boolean>('notifications-collapsed', false);
 const stagingStore = useStagingStore();
 const { stagedBookings } = storeToRefs(stagingStore);
 
 const activeStagedBooking = ref<StagedBooking | null>(null);
-const isReviewModalOpen = ref(false);
-const isPropertiesOpen = ref(true);
-const isFinanceOpen = ref(true);
+const isReviewModalOpen = ref<boolean>(false);
+const isPropertiesOpen = ref<boolean>(true);
+const isFinanceOpen = ref<boolean>(true);
 
-const pendingPayments = computed(() => {
+const pendingPayments = computed<{
+    whatsappPayments: Booking[];
+    bookingPayouts: Booking[];
+    notificationsCount: number;
+}>(() => {
     const isWithinWindow = (checkIn: string): boolean => {
         const dueDate = new Date(checkIn);
         dueDate.setDate(dueDate.getDate() - 1);
@@ -66,7 +71,7 @@ const pendingPayments = computed(() => {
 
 watch(
     () => route.path,
-    (newPath) => {
+    (newPath: string) => {
         if (newPath.startsWith('/properties')) {
             isPropertiesOpen.value = true;
             isFinanceOpen.value = false;
@@ -111,18 +116,18 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
 <template>
     <aside
         :class="[
-            'relative flex shrink-0 flex-col border border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
+            'relative flex shrink-0 flex-col border-r border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
             isSidebarCollapsed ? 'w-16' : 'w-60',
         ]">
         <div class="flex h-14 items-center overflow-hidden border-b border-mist-800 px-4">
             <div class="flex items-center gap-3">
                 <img
-                    class="h-8 w-8 shrink-0 rounded-md"
+                    class="h-8 w-8 shrink-0 rounded-md object-cover"
                     src="/images/maihouse_logo.jpg"
                     alt="Mai House" />
                 <span
-                    v-show="!isSidebarCollapsed"
-                    class="font-semibold text-nowrap text-mist-100 transition-opacity duration-200">
+                    class="overflow-hidden font-semibold text-nowrap text-mist-100 transition-all duration-300 ease-in-out"
+                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-32 opacity-100'">
                     Mai House
                 </span>
             </div>
@@ -133,18 +138,18 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                 v-for="link in navLinks"
                 :key="link.name"
                 :to="link.path"
+                class="flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition"
                 :class="[
-                    'flex items-center gap-3 rounded-md px-3 py-1 text-sm font-medium transition',
                     isLinkActive(link.path)
                         ? 'bg-mist-800 font-semibold text-lime-400 shadow-sm'
                         : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                 ]">
                 <fa-icon
                     :icon="link.icon"
-                    class="h-4 w-4 shrink-0 py-2 text-center" />
+                    class="shrink-0 py-2 text-center" />
                 <span
-                    v-show="!isSidebarCollapsed"
-                    class="truncate">
+                    class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
                     {{ link.name }}
                 </span>
             </RouterLink>
@@ -162,19 +167,25 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="flex min-w-0 flex-1 items-center gap-3"
                         :class="{ 'font-semibold text-lime-400': isLinkActive('/properties') }">
                         <fa-icon
-                            class="h-4 w-4 shrink-0 py-2 text-center"
+                            class="shrink-0 py-2 text-center"
                             icon="house" />
                         <span
-                            v-show="!isSidebarCollapsed"
-                            class="truncate">
+                            class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                            :class="
+                                isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
+                            ">
                             Properties
                         </span>
                     </RouterLink>
 
                     <button
-                        v-show="!isSidebarCollapsed"
                         type="button"
-                        class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
+                        class="cursor-pointer overflow-hidden p-1 text-mist-500 transition-all duration-300 ease-in-out hover:text-mist-200"
+                        :class="
+                            isSidebarCollapsed
+                                ? 'pointer-events-none max-w-0 opacity-0'
+                                : 'max-w-6 opacity-100'
+                        "
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
                         <fa-icon
                             class="text-xs transition-transform duration-200"
@@ -220,18 +231,25 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         class="flex min-w-0 flex-1 items-center gap-3"
                         :class="{ 'font-semibold text-lime-400': isLinkActive('/finance') }">
                         <fa-icon
-                            class="h-4 w-4 shrink-0 py-2 text-center"
+                            class="shrink-0 py-2 text-center"
                             icon="sack-dollar" />
                         <span
-                            v-show="!isSidebarCollapsed"
-                            class="truncate">
+                            class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                            :class="
+                                isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
+                            ">
                             Finance
                         </span>
                     </RouterLink>
+
                     <button
-                        v-show="!isSidebarCollapsed"
                         type="button"
-                        class="cursor-pointer p-1 text-mist-500 transition hover:text-mist-200"
+                        class="cursor-pointer overflow-hidden p-1 text-mist-500 transition-all duration-300 ease-in-out hover:text-mist-200"
+                        :class="
+                            isSidebarCollapsed
+                                ? 'pointer-events-none max-w-0 opacity-0'
+                                : 'max-w-6 opacity-100'
+                        "
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
                         <fa-icon
                             class="text-xs transition-transform duration-200"
@@ -286,19 +304,20 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                             : 'text-mist-400 hover:bg-mist-800/60 hover:text-mist-200',
                     ]">
                     <fa-icon
-                        class="h-4 w-4 shrink-0 py-2 text-center"
+                        class="shrink-0 py-2 text-center"
                         icon="gear" />
                     <span
-                        v-show="!isSidebarCollapsed"
-                        class="truncate">
+                        class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                        :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
                         Settings
                     </span>
                 </RouterLink>
             </div>
         </nav>
 
-        <SyncSection />
+        <SyncSection :is-sidebar-collapsed="isSidebarCollapsed" />
         <NotificationsDrawer
+            :is-sidebar-collapsed="isSidebarCollapsed"
             :is-collapsed="isNotificationCollapsed"
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
@@ -311,9 +330,14 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
         <div class="overflow-hidden border-t border-mist-800 p-3">
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">
                 <fa-icon
-                    class="h-4 w-4 shrink-0"
+                    class="shrink-0 transition-[padding] duration-300 ease-in-out"
+                    :class="{ 'pl-2': isSidebarCollapsed }"
                     icon="copyright" />
-                <span class="truncate"> {{ currentYear }} - Danh Nguyen </span>
+                <span
+                    class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
+                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                    {{ currentYear }} - Danh Nguyen
+                </span>
             </div>
         </div>
 

@@ -103,7 +103,7 @@ function isCurrentBooking(b: Booking): boolean {
                     <tr
                         v-for="b in group.bookings"
                         :key="b.id || b.bookingId"
-                        class="h-18 cursor-pointer transition"
+                        class="h-16 cursor-pointer transition"
                         :class="[
                             isCurrentBooking(b) && b.status === 'Booked'
                                 ? 'bg-lime-500/5 text-lime-400 ring-1 ring-lime-500/30 hover:bg-lime-500/15'
@@ -145,7 +145,7 @@ function isCurrentBooking(b: Booking): boolean {
                         </td>
                         <td class="px-4 py-0 align-middle">
                             <div
-                                class="flex items-center justify-center font-mono leading-none font-medium text-mist-300">
+                                class="flex items-center justify-center font-mono text-[13px] leading-none font-medium text-mist-300">
                                 {{
                                     formatDate(b.checkIn, {
                                         shortWeekday: true,
@@ -162,7 +162,7 @@ function isCurrentBooking(b: Booking): boolean {
                             </div>
                         </td>
                         <td class="px-4 py-0 text-center align-middle">
-                            <span class="font-mono text-xs leading-none text-mist-300">
+                            <span class="font-mono leading-none text-mist-300">
                                 {{ b.nights }}
                             </span>
                         </td>

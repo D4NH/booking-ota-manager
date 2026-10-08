@@ -9,6 +9,7 @@ import AppButton from '@/components/ui/AppButton.vue';
 
 interface Props {
     isCollapsed: boolean;
+    isSidebarCollapsed?: boolean;
     pendingPayments?: Booking[];
     pendingPayouts?: Booking[];
     stagedBookings?: StagedBooking[];
@@ -16,46 +17,75 @@ interface Props {
 
 const {
     isCollapsed,
+    isSidebarCollapsed = false,
     pendingPayments = [],
     pendingPayouts = [],
     stagedBookings = [],
 } = defineProps<Props>();
 const emit = defineEmits<{
-    (e: 'close'): void;
-    (e: 'mark-complete', booking: Booking): void;
-    (e: 'edit', booking: Booking): void;
-    (e: 'open-staging', booking?: StagedBooking): void;
+    close: [];
+    'mark-complete': [booking: Booking];
+    edit: [booking: Booking];
+    'open-staging': [booking?: StagedBooking];
 }>();
 
-const stagedCount = computed(() => stagedBookings.length);
-const totalCount = computed(
+const stagedCount = computed<number>(() => stagedBookings.length);
+const totalCount = computed<number>(
     () => pendingPayments.length + pendingPayouts.length + stagedCount.value
 );
+
+function handleToggle(): void {
+    emit('close');
+}
+function handleOpenStaging(staged?: StagedBooking): void {
+    emit('open-staging', staged);
+}
+function handleEdit(b: Booking): void {
+    emit('edit', b);
+}
+function handleMarkComplete(b: Booking): void {
+    emit('mark-complete', b);
+}
 </script>
 
 <template>
-    <div class="overflow-hidden border-t border-mist-800 bg-mist-900">
+    <div
+        class="overflow-hidden border-t border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out select-none">
         <div
-            class="flex cursor-pointer items-center justify-between bg-mist-950/50 px-4 py-3"
-            :class="{ 'border-b border-mist-800': !isCollapsed }"
-            @click="emit('close')">
-            <div class="flex items-center gap-2">
+            class="flex items-center justify-between bg-mist-950/50 p-3 transition-all duration-300 ease-in-out"
+            :class="{ 'cursor-pointer border-b border-mist-800': !isSidebarCollapsed }"
+            @click="handleToggle">
+            <div class="relative flex items-center gap-2">
                 <fa-icon
                     icon="bell"
-                    class="text-sm text-mist-400" />
-                <span class="text-sm font-semibold text-mist-100">Notifications</span>
+                    class="shrink-0 text-sm text-mist-400 transition-[padding] duration-300 ease-in-out"
+                    :class="{ 'pl-2.5': isSidebarCollapsed }" />
+                <span
+                    class="overflow-hidden text-sm font-semibold text-nowrap text-mist-100 transition-all duration-300 ease-in-out"
+                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                    Notifications
+                </span>
+                <span
+                    v-if="isSidebarCollapsed && totalCount > 0"
+                    class="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-lime-500 px-1 font-mono text-[9px] font-bold text-mist-950 shadow-sm">
+                    {{ totalCount }}
+                </span>
             </div>
             <span
                 v-if="totalCount > 0"
-                class="rounded-xs bg-lime-500/20 px-2 py-0.5 text-[10px] font-semibold text-lime-400">
+                class="overflow-hidden rounded-xs bg-lime-500/20 text-[10px] font-semibold text-lime-400 transition-all duration-300 ease-in-out"
+                :class="
+                    isSidebarCollapsed
+                        ? 'max-w-0 px-0 py-0 opacity-0'
+                        : 'max-w-20 px-2 py-0.5 opacity-100'
+                ">
                 {{ totalCount }} New
             </span>
         </div>
 
         <div
-            v-if="!isCollapsed"
+            v-if="!isCollapsed && !isSidebarCollapsed"
             class="max-h-[70vh] space-y-1 divide-y divide-mist-800/60 overflow-y-auto p-2">
-            <!-- Empty State -->
             <div
                 v-if="totalCount === 0"
                 class="space-y-1 py-10 text-center text-xs text-mist-500">
@@ -66,16 +96,15 @@ const totalCount = computed(
                 <p>No incoming bookings, pending payments, or unsettled payouts.</p>
             </div>
 
-            <!-- Incoming Bookings Approval -->
             <div
                 v-for="staged in stagedBookings"
                 :key="staged.id || staged.bookingId"
                 class="group cursor-pointer rounded-xs border-b-0 border-l-2 border-l-purple-500 p-3 transition hover:bg-mist-800/40"
-                @click.stop="emit('open-staging', staged)">
+                @click.stop="handleOpenStaging(staged)">
                 <div class="mb-1.5 flex items-center justify-between gap-2">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-purple-400">
-                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-400"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-400" />
                         New Booking
                     </span>
                     <span
@@ -111,12 +140,11 @@ const totalCount = computed(
                 </div>
             </div>
 
-            <!-- Pending Payments -->
             <div
                 v-for="b in pendingPayments"
                 :key="b.id || b.bookingId"
                 class="group cursor-pointer rounded-xs border-b-0 border-l-2 border-l-amber-500 p-3 transition hover:bg-mist-800/40"
-                @click.stop="emit('edit', b)">
+                @click.stop="handleEdit(b)">
                 <div class="mb-1.5 flex items-center justify-between gap-2">
                     <span
                         class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
@@ -151,7 +179,6 @@ const totalCount = computed(
                 </div>
             </div>
 
-            <!-- Pending Payouts -->
             <div
                 v-for="b in pendingPayouts"
                 :key="'payout-' + (b.id || b.bookingId)"
@@ -227,7 +254,7 @@ const totalCount = computed(
                     <div class="-mr-1.5 flex items-center">
                         <AppButton
                             variant="icon"
-                            @click="emit('edit', b)">
+                            @click="handleEdit(b)">
                             <template #icon>
                                 <fa-icon icon="pen-to-square" />
                             </template>
@@ -236,7 +263,7 @@ const totalCount = computed(
                         <AppButton
                             color="lime"
                             variant="icon"
-                            @click="emit('mark-complete', b)">
+                            @click="handleMarkComplete(b)">
                             <template #icon>
                                 <fa-icon icon="clipboard-check" />
                             </template>

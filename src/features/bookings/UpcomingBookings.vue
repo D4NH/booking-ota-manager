@@ -119,7 +119,7 @@ const displaySections = computed<MonthSection[]>(() => {
                                                 relativeDay: true,
                                             })
                                         }}
-                                        &bull; {{ b.nights }} night(s) via
+                                        &bull; {{ b.nights }} night{{ b.nights > 1 ? 's' : '' }} via
                                         <span class="font-medium text-mist-300">
                                             {{ b.listing }}
                                         </span>
@@ -128,7 +128,8 @@ const displaySections = computed<MonthSection[]>(() => {
                             </div>
                             <!-- Payout & Status -->
                             <div class="shrink-0 text-right">
-                                <span class="block font-mono text-xs font-semibold text-mist-300">
+                                <span
+                                    class="mr-0.5 block font-mono text-xs font-semibold text-mist-300">
                                     {{ formatIDR(b.payout) }}
                                 </span>
                                 <span
