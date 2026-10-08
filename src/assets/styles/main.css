@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains Mono:wght@400;600&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@theme {
+    --color-brand-bg: #161b1d;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+    --tf-toast-border-radius: 2px;
+}
+
+html,
+body {
+    background-color: var(--color-brand-bg);
+    font-family: var(--font-sans);
+    color: var(--color-mist-100);
+    -webkit-font-smoothing: antialiased;
+}
+
+input::placeholder,
+textarea::placeholder {
+    @apply text-mist-600 opacity-100;
+}
+
+input[type='date']::-webkit-inner-spin-button,
+input[type='date']::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}
