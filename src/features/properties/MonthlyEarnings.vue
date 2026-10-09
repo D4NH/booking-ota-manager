@@ -4,53 +4,68 @@ import { formatIDR } from '@/utils/money';
 import type { WeeklyData, MonthlyData } from '@/composables/useRevenueData';
 import CardTitle from '@/components/CardTitle.vue';
 
+interface CoordinatePoint {
+    x: number;
+    y: number;
+    val: number;
+}
+
+interface YAxisTick {
+    value: number;
+    y: number;
+    label: string;
+}
+
+interface Props {
+    weeklyData: WeeklyData;
+    monthlyData: MonthlyData;
+}
+
 const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
+const SVG_HEIGHT = 160;
+const PADDING_TOP = 12;
+const PADDING_BOTTOM = 12;
+const PADDING_LEFT = 12;
+const PADDING_RIGHT = 12;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
-const { weeklyData, monthlyData } = defineProps<{
-    weeklyData: WeeklyData;
-    monthlyData: MonthlyData;
-}>();
+const { weeklyData, monthlyData } = defineProps<Props>();
 
 const activeView = ref<'weekly' | 'monthly'>('monthly');
 const hoveredIndex = ref<number | null>(null);
 
-const currentTotal = computed(() => {
+const currentTotal = computed<number>(() => {
     const list = activeView.value === 'weekly' ? weeklyData.currentWeek : monthlyData.currentMonth;
     return list.reduce((a, b) => a + b, 0);
 });
-const previousTotal = computed(() => {
+const previousTotal = computed<number>(() => {
     const list = activeView.value === 'weekly' ? weeklyData.lastWeek : monthlyData.lastMonth;
     return list.reduce((a, b) => a + b, 0);
 });
-const growthPercentage = computed(() => {
+const growthPercentage = computed<number>(() => {
     if (previousTotal.value === 0) return 0;
     const diff = currentTotal.value - previousTotal.value;
     return Number(((diff / previousTotal.value) * 100).toFixed(1));
 });
-const activeLabels = computed(() =>
+const activeLabels = computed<string[]>(() =>
     activeView.value === 'weekly' ? weeklyData.labels : monthlyData.labels
 );
-const currentPoints = computed(() =>
+const currentPoints = computed<number[]>(() =>
     activeView.value === 'weekly' ? weeklyData.currentWeek : monthlyData.currentMonth
 );
-const previousPoints = computed(() =>
+const previousPoints = computed<number[]>(() =>
     activeView.value === 'weekly' ? weeklyData.lastWeek : monthlyData.lastMonth
 );
-const maxVal = computed(() => {
+const maxVal = computed<number>(() => {
     const all = [...currentPoints.value, ...previousPoints.value];
     const highest = Math.max(...all, 0);
     if (highest <= 0) return 1_000_000;
     const step = highest > 10_000_000 ? 5_000_000 : 1_000_000;
     return Math.ceil(highest / step) * step;
 });
-const yAxisTicks = computed(() => {
+
+const yAxisTicks = computed<YAxisTick[]>(() => {
     const max = maxVal.value;
     const step = max / 4;
     return [
@@ -77,11 +92,13 @@ const yAxisTicks = computed(() => {
         },
     ];
 });
-const currentCoords = computed(() => mapToCoordinates(currentPoints.value));
-const previousCoords = computed(() => mapToCoordinates(previousPoints.value));
-const currentLinePath = computed(() => generateSmoothPath(currentCoords.value));
-const previousLinePath = computed(() => generateSmoothPath(previousCoords.value));
-const currentAreaPath = computed(() => {
+
+const currentCoords = computed<CoordinatePoint[]>(() => mapToCoordinates(currentPoints.value));
+const previousCoords = computed<CoordinatePoint[]>(() => mapToCoordinates(previousPoints.value));
+const currentLinePath = computed<string>(() => generateSmoothPath(currentCoords.value));
+const previousLinePath = computed<string>(() => generateSmoothPath(previousCoords.value));
+
+const currentAreaPath = computed<string>(() => {
     if (!currentCoords.value.length) return '';
     const line = currentLinePath.value;
     const lastX = currentCoords.value[currentCoords.value.length - 1]!.x;
@@ -90,7 +107,7 @@ const currentAreaPath = computed(() => {
     return `${line} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
 });
 
-function mapToCoordinates(data: number[]) {
+function mapToCoordinates(data: number[]): CoordinatePoint[] {
     const len = data.length;
     if (len === 0) return [];
     const stepX = chartPlotWidth / Math.max(1, len - 1);
@@ -102,7 +119,7 @@ function mapToCoordinates(data: number[]) {
         return { x, y, val };
     });
 }
-function generateSmoothPath(points: { x: number; y: number }[]): string {
+function generateSmoothPath(points: CoordinatePoint[]): string {
     if (!points.length) return '';
     if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
 
@@ -119,7 +136,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <div class="flex items-center justify-between">
+        <div class="flex shrink-0 items-center justify-between">
             <CardTitle>
                 <template #title>Monthly Earnings</template>
                 <template #subtitle>
@@ -131,9 +148,8 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                 </template>
             </CardTitle>
 
-            <!-- View Switcher Toggle -->
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
                 <button
                     type="button"
                     class="cursor-pointer rounded-xs px-3 py-1 transition"
@@ -166,12 +182,11 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
         </div>
 
         <div
-            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
-            <!-- Header Metrics -->
-            <div class="flex flex-wrap items-start justify-between gap-2">
-                <div class="flex flex-col gap-1">
-                    <p class="font-mono text-sm font-semibold text-mist-100">
+            <div class="flex shrink-0 flex-wrap items-start justify-between gap-2">
+                <div class="flex flex-col gap-0.5">
+                    <p class="text-md font-mono font-bold">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">
@@ -179,6 +194,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                             class="font-medium"
                             :class="growthPercentage >= 0 ? 'text-lime-400' : 'text-rose-400'">
                             <fa-icon
+                                class="text-[10px]"
                                 :icon="
                                     growthPercentage >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
                                 " />
@@ -190,8 +206,7 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                     </p>
                 </div>
 
-                <!-- Custom Legend -->
-                <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
+                <div class="flex items-center gap-4 text-xs font-medium text-mist-400 select-none">
                     <div class="flex items-center gap-1.5">
                         <span class="h-2 w-2 rounded-full bg-lime-400"></span>
                         <span class="text-mist-200">
@@ -206,150 +221,148 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
                 </div>
             </div>
 
-            <div class="relative flex w-full items-center justify-center">
-                <!-- Tooltip -->
+            <div class="flex min-h-0 flex-1 items-stretch">
                 <div
-                    v-if="hoveredIndex !== null && currentCoords[hoveredIndex]"
-                    class="border-mist-750 pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl">
-                    <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
-                        {{ activeLabels[hoveredIndex] }}
-                    </div>
-                    <div class="flex justify-between gap-3 text-lime-400">
-                        <span>Current:</span>
-                        <span class="font-bold">{{
-                            formatIDR(currentPoints[hoveredIndex] ?? 0)
-                        }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-mist-400">
-                        <span>Previous:</span>
-                        <span>{{ formatIDR(previousPoints[hoveredIndex] ?? 0) }}</span>
-                    </div>
-                </div>
-
-                <svg
-                    class="h-full w-full overflow-visible select-none"
-                    :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
-                    preserveAspectRatio="none">
-                    <defs>
-                        <!-- Lime Area Gradient -->
-                        <linearGradient
-                            id="areaGradient"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1">
-                            <stop
-                                offset="0%"
-                                stop-color="#a3e635"
-                                stop-opacity="0.28" />
-                            <stop
-                                offset="100%"
-                                stop-color="#a3e635"
-                                stop-opacity="0.0" />
-                        </linearGradient>
-                    </defs>
-
-                    <!-- Horizontal Grid Lines & Y-Axis Labels -->
-                    <g
+                    class="flex w-10 shrink-0 flex-col justify-between py-1.5 pr-2 text-right font-mono text-xs text-mist-500 select-none">
+                    <span
                         v-for="tick in yAxisTicks"
                         :key="tick.value">
-                        <line
-                            :x1="PADDING_LEFT"
-                            :y1="tick.y"
-                            :x2="SVG_WIDTH - PADDING_RIGHT"
-                            :y2="tick.y"
-                            stroke="#27272a"
-                            stroke-width="1"
-                            stroke-opacity="0.6" />
-                        <text
-                            :x="PADDING_LEFT - 8"
-                            :y="tick.y + 3.5"
-                            fill="#71717a"
-                            font-size="10"
-                            font-family="monospace"
-                            text-anchor="end">
-                            {{ tick.label }}
-                        </text>
-                    </g>
+                        {{ tick.label }}
+                    </span>
+                </div>
 
-                    <!-- Area Fill -->
-                    <path
-                        :d="currentAreaPath"
-                        fill="url(#areaGradient)"
-                        class="pointer-events-none transition-all duration-300" />
+                <div class="relative flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+                    <div
+                        v-if="hoveredIndex !== null && currentCoords[hoveredIndex]"
+                        :style="{ left: `${(currentCoords[hoveredIndex]!.x / SVG_WIDTH) * 100}%` }"
+                        :class="[
+                            hoveredIndex === 0
+                                ? 'translate-x-0'
+                                : hoveredIndex === currentCoords.length - 1
+                                  ? '-translate-x-full'
+                                  : '-translate-x-1/2',
+                        ]"
+                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-800 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                        <div class="text-mist-400">
+                            {{ activeLabels[hoveredIndex] }}
+                        </div>
+                        <div class="flex justify-between gap-3 text-lime-400">
+                            <span>Current:</span>
+                            <span class="font-bold">
+                                {{ formatIDR(currentPoints[hoveredIndex] ?? 0) }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <span>Previous:</span>
+                            <span class="font-bold">
+                                {{ formatIDR(previousPoints[hoveredIndex] ?? 0) }}
+                            </span>
+                        </div>
+                    </div>
 
-                    <!-- Previous Period Dashed Line -->
-                    <path
-                        :d="previousLinePath"
-                        fill="none"
-                        stroke="#71717a"
-                        stroke-width="2"
-                        stroke-dasharray="5 5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="pointer-events-none transition-all duration-300" />
+                    <div class="relative min-h-0 w-full flex-1">
+                        <svg
+                            class="h-full w-full overflow-visible select-none"
+                            :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
+                            preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient
+                                    id="earningsAreaGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1">
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#a3e635"
+                                        stop-opacity="0.28" />
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#a3e635"
+                                        stop-opacity="0.0" />
+                                </linearGradient>
+                            </defs>
 
-                    <!-- Current Period Solid Line -->
-                    <path
-                        :d="currentLinePath"
-                        fill="none"
-                        stroke="#a3e635"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="pointer-events-none transition-all duration-300" />
+                            <g
+                                v-for="tick in yAxisTicks"
+                                :key="tick.value">
+                                <line
+                                    :x1="0"
+                                    :y1="tick.y"
+                                    :x2="SVG_WIDTH"
+                                    :y2="tick.y"
+                                    class="stroke-mist-800/60"
+                                    stroke-width="1" />
+                            </g>
 
-                    <!-- Interactive Points & Invisible Hover Triggers -->
-                    <g
-                        v-for="(pt, idx) in currentCoords"
-                        :key="idx">
-                        <!-- Vertical Crosshair line on hover -->
-                        <line
-                            v-if="hoveredIndex === idx"
-                            :x1="pt.x"
-                            :y1="PADDING_TOP"
-                            :x2="pt.x"
-                            :y2="PADDING_TOP + chartPlotHeight"
-                            stroke="#a3e635"
-                            stroke-width="1"
-                            stroke-dasharray="2 2"
-                            stroke-opacity="0.6" />
+                            <path
+                                :d="currentAreaPath"
+                                fill="url(#earningsAreaGradient)"
+                                class="pointer-events-none transition-all duration-300" />
 
-                        <!-- Point Circle -->
-                        <circle
-                            :cx="pt.x"
-                            :cy="pt.y"
-                            :r="hoveredIndex === idx ? 5 : 3"
-                            :fill="hoveredIndex === idx ? '#bef264' : '#a3e635'"
-                            stroke="#18181b"
-                            stroke-width="2"
-                            class="pointer-events-none transition-all duration-150" />
+                            <path
+                                :d="previousLinePath"
+                                fill="none"
+                                stroke="#71717a"
+                                stroke-width="2"
+                                stroke-dasharray="5 5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="pointer-events-none transition-all duration-300" />
 
-                        <!-- Full-height invisible hover zone -->
-                        <rect
-                            :x="pt.x - chartPlotWidth / currentCoords.length / 2"
-                            :y="0"
-                            :width="chartPlotWidth / currentCoords.length"
-                            :height="SVG_HEIGHT"
-                            fill="transparent"
-                            class="cursor-pointer"
-                            @mouseenter="hoveredIndex = idx" />
+                            <path
+                                :d="currentLinePath"
+                                fill="none"
+                                stroke="#a3e635"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="pointer-events-none transition-all duration-300" />
 
-                        <!-- X-Axis Labels -->
-                        <text
-                            :x="pt.x"
-                            :y="SVG_HEIGHT - 6"
-                            fill="#71717a"
-                            font-size="11"
-                            font-weight="600"
-                            font-family="'Noto Sans Variable', 'Noto Sans', sans-serif"
-                            text-anchor="middle"
-                            class="pointer-events-none"
-                            :class="{ 'fill-lime-400': hoveredIndex === idx }">
-                            {{ activeLabels[idx] }}
-                        </text>
-                    </g>
-                </svg>
+                            <g
+                                v-for="(pt, idx) in currentCoords"
+                                :key="idx">
+                                <line
+                                    v-if="hoveredIndex === idx"
+                                    :x1="pt.x"
+                                    :y1="PADDING_TOP"
+                                    :x2="pt.x"
+                                    :y2="PADDING_TOP + chartPlotHeight"
+                                    class="stroke-lime-400/60"
+                                    stroke-width="1"
+                                    stroke-dasharray="2 2" />
+
+                                <circle
+                                    :cx="pt.x"
+                                    :cy="pt.y"
+                                    :r="hoveredIndex === idx ? 5 : 3"
+                                    :fill="hoveredIndex === idx ? '#bef264' : '#a3e635'"
+                                    stroke="#18181b"
+                                    stroke-width="2"
+                                    class="pointer-events-none transition-all duration-150" />
+
+                                <rect
+                                    :x="pt.x - chartPlotWidth / currentCoords.length / 2"
+                                    :y="0"
+                                    :width="chartPlotWidth / currentCoords.length"
+                                    :height="SVG_HEIGHT"
+                                    fill="transparent"
+                                    class="cursor-pointer"
+                                    @mouseenter="hoveredIndex = idx" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="mt-2 flex justify-between text-xs text-mist-400 select-none">
+                        <span
+                            v-for="(label, idx) in activeLabels"
+                            :key="label"
+                            class="transition-colors"
+                            :class="{ 'font-semibold text-lime-400': hoveredIndex === idx }">
+                            {{ label }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

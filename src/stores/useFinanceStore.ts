@@ -1125,7 +1125,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 .filter(
                     (s) =>
                         s.type === 'income' &&
-                        /SR022|SR021|ORI|SBN|SUKUK/i.test(s.category + ' ' + s.notes)
+                        /SR022|SR021|ORI|SBN/i.test(s.category + ' ' + s.notes)
                 )
                 .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
         }
@@ -1135,7 +1135,7 @@ export const useFinanceStore = defineStore('finance', () => {
                 (p) =>
                     p.owner === ownerName &&
                     p.type === 'income' &&
-                    /SR022|SR021|ORI|SBN|SUKUK/i.test(p.category + ' ' + p.notes)
+                    /SR022|SR021|ORI|SBN/i.test(p.category + ' ' + p.notes)
             )
             .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     }

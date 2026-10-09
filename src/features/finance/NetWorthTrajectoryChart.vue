@@ -30,11 +30,11 @@ interface YAxisTick {
 }
 
 const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
+const SVG_HEIGHT = 160;
+const PADDING_TOP = 12;
+const PADDING_BOTTOM = 12;
+const PADDING_LEFT = 12;
+const PADDING_RIGHT = 12;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
@@ -128,7 +128,6 @@ const trajectoryData = computed<NetWorthPoint[]>(() => {
             }
         }
         const goldValuation = Math.round(cumulativeGoldGrams * goldPrice);
-
         const totalNetWorth = Math.max(0, cumulativeSavings) + activeSbn + goldValuation;
         const [y, m] = cycle.split('-');
         const monthIdx = Number(m) - 1;
@@ -244,7 +243,7 @@ function handleSelectMonth(targetMonthStr: string): void {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <div class="flex items-center justify-between">
+        <div class="flex shrink-0 items-center justify-between">
             <CardTitle>
                 <template #title>Total Net Worth Trajectory</template>
                 <template #subtitle>
@@ -290,10 +289,10 @@ function handleSelectMonth(targetMonthStr: string): void {
         </div>
 
         <div
-            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
-                <div class="flex flex-col items-baseline gap-1">
+            <div class="flex shrink-0 flex-wrap items-baseline justify-between gap-2">
+                <div class="flex flex-col gap-0.5">
                     <span class="font-mono text-lg font-semibold">
                         {{ formatIDR(currentMonthPoint.totalNetWorth) }}
                     </span>
@@ -303,6 +302,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                             class="font-medium"
                             :class="netWorthGrowthPct >= 0 ? 'text-lime-400' : 'text-rose-400'">
                             <fa-icon
+                                class="text-[10px]"
                                 :icon="
                                     netWorthGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
                                 " />
@@ -310,9 +310,9 @@ function handleSelectMonth(targetMonthStr: string): void {
                         </span>
                         <span
                             v-else
-                            class="text-mist-500"
-                            >—</span
-                        >
+                            class="text-mist-500">
+                            —
+                        </span>
                         <span class="text-mist-500">
                             vs previous month in
                             {{ formatDate(selectedMonth, { monthHeader: true }) }}
@@ -325,164 +325,175 @@ function handleSelectMonth(targetMonthStr: string): void {
                         <span class="h-2 w-2 rounded-full bg-lime-400" />
                         <span class="text-mist-200">Total Net Worth</span>
                     </div>
-                    <div class="flex items-center gap-1.5 font-mono text-[11px] text-mist-500">
+                    <div class="flex items-center gap-1.5 font-mono text-xs text-mist-500">
                         <span>(Savings + SBN + Gold)</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative flex w-full items-center justify-center">
+            <div class="flex min-h-0 flex-1 items-stretch">
                 <div
-                    v-if="hoveredIndex !== null && coordinates[hoveredIndex]"
-                    :style="{
-                        left: `${(coordinates[hoveredIndex]!.x / SVG_WIDTH) * 100}%`,
-                    }"
-                    :class="[
-                        hoveredIndex === 0
-                            ? 'translate-x-0'
-                            : hoveredIndex === coordinates.length - 1
-                              ? '-translate-x-full'
-                              : '-translate-x-1/2',
-                    ]"
-                    class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
-                    <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
-                        {{ coordinates[hoveredIndex]!.point.label }}
-                    </div>
-                    <div class="flex justify-between gap-3 text-amber-400">
-                        <span>Gold Value:</span>
-                        <span>{{ formatIDR(coordinates[hoveredIndex]!.point.goldValuation) }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-blue-400">
-                        <span>Savings:</span>
-                        <span>{{ formatIDR(coordinates[hoveredIndex]!.point.liquidSavings) }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-teal-400">
-                        <span>SBN:</span>
-                        <span>{{ formatIDR(coordinates[hoveredIndex]!.point.sbnPrincipal) }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 font-bold text-mist-300">
-                        <span>Net Worth:</span>
-                        <span>{{ formatIDR(coordinates[hoveredIndex]!.point.totalNetWorth) }}</span>
-                    </div>
-                </div>
-
-                <svg
-                    class="h-full w-full overflow-visible select-none"
-                    :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
-                    preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient
-                            id="netWorthGradient"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1">
-                            <stop
-                                offset="0%"
-                                stop-color="currentColor"
-                                class="text-lime-400"
-                                stop-opacity="0.25" />
-                            <stop
-                                offset="100%"
-                                stop-color="currentColor"
-                                class="text-lime-400"
-                                stop-opacity="0.0" />
-                        </linearGradient>
-                    </defs>
-
-                    <g
+                    class="flex w-10 shrink-0 flex-col justify-between py-1.5 pr-2 text-right font-mono text-xs text-mist-500 select-none">
+                    <span
                         v-for="tick in yAxisTicks"
                         :key="tick.value">
-                        <line
-                            :x1="PADDING_LEFT"
-                            :y1="tick.y"
-                            :x2="SVG_WIDTH - PADDING_RIGHT"
-                            :y2="tick.y"
-                            class="stroke-mist-800/60"
-                            stroke-width="1" />
-                        <text
-                            :x="PADDING_LEFT - 8"
-                            :y="tick.y + 3.5"
-                            class="fill-mist-500 font-mono text-[10px]"
-                            text-anchor="end">
-                            {{ tick.label }}
-                        </text>
-                    </g>
+                        {{ tick.label }}
+                    </span>
+                </div>
 
-                    <path
-                        :d="areaPath"
-                        fill="url(#netWorthGradient)"
-                        class="pointer-events-none transition-all duration-300" />
+                <div class="relative flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+                    <div
+                        v-if="hoveredIndex !== null && coordinates[hoveredIndex]"
+                        :style="{ left: `${(coordinates[hoveredIndex]!.x / SVG_WIDTH) * 100}%` }"
+                        :class="[
+                            hoveredIndex === 0
+                                ? 'translate-x-0'
+                                : hoveredIndex === coordinates.length - 1
+                                  ? '-translate-x-full'
+                                  : '-translate-x-1/2',
+                        ]"
+                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                        <div class="border-b border-mist-800 pb-0.5 text-xs text-mist-400">
+                            {{ coordinates[hoveredIndex]!.point.label }}
+                        </div>
+                        <div class="flex justify-between gap-3 text-amber-400">
+                            <span>Gold Value:</span>
+                            <span>{{
+                                formatIDR(coordinates[hoveredIndex]!.point.goldValuation)
+                            }}</span>
+                        </div>
+                        <div class="flex justify-between gap-3 text-blue-400">
+                            <span>Savings:</span>
+                            <span>{{
+                                formatIDR(coordinates[hoveredIndex]!.point.liquidSavings)
+                            }}</span>
+                        </div>
+                        <div class="flex justify-between gap-3 text-teal-400">
+                            <span>SBN:</span>
+                            <span>{{
+                                formatIDR(coordinates[hoveredIndex]!.point.sbnPrincipal)
+                            }}</span>
+                        </div>
+                        <div
+                            class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-bold">
+                            <span>Net Worth:</span>
+                            <span>{{
+                                formatIDR(coordinates[hoveredIndex]!.point.totalNetWorth)
+                            }}</span>
+                        </div>
+                    </div>
 
-                    <path
-                        :d="linePath"
-                        fill="none"
-                        class="pointer-events-none stroke-lime-400 transition-all duration-300"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round" />
+                    <div class="relative min-h-0 w-full flex-1">
+                        <svg
+                            class="h-full w-full overflow-visible select-none"
+                            :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
+                            preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient
+                                    id="netWorthGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1">
+                                    <stop
+                                        offset="0%"
+                                        stop-color="#a3e635"
+                                        stop-opacity="0.25" />
+                                    <stop
+                                        offset="100%"
+                                        stop-color="#a3e635"
+                                        stop-opacity="0.0" />
+                                </linearGradient>
+                            </defs>
 
-                    <g
-                        v-if="coordinates.length && hoveredIndex === null"
-                        :transform="`translate(${coordinates[coordinates.length - 1]!.x}, ${coordinates[coordinates.length - 1]!.y})`">
-                        <circle
-                            cx="0"
-                            cy="0"
-                            r="5"
-                            class="animate-ping fill-lime-400 opacity-40" />
-                        <circle
-                            cx="0"
-                            cy="0"
-                            r="3.5"
-                            class="fill-lime-400 stroke-mist-950"
-                            stroke-width="1.5" />
-                    </g>
+                            <g
+                                v-for="tick in yAxisTicks"
+                                :key="tick.value">
+                                <line
+                                    :x1="0"
+                                    :y1="tick.y"
+                                    :x2="SVG_WIDTH"
+                                    :y2="tick.y"
+                                    class="stroke-mist-800/60"
+                                    stroke-width="1" />
+                            </g>
 
-                    <g
-                        v-for="(pt, idx) in coordinates"
-                        :key="pt.point.monthStr">
-                        <line
-                            v-if="hoveredIndex === idx"
-                            :x1="pt.x"
-                            :y1="PADDING_TOP"
-                            :x2="pt.x"
-                            :y2="PADDING_TOP + chartPlotHeight"
-                            class="stroke-lime-400/60"
-                            stroke-width="1"
-                            stroke-dasharray="2 2" />
+                            <path
+                                :d="areaPath"
+                                fill="url(#netWorthGradient)"
+                                class="pointer-events-none transition-all duration-300" />
 
-                        <circle
-                            v-if="hoveredIndex === idx"
-                            :cx="pt.x"
-                            :cy="pt.y"
-                            r="4.5"
-                            class="fill-lime-300 stroke-mist-950"
-                            stroke-width="1.5" />
+                            <path
+                                :d="linePath"
+                                fill="none"
+                                class="pointer-events-none stroke-lime-400 transition-all duration-300"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round" />
 
-                        <rect
-                            :x="pt.x - chartPlotWidth / coordinates.length / 2"
-                            :y="0"
-                            :width="chartPlotWidth / coordinates.length"
-                            :height="SVG_HEIGHT"
-                            fill="transparent"
-                            class="cursor-pointer"
-                            @mouseenter="hoveredIndex = idx"
-                            @click="handleSelectMonth(pt.point.monthStr)" />
+                            <g
+                                v-if="coordinates.length && hoveredIndex === null"
+                                :transform="`translate(${coordinates[coordinates.length - 1]!.x}, ${coordinates[coordinates.length - 1]!.y})`">
+                                <circle
+                                    cx="0"
+                                    cy="0"
+                                    r="5"
+                                    class="animate-ping fill-lime-400 opacity-40" />
+                                <circle
+                                    cx="0"
+                                    cy="0"
+                                    r="3.5"
+                                    class="fill-lime-400 stroke-mist-950"
+                                    stroke-width="1.5" />
+                            </g>
 
-                        <text
-                            :x="pt.x"
-                            :y="SVG_HEIGHT - 6"
-                            text-anchor="middle"
-                            class="pointer-events-none text-[11px] font-medium transition-colors"
-                            :class="
-                                hoveredIndex === idx || pt.point.monthStr === selectedMonth
-                                    ? 'fill-lime-400 font-bold'
-                                    : 'fill-mist-500'
-                            ">
+                            <g
+                                v-for="(pt, idx) in coordinates"
+                                :key="pt.point.monthStr">
+                                <line
+                                    v-if="hoveredIndex === idx"
+                                    :x1="pt.x"
+                                    :y1="PADDING_TOP"
+                                    :x2="pt.x"
+                                    :y2="PADDING_TOP + chartPlotHeight"
+                                    class="stroke-lime-400/60"
+                                    stroke-width="1"
+                                    stroke-dasharray="2 2" />
+
+                                <circle
+                                    v-if="hoveredIndex === idx"
+                                    :cx="pt.x"
+                                    :cy="pt.y"
+                                    r="4.5"
+                                    class="fill-lime-300 stroke-mist-950"
+                                    stroke-width="1.5" />
+
+                                <rect
+                                    :x="pt.x - chartPlotWidth / coordinates.length / 2"
+                                    :y="0"
+                                    :width="chartPlotWidth / coordinates.length"
+                                    :height="SVG_HEIGHT"
+                                    fill="transparent"
+                                    class="cursor-pointer"
+                                    @mouseenter="hoveredIndex = idx"
+                                    @click="handleSelectMonth(pt.point.monthStr)" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="mt-2 flex justify-between text-xs text-mist-500 select-none">
+                        <span
+                            v-for="(pt, idx) in coordinates"
+                            :key="pt.point.monthStr"
+                            class="transition-colors"
+                            :class="{
+                                'font-semibold text-lime-400':
+                                    hoveredIndex === idx || pt.point.monthStr === selectedMonth,
+                            }">
                             {{ pt.point.label }}
-                        </text>
-                    </g>
-                </svg>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

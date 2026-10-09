@@ -263,6 +263,10 @@ function handleUserTabChange(tabId: UserTabId): void {
                 :owner="activeOwner" />
         </div>
 
+        <CardTitle class="mt-8">
+            <template #title>Asset Allocation</template>
+            <template #subtitle>Gold, investments and savings</template>
+        </CardTitle>
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <GoldInvestment
                 :key="`gold-${activeOwner}`"

@@ -100,10 +100,10 @@ function handleBookingClick(booking: Booking, event: Event) {
                 <div class="mb-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-1">
                         <span
-                            class="flex h-6 w-6 items-center justify-center rounded-md text-xs font-semibold">
+                            class="flex h-6 w-6 items-center justify-center rounded-md font-mono text-xs font-bold">
                             {{ day.dayNumber }}
                         </span>
-                        <span class="text-[10px] font-medium text-mist-500">
+                        <span class="text-xs font-medium text-mist-500">
                             {{ day.monthName }}
                         </span>
                     </div>

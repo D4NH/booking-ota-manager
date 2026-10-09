@@ -109,7 +109,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Annual Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(totalYearRevenue) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -137,7 +137,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(totalPayout) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -152,6 +152,7 @@ function handleEditProperty(): void {
                                   : 'text-mist-400'
                         ">
                         <fa-icon
+                            class="text-[10px]"
                             :icon="
                                 revenueGrowthPercent >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
                             " />
@@ -173,7 +174,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Average Daily Rate
                 </h3>
-                <p class="font-mono text-lg font-semibold">{{ formatIDR(adr) }}</p>
+                <p class="font-mono text-lg font-extrabold text-mist-200">{{ formatIDR(adr) }}</p>
                 <p class="text-xs text-mist-500">Per booked night</p>
             </div>
 
@@ -181,7 +182,7 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Occupancy
                 </h3>
-                <p class="font-mono text-lg font-semibold text-lime-400">
+                <p class="font-mono text-lg font-extrabold text-lime-400">
                     {{ occupancyPercentage }}%
                 </p>
                 <p class="text-xs text-mist-500">

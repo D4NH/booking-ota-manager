@@ -174,12 +174,12 @@ function handleCloseTransferModal(): void {
                 <div class="flex items-center justify-between font-mono text-xs text-mist-400">
                     <span>
                         <template v-if="goal.isCompleted">
-                            <strong class="text-blue-400">
+                            <strong class="font-sans text-blue-400">
                                 <fa-icon icon="check" /> Goal Achieved
                             </strong>
                         </template>
                         <template v-else>
-                            Need:
+                            <span class="font-sans">Need: </span>
                             <strong class="text-mist-200">
                                 {{ formatIDR(goal.remainingAmount) }}
                             </strong>

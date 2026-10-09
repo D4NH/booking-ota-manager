@@ -185,7 +185,7 @@ function getSegmentHeightPct(value: number): number {
                     <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ displayHeaderMonth }}
                     </span>
-                    <div class="text-md font-mono font-semibold">
+                    <div class="text-md font-mono font-bold">
                         {{ formatIDR(displayHeaderValue) }}
                     </div>
                 </div>
@@ -224,24 +224,22 @@ function getSegmentHeightPct(value: number): number {
                         :key="row.label"
                         class="group relative flex h-full flex-1 cursor-pointer flex-col items-center justify-end px-1"
                         @mouseenter="hoveredIndex = idx">
-                        <!-- Custom Tooltip -->
+                        <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="border-mist-750 pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-2xl">
-                            <div class="border-b border-mist-800 pb-1 text-[11px] font-bold">
-                                {{ row.label }} {{ selectedYear }}
-                            </div>
+                            class="pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border border-mist-800 bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-2xl">
+                            <div class="text-mist-400">{{ row.label }} {{ selectedYear }}</div>
                             <div
                                 v-for="config in activeConfigs"
                                 :key="config.id"
-                                class="flex items-center justify-between gap-3 text-xs">
-                                <span class="flex items-center gap-1.5 text-mist-400 capitalize">
+                                class="flex items-center justify-between gap-3">
+                                <span class="flex items-center gap-1.5 capitalize">
                                     <span
                                         class="h-2 w-2 rounded-xs"
                                         :style="{ backgroundColor: config.color }" />
                                     {{ config.id }}:
                                 </span>
-                                <span class="font-semibold">
+                                <span class="font-bold">
                                     {{ formatIDR(Number(row[config.id]) || 0) }}
                                 </span>
                             </div>

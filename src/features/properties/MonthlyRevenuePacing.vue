@@ -62,33 +62,42 @@ const projectedRevenue = computed(() => {
         <div
             class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <!-- Metric Highlight & Pacing Badge -->
-            <div class="flex items-baseline justify-between">
-                <div>
-                    <span class="font-mono text-lg font-semibold">
-                        {{ formatIDR(currentRevenue) }}
-                    </span>
-                    <span class="ml-1.5 text-xs text-mist-400">
-                        / {{ formatIDR(effectiveTarget) }} goal
-                    </span>
-                    <div class="mt-1 flex items-center gap-1 text-xs">
+            <div class="flex items-center justify-between">
+                <div class="flex flex-col space-y-1">
+                    <div class="flex items-end gap-1">
+                        <span class="text-md font-mono font-bold">
+                            {{ formatIDR(currentRevenue) }}
+                        </span>
+                        <p class="ml-1 flex gap-1.5 text-xs text-mist-400">
+                            <span>/</span>
+                            <span class="font-mono">{{ formatIDR(effectiveTarget) }} </span>
+                            <span>goal</span>
+                        </p>
+                    </div>
+                    <p class="flex items-center gap-1 text-xs">
                         <span
                             class="font-medium"
                             :class="isAheadOfPace ? 'text-lime-400' : 'text-rose-400'">
-                            {{ isAheadOfPace ? '+' : '' }}{{ pacingDiff }}%
+                            <fa-icon
+                                class="text-[10px]"
+                                :icon="isAheadOfPace ? 'arrow-trend-up' : 'arrow-trend-down'" />
+                            {{ Math.abs(pacingDiff) }}%
                         </span>
                         <span class="text-mist-500">
                             {{ isAheadOfPace ? 'ahead of pace' : 'behind pace' }}
                         </span>
-                    </div>
+                    </p>
                 </div>
-
-                <div class="text-right">
-                    <span class="font-mono text-lg font-semibold text-lime-400">
+                <div class="flex flex-col space-y-1">
+                    <p class="text-md flex justify-end gap-1 text-right font-mono font-bold">
                         {{ targetPercentage }}%
-                    </span>
-                    <span class="block text-xs text-mist-500">
-                        Proj: {{ formatIDR(projectedRevenue) }}
-                    </span>
+                    </p>
+                    <p class="text-xs text-mist-500">
+                        <span>Proj: </span>
+                        <span class="font-mono">
+                            {{ formatIDR(projectedRevenue) }}
+                        </span>
+                    </p>
                 </div>
             </div>
 
@@ -120,9 +129,8 @@ const projectedRevenue = computed(() => {
             <!-- Financial Run-Rate Grid -->
             <div
                 class="grid grid-cols-2 gap-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center text-xs">
-                <div class="space-y-0.5 p-2.5">
-                    <span
-                        class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                <div class="flex flex-col items-center justify-center space-y-0.5 p-2.5">
+                    <span class="font-semibold tracking-wider text-mist-500 uppercase">
                         Gap to Target
                     </span>
                     <span class="font-mono text-sm font-semibold text-mist-200">
@@ -130,15 +138,17 @@ const projectedRevenue = computed(() => {
                     </span>
                 </div>
 
-                <div class="space-y-0.5 p-2.5">
-                    <span
-                        class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                <div class="flex flex-col items-center justify-center space-y-0.5 p-2.5">
+                    <span class="font-semibold tracking-wider text-mist-500 uppercase">
                         Needed Rate ({{ daysRemaining }}d left)
                     </span>
-                    <span class="font-mono text-sm font-semibold text-lime-400">
-                        {{ formatIDR(dailyRunRateNeeded) }}
-                        <span class="text-xs font-normal text-mist-500">/ day</span>
-                    </span>
+                    <p class="flex items-end gap-1">
+                        <span class="font-mono text-sm font-semibold text-lime-400">
+                            {{ formatIDR(dailyRunRateNeeded) }}
+                        </span>
+                        <span class="text-mist-500">/</span>
+                        <span class="text-mist-500">day</span>
+                    </p>
                 </div>
             </div>
         </div>

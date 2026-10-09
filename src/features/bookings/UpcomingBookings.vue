@@ -128,8 +128,7 @@ const displaySections = computed<MonthSection[]>(() => {
                             </div>
                             <!-- Payout & Status -->
                             <div class="shrink-0 text-right">
-                                <span
-                                    class="mr-0.5 block font-mono text-xs font-semibold text-mist-300">
+                                <span class="mr-0.5 block font-mono text-xs font-bold">
                                     {{ formatIDR(b.payout) }}
                                 </span>
                                 <span

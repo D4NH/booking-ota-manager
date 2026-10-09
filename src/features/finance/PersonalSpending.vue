@@ -8,36 +8,57 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+interface CoordinatePoint {
+    x: number;
+    y: number;
+    val: number;
+    day: number;
+}
+
+interface YAxisTick {
+    value: number;
+    y: number;
+    label: string;
+}
+
+interface XAxisTickLabel {
+    day: number;
+    label: string;
+    x: number;
+}
+
+interface Props {
+    owner?: PersonalOwner | 'Shared' | 'All';
+}
+
 const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
+const SVG_HEIGHT = 160;
+const PADDING_TOP = 12;
+const PADDING_BOTTOM = 12;
+const PADDING_LEFT = 12;
+const PADDING_RIGHT = 12;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
-const { owner = 'Danh Nguyen' } = defineProps<{
-    owner?: PersonalOwner | 'Shared';
-}>();
+const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
 const { personalFinances, sharedFinances, selectedMonth } = storeToRefs(financeStore);
 
 const hoveredIndex = ref<number | null>(null);
 
-const currentCycle = computed(() => selectedMonth.value || getCurrentMonth());
-const prevCycle = computed(() => {
+const currentCycle = computed<string>(() => selectedMonth.value || getCurrentMonth());
+const prevCycle = computed<string>(() => {
     const [y, m] = currentCycle.value.split('-').map(Number);
     const d = new Date(y!, m! - 2, 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 });
 
-const daysInCurrentMonth = computed(() => getDaysInMonth(currentCycle.value));
-const daysInPrevMonth = computed(() => getDaysInMonth(prevCycle.value));
+const daysInCurrentMonth = computed<number>(() => getDaysInMonth(currentCycle.value));
+const daysInPrevMonth = computed<number>(() => getDaysInMonth(prevCycle.value));
 const maxCalendarDays = 31;
 
-const activeElapsedDay = computed(() => {
+const activeElapsedDay = computed<number>(() => {
     const today = new Date();
     const isThisActualMonth = getCurrentMonth() === currentCycle.value;
     if (isThisActualMonth) {
@@ -51,9 +72,9 @@ function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
     const shared = sharedFinances.value || [];
     const dailyMap = Array.from({ length: 32 }, () => 0);
 
-    const checkAndAdd = (item: PersonalFinance | SharedFinance) => {
+    const checkAndAdd = (item: PersonalFinance | SharedFinance): void => {
         if (!item?.date) return;
-        if ('owner' in item && item.owner !== owner) return;
+        if (owner !== 'All' && 'owner' in item && item.owner !== owner) return;
 
         const normalized = normalizeDate(item.date);
         if (!normalized.startsWith(cycleStr)) return;
@@ -69,10 +90,10 @@ function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
         }
     };
 
-    if (owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
+    if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
         personal.forEach(checkAndAdd);
     }
-    if (owner === 'Shared') {
+    if (owner === 'All' || owner === 'Shared') {
         shared.forEach(checkAndAdd);
     }
 
@@ -85,19 +106,20 @@ function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
     return cumulative;
 }
 
-const currentPoints = computed(() =>
+const currentPoints = computed<number[]>(() =>
     calculateDailyCumulative(currentCycle.value, activeElapsedDay.value)
 );
-const previousPoints = computed(() =>
+
+const previousPoints = computed<number[]>(() =>
     calculateDailyCumulative(prevCycle.value, daysInPrevMonth.value)
 );
 
-const currentTotal = computed(() => {
+const currentTotal = computed<number>(() => {
     if (!currentPoints.value.length) return 0;
     return currentPoints.value[currentPoints.value.length - 1] ?? 0;
 });
 
-const pacingPercentage = computed(() => {
+const pacingPercentage = computed<number>(() => {
     const elapsed = activeElapsedDay.value;
     const prevAtSameDay = previousPoints.value[elapsed - 1] ?? 0;
     if (prevAtSameDay === 0) return 0;
@@ -105,14 +127,14 @@ const pacingPercentage = computed(() => {
     return Number(((diff / prevAtSameDay) * 100).toFixed(1));
 });
 
-const maxVal = computed(() => {
+const maxVal = computed<number>(() => {
     const highest = Math.max(...currentPoints.value, ...previousPoints.value, 0);
     if (highest <= 0) return 1_000_000;
     const step = highest > 10_000_000 ? 5_000_000 : 1_000_000;
     return Math.ceil(highest / step) * step;
 });
 
-const yAxisTicks = computed(() => {
+const yAxisTicks = computed<YAxisTick[]>(() => {
     const max = maxVal.value;
     const step = max / 4;
     return [
@@ -127,10 +149,7 @@ const yAxisTicks = computed(() => {
         {
             value: step * 2,
             y: PADDING_TOP + chartPlotHeight / 2,
-            label:
-                step * 2 >= 1_000_000
-                    ? `${((step * 2) / 1_000_000).toFixed(1)}jt`
-                    : `${((step * 2) / 1_000).toFixed(0)}rb`,
+            label: `${((step * 2) / 1_000_000).toFixed(1)}jt`,
         },
         {
             value: 0,
@@ -140,7 +159,7 @@ const yAxisTicks = computed(() => {
     ];
 });
 
-function mapPointsToCoordinates(data: number[]) {
+function mapPointsToCoordinates(data: number[]): CoordinatePoint[] {
     const stepX = chartPlotWidth / (maxCalendarDays - 1);
     return data.map((val, i) => {
         const x = PADDING_LEFT + i * stepX;
@@ -150,10 +169,14 @@ function mapPointsToCoordinates(data: number[]) {
     });
 }
 
-const currentCoords = computed(() => mapPointsToCoordinates(currentPoints.value));
-const previousCoords = computed(() => mapPointsToCoordinates(previousPoints.value));
+const currentCoords = computed<CoordinatePoint[]>(() =>
+    mapPointsToCoordinates(currentPoints.value)
+);
+const previousCoords = computed<CoordinatePoint[]>(() =>
+    mapPointsToCoordinates(previousPoints.value)
+);
 
-function generateSmoothPath(points: { x: number; y: number }[]): string {
+function generateSmoothPath(points: CoordinatePoint[]): string {
     if (!points.length) return '';
     if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
 
@@ -167,10 +190,10 @@ function generateSmoothPath(points: { x: number; y: number }[]): string {
     return path;
 }
 
-const currentLinePath = computed(() => generateSmoothPath(currentCoords.value));
-const previousLinePath = computed(() => generateSmoothPath(previousCoords.value));
+const currentLinePath = computed<string>(() => generateSmoothPath(currentCoords.value));
+const previousLinePath = computed<string>(() => generateSmoothPath(previousCoords.value));
 
-const currentAreaPath = computed(() => {
+const currentAreaPath = computed<string>(() => {
     if (!currentCoords.value.length) return '';
     const line = currentLinePath.value;
     const lastX = currentCoords.value[currentCoords.value.length - 1]!.x;
@@ -180,7 +203,7 @@ const currentAreaPath = computed(() => {
 });
 
 const xAxisTickDays = [1, 5, 9, 13, 17, 21, 25, 29];
-const xAxisLabels = computed(() => {
+const xAxisLabels = computed<XAxisTickLabel[]>(() => {
     const stepX = chartPlotWidth / (maxCalendarDays - 1);
     return xAxisTickDays.map((day) => ({
         day,
@@ -192,18 +215,24 @@ const xAxisLabels = computed(() => {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <CardTitle>
-            <template #title>Spendings</template>
-            <template #subtitle>Cumulative MTD outflow trajectory</template>
-        </CardTitle>
+        <div class="flex shrink-0 items-center justify-between">
+            <CardTitle>
+                <template #title>Spending</template>
+                <template #subtitle>Cumulative MTD outflow trajectory</template>
+            </CardTitle>
+
+            <div
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 text-xs font-semibold text-mist-300 select-none">
+                This month vs. last month
+            </div>
+        </div>
 
         <div
-            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
-            <!-- Header Metrics -->
-            <div class="flex flex-wrap items-start justify-between gap-2">
-                <div class="flex flex-col gap-1">
-                    <p class="text-md font-mono font-semibold">
+            <div class="flex shrink-0 flex-wrap items-baseline justify-between gap-2">
+                <div class="flex flex-col gap-0.5">
+                    <p class="font-mono text-base font-semibold">
                         {{ formatIDR(currentTotal) }}
                     </p>
                     <p class="flex items-center gap-1 text-xs">
@@ -211,188 +240,193 @@ const xAxisLabels = computed(() => {
                             class="font-medium"
                             :class="pacingPercentage <= 0 ? 'text-emerald-400' : 'text-rose-400'">
                             <fa-icon
+                                class="text-[10px]"
                                 :icon="
                                     pacingPercentage <= 0 ? 'arrow-trend-down' : 'arrow-trend-up'
                                 " />
                             {{ Math.abs(pacingPercentage) }}%
                         </span>
                         <span class="text-mist-500">
-                            vs last month on Day {{ activeElapsedDay }}
+                            vs last month on Day {{ activeElapsedDay }} ({{ owner }})
                         </span>
                     </p>
                 </div>
 
-                <!-- Custom Legend -->
-                <div class="flex items-center gap-4 text-xs font-medium text-mist-400">
+                <div class="flex items-center gap-4 text-xs font-medium text-mist-400 select-none">
                     <div class="flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                        <span>This Month</span>
+                        <span class="h-2 w-2 rounded-full bg-emerald-400" />
+                        <span class="text-mist-200">This Month</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span
-                            class="h-0.5 w-3 border-t border-dashed border-mist-400 bg-mist-500"></span>
+                            class="h-0.5 w-3 border-t border-dashed border-mist-400 bg-mist-500" />
                         <span>Last Month</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative flex w-full items-center justify-center">
-                <!-- Tooltip -->
+            <div class="flex min-h-0 flex-1 items-stretch">
                 <div
-                    v-if="hoveredIndex !== null"
-                    class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl">
-                    <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
-                        Day {{ hoveredIndex + 1 }} of Month
-                    </div>
-                    <div class="flex justify-between gap-3 text-emerald-400">
-                        <span>This Month:</span>
-                        <span class="font-bold">
-                            {{ formatIDR(currentPoints[hoveredIndex] ?? 0) }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-mist-400">
-                        <span>Last Month:</span>
-                        <span>{{ formatIDR(previousPoints[hoveredIndex] ?? 0) }}</span>
-                    </div>
-                </div>
-
-                <svg
-                    class="h-full w-full overflow-visible select-none"
-                    :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
-                    preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient
-                            id="pacingLimeGradient"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1">
-                            <stop
-                                offset="0%"
-                                stop-color="currentColor"
-                                class="text-emerald-400"
-                                stop-opacity="0.28" />
-                            <stop
-                                offset="100%"
-                                stop-color="currentColor"
-                                class="text-emerald-400"
-                                stop-opacity="0.0" />
-                        </linearGradient>
-                    </defs>
-
-                    <!-- Horizontal Grid Lines & Y-Axis Labels -->
-                    <g
+                    class="flex w-10 shrink-0 flex-col justify-between py-1.5 pr-2 text-right font-mono text-xs text-mist-500 select-none">
+                    <span
                         v-for="tick in yAxisTicks"
                         :key="tick.value">
-                        <line
-                            :x1="PADDING_LEFT"
-                            :y1="tick.y"
-                            :x2="SVG_WIDTH - PADDING_RIGHT"
-                            :y2="tick.y"
-                            class="stroke-mist-800/60"
-                            stroke-width="1" />
-                        <text
-                            :x="PADDING_LEFT - 8"
-                            :y="tick.y + 3.5"
-                            class="fill-mist-500 font-mono text-[10px]"
-                            text-anchor="end">
-                            {{ tick.label }}
-                        </text>
-                    </g>
-
-                    <!-- Previous Month Trajectory (Muted Gray Dashed Line) -->
-                    <path
-                        :d="previousLinePath"
-                        fill="none"
-                        class="pointer-events-none stroke-mist-500 transition-all duration-300"
-                        stroke-width="2"
-                        stroke-dasharray="5 5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round" />
-
-                    <!-- Current Month Area Gradient -->
-                    <path
-                        :d="currentAreaPath"
-                        fill="url(#pacingLimeGradient)"
-                        class="pointer-events-none transition-all duration-300" />
-
-                    <!-- Current Month Line -->
-                    <path
-                        :d="currentLinePath"
-                        fill="none"
-                        class="pointer-events-none stroke-emerald-400 transition-all duration-300"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round" />
-
-                    <!-- Centered Pulsing Dot -->
-                    <g
-                        v-if="currentCoords.length && hoveredIndex === null"
-                        :transform="`translate(${currentCoords[currentCoords.length - 1]!.x}, ${currentCoords[currentCoords.length - 1]!.y})`">
-                        <circle
-                            cx="0"
-                            cy="0"
-                            r="5"
-                            class="animate-ping fill-emerald-400 opacity-40" />
-                        <circle
-                            cx="0"
-                            cy="0"
-                            r="3.5"
-                            class="fill-emerald-400 stroke-mist-950"
-                            stroke-width="1.5" />
-                    </g>
-
-                    <!-- Hover Crosshairs -->
-                    <g
-                        v-for="dayIdx in maxCalendarDays"
-                        :key="dayIdx">
-                        <line
-                            v-if="hoveredIndex === dayIdx - 1"
-                            :x1="
-                                PADDING_LEFT +
-                                (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1))
-                            "
-                            :y1="PADDING_TOP"
-                            :x2="
-                                PADDING_LEFT +
-                                (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1))
-                            "
-                            :y2="PADDING_TOP + chartPlotHeight"
-                            class="stroke-lime-400/60"
-                            stroke-width="1"
-                            stroke-dasharray="2 2" />
-
-                        <!-- Invisible scrub rect -->
-                        <rect
-                            :x="
-                                PADDING_LEFT +
-                                (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1)) -
-                                chartPlotWidth / maxCalendarDays / 2
-                            "
-                            :y="0"
-                            :width="chartPlotWidth / maxCalendarDays"
-                            :height="SVG_HEIGHT"
-                            fill="transparent"
-                            class="cursor-pointer"
-                            @mouseenter="hoveredIndex = dayIdx - 1" />
-                    </g>
-
-                    <!-- Static X-Axis Ticks -->
-                    <text
-                        v-for="tick in xAxisLabels"
-                        :key="tick.day"
-                        :x="tick.x"
-                        :y="SVG_HEIGHT - 6"
-                        text-anchor="middle"
-                        class="pointer-events-none font-mono text-[11px] font-medium transition-colors"
-                        :class="
-                            hoveredIndex !== null && Math.abs(hoveredIndex + 1 - tick.day) <= 1
-                                ? 'fill-lime-400'
-                                : 'fill-mist-500'
-                        ">
                         {{ tick.label }}
-                    </text>
-                </svg>
+                    </span>
+                </div>
+
+                <div class="relative flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+                    <div
+                        v-if="hoveredIndex !== null"
+                        :style="{ left: `${(hoveredIndex / (maxCalendarDays - 1)) * 100}%` }"
+                        :class="[
+                            hoveredIndex <= 2
+                                ? 'translate-x-0'
+                                : hoveredIndex >= maxCalendarDays - 3
+                                  ? '-translate-x-full'
+                                  : '-translate-x-1/2',
+                        ]"
+                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                        <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
+                            Day {{ hoveredIndex + 1 }} of Month
+                        </div>
+                        <div class="flex justify-between gap-3 text-emerald-400">
+                            <span>This Month:</span>
+                            <span class="font-bold">{{
+                                formatIDR(currentPoints[hoveredIndex] ?? 0)
+                            }}</span>
+                        </div>
+                        <div class="flex justify-between gap-3 text-mist-400">
+                            <span>Last Month:</span>
+                            <span>{{ formatIDR(previousPoints[hoveredIndex] ?? 0) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="relative min-h-0 w-full flex-1">
+                        <svg
+                            class="h-full w-full overflow-visible select-none"
+                            :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
+                            preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient
+                                    id="pacingAreaGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1">
+                                    <stop
+                                        offset="0%"
+                                        stop-color="currentColor"
+                                        class="text-emerald-400"
+                                        stop-opacity="0.28" />
+                                    <stop
+                                        offset="100%"
+                                        stop-color="currentColor"
+                                        class="text-emerald-400"
+                                        stop-opacity="0.0" />
+                                </linearGradient>
+                            </defs>
+
+                            <g
+                                v-for="tick in yAxisTicks"
+                                :key="tick.value">
+                                <line
+                                    :x1="0"
+                                    :y1="tick.y"
+                                    :x2="SVG_WIDTH"
+                                    :y2="tick.y"
+                                    class="stroke-mist-800/60"
+                                    stroke-width="1" />
+                            </g>
+
+                            <path
+                                :d="previousLinePath"
+                                fill="none"
+                                class="pointer-events-none stroke-mist-500 transition-all duration-300"
+                                stroke-width="2"
+                                stroke-dasharray="5 5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round" />
+
+                            <path
+                                :d="currentAreaPath"
+                                fill="url(#pacingAreaGradient)"
+                                class="pointer-events-none transition-all duration-300" />
+
+                            <path
+                                :d="currentLinePath"
+                                fill="none"
+                                class="pointer-events-none stroke-emerald-400 transition-all duration-300"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round" />
+
+                            <g
+                                v-if="currentCoords.length && hoveredIndex === null"
+                                :transform="`translate(${currentCoords[currentCoords.length - 1]!.x}, ${currentCoords[currentCoords.length - 1]!.y})`">
+                                <circle
+                                    cx="0"
+                                    cy="0"
+                                    r="5"
+                                    class="animate-ping fill-emerald-400 opacity-40" />
+                                <circle
+                                    cx="0"
+                                    cy="0"
+                                    r="3.5"
+                                    class="fill-emerald-400 stroke-mist-950"
+                                    stroke-width="1.5" />
+                            </g>
+
+                            <g
+                                v-for="dayIdx in maxCalendarDays"
+                                :key="dayIdx">
+                                <line
+                                    v-if="hoveredIndex === dayIdx - 1"
+                                    :x1="
+                                        PADDING_LEFT +
+                                        (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1))
+                                    "
+                                    :y1="PADDING_TOP"
+                                    :x2="
+                                        PADDING_LEFT +
+                                        (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1))
+                                    "
+                                    :y2="PADDING_TOP + chartPlotHeight"
+                                    class="stroke-lime-400/60"
+                                    stroke-width="1"
+                                    stroke-dasharray="2 2" />
+
+                                <rect
+                                    :x="
+                                        PADDING_LEFT +
+                                        (dayIdx - 1) * (chartPlotWidth / (maxCalendarDays - 1)) -
+                                        chartPlotWidth / maxCalendarDays / 2
+                                    "
+                                    :y="0"
+                                    :width="chartPlotWidth / maxCalendarDays"
+                                    :height="SVG_HEIGHT"
+                                    fill="transparent"
+                                    class="cursor-pointer"
+                                    @mouseenter="hoveredIndex = dayIdx - 1" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div class="relative mt-2 h-3.5 w-full text-xs text-mist-500 select-none">
+                        <span
+                            v-for="tick in xAxisLabels"
+                            :key="tick.day"
+                            class="absolute -translate-x-1/2 whitespace-nowrap transition-colors"
+                            :style="{ left: `${(tick.x / SVG_WIDTH) * 100}%` }"
+                            :class="{
+                                'font-bold text-lime-400':
+                                    hoveredIndex !== null &&
+                                    Math.abs(hoveredIndex + 1 - tick.day) <= 1,
+                            }">
+                            {{ tick.label }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -169,7 +169,7 @@ function isCurrentBooking(b: Booking): boolean {
                         <td class="px-4 py-0 text-right">
                             <div class="group relative">
                                 <div class="flex flex-col items-end justify-center gap-1">
-                                    <div class="font-mono text-sm leading-none">
+                                    <div class="font-mono text-sm leading-none font-bold">
                                         {{ formatIDR(b.payout) }}
                                     </div>
                                     <span :class="getStatusStyle(b.status)">

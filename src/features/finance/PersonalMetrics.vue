@@ -92,7 +92,7 @@ const metrics = computed<MetricsTotals>(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Total Income
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(metrics.inflow) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
@@ -107,6 +107,7 @@ const metrics = computed<MetricsTotals>(() => {
                               : 'text-mist-400'
                     ">
                     <fa-icon
+                        class="text-[10px]"
                         :icon="
                             metrics.revenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
                         " />
@@ -125,7 +126,7 @@ const metrics = computed<MetricsTotals>(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Total Expenses
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(metrics.outflow) }}
             </p>
             <p class="text-xs text-mist-500">Fixed costs & variable spending</p>
@@ -150,7 +151,7 @@ const metrics = computed<MetricsTotals>(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Allocated to Savings
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(metrics.savings) }}
             </p>
             <p class="text-xs text-mist-500">Reserve deposits</p>

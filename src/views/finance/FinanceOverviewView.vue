@@ -70,42 +70,39 @@ function handleNavigate(targetRouteName: string): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Total Net Worth
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-200">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(totalHouseholdNetWorth) }}
                 </p>
-                <p class="text-xs text-mist-500">Savings + Sukuk SBN + Antam Gold</p>
+                <p class="text-xs text-mist-500">Savings + SBN + Gold</p>
             </div>
-
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Consolidated Cash Flow
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-200">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     <span
                         v-if="totalUnifiedCashFlow < 0"
-                        class="text-rose-400">
+                        class="-mr-1 text-rose-400">
                         -
                     </span>
                     <span>{{ formatIDR(Math.abs(totalUnifiedCashFlow)) }}</span>
                 </p>
                 <p class="text-xs text-mist-500">Villa net margin + Family cash flow</p>
             </div>
-
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Owner Draws
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-200">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(totalOwnerDraws) }}
                 </p>
                 <p class="text-xs text-mist-500">Transferred to Personal accounts</p>
             </div>
-
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Cash Reserves
                 </h3>
-                <p class="font-mono text-lg font-semibold text-mist-200">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(dynamicTotalSavings) }}
                 </p>
                 <p class="text-xs text-mist-500">Available in BCA, Jago & Blu deposits</p>
@@ -116,7 +113,7 @@ function handleNavigate(targetRouteName: string): void {
             <div class="flex flex-col">
                 <CardTitle>
                     <template #title>Asset Allocation</template>
-                    <template #subtitle>Cash, sukuk investments, and gold holdings</template>
+                    <template #subtitle>Gold, investments and savings</template>
                 </CardTitle>
                 <div
                     class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
@@ -131,7 +128,7 @@ function handleNavigate(targetRouteName: string): void {
                         </div>
                         <div class="flex items-center justify-end gap-1.5 text-teal-400">
                             <span class="h-2 w-2 rounded-full bg-teal-400" />
-                            <span>SBN Sukuk ({{ sbnAllocationPct }}%)</span>
+                            <span>SBN ({{ sbnAllocationPct }}%)</span>
                         </div>
                     </div>
 
@@ -187,7 +184,7 @@ function handleNavigate(targetRouteName: string): void {
                                 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                                 Villa Net Profit
                             </span>
-                            <p class="text-md font-mono font-semibold text-mist-200">
+                            <p class="text-md font-mono font-bold text-mist-200">
                                 {{ formatIDR(netPropertyProfit) }}
                             </p>
                             <span class="block text-xs text-mist-500">
@@ -199,7 +196,7 @@ function handleNavigate(targetRouteName: string): void {
                                 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                                 Household Outflows
                             </span>
-                            <p class="text-md font-mono font-semibold text-mist-200">
+                            <p class="text-md font-mono font-bold text-mist-200">
                                 {{ formatIDR(monthlyHouseholdOutflows) }}
                             </p>
                             <span class="block text-xs text-mist-500">

@@ -232,11 +232,11 @@ function clearHighlight(): void {
                                 </span>
                             </span>
                             <div class="flex items-center gap-2 font-mono">
-                                <span class="text-[11px] text-mist-400">
+                                <span class="text-xs text-mist-300">
                                     {{ formatIDR(ch.revenue) }}
                                 </span>
                                 <span
-                                    class="min-w-8 text-right text-[11px] font-semibold text-mist-200">
+                                    class="min-w-8 text-right text-[11px] font-bold text-mist-200">
                                     {{ ch.percentage }}%
                                 </span>
                             </div>

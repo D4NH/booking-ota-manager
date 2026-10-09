@@ -43,11 +43,11 @@ interface YAxisTick {
 }
 
 const SVG_WIDTH = 600;
-const SVG_HEIGHT = 200;
-const PADDING_TOP = 20;
-const PADDING_BOTTOM = 30;
-const PADDING_LEFT = 45;
-const PADDING_RIGHT = 20;
+const SVG_HEIGHT = 160;
+const PADDING_TOP = 12;
+const PADDING_BOTTOM = 12;
+const PADDING_LEFT = 16;
+const PADDING_RIGHT = 16;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
@@ -118,7 +118,7 @@ const matrixData = computed<StreamPoint[]>(() => {
             if (!item?.date || item.type !== 'income') return;
             if (normalizeDate(item.date).slice(0, 7) !== cycle) return;
             const text = `${item.category || ''} ${item.notes || ''}`;
-            if (/SR022|SR021|ORI|SBN|SUKUK|yield|coupon/i.test(text)) {
+            if (/SR022|SR021|ORI|SBN|yield|coupon/i.test(text)) {
                 passiveYield += Number(item.amount) || 0;
             }
         };
@@ -137,10 +137,9 @@ const matrixData = computed<StreamPoint[]>(() => {
             const item = personal[i];
             if (!item?.date || item.type !== 'income') continue;
             if (normalizeDate(item.date).slice(0, 7) !== cycle) continue;
-            // if (item.category === 'Owner Payout') continue;
 
             const text = `${item.category || ''} ${item.notes || ''}`;
-            if (!/SR022|SR021|ORI|SBN|SUKUK|yield|coupon/i.test(text)) {
+            if (!/SR022|SR021|ORI|SBN|yield|coupon/i.test(text)) {
                 activeIncome += Number(item.amount) || 0;
             }
         }
@@ -216,9 +215,9 @@ const barSegments = computed<SvgBarSegment[]>(() => {
     const len = matrixData.value.length;
     if (len === 0) return [];
     const stepX = chartPlotWidth / len;
-    const barWidth = Math.min(24, Math.max(14, stepX * 0.4));
+    const barWidth = Math.min(24, Math.max(14, stepX * 0.36));
 
-    return matrixData.value.map((d, i) => {
+    return matrixData.value.map((d, i): SvgBarSegment => {
         const centerX = PADDING_LEFT + i * stepX + stepX / 2;
         const barX = centerX - barWidth / 2;
         const groundY = PADDING_TOP + chartPlotHeight;
@@ -260,7 +259,7 @@ function handleSelectMonth(targetMonthStr: string): void {
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <div class="flex items-center justify-between">
+        <div class="flex shrink-0 items-center justify-between">
             <CardTitle>
                 <template #title>Income Engine Matrix</template>
                 <template #subtitle> Villa Profits &bull; SBN Yields &bull; Active Work </template>
@@ -300,17 +299,16 @@ function handleSelectMonth(targetMonthStr: string): void {
         </div>
 
         <div
-            class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-md"
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
-                <div class="flex flex-col items-baseline gap-1">
-                    <span class="font-mono text-lg font-semibold">
+            <div class="flex shrink-0 flex-wrap items-baseline justify-between gap-2">
+                <div class="flex flex-col gap-0.5">
+                    <span class="font-mono text-base font-semibold">
                         {{ formatIDR(currentMonthPoint.totalInflow) }}
                     </span>
                     <p class="flex items-center gap-1.5 text-xs">
-                        <span
-                            class="rounded border border-lime-400/20 bg-lime-400/10 px-1.5 py-0.5 font-mono font-bold text-lime-400">
-                            {{ currentMonthPoint.freedomRatio }}% Passive / Asset Funded
+                        <span class="py-0.5 font-mono font-bold text-lime-400">
+                            {{ currentMonthPoint.freedomRatio }}% Asset Funded
                         </span>
                         <span class="text-mist-500">
                             in {{ formatDate(selectedMonth, { monthHeader: true }) }}
@@ -324,145 +322,161 @@ function handleSelectMonth(targetMonthStr: string): void {
                         <span class="text-mist-200">Villa Net</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="h-2 w-2 rounded-sm bg-sky-400" />
+                        <span class="h-2 w-2 rounded-sm bg-teal-400" />
                         <span class="text-mist-200">SBN Yields</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span class="h-2 w-2 rounded-sm bg-mist-500" />
-                        <span>Active Salary</span>
+                        <span>Salary</span>
                     </div>
                 </div>
             </div>
 
-            <div class="relative flex w-full items-center justify-center">
+            <div class="flex min-h-0 flex-1 items-stretch">
                 <div
-                    v-if="hoveredIndex !== null && barSegments[hoveredIndex]"
-                    :style="{
-                        left: `${(barSegments[hoveredIndex]!.centerX / SVG_WIDTH) * 100}%`,
-                    }"
-                    :class="[
-                        hoveredIndex === 0
-                            ? 'translate-x-0'
-                            : hoveredIndex === barSegments.length - 1
-                              ? '-translate-x-full'
-                              : '-translate-x-1/2',
-                    ]"
-                    class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
-                    <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
-                        {{ barSegments[hoveredIndex]!.label }} ({{
-                            barSegments[hoveredIndex]!.data.freedomRatio
-                        }}% Asset Funded)
-                    </div>
-                    <div class="flex justify-between gap-3 text-lime-400">
-                        <span>Villa Net:</span>
-                        <span class="font-bold">{{
-                            formatIDR(barSegments[hoveredIndex]!.data.villaNet)
-                        }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-sky-400">
-                        <span>SBN Yields:</span>
-                        <span class="font-bold">{{
-                            formatIDR(barSegments[hoveredIndex]!.data.passiveYield)
-                        }}</span>
-                    </div>
-                    <div class="flex justify-between gap-3 text-mist-300">
-                        <span>Active Work:</span>
-                        <span class="font-bold">{{
-                            formatIDR(barSegments[hoveredIndex]!.data.activeIncome)
-                        }}</span>
-                    </div>
-                    <div
-                        class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-bold">
-                        <span>Total Receipts:</span>
-                        <span>{{ formatIDR(barSegments[hoveredIndex]!.data.totalInflow) }}</span>
-                    </div>
-                </div>
-
-                <svg
-                    class="h-full w-full overflow-visible select-none"
-                    :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
-                    preserveAspectRatio="none">
-                    <g
+                    class="flex w-10 shrink-0 flex-col justify-between py-1.5 pr-2 text-right font-mono text-xs text-mist-500 select-none">
+                    <span
                         v-for="tick in yAxisTicks"
                         :key="tick.value">
-                        <line
-                            :x1="PADDING_LEFT"
-                            :y1="tick.y"
-                            :x2="SVG_WIDTH - PADDING_RIGHT"
-                            :y2="tick.y"
-                            class="stroke-mist-800/60"
-                            stroke-width="1" />
-                        <text
-                            :x="PADDING_LEFT - 8"
-                            :y="tick.y + 3.5"
-                            class="fill-mist-500 font-mono text-[10px]"
-                            text-anchor="end">
-                            {{ tick.label }}
-                        </text>
-                    </g>
+                        {{ tick.label }}
+                    </span>
+                </div>
 
-                    <g
-                        v-for="(seg, idx) in barSegments"
-                        :key="seg.monthStr">
-                        <line
-                            v-if="hoveredIndex === idx"
-                            :x1="seg.centerX"
-                            :y1="PADDING_TOP"
-                            :x2="seg.centerX"
-                            :y2="PADDING_TOP + chartPlotHeight"
-                            class="stroke-lime-400/40"
-                            stroke-width="1"
-                            stroke-dasharray="2 2" />
+                <div class="relative flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+                    <div
+                        v-if="hoveredIndex !== null && barSegments[hoveredIndex]"
+                        :style="{
+                            left: `${(barSegments[hoveredIndex]!.centerX / SVG_WIDTH) * 100}%`,
+                        }"
+                        :class="[
+                            hoveredIndex === 0
+                                ? 'translate-x-0'
+                                : hoveredIndex === barSegments.length - 1
+                                  ? '-translate-x-full'
+                                  : '-translate-x-1/2',
+                        ]"
+                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                        <div class="border-b border-mist-800 pb-0.5 text-[11px] text-mist-400">
+                            {{ barSegments[hoveredIndex]!.label }} ({{
+                                barSegments[hoveredIndex]!.data.freedomRatio
+                            }}% Asset Funded)
+                        </div>
+                        <div class="flex justify-between gap-3 text-lime-400">
+                            <span>Villa Net:</span>
+                            <span class="font-bold">
+                                {{ formatIDR(barSegments[hoveredIndex]!.data.villaNet) }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between gap-3 text-teal-400">
+                            <span>SBN Yields:</span>
+                            <span class="font-bold">
+                                {{ formatIDR(barSegments[hoveredIndex]!.data.passiveYield) }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between gap-3 text-mist-300">
+                            <span>Salary:</span>
+                            <span class="font-bold">
+                                {{ formatIDR(barSegments[hoveredIndex]!.data.activeIncome) }}
+                            </span>
+                        </div>
+                        <div
+                            class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 font-bold">
+                            <span>Total Receipts:</span>
+                            <span>
+                                {{ formatIDR(barSegments[hoveredIndex]!.data.totalInflow) }}
+                            </span>
+                        </div>
+                    </div>
 
-                        <rect
-                            :x="seg.villaX"
-                            :y="seg.villaY"
-                            :width="seg.barWidth"
-                            :height="seg.villaH"
-                            class="transition-all duration-200"
-                            :class="hoveredIndex === idx ? 'fill-lime-300' : 'fill-lime-400'" />
+                    <div class="relative min-h-0 w-full flex-1">
+                        <svg
+                            class="h-full w-full overflow-visible select-none"
+                            :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`"
+                            preserveAspectRatio="none">
+                            <g
+                                v-for="tick in yAxisTicks"
+                                :key="tick.value">
+                                <line
+                                    :x1="0"
+                                    :y1="tick.y"
+                                    :x2="SVG_WIDTH"
+                                    :y2="tick.y"
+                                    class="stroke-mist-800/60"
+                                    stroke-width="1" />
+                            </g>
 
-                        <rect
-                            :x="seg.passiveX"
-                            :y="seg.passiveY"
-                            :width="seg.barWidth"
-                            :height="seg.passiveH"
-                            class="transition-all duration-200"
-                            :class="hoveredIndex === idx ? 'fill-sky-300' : 'fill-sky-400'" />
+                            <g
+                                v-for="(seg, idx) in barSegments"
+                                :key="seg.monthStr">
+                                <line
+                                    v-if="hoveredIndex === idx"
+                                    :x1="seg.centerX"
+                                    :y1="PADDING_TOP"
+                                    :x2="seg.centerX"
+                                    :y2="PADDING_TOP + chartPlotHeight"
+                                    class="stroke-lime-400/40"
+                                    stroke-width="1"
+                                    stroke-dasharray="2 2" />
 
-                        <rect
-                            :x="seg.activeX"
-                            :y="seg.activeY"
-                            :width="seg.barWidth"
-                            :height="seg.activeH"
-                            rx="2"
-                            class="transition-all duration-200"
-                            :class="hoveredIndex === idx ? 'fill-mist-400' : 'fill-mist-500'" />
+                                <rect
+                                    :x="seg.villaX"
+                                    :y="seg.villaY"
+                                    :width="seg.barWidth"
+                                    :height="seg.villaH"
+                                    class="transition-all duration-200"
+                                    :class="
+                                        hoveredIndex === idx ? 'fill-lime-300' : 'fill-lime-400'
+                                    " />
 
-                        <rect
-                            :x="seg.triggerX"
-                            :y="0"
-                            :width="seg.stepX"
-                            :height="SVG_HEIGHT"
-                            fill="transparent"
-                            class="cursor-pointer"
-                            @mouseenter="hoveredIndex = idx"
-                            @click="handleSelectMonth(seg.monthStr)" />
+                                <rect
+                                    :x="seg.passiveX"
+                                    :y="seg.passiveY"
+                                    :width="seg.barWidth"
+                                    :height="seg.passiveH"
+                                    class="transition-all duration-200"
+                                    :class="
+                                        hoveredIndex === idx ? 'fill-teal-300' : 'fill-teal-400'
+                                    " />
 
-                        <text
-                            :x="seg.centerX"
-                            :y="SVG_HEIGHT - 6"
-                            text-anchor="middle"
-                            class="pointer-events-none text-[11px] font-medium transition-colors"
-                            :class="
-                                hoveredIndex === idx || seg.monthStr === selectedMonth
-                                    ? 'fill-lime-400 font-bold'
-                                    : 'fill-mist-500'
-                            ">
+                                <rect
+                                    :x="seg.activeX"
+                                    :y="seg.activeY"
+                                    :width="seg.barWidth"
+                                    :height="seg.activeH"
+                                    rx="2"
+                                    class="transition-all duration-200"
+                                    :class="
+                                        hoveredIndex === idx ? 'fill-mist-400' : 'fill-mist-500'
+                                    " />
+
+                                <rect
+                                    :x="seg.triggerX"
+                                    :y="0"
+                                    :width="seg.stepX"
+                                    :height="SVG_HEIGHT"
+                                    fill="transparent"
+                                    class="cursor-pointer"
+                                    @mouseenter="hoveredIndex = idx"
+                                    @click="handleSelectMonth(seg.monthStr)" />
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- Synchronized Centered Labels -->
+                    <div class="relative mt-2 h-3.5 w-full text-xs text-mist-500 select-none">
+                        <span
+                            v-for="(seg, idx) in barSegments"
+                            :key="seg.monthStr"
+                            class="absolute -translate-x-1/2 whitespace-nowrap transition-colors"
+                            :style="{ left: `${(seg.centerX / SVG_WIDTH) * 100}%` }"
+                            :class="{
+                                'font-bold text-lime-400':
+                                    hoveredIndex === idx || seg.monthStr === selectedMonth,
+                            }">
                             {{ seg.label }}
-                        </text>
-                    </g>
-                </svg>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

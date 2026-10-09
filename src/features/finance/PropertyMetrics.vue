@@ -103,7 +103,7 @@ const expenseGrowthPct = computed<number | null>(() =>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Earnings</h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(monthlyRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
@@ -118,6 +118,7 @@ const expenseGrowthPct = computed<number | null>(() =>
                               : 'text-mist-400'
                     ">
                     <fa-icon
+                        class="text-[10px]"
                         :icon="revenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'" />
                     {{ Math.abs(revenueGrowthPct) }}%
                 </span>
@@ -132,7 +133,7 @@ const expenseGrowthPct = computed<number | null>(() =>
 
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Expenses</h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(monthlyExpenses) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
@@ -147,6 +148,7 @@ const expenseGrowthPct = computed<number | null>(() =>
                               : 'text-mist-400'
                     ">
                     <fa-icon
+                        class="text-[10px]"
                         :icon="expenseGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'" />
                     {{ Math.abs(expenseGrowthPct) }}%
                 </span>
@@ -161,9 +163,7 @@ const expenseGrowthPct = computed<number | null>(() =>
 
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Net Profit</h3>
-            <p
-                class="font-mono text-lg font-semibold"
-                :class="netPropertyProfit >= 0 ? 'text-mist-200' : 'text-rose-400'">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(netPropertyProfit) }}
             </p>
             <p class="text-xs text-mist-500">Operating margin</p>
@@ -173,7 +173,7 @@ const expenseGrowthPct = computed<number | null>(() =>
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Annual Run-Rate
             </h3>
-            <p class="font-mono text-lg font-semibold text-mist-200">
+            <p class="font-mono text-lg font-extrabold text-mist-200">
                 {{ formatIDR(totalYearRevenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">

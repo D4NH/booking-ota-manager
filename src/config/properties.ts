@@ -109,7 +109,7 @@ export const PROPERTY_LIST: Property[] = Object.values(PROPERTY_CONFIGS);
 
 export const PROPERTY_THEMES: Record<PropertyId, string> = {
     wonosari: 'text-sky-300 bg-sky-500/15',
-    piyungan: 'text-emerald-300 bg-emerald-500/15 border-emerald-950',
+    piyungan: 'text-emerald-300 bg-emerald-500/15 ',
     bantul: 'text-amber-300 bg-amber-500/15 ',
     nusadua: 'text-fuchsia-300 bg-fuchsia-500/15',
 };
@@ -122,7 +122,7 @@ export const PROPERTY_DOT_COLORS: Record<PropertyId, string> = {
 };
 
 export const PROPERTY_BASE_CLASS =
-    'inline-flex items-center justify-center rounded-sm border-b-2 px-1.5 pt-1 pb-1.5 text-[11px] font-medium leading-none text-nowrap capitalize translate-y-[1px]';
+    'inline-flex items-center justify-center rounded-sm border-b-2  border-mist-900 px-1.5 pt-1 pb-1.5 text-[11px] font-medium leading-none text-nowrap capitalize translate-y-[1px]';
 
 export const getPropertyStyle = (id: PropertyId | string, isDot?: boolean) => {
     const statusColors = PROPERTY_THEMES[id as PropertyId] || PROPERTY_THEMES.piyungan;

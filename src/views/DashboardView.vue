@@ -61,7 +61,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
-                <p class="font-mono text-lg font-semibold">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(totalPayout) }}
                 </p>
                 <p class="flex items-center gap-1 text-xs">
@@ -69,6 +69,7 @@ function handleEditBooking(booking: Booking): void {
                         class="font-medium"
                         :class="revenueGrowthPercent >= 0 ? 'text-lime-400' : 'text-rose-400'">
                         <fa-icon
+                            class="text-[10px]"
                             :icon="
                                 revenueGrowthPercent >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
                             " />
@@ -81,7 +82,9 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Occupancy Rate
                 </h3>
-                <p class="font-mono text-lg font-semibold">{{ occupancyPercentage }}%</p>
+                <p class="font-mono text-lg font-extrabold text-mist-200">
+                    {{ occupancyPercentage }}%
+                </p>
                 <!-- <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
                         class="bg-lime-500 h-full transition-all duration-300"
@@ -95,7 +98,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Bookings
                 </h3>
-                <p class="font-mono text-lg font-semibold">
+                <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ totalBookingsCount }}
                 </p>
                 <p class="text-xs text-mist-500">Active bookings</p>
@@ -104,7 +107,7 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Today's Turnover
                 </h3>
-                <p class="flex gap-3 text-lg font-semibold">
+                <p class="flex gap-3 text-lg font-extrabold">
                     <span class="flex items-center gap-1 text-lime-400">
                         <fa-icon
                             class="text-sm"

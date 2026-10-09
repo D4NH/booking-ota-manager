@@ -158,7 +158,7 @@ function getBarHeightPct(amount: number): number {
                     <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ summaryStats.highlightedMonthLabel }}
                     </span>
-                    <div class="font-mono text-lg font-semibold text-mist-200">
+                    <div class="text-md font-mono font-semibold">
                         {{ formatIDR(summaryStats.highlightedMonthRevenue) }}
                     </div>
                     <div
@@ -170,6 +170,7 @@ function getBarHeightPct(amount: number): number {
                             "
                             class="font-medium">
                             <fa-icon
+                                class="text-[10px]"
                                 :icon="
                                     summaryStats.momChange >= 0
                                         ? 'arrow-trend-up'
@@ -189,7 +190,7 @@ function getBarHeightPct(amount: number): number {
                     <div
                         v-for="tick in yAxisTicks"
                         :key="tick.value"
-                        class="flex w-full items-center font-mono text-[10px] text-mist-500">
+                        class="flex w-full items-center font-mono text-xs text-mist-500">
                         <span class="w-10 pr-2 text-right select-none">{{ tick.label }}</span>
                         <div class="flex-1 border-b border-mist-800/40" />
                     </div>
@@ -204,7 +205,7 @@ function getBarHeightPct(amount: number): number {
                         <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="pointer-events-none absolute -top-4 z-30 space-y-0.5 rounded-md border border-mist-700 bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
+                            class="pointer-events-none absolute -top-4 z-30 space-y-0.5 rounded-md border border-mist-800 bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
                             <div class="text-xs text-mist-400">
                                 {{ item.monthName }} {{ item.year }}
                             </div>

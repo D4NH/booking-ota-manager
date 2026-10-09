@@ -173,7 +173,8 @@ function handleBookingClick(booking: Booking, event: Event): void {
                     @click="handleCellClick(day)">
                     <!-- Date Header -->
                     <div class="mb-1 flex items-center justify-between">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-md text-xs">
+                        <span
+                            class="flex h-6 w-6 items-center justify-center rounded-md font-mono text-xs font-bold">
                             {{ day.dayNumber }}
                         </span>
                     </div>
