@@ -82,8 +82,11 @@ function handleEditBooking(booking: Booking): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Occupancy Rate
                 </h3>
-                <p class="font-mono text-lg font-extrabold text-mist-200">
-                    {{ occupancyPercentage }}%
+                <p class="flex items-center gap-1 font-mono text-lg font-extrabold text-lime-400">
+                    <span>
+                        {{ occupancyPercentage }}
+                    </span>
+                    <span>%</span>
                 </p>
                 <!-- <div class="w-full bg-mist-800 h-1.5 rounded-md overflow-hidden my-2">
                     <div
@@ -110,15 +113,17 @@ function handleEditBooking(booking: Booking): void {
                 <p class="flex gap-3 text-lg font-extrabold">
                     <span class="flex items-center gap-1 text-lime-400">
                         <fa-icon
-                            class="text-sm"
+                            class="-mr-1 text-xs"
                             icon="arrow-down" />
-                        <span class="font-mono">{{ todaysTurnover.in }}</span> In
+                        <span class="font-mono">{{ todaysTurnover.in }}</span>
+                        In
                     </span>
                     <span class="flex items-center gap-1 text-amber-400">
                         <fa-icon
-                            class="text-sm"
+                            class="-mr-1 text-xs"
                             icon="arrow-up" />
-                        <span class="font-mono">{{ todaysTurnover.out }}</span> Out
+                        <span class="font-mono">{{ todaysTurnover.out }}</span>
+                        Out
                     </span>
                 </p>
                 <p class="text-xs text-mist-500">Scheduled for today</p>

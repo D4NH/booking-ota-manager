@@ -222,8 +222,10 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
             </CardTitle>
 
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1 text-xs font-semibold text-mist-300 select-none">
-                This month vs. last month
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
+                <span class="rounded-xs px-3 py-1.5 text-mist-400">
+                    This month vs. last month
+                </span>
             </div>
         </div>
 

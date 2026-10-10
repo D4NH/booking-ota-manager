@@ -8,22 +8,22 @@ import { formatDate } from '@/utils/date';
 import AppButton from '@/components/ui/AppButton.vue';
 
 interface Props {
-    isCollapsed: boolean;
-    isSidebarCollapsed?: boolean;
+    isMenuOpen: boolean;
+    isSidebarOpen?: boolean;
     pendingPayments?: Booking[];
     pendingPayouts?: Booking[];
     stagedBookings?: StagedBooking[];
 }
 
 const {
-    isCollapsed,
-    isSidebarCollapsed = false,
+    isMenuOpen,
+    isSidebarOpen = false,
     pendingPayments = [],
     pendingPayouts = [],
     stagedBookings = [],
 } = defineProps<Props>();
 const emit = defineEmits<{
-    close: [];
+    toggle: [];
     'mark-complete': [booking: Booking];
     edit: [booking: Booking];
     'open-staging': [booking?: StagedBooking];
@@ -35,7 +35,7 @@ const totalCount = computed<number>(
 );
 
 function handleToggle(): void {
-    emit('close');
+    emit('toggle');
 }
 function handleOpenStaging(staged?: StagedBooking): void {
     emit('open-staging', staged);
@@ -52,39 +52,38 @@ function handleMarkComplete(b: Booking): void {
     <div
         class="overflow-hidden border-t border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out select-none">
         <div
-            class="flex items-center justify-between bg-mist-950/50 p-3 transition-all duration-300 ease-in-out"
-            :class="{ 'cursor-pointer border-b border-mist-800': !isSidebarCollapsed }"
+            class="flex items-center justify-between bg-mist-950/50 p-3"
+            :class="{ 'cursor-pointer': isSidebarOpen }"
             @click="handleToggle">
             <div class="relative flex items-center gap-2">
                 <fa-icon
                     icon="bell"
                     class="shrink-0 text-sm text-mist-400 transition-[padding] duration-300 ease-in-out"
-                    :class="{ 'pl-2.5': isSidebarCollapsed }" />
+                    :class="{ 'pl-2.5': !isSidebarOpen }" />
                 <span
-                    class="overflow-hidden text-sm font-semibold text-nowrap transition-all duration-300 ease-in-out"
-                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                    class="overflow-hidden text-sm font-semibold text-nowrap"
+                    :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                     Notifications
                 </span>
                 <span
-                    v-if="isSidebarCollapsed && totalCount > 0"
+                    v-if="isSidebarOpen && totalCount > 0"
                     class="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-lime-500 px-1 font-mono text-[9px] font-bold text-mist-950 shadow-sm">
                     {{ totalCount }}
                 </span>
             </div>
             <span
                 v-if="totalCount > 0"
-                class="overflow-hidden rounded-xs bg-lime-500/20 text-[10px] font-semibold text-lime-400 transition-all duration-300 ease-in-out"
+                class="overflow-hidden rounded-xs bg-lime-500/20 text-[10px] font-semibold text-lime-400"
                 :class="
-                    isSidebarCollapsed
-                        ? 'max-w-0 px-0 py-0 opacity-0'
-                        : 'max-w-20 px-2 py-0.5 opacity-100'
+                    isSidebarOpen
+                        ? 'max-w-20 px-2 py-0.5 opacity-100'
+                        : 'max-w-0 px-0 py-0 opacity-0'
                 ">
                 {{ totalCount }} New
             </span>
         </div>
-
         <div
-            v-if="!isCollapsed && !isSidebarCollapsed"
+            v-if="isMenuOpen && isSidebarOpen"
             class="max-h-[70vh] space-y-1 divide-y divide-mist-800/60 overflow-y-auto p-2">
             <div
                 v-if="totalCount === 0"
@@ -95,7 +94,6 @@ function handleMarkComplete(b: Booking): void {
                 <p class="font-medium text-mist-400">All caught up!</p>
                 <p>No incoming bookings, pending payments, or unsettled payouts.</p>
             </div>
-
             <div
                 v-for="staged in stagedBookings"
                 :key="staged.id || staged.bookingId"
@@ -139,7 +137,6 @@ function handleMarkComplete(b: Booking): void {
                     </div>
                 </div>
             </div>
-
             <div
                 v-for="b in pendingPayments"
                 :key="b.id || b.bookingId"
@@ -178,7 +175,6 @@ function handleMarkComplete(b: Booking): void {
                     </div>
                 </div>
             </div>
-
             <div
                 v-for="b in pendingPayouts"
                 :key="'payout-' + (b.id || b.bookingId)"

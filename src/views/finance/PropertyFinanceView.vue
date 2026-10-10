@@ -50,7 +50,7 @@ function handlePropertyChange(propId: PropertyId | 'all'): void {
                     v-for="tab in PROPERTY_TABS"
                     :key="tab.id"
                     type="button"
-                    class="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold transition"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-xs px-3 py-1.5 font-semibold transition"
                     :class="[
                         selectedProperty === tab.id
                             ? 'border border-mist-700/80 bg-mist-800 text-lime-400 shadow-sm'

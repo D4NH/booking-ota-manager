@@ -48,10 +48,7 @@ function handleImageError(e: Event): void {
         class="group relative flex cursor-pointer overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md transition-all duration-200 hover:border-lime-700 hover:shadow-xl">
         <div class="flex min-w-0 flex-1 flex-col justify-between space-y-4 p-4">
             <!-- Property Name & Location -->
-            <!-- <span
-                class="h-2 w-2 rounded-full shrink-0"
-                :class="getPropertyStyle(property.id, true)" /> -->
-            <div class="space-y-1">
+            <div>
                 <h3 class="truncate text-sm font-medium">
                     {{ property.name }}
                 </h3>
@@ -60,7 +57,7 @@ function handleImageError(e: Event): void {
                     :title="property.address">
                     <fa-icon
                         icon="location-dot"
-                        class="shrink-0 text-[10px] text-mist-500" />
+                        class="-mx-0.5 shrink-0 text-[12px] text-mist-500" />
                     <span class="truncate">{{ property.address }}</span>
                 </p>
             </div>
@@ -149,6 +146,7 @@ function handleImageError(e: Event): void {
                             formatDate(nextUpcoming.checkIn, {
                                 shortWeekday: true,
                                 shortMonth: true,
+                                relativeDay: true,
                             })
                         }}
                         - {{ nextUpcoming.guestName }}
@@ -202,27 +200,27 @@ function handleImageError(e: Event): void {
             </div>
 
             <!-- House Specs & Price Footer -->
-            <div class="mt-2 border-t border-mist-800 pt-2">
-                <div class="flex items-end justify-between">
+            <div class="mt-2 border-t border-mist-800 pt-3">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 text-xs font-medium text-mist-400">
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="bed"
-                                class="text-xs text-mist-500" />
+                                class="text-xs text-mist-300" />
                             {{ property.bedrooms }} Beds
                         </span>
                         <span class="text-mist-700">&bull;</span>
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="shower"
-                                class="text-xs text-mist-500" />
+                                class="text-xs text-mist-300" />
                             {{ property.bathrooms }} Baths
                         </span>
                         <span class="text-mist-700">&bull;</span>
                         <span class="flex items-center gap-1.5">
                             <fa-icon
                                 icon="ruler-combined"
-                                class="text-xs text-mist-500" />
+                                class="text-xs text-mist-300" />
                             {{ property.plotSize }} m²
                         </span>
                     </div>

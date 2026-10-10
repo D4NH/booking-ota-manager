@@ -275,7 +275,15 @@ function handleEditProperty(): void {
                         <p
                             v-if="nextUpcoming"
                             class="mt-1 text-[11px]">
-                            Next: {{ formatDate(nextUpcoming.checkIn) }} -
+                            Next:
+                            {{
+                                formatDate(nextUpcoming.checkIn, {
+                                    shortWeekday: true,
+                                    shortMonth: true,
+                                    relativeDay: true,
+                                })
+                            }}
+                            -
                             {{ nextUpcoming.guestName }}
                         </p>
                         <p

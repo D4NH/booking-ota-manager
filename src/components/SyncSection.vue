@@ -7,22 +7,22 @@ import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useStagingStore } from '@/stores/useStagingStore';
 
 interface Props {
-    isSidebarCollapsed: boolean;
+    isSidebarOpen: boolean;
 }
 
-const { isSidebarCollapsed } = defineProps<Props>();
+const { isSidebarOpen } = defineProps<Props>();
 
 const { isAuthenticated, refreshAuthStatus, initAuth } = useGoogleSheets();
 const { isSyncing: isMasterSyncing, formattedCountdown, syncAllData } = useAppAutoSync();
 const { syncAllFinancialData } = useFinanceSync();
 const stagingStore = useStagingStore();
 
-const isMenuOpen = ref<boolean>(true);
+const isMenuOpen = ref<boolean>(false);
 const isSyncingBookings = ref<boolean>(false);
 const isSyncingEmails = ref<boolean>(false);
 
 watch(
-    () => isSidebarCollapsed,
+    () => isSidebarOpen,
     (collapsed: boolean) => {
         if (collapsed) {
             isMenuOpen.value = false;
@@ -155,43 +155,43 @@ async function handleScanEmails(): Promise<void> {
 
 <template>
     <div
-        class="border-t border-mist-800/80 bg-mist-950/40 p-3 text-nowrap text-mist-200 transition-all duration-300 ease-in-out select-none">
+        class="border-t border-mist-800/80 bg-mist-950/40 p-3 text-nowrap text-mist-200 select-none">
         <div
-            class="flex items-center justify-between font-mono text-xs text-mist-400 transition-all duration-300"
-            :class="{ 'mb-2': !isSidebarCollapsed }">
+            class="flex items-center justify-between font-mono text-xs text-mist-400 transition-all duration-300 ease-in-out"
+            :class="{ 'mb-2': isSidebarOpen }">
             <button
                 type="button"
-                class="flex cursor-pointer items-center gap-1.5 transition hover:text-mist-200"
+                class="flex cursor-pointer items-center gap-1.5 hover:text-mist-200"
                 :title="
                     isAuthenticated ? 'Connected to Google API' : 'Click to authorize Google API'
                 "
                 @click="handleAuthToggle">
                 <span
-                    class="h-2 w-2 shrink-0 rounded-full transition-[margin] duration-300 ease-in-out"
+                    class="h-2 w-2 shrink-0 rounded-full"
                     :class="[
                         isAuthenticated ? 'bg-lime-400' : 'bg-rose-400',
-                        { 'ml-3.5': isSidebarCollapsed },
+                        { 'ml-3.5': !isSidebarOpen },
                     ]" />
                 <span
-                    class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-28 opacity-100'">
+                    class="overflow-hidden text-nowrap"
+                    :class="isSidebarOpen ? 'max-w-28 opacity-100' : 'max-w-0 opacity-0'">
                     {{ isAuthenticated ? 'Google API' : 'Connect API' }}
                 </span>
             </button>
-
             <span
-                class="overflow-hidden text-xs text-mist-500 transition-all duration-300 ease-in-out"
-                :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-24 opacity-100'">
+                class="overflow-hidden text-xs text-mist-500"
+                :class="isSidebarOpen ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'">
                 SWR: {{ formattedCountdown }}
             </span>
         </div>
 
-        <div class="flex items-center gap-1">
+        <div
+            v-show="isSidebarOpen"
+            class="flex items-center gap-1">
             <button
-                v-if="!isSidebarCollapsed"
                 type="button"
                 :disabled="isMasterSyncing"
-                class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold transition hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
+                class="bg-mist-850 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded border border-mist-700 px-3 py-1.5 text-xs font-semibold hover:border-lime-500/40 hover:bg-mist-800 disabled:opacity-50"
                 @click="handleMasterSync">
                 <fa-icon
                     icon="arrows-rotate"
@@ -201,11 +201,9 @@ async function handleScanEmails(): Promise<void> {
                     {{ isMasterSyncing ? 'Syncing...' : 'Sync All' }}
                 </span>
             </button>
-
             <button
-                v-if="!isSidebarCollapsed"
                 type="button"
-                class="bg-mist-850 cursor-pointer rounded border border-mist-700 px-2 py-1.5 text-xs text-mist-400 transition hover:bg-mist-800 hover:text-mist-100"
+                class="bg-mist-850 cursor-pointer rounded border border-mist-700 px-2 py-1.5 text-xs text-mist-400 hover:bg-mist-800 hover:text-mist-100"
                 @click="isMenuOpen = !isMenuOpen">
                 <fa-icon
                     icon="chevron-down"
@@ -215,12 +213,13 @@ async function handleScanEmails(): Promise<void> {
         </div>
 
         <div
-            v-if="isMenuOpen && !isSidebarCollapsed"
-            class="mt-2 space-y-1 font-mono text-xs">
+            v-if="isMenuOpen && isSidebarOpen"
+            class="mt-2 space-y-1 font-mono text-xs transition-all duration-300 ease-in-out"
+            :class="isSidebarOpen ? 'opacity-100' : 'opacity-0'">
             <button
                 type="button"
                 :disabled="isSyncingBookings"
-                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300 disabled:opacity-50"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 hover:text-lime-300 disabled:opacity-50"
                 @click="handleSyncBookings">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
@@ -229,10 +228,9 @@ async function handleScanEmails(): Promise<void> {
                     <span>{{ isSyncingBookings ? 'Syncing Bookings...' : 'Bookings' }}</span>
                 </span>
             </button>
-
             <button
                 type="button"
-                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 hover:text-lime-300"
                 @click="handleSyncFinancials">
                 <span class="flex items-center gap-1.5">
                     <fa-icon
@@ -241,11 +239,10 @@ async function handleScanEmails(): Promise<void> {
                     <span>Financials</span>
                 </span>
             </button>
-
             <button
                 type="button"
                 :disabled="isSyncingEmails"
-                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 transition hover:text-lime-300 disabled:opacity-50"
+                class="hover:bg-mist-850 flex w-full cursor-pointer items-center justify-between rounded py-1.5 text-mist-300 hover:text-lime-300 disabled:opacity-50"
                 @click="handleScanEmails">
                 <span class="flex items-center gap-1.5">
                     <fa-icon

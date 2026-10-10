@@ -30,15 +30,15 @@ const { bookings } = storeToRefs(bookingStore);
 const modalStore = useModalStore();
 const route = useRoute();
 const { markBookingComplete } = useBookingSync();
-const isSidebarCollapsed = useStorage<boolean>('sidebar-collapsed', false);
-const isNotificationCollapsed = useStorage<boolean>('notifications-collapsed', false);
+const isSidebarOpen = useStorage<boolean>('sidebar-open', true);
 const stagingStore = useStagingStore();
 const { stagedBookings } = storeToRefs(stagingStore);
 
 const activeStagedBooking = ref<StagedBooking | null>(null);
+const isFinanceOpen = ref<boolean>(false);
+const isNotificationOpen = ref<boolean>(false);
+const isPropertiesOpen = ref<boolean>(false);
 const isReviewModalOpen = ref<boolean>(false);
-const isPropertiesOpen = ref<boolean>(true);
-const isFinanceOpen = ref<boolean>(true);
 
 const pendingPayments = computed<{
     whatsappPayments: Booking[];
@@ -86,6 +86,11 @@ watch(
     { immediate: true }
 );
 
+watch(
+    () => pendingPayments.value.notificationsCount > 0,
+    () => (isNotificationOpen.value = false)
+);
+
 function handleEditBooking(booking: Booking): void {
     modalStore.openBookingModal({ booking });
 }
@@ -97,13 +102,13 @@ function isLinkActive(path: string): boolean {
     return route.path.startsWith(path);
 }
 function toggleSidebar(): void {
-    isSidebarCollapsed.value = !isSidebarCollapsed.value;
-    isNotificationCollapsed.value = true;
+    isSidebarOpen.value = !isSidebarOpen.value;
+    isNotificationOpen.value = false;
     isPropertiesOpen.value = false;
     isFinanceOpen.value = false;
 }
 function toggleNotifications(): void {
-    isNotificationCollapsed.value = !isNotificationCollapsed.value;
+    isNotificationOpen.value = !isNotificationOpen.value;
 }
 function handleOpenStaging(stagedItem?: StagedBooking): void {
     if (stagedItem) {
@@ -117,7 +122,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
     <aside
         :class="[
             'relative flex shrink-0 flex-col border-r border-mist-800 bg-mist-900 transition-all duration-300 ease-in-out',
-            isSidebarCollapsed ? 'w-16' : 'w-60',
+            isSidebarOpen ? 'w-60' : 'w-16',
         ]">
         <div class="flex h-14 items-center overflow-hidden border-b border-mist-800 px-4">
             <div class="flex items-center gap-3">
@@ -127,7 +132,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     alt="Mai House" />
                 <span
                     class="overflow-hidden font-semibold text-nowrap transition-all duration-300 ease-in-out"
-                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-32 opacity-100'">
+                    :class="isSidebarOpen ? 'max-w-32 opacity-100' : 'max-w-0 opacity-0'">
                     Mai House
                 </span>
             </div>
@@ -149,7 +154,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     class="shrink-0 py-2 text-center" />
                 <span
                     class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                    :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                     {{ link.name }}
                 </span>
             </RouterLink>
@@ -171,9 +176,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                             icon="house" />
                         <span
                             class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                            :class="
-                                isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
-                            ">
+                            :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                             Properties
                         </span>
                     </RouterLink>
@@ -182,9 +185,9 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         type="button"
                         class="cursor-pointer overflow-hidden p-1 text-mist-500 transition-all duration-300 ease-in-out hover:text-mist-200"
                         :class="
-                            isSidebarCollapsed
-                                ? 'pointer-events-none max-w-0 opacity-0'
-                                : 'max-w-6 opacity-100'
+                            isSidebarOpen
+                                ? 'max-w-6 opacity-100'
+                                : 'pointer-events-none max-w-0 opacity-0'
                         "
                         @click.stop.prevent="isPropertiesOpen = !isPropertiesOpen">
                         <fa-icon
@@ -196,7 +199,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
 
                 <!-- Properties Subitems -->
                 <div
-                    v-show="!isSidebarCollapsed && isPropertiesOpen"
+                    v-show="isSidebarOpen && isPropertiesOpen"
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         v-for="prop in PROPERTY_CONFIGS"
@@ -235,9 +238,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                             icon="sack-dollar" />
                         <span
                             class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                            :class="
-                                isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'
-                            ">
+                            :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                             Finance
                         </span>
                     </RouterLink>
@@ -246,9 +247,9 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         type="button"
                         class="cursor-pointer overflow-hidden p-1 text-mist-500 transition-all duration-300 ease-in-out hover:text-mist-200"
                         :class="
-                            isSidebarCollapsed
-                                ? 'pointer-events-none max-w-0 opacity-0'
-                                : 'max-w-6 opacity-100'
+                            isSidebarOpen
+                                ? 'max-w-6 opacity-100'
+                                : 'pointer-events-none max-w-0 opacity-0'
                         "
                         @click.stop.prevent="isFinanceOpen = !isFinanceOpen">
                         <fa-icon
@@ -259,7 +260,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                 </div>
                 <!-- Finance Subitems -->
                 <div
-                    v-show="!isSidebarCollapsed && isFinanceOpen"
+                    v-show="isSidebarOpen && isFinanceOpen"
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         :to="{ name: 'finance-property' }"
@@ -276,7 +277,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                     </RouterLink>
                 </div>
                 <div
-                    v-show="!isSidebarCollapsed && isFinanceOpen"
+                    v-show="isSidebarOpen && isFinanceOpen"
                     class="my-1 ml-4 animate-in space-y-1 border-l border-mist-800 pl-3.5 duration-150 fade-in">
                     <RouterLink
                         :to="{ name: 'finance-personal' }"
@@ -308,22 +309,22 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
                         icon="gear" />
                     <span
                         class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                        :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                        :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                         Settings
                     </span>
                 </RouterLink>
             </div>
         </nav>
 
-        <SyncSection :is-sidebar-collapsed="isSidebarCollapsed" />
+        <SyncSection :is-sidebar-open="isSidebarOpen" />
         <NotificationsDrawer
-            :is-sidebar-collapsed="isSidebarCollapsed"
-            :is-collapsed="isNotificationCollapsed"
+            :is-menu-open="isNotificationOpen"
+            :is-sidebar-open="isSidebarOpen"
             :pending-payments="pendingPayments.whatsappPayments"
             :pending-payouts="pendingPayments.bookingPayouts"
             :staged-bookings="stagedBookings"
             @open-staging="handleOpenStaging"
-            @close="toggleNotifications"
+            @toggle="toggleNotifications"
             @edit="handleEditBooking"
             @mark-complete="handleInstantComplete" />
 
@@ -331,11 +332,11 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
             <div class="flex items-center justify-center gap-2 px-2 py-1 text-xs text-mist-500">
                 <fa-icon
                     class="shrink-0 transition-[padding] duration-300 ease-in-out"
-                    :class="{ 'pl-2': isSidebarCollapsed }"
+                    :class="{ 'pl-2': !isSidebarOpen }"
                     icon="copyright" />
                 <span
                     class="overflow-hidden text-nowrap transition-all duration-300 ease-in-out"
-                    :class="isSidebarCollapsed ? 'max-w-0 opacity-0' : 'max-w-40 opacity-100'">
+                    :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                     {{ currentYear }} - Danh Nguyen
                 </span>
             </div>
@@ -344,11 +345,11 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
         <button
             type="button"
             class="absolute -right-3 bottom-3 z-30 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-mist-800 bg-mist-800 text-xs text-mist-300 shadow-md transition hover:bg-mist-700 hover:text-mist-100"
-            :title="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            :title="isSidebarOpen ? 'Expand sidebar' : 'Collapse sidebar'"
             @click="toggleSidebar">
             <fa-icon
                 class="transition-transform duration-300"
-                :class="{ 'rotate-180': isSidebarCollapsed }"
+                :class="{ 'rotate-180': isSidebarOpen }"
                 icon="chevron-left" />
         </button>
 

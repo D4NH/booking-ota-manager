@@ -67,9 +67,10 @@ const metrics = computed(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Active Listings
             </h3>
-            <p class="font-mono text-lg font-extrabold text-mist-200">
+            <p class="flex items-center gap-1 font-mono text-lg font-extrabold text-mist-200">
                 <span class="text-lime-400">{{ metrics.activeUnits }}</span>
-                <span class="text-lg"> / {{ properties.length }} Units</span>
+                <span class="text-sm">/</span>
+                <span class="text-lg">{{ properties.length }} Units</span>
             </p>
             <p class="text-xs text-mist-500">Generating revenue</p>
         </div>
@@ -90,7 +91,12 @@ const metrics = computed(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Annual Occupancy
             </h3>
-            <p class="font-mono text-lg font-extrabold text-lime-400">{{ metrics.occupancy }}%</p>
+            <p class="flex items-center gap-1 font-mono text-lg font-extrabold text-lime-400">
+                <span>
+                    {{ metrics.occupancy }}
+                </span>
+                <span> %</span>
+            </p>
             <p class="text-xs text-mist-500">
                 {{ metrics.nights }} / {{ metrics.totalCapacity }} room nights
             </p>
