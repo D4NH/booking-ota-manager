@@ -24,6 +24,9 @@ interface Props {
 const { inputLabel = '', options = [], placeholder = '--' } = defineProps<Props>();
 const modelValue = defineModel<T | DropdownValue | undefined>();
 
+defineOptions({
+    inheritAttrs: false,
+});
 const slots = useSlots();
 
 const isOpen = ref<boolean>(false);
@@ -39,7 +42,6 @@ const normalizedOptions = computed<DropdownOption<T | DropdownValue>[]>(() => {
         return { label: item.label, value: item.value as T };
     });
 });
-
 const selectedLabel = computed<string>(() => {
     const match = normalizedOptions.value.find((o) => o.value === modelValue.value);
     if (match) return match.label;
@@ -114,6 +116,7 @@ function handleClickOutside(event: MouseEvent): void {
             ref="triggerButtonRef"
             type="button"
             class="flex w-full cursor-pointer items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-left text-sm text-mist-500 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
+            :class="$attrs.class"
             @click="toggleDropdown">
             <span
                 class="truncate pr-2"
@@ -124,7 +127,7 @@ function handleClickOutside(event: MouseEvent): void {
                 {{ selectedLabel }}
             </span>
             <fa-icon
-                class="ml-2 shrink-0 text-xs text-mist-400"
+                class="-mr-1 shrink-0 text-xs text-mist-400"
                 icon="chevron-down" />
         </button>
 
@@ -132,7 +135,7 @@ function handleClickOutside(event: MouseEvent): void {
             <div
                 v-if="isOpen"
                 ref="dropdownMenuRef"
-                class="teleported-dropdown-menu fixed z-999 max-h-60 overflow-hidden overflow-y-auto rounded-md border border-mist-800 bg-mist-950/90 shadow-2xl backdrop-blur-xl"
+                class="teleported-dropdown-menu fixed z-999 max-h-60 overflow-hidden overflow-y-auto rounded-md border border-mist-800 bg-mist-950/50 shadow-lg backdrop-blur-xl"
                 :style="{
                     top: `${coords.top + 4}px`,
                     left: `${coords.left}px`,

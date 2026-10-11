@@ -318,6 +318,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
 
         <SyncSection :is-sidebar-open="isSidebarOpen" />
         <NotificationsDrawer
+            v-if="pendingPayments.notificationsCount > 0"
             :is-menu-open="isNotificationOpen"
             :is-sidebar-open="isSidebarOpen"
             :pending-payments="pendingPayments.whatsappPayments"

@@ -319,7 +319,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                                   ? '-translate-x-full'
                                   : '-translate-x-1/2',
                         ]"
-                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-2xl backdrop-blur-sm transition-all duration-75">
+                        class="pointer-events-none absolute -top-3 z-30 space-y-1 rounded-md border border-mist-700 bg-mist-950 px-3 py-2 font-mono text-xs whitespace-nowrap shadow-lg backdrop-blur-sm transition-all duration-75">
                         <div class="border-b border-mist-800 pb-0.5 text-xs text-mist-400">
                             {{ barGroups[hoveredIndex]!.label }}
                         </div>

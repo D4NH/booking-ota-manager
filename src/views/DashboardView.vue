@@ -149,7 +149,7 @@ function handleEditBooking(booking: Booking): void {
                 <button
                     v-if="sortedProperties.length > 2"
                     type="button"
-                    class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-400 shadow-sm transition-colors hover:border-mist-700"
+                    class="flex cursor-pointer items-center gap-1.5 rounded-md border border-mist-800 bg-mist-950/50 py-2 pr-1.5 pl-3 text-xs text-mist-200 shadow-sm transition-colors hover:border-mist-700"
                     @click="isPropertiesExpanded = !isPropertiesExpanded">
                     <span>
                         {{

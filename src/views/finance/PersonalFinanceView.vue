@@ -148,7 +148,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                         </div>
 
                         <div
-                            class="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
+                            class="relative z-10 flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-mist-800 bg-mist-900 p-5 shadow-lg">
                             <div
                                 class="flex items-center justify-between text-xs font-medium text-mist-300">
                                 <span>{{ activeCard.bankName }}</span>

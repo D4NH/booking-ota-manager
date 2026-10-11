@@ -227,7 +227,7 @@ function getSegmentHeightPct(value: number): number {
                         <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border border-mist-800 bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-2xl">
+                            class="pointer-events-none absolute -top-20 z-30 space-y-1 rounded-md border border-mist-800 bg-mist-950 p-2 font-mono text-xs whitespace-nowrap shadow-lg">
                             <div class="text-mist-400">{{ row.label }} {{ selectedYear }}</div>
                             <div
                                 v-for="config in activeConfigs"

@@ -148,7 +148,7 @@ async function handleSync(): Promise<void> {
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
             @click.self="showLogModal = false">
             <div
-                class="flex max-h-[80vh] w-full max-w-2xl flex-col space-y-4 rounded-2xl border border-mist-800 bg-mist-900 p-5 shadow-2xl">
+                class="flex max-h-[80vh] w-full max-w-2xl flex-col space-y-4 rounded-md border border-mist-800 bg-mist-900 p-5 shadow-lg">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
                     <h3 class="flex items-center gap-2 text-sm font-semibold">
                         <span>Sync Audit Diagnostics</span>

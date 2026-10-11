@@ -4,7 +4,9 @@ import { MONTH_NAMES as monthsList } from '@/config/constants';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 import { getCurrentYear } from '@/utils/date';
+
 import CardTitle from '@/components/CardTitle.vue';
+import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 
 const quartersList = [
     { id: 0, label: 'Quarter 1', startMonthIdx: 0 },
@@ -12,6 +14,10 @@ const quartersList = [
     { id: 2, label: 'Quarter 3', startMonthIdx: 6 },
     { id: 3, label: 'Quarter 4', startMonthIdx: 9 },
 ];
+const quarterOptions = quartersList.map((quarter) => ({
+    label: quarter.label,
+    value: quarter.id,
+}));
 const now = new Date();
 const currentActualMonthIdx = now.getUTCMonth();
 const currentActualQuarterIdx = Math.floor(currentActualMonthIdx / 3);
@@ -130,24 +136,12 @@ function getBarHeightPct(amount: number): number {
                     Showing 4-month breakdown for {{ summaryStats.rangeLabel }}
                 </template>
             </CardTitle>
-            <div class="relative w-24">
-                <select
-                    v-model.number="activeQuarterIndex"
-                    class="w-full cursor-pointer appearance-none rounded-md border border-mist-800 bg-mist-950/50 px-3 py-2 text-xs text-mist-400 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-none">
-                    <option
-                        v-for="q in quartersList"
-                        :key="q.id"
-                        :value="q.id">
-                        {{ q.label }}
-                    </option>
-                </select>
-                <div
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-mist-400">
-                    <fa-icon
-                        class="text-xs"
-                        icon="angle-down" />
-                </div>
-            </div>
+            <SelectDropdown
+                v-model="activeQuarterIndex"
+                input-label=""
+                placeholder="Select property"
+                class="px-3 py-2 text-xs"
+                :options="quarterOptions" />
         </div>
 
         <div
@@ -205,7 +199,7 @@ function getBarHeightPct(amount: number): number {
                         <!-- Tooltip -->
                         <div
                             v-if="hoveredIndex === idx"
-                            class="pointer-events-none absolute -top-4 z-30 space-y-0.5 rounded-md border border-mist-800 bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-2xl">
+                            class="pointer-events-none absolute -top-4 z-30 space-y-0.5 rounded-md border border-mist-800 bg-mist-950 px-2.5 py-1.5 font-mono text-xs whitespace-nowrap shadow-lg">
                             <div class="text-xs text-mist-400">
                                 {{ item.monthName }} {{ item.year }}
                             </div>

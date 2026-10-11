@@ -158,11 +158,12 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
                         </template>
                     </TextInput>
                     <!-- Month Dropdown -->
-                    <SelectDropdown
-                        v-model="selectedMonth"
-                        input-label=""
-                        class="w-44"
-                        :options="monthOptions" />
+                    <div class="w-40">
+                        <SelectDropdown
+                            v-model="selectedMonth"
+                            input-label=""
+                            :options="monthOptions" />
+                    </div>
                     <!-- Status Filters -->
                     <button
                         type="button"
