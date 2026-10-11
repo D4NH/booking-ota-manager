@@ -153,6 +153,43 @@ function handleBookingClick(booking: Booking, event: Event) {
                                 <span class="truncate">{{ b.guestName }}</span>
                             </div>
                         </div>
+                        <!-- Hover Details Popover -->
+                        <div
+                            class="pointer-events-none absolute bottom-3 left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                            <div
+                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
+                                <div>
+                                    <span class="mb-1 block font-semibold text-mist-200">
+                                        {{ b.guestName }}
+                                    </span>
+                                    <span class="text-xs text-mist-400">
+                                        {{
+                                            formatDate(b.checkIn, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                        &rarr;
+                                        {{
+                                            formatDate(b.checkOut, {
+                                                shortWeekday: true,
+                                                shortMonth: true,
+                                            })
+                                        }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="b.status === 'Waiting for payment'"
+                                    class="mb-1 rounded bg-amber-500/10 p-1 text-xs text-amber-300">
+                                    Payment pending
+                                </div>
+                                <div
+                                    v-if="b.notes"
+                                    class="mt-1.5 border-t border-mist-800 pt-1.5 text-xs text-mist-300">
+                                    {{ b.notes }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
