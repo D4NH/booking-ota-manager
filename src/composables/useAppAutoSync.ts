@@ -112,12 +112,20 @@ export function useAppAutoSync() {
                     options.propertyId && options.propertyId !== 'all'
                         ? [options.propertyId]
                         : (Object.keys(PROPERTY_CONFIGS) as PropertyId[]);
-
+                const allConfiguredYears = [
+                    ...new Set(
+                        targetProperties.flatMap((propId) => {
+                            const config = PROPERTY_CONFIGS[propId];
+                            return config?.spreadsheetIds
+                                ? Object.keys(config.spreadsheetIds).map(Number)
+                                : [2026];
+                        })
+                    ),
+                ].sort((a, b) => a - b);
                 const syncYears =
                     options.force || !hasInitialSynced
-                        ? [2025, currentYear, currentYear + 1]
+                        ? allConfiguredYears
                         : [currentYear, currentYear + 1];
-
                 const bookingsTask = Promise.all(
                     targetProperties.flatMap((propId) => {
                         const config = PROPERTY_CONFIGS[propId];
@@ -128,7 +136,6 @@ export function useAppAutoSync() {
                                 config.spreadsheetIds?.[year] ||
                                 (year === 2026 ? config.spreadsheetId : undefined);
 
-                            // Skip unconfigured spreadsheets
                             if (!sheetId || !sheetId.trim()) return;
 
                             const rows = await fetchSheetRows(sheetId, 'A2:K');
