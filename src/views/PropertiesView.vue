@@ -2,10 +2,10 @@
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { useRevenueComparison } from '@/composables/useRevenueData';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useModalStore } from '@/stores/useModalStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
+import { getWeeklyComparison, getMonthlyComparison } from '@/utils/revenue';
 
 import AppButton from '@/components/ui/AppButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
@@ -23,7 +23,6 @@ const modalStore = useModalStore();
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 
-const { getWeeklyComparison, getMonthlyComparison } = useRevenueComparison();
 const { totalYearRevenue } = usePropertyDetails(() => 'all');
 
 const isPropertiesExpanded = ref(false);

@@ -21,6 +21,14 @@ export interface PropertyFinance {
     createdAt?: string;
 }
 
+export interface FinanceProperty {
+    id: string;
+    name: string;
+    address: string;
+}
+
+export type Property = FinanceProperty;
+
 export type PersonalOwner = 'Danh Nguyen' | 'Citra Ayu Wardani';
 export type TransactionType = 'income' | 'fixed_cost' | 'expense';
 
@@ -92,12 +100,6 @@ export interface OwnerTransfer {
     amount: number;
     date: string;
     notes: string;
-}
-
-export interface Property {
-    id: string;
-    name: string;
-    address: string;
 }
 
 export interface MonthlyBudgetSummary {

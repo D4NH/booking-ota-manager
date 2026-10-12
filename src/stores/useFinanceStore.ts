@@ -13,7 +13,7 @@ import type {
     GoldAsset,
     SharedFinance,
     OwnerTransfer,
-    Property,
+    FinanceProperty,
     RecurringTemplate,
     ProjectedRecurringItem,
     SbnInvestment,
@@ -81,7 +81,7 @@ export const useFinanceStore = defineStore('finance', () => {
         useGoogleSheets();
     const bookingStore = useBookingStore();
 
-    const properties = shallowRef<Property[]>([]);
+    const properties = shallowRef<FinanceProperty[]>([]);
     const sheetPropertyFinances = shallowRef<PropertyFinance[]>([]);
     const personalFinances = shallowRef<PersonalFinance[]>([]);
     const sharedFinances = shallowRef<SharedFinance[]>([]);
@@ -917,7 +917,7 @@ export const useFinanceStore = defineStore('finance', () => {
             if (batchResults[0]?.length) {
                 properties.value = batchResults[0]
                     .filter((r) => r[0] && String(r[0]).trim())
-                    .map((r) => ({
+                    .map((r): FinanceProperty => ({
                         id: String(r[0]),
                         name: String(r[1] || ''),
                         address: String(r[2] || ''),
@@ -1091,24 +1091,50 @@ export const useFinanceStore = defineStore('finance', () => {
                     db.sbnInvestments,
                 ],
                 async () => {
-                    await Promise.all([
-                        db.propertyFinances
-                            .clear()
-                            .then(() => db.propertyFinances.bulkPut(parsedPropFinances)),
-                        db.personalFinances
-                            .clear()
-                            .then(() => db.personalFinances.bulkPut(parsedPersonal)),
-                        db.sharedFinances
-                            .clear()
-                            .then(() => db.sharedFinances.bulkPut(parsedShared)),
-                        db.transfers.clear().then(() => db.transfers.bulkPut(parsedTransfers)),
-                        db.goldAssets.clear().then(() => db.goldAssets.bulkPut(parsedGold)),
-                        db.recurringTemplates
-                            .clear()
-                            .then(() => db.recurringTemplates.bulkPut(parsedRecurring)),
-                        db.savingGoals.clear().then(() => db.savingGoals.bulkPut(parsedGoals)),
-                        db.sbnInvestments.clear().then(() => db.sbnInvestments.bulkPut(parsedSbn)),
-                    ]);
+                    const operations: Promise<unknown>[] = [];
+                    if (parsedPropFinances.length)
+                        operations.push(
+                            db.propertyFinances
+                                .clear()
+                                .then(() => db.propertyFinances.bulkPut(parsedPropFinances))
+                        );
+                    if (parsedPersonal.length)
+                        operations.push(
+                            db.personalFinances
+                                .clear()
+                                .then(() => db.personalFinances.bulkPut(parsedPersonal))
+                        );
+                    if (parsedShared.length)
+                        operations.push(
+                            db.sharedFinances
+                                .clear()
+                                .then(() => db.sharedFinances.bulkPut(parsedShared))
+                        );
+                    if (parsedTransfers.length)
+                        operations.push(
+                            db.transfers.clear().then(() => db.transfers.bulkPut(parsedTransfers))
+                        );
+                    if (parsedGold.length)
+                        operations.push(
+                            db.goldAssets.clear().then(() => db.goldAssets.bulkPut(parsedGold))
+                        );
+                    if (parsedRecurring.length)
+                        operations.push(
+                            db.recurringTemplates
+                                .clear()
+                                .then(() => db.recurringTemplates.bulkPut(parsedRecurring))
+                        );
+                    if (parsedGoals.length)
+                        operations.push(
+                            db.savingGoals.clear().then(() => db.savingGoals.bulkPut(parsedGoals))
+                        );
+                    if (parsedSbn.length)
+                        operations.push(
+                            db.sbnInvestments
+                                .clear()
+                                .then(() => db.sbnInvestments.bulkPut(parsedSbn))
+                        );
+                    await Promise.all(operations);
                 }
             ).catch((err) => console.warn('Dexie background sync warning:', err));
         } catch (err: unknown) {
