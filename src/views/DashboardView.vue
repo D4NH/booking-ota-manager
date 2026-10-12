@@ -131,7 +131,7 @@ function handleEditBooking(booking: Booking): void {
         </div>
 
         <!-- Recent Bookings & Revenue Performance-->
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="grid h-105 grid-cols-1 gap-4 lg:grid-cols-2">
             <UpcomingBookings
                 :bookings="bookings"
                 @edit-booking="handleEditBooking" />

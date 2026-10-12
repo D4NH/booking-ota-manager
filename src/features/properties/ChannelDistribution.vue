@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { CHANNEL_COLORS } from '@/config/channel';
 import type { Booking } from '@/types/booking';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+const CHANNEL_COLORS: Record<string, string> = {
+    Airbnb: '#f43f5e', // rose-500
+    'Booking.com': '#2563eb', // blue-600
+    'Tiket.com': '#06b6d4', // cyan-500
+    'Trip.com': '#6366f1', // indigo-500
+    Whatsapp: '#25D366', // lime-400
+    Other: '#71717a', // mist-500
+};
 // SVG Donut Math: radius = 38, circumference = 2 * PI * 38 ≈ 238.76
 const circumference = 238.76;
 

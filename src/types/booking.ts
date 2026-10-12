@@ -1,7 +1,7 @@
 import type { PropertyId } from './property';
 
 export type BookingChannel =
-    'Airbnb' | 'Booking.com' | 'Tiket.com' | 'Trip.com' | 'Whatsapp' | 'Unavailable';
+    'Agoda.com' | 'Airbnb' | 'Booking.com' | 'Tiket.com' | 'Trip.com' | 'Whatsapp' | 'Unavailable';
 
 export type BookingStatus =
     | 'Booked'

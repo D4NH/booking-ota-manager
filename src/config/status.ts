@@ -1,6 +1,6 @@
 import type { BookingStatus } from '@/types/booking';
 
-export const bookingStatuses: BookingStatus[] = [
+export const BOOKING_STATUS: BookingStatus[] = [
     'Booked',
     'Checked-in',
     'Checking-out',

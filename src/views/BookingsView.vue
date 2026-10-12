@@ -3,7 +3,7 @@ import { ref, computed, watch, nextTick, onMounted, onActivated } from 'vue';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useGroupedBookings } from '@/composables/useGroupedBookings';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
-import { bookingStatuses } from '@/config/status';
+import { BOOKING_STATUS } from '@/config/status';
 import { useModalStore } from '@/stores/useModalStore';
 import type { Booking } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
@@ -180,7 +180,7 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
                         v-if="toggleFilters"
                         class="flex flex-wrap items-center gap-2">
                         <button
-                            v-for="status in bookingStatuses"
+                            v-for="status in BOOKING_STATUS"
                             :key="status"
                             type="button"
                             :class="[

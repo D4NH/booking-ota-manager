@@ -4,9 +4,9 @@ import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useBookingStore } from '@/stores/useBookingStore';
 import { CHANNEL_WARNINGS } from '@/config/constants';
-import { bookingStatuses } from '@/config/status';
+import { BOOKING_STATUS } from '@/config/status';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { Booking } from '@/types/booking';
+import type { Booking, BookingChannel } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights, getCurrentDate } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
@@ -17,15 +17,26 @@ import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-const listingOptions = [
-    { label: 'Airbnb', value: 'Airbnb' },
-    { label: 'Booking.com', value: 'Booking.com' },
-    { label: 'Tiket.com', value: 'Tiket.com' },
-    { label: 'Trip.com', value: 'Trip.com' },
-    { label: 'Unavailable', value: 'Unavailable' },
-    { label: 'Whatsapp', value: 'Whatsapp' },
+interface ListingOption {
+    label: string;
+    value: string;
+}
+
+const bookingChannels: BookingChannel[] = [
+    'Airbnb',
+    'Booking.com',
+    'Tiket.com',
+    'Trip.com',
+    'Unavailable',
+    'Whatsapp',
 ];
-const statusOptions = bookingStatuses.map((status) => ({
+
+const listingOptions: ListingOption[] = bookingChannels.map((channel) => ({
+    label: channel,
+    value: channel,
+}));
+
+const statusOptions: ListingOption[] = BOOKING_STATUS.map((status) => ({
     label: status,
     value: status,
 }));

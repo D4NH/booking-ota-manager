@@ -438,7 +438,6 @@ function handleEditProperty(): void {
                 <UpcomingBookings
                     :limit="15"
                     :bookings="unitBookings"
-                    :show-month-headers="true"
                     :show-property="false"
                     @edit-booking="handleEditBooking" />
             </div>
