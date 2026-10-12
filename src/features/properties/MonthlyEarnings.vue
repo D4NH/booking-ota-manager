@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { formatIDR } from '@/utils/money';
-import type { WeeklyData, MonthlyData } from '@/composables/useRevenueData';
+import type { WeeklyData, MonthlyData } from '@/utils/revenue';
+
 import CardTitle from '@/components/CardTitle.vue';
 
 interface CoordinatePoint {

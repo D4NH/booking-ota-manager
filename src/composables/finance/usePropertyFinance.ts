@@ -36,7 +36,7 @@ function extractUnrecordedBookings(
         if (!item) continue;
         if (item.bookingId && item.bookingId.trim()) {
             recordedIds.add(item.bookingId.trim());
-        } else if (item.notes) {
+        } else if (item.notes && item.notes.includes('[MHJ-BOOKING:')) {
             const match = REGEX_MHJ_BOOKING.exec(item.notes);
             if (match?.[1]?.trim()) {
                 recordedIds.add(match[1].trim());
