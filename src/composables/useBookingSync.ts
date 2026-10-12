@@ -1,48 +1,12 @@
 import { useBookingStore } from '@/stores/useBookingStore';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import type { Booking } from '@/types/booking';
-import { toast } from 'vue-toastflow';
-
-interface ToastMessages {
-    loadingTitle: string;
-    loadingDesc?: string;
-    successTitle: string;
-    successDesc: string | ((result: unknown) => string);
-    errorTitle: string;
-}
+import { runWithToast } from '@/utils/toast';
 
 export function useBookingSync() {
     const bookingStore = useBookingStore();
     const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
-    async function runWithToast<T>(
-        action: () => Promise<T>,
-        messages: ToastMessages
-    ): Promise<boolean> {
-        try {
-            await toast.loading(action, {
-                loading: {
-                    title: messages.loadingTitle,
-                    description: messages.loadingDesc,
-                },
-                success: (result: T) => ({
-                    title: messages.successTitle,
-                    description:
-                        typeof messages.successDesc === 'function'
-                            ? messages.successDesc(result)
-                            : messages.successDesc,
-                }),
-                error: (err: unknown) => ({
-                    title: messages.errorTitle,
-                    description: err instanceof Error ? err.message : 'Google Sheets sync failed.',
-                }),
-            });
-            return true;
-        } catch (err: unknown) {
-            console.error(`${messages.errorTitle}:`, err);
-            return false;
-        }
-    }
     async function saveBooking(
         payload: Omit<Booking, 'id' | 'createdAt'>,
         bookingToEdit?: Booking | null,
