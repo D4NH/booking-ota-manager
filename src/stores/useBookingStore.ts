@@ -173,25 +173,45 @@ export const useBookingStore = defineStore('booking', () => {
                 sheetName?: string,
                 calendarId?: string
             ) => Promise<void>;
+            deleteSheetRowById: (
+                spreadsheetId: string,
+                id: string,
+                options?: { sheetName?: string; calendarId?: string } | string
+            ) => Promise<void>;
         }
     ): Promise<void> {
-        const bookingYear = Number(updated.checkIn?.slice(0, 4)) || new Date().getFullYear();
-        const targetSheetId = getPropertySpreadsheetId(updated.propertyId, bookingYear);
-        const config = PROPERTY_CONFIGS[updated.propertyId as PropertyId];
+        const existing = bookings.value.find(
+            (b) =>
+                b.id === updated.id ||
+                (b.bookingId === updated.bookingId && b.propertyId === updated.propertyId)
+        );
+        const oldYear = existing?.checkIn ? Number(existing.checkIn.slice(0, 4)) : null;
+        const newYear = Number(updated.checkIn?.slice(0, 4)) || new Date().getFullYear();
 
-        const targetCalendarId = shouldSyncCalendarForYear(bookingYear)
+        if (oldYear && oldYear !== newYear) {
+            const oldSheetId = getPropertySpreadsheetId(updated.propertyId, oldYear);
+            if (oldSheetId) {
+                await sheetsApi
+                    .deleteSheetRowById(oldSheetId, updated.bookingId, {
+                        calendarId: undefined,
+                    })
+                    .catch((err) =>
+                        console.warn('[Sync] Failed to clean up old year sheet row:', err)
+                    );
+            }
+        }
+
+        const targetSheetId = getPropertySpreadsheetId(updated.propertyId, newYear);
+        const config = PROPERTY_CONFIGS[updated.propertyId as PropertyId];
+        const targetCalendarId = shouldSyncCalendarForYear(newYear)
             ? config?.calendarId
             : undefined;
 
         if (!targetSheetId || !targetSheetId.trim()) {
-            throw new Error(`Missing Google Sheets config for year ${bookingYear}.`);
+            throw new Error(`Missing Google Sheets config for year ${newYear}.`);
         }
 
         const nights = calculateNights(updated.checkIn, updated.checkOut);
-
-        const existing = bookings.value.find(
-            (b) => b.bookingId === updated.bookingId && b.propertyId === updated.propertyId
-        );
         const resolvedStatus = updated.status || existing?.status || 'Booked';
 
         const updatedWithNights: Booking = {
@@ -216,7 +236,8 @@ export const useBookingStore = defineStore('booking', () => {
             deleteSheetRowById: (
                 spreadsheetId: string,
                 id: string,
-                options?: { sheetName?: string; calendarId?: string } | string
+                options?:
+                    { sheetName?: string; calendarId?: string; calendarEventId?: string } | string
             ) => Promise<void>;
         }
     ): Promise<void> {
@@ -230,6 +251,7 @@ export const useBookingStore = defineStore('booking', () => {
 
         await sheetsApi.deleteSheetRowById(targetSheetId, booking.bookingId, {
             calendarId: targetCalendarId || undefined,
+            calendarEventId: booking.calendarEventId || undefined,
         });
 
         await deleteBooking(booking.id || booking.bookingId);
@@ -268,6 +290,7 @@ export const useBookingStore = defineStore('booking', () => {
         const processedBookingIds = new Set<string>();
 
         const VALID_LISTINGS = [
+            'Agoda.com',
             'Airbnb',
             'Booking.com',
             'Tiket.com',
@@ -276,6 +299,17 @@ export const useBookingStore = defineStore('booking', () => {
             'Unavailable',
         ] as const;
         type ListingType = (typeof VALID_LISTINGS)[number];
+
+        const statusMap: Record<string, BookingStatus> = {
+            booked: 'Booked',
+            'checked-in': 'Checked-in',
+            'checking-out': 'Checking-out',
+            'waiting for payment': 'Waiting for payment',
+            'waiting for payout': 'Waiting for payout',
+            completed: 'Completed',
+            'no show': 'No show',
+            unavailable: 'Unavailable',
+        };
 
         let minCheckIn = '9999-12-31';
         let maxCheckIn = '0000-01-01';
@@ -288,7 +322,18 @@ export const useBookingStore = defineStore('booking', () => {
         const recordsToPut: Booking[] = [];
 
         for (const row of rows) {
-            const rawBookingId = String(row[0] || '').trim();
+            let rawBookingId = String(row[0] || '')
+                .trim()
+                .replace(/^'+/, '');
+            if (rawBookingId.includes('E+') || rawBookingId.includes('e+')) {
+                try {
+                    rawBookingId = BigInt(Math.round(Number(rawBookingId))).toString();
+                } catch {
+                    rawBookingId = Number(rawBookingId).toLocaleString('fullwide', {
+                        useGrouping: false,
+                    });
+                }
+            }
             const rawListing = String(row[1] || '').trim();
             const rawGuestName = String(row[2] || '').trim();
             const checkIn = String(row[3] || '').trim();
@@ -321,10 +366,12 @@ export const useBookingStore = defineStore('booking', () => {
             const rawPayout = String(row[6] ?? '').replace(/[^0-9]/g, '');
             const payout = isUnavailable ? 0 : Number(rawPayout) || 0;
             const ownerPayout = isUnavailable ? 0 : calculateOwnerPayout(payout);
-            const rawStatus = String(row[8] || '').trim();
+            const rawStatus = String(row[8] || '')
+                .trim()
+                .toLowerCase();
             const status: Booking['status'] = isUnavailable
                 ? 'Unavailable'
-                : (rawStatus as Booking['status']) || 'Booked';
+                : statusMap[rawStatus] || 'Booked';
             const notes = String(row[9] || '').trim();
             const calendarEventId = String(row[10] || '').trim();
 
@@ -357,7 +404,6 @@ export const useBookingStore = defineStore('booking', () => {
                     propertyId,
                 });
             } else {
-                // Normalized field-by-field diff comparison
                 const diffs: BookingChangeDiff[] = [];
 
                 if (payload.guestName !== existing.guestName) {
@@ -440,7 +486,6 @@ export const useBookingStore = defineStore('booking', () => {
                 .equals(propertyId)
                 .toArray();
 
-            // Detect active operational year from imported rows (fallback to current year)
             const activeYear =
                 minCheckIn !== '9999-12-31'
                     ? minCheckIn.slice(0, 4)

@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { getOffsetDate } from '@/utils/date';
 
 export interface DeleteSheetRowOptions {
     sheetName?: string;
@@ -121,7 +122,6 @@ export function useGoogleSheets() {
                 callback: (response: any) => {
                     if (response.error) {
                         if (prompt === 'none') {
-                            // Silent token renewal failed, prompt user next
                             logout();
                         }
                         reject(new Error(response.error_description || response.error));
@@ -180,17 +180,15 @@ export function useGoogleSheets() {
                     },
                 });
 
-                // 401 Token Expired: Renew silently
                 if (res.status === 401) {
                     token = await initAuth('select_account');
                     continue;
                 }
 
-                // 429 Rate Limit or 503 Server Busy: Exponential Backoff with Jitter
                 if ((res.status === 429 || res.status === 503) && attempt < maxRetries) {
                     const backoffMs = Math.pow(2, attempt) * 1000 + Math.random() * 800;
                     console.warn(
-                        `[Google API ${res.status}] Rate limit reached. Backing off for ${Math.round(backoffMs)}ms (retry ${attempt + 1}/${maxRetries})...`
+                        `[Google API ${res.status}] Rate limit hit. Backing off for ${Math.round(backoffMs)}ms (retry ${attempt + 1}/${maxRetries})...`
                     );
                     await wait(backoffMs);
                     continue;
@@ -301,10 +299,17 @@ export function useGoogleSheets() {
             return existingCalEventId || '';
         }
 
+        const checkInStr = String(values[3]).trim();
+        let checkOutStr = String(values[4]).trim();
+
+        if (checkInStr === checkOutStr) {
+            checkOutStr = getOffsetDate(checkInStr, 1);
+        }
+
         const summary = `${values[1] || 'Direct'} - ${values[2] || 'Guest'}`;
         const notesSuffix = values[9] ? ` | Notes: ${values[9]}` : '';
         const desc = `Confirmed reservation for ${values[2] || 'Guest'} via ${values[1] || 'Direct'}. Ref: ${values[0]}${notesSuffix}`;
-        const dates = { checkIn: String(values[3]), checkOut: String(values[4]) };
+        const dates = { checkIn: checkInStr, checkOut: checkOutStr };
 
         let finalEventId = existingCalEventId || '';
 
@@ -324,6 +329,45 @@ export function useGoogleSheets() {
         values[10] = finalEventId;
 
         return finalEventId;
+    }
+
+    function findRowIndexByFallback(
+        rows: (string | number)[][],
+        id: string,
+        fallbackCalId?: string
+    ): number {
+        // Strategy 1: Column A match
+        let idx = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
+        if (idx !== -1) return idx;
+
+        // Strategy 2: Column K/L match (calendarEventId)
+        if (fallbackCalId) {
+            const cleanExpId = cleanGoogleCalendarEventId(fallbackCalId);
+            idx = rows.findIndex((r) => {
+                const valK = cleanGoogleCalendarEventId(String(r[10] || ''));
+                const valL = cleanGoogleCalendarEventId(String(r[11] || ''));
+                return valK === cleanExpId || valL === cleanExpId;
+            });
+            if (idx !== -1) return idx;
+        }
+
+        // Strategy 3: Synthetic date pattern match (UNAVAILABLE-YYYY-MM-DD_YYYY-MM-DD)
+        const match = id.match(/^(?:UNAVAILABLE|DIRECT)-(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})$/);
+        if (match) {
+            const [, expectedIn, expectedOut] = match;
+            idx = rows.findIndex((r) => {
+                const rowIn = String(r[3] || '')
+                    .trim()
+                    .slice(0, 10);
+                const rowOut = String(r[4] || '')
+                    .trim()
+                    .slice(0, 10);
+                return rowIn === expectedIn && rowOut === expectedOut;
+            });
+            if (idx !== -1) return idx;
+        }
+
+        return -1;
     }
 
     async function fetchSheetRows(
@@ -414,7 +458,8 @@ export function useGoogleSheets() {
               : 'A2:A';
 
         const rows = await fetchSheetRows(spreadsheetId, searchRange);
-        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
+        const fallbackCalId = String(values[10] || '').trim();
+        const rowIndex = findRowIndexByFallback(rows, id, fallbackCalId);
 
         if (rowIndex === -1) {
             const appendRange = sheetName ? `'${sheetName}'!A1` : 'A1';
@@ -484,9 +529,12 @@ export function useGoogleSheets() {
               : 'A2:A';
 
         const rows = await fetchSheetRows(spreadsheetId, idRange);
-        const rowIndex = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
+        const rowIndex = findRowIndexByFallback(rows, id, explicitEventId);
 
-        if (rowIndex === -1) return;
+        if (rowIndex === -1) {
+            console.warn(`[DeleteSheetRow] Row with identifier "${id}" not found in sheet.`);
+            return;
+        }
 
         const targetRowNumber = rowIndex + 2;
 

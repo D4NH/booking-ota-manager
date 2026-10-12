@@ -54,7 +54,7 @@ export function useBookingSync() {
             if (bookingToEdit) {
                 await bookingStore.updateBookingWithRemoteSync(
                     { ...bookingToEdit, ...payload },
-                    { updateSheetRowById }
+                    { updateSheetRowById, deleteSheetRowById }
                 );
             } else {
                 await bookingStore.addBookingWithRemoteSync(payload, { appendSheetRow });
@@ -89,7 +89,7 @@ export function useBookingSync() {
             async () => {
                 await bookingStore.updateBookingWithRemoteSync(
                     { ...booking, status: newStatus },
-                    { updateSheetRowById }
+                    { updateSheetRowById, deleteSheetRowById }
                 );
             },
             {
