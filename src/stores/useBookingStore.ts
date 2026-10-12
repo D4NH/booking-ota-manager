@@ -6,15 +6,16 @@ import {
     getPropertySpreadsheetId,
     shouldSyncCalendarForYear,
 } from '@/config/properties';
-import type { Booking, BookingStatus } from '@/types/booking';
+import type { Booking, BookingPayload, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
+import { normalizeBookingId } from '@/utils/booking';
 import { calculateNights } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
 
 export const useBookingStore = defineStore('booking', () => {
     const formatSheetRow = (
-        b: Omit<Booking, 'id' | 'createdAt'> & { calendarEventId?: string }
+        b: BookingPayload & { calendarEventId?: string }
     ): (string | number)[] => {
         const payout = Number(b.payout) || 0;
         const ownerPayout = b.ownerPayout ?? calculateOwnerPayout(payout);
@@ -61,7 +62,7 @@ export const useBookingStore = defineStore('booking', () => {
         return conflict || null;
     }
 
-    async function addBooking(payload: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking> {
+    async function addBooking(payload: BookingPayload): Promise<Booking> {
         const newId =
             typeof crypto !== 'undefined' && crypto.randomUUID
                 ? crypto.randomUUID()
@@ -124,7 +125,7 @@ export const useBookingStore = defineStore('booking', () => {
     }
 
     async function addBookingWithRemoteSync(
-        payload: Omit<Booking, 'id' | 'createdAt'>,
+        payload: BookingPayload,
         sheetsApi: {
             appendSheetRow: (
                 spreadsheetId: string,
@@ -322,18 +323,7 @@ export const useBookingStore = defineStore('booking', () => {
         const recordsToPut: Booking[] = [];
 
         for (const row of rows) {
-            let rawBookingId = String(row[0] || '')
-                .trim()
-                .replace(/^'+/, '');
-            if (rawBookingId.includes('E+') || rawBookingId.includes('e+')) {
-                try {
-                    rawBookingId = BigInt(Math.round(Number(rawBookingId))).toString();
-                } catch {
-                    rawBookingId = Number(rawBookingId).toLocaleString('fullwide', {
-                        useGrouping: false,
-                    });
-                }
-            }
+            const rawBookingId = normalizeBookingId(row[0]);
             const rawListing = String(row[1] || '').trim();
             const rawGuestName = String(row[2] || '').trim();
             const checkIn = String(row[3] || '').trim();

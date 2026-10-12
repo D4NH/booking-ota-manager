@@ -5,6 +5,7 @@ import { useGoogleSheets } from '@/composables/useGoogleSheets';
 import { useBookingStore } from '@/stores/useBookingStore';
 import type { StagedBooking, BookingChannel } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
+import { normalizeBookingId } from '@/utils/booking';
 import { calculateNights } from '@/utils/date';
 
 const STAGING_SPREADSHEET_ID = import.meta.env.VITE_STAGING_SPREADSHEET_ID as string;
@@ -57,19 +58,7 @@ export const useStagingStore = defineStore('staging', () => {
                     const checkIn = String(r[5] || '').trim();
                     const checkOut = String(r[6] || '').trim();
                     const propId = String(r[1] || 'piyungan').trim() as PropertyId;
-
-                    let cleanBookingId = String(r[2] || '')
-                        .trim()
-                        .replace(/^'+/, '');
-                    if (cleanBookingId.includes('E+') || cleanBookingId.includes('e+')) {
-                        try {
-                            cleanBookingId = BigInt(Math.round(Number(cleanBookingId))).toString();
-                        } catch {
-                            cleanBookingId = Number(cleanBookingId).toLocaleString('fullwide', {
-                                useGrouping: false,
-                            });
-                        }
-                    }
+                    const cleanBookingId = normalizeBookingId(r[2]);
 
                     const conflict = bookingStore.hasDateConflict(
                         propId,

@@ -39,14 +39,14 @@ export const usePropertyStore = defineStore('property', () => {
         properties.value = await db.properties.toArray();
     }
     async function addProperty(property: Property): Promise<void> {
-        const plainRecord = JSON.parse(JSON.stringify(property));
+        const plainRecord = structuredClone(property);
 
         await db.properties.add(plainRecord);
         await loadProperties();
     }
     async function saveProperty(propertyData: Property): Promise<void> {
         await toast.loading(async () => {
-            const cleanProperty = JSON.parse(JSON.stringify(propertyData));
+            const cleanProperty = structuredClone(propertyData);
 
             await db.properties.put(cleanProperty);
             await loadProperties();
