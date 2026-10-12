@@ -7,11 +7,44 @@ export interface DeleteSheetRowOptions {
     calendarEventId?: string;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-declare const google: any;
+interface SheetPropertiesResponse {
+    sheets?: Array<{
+        properties?: {
+            sheetId?: number;
+            title?: string;
+            index?: number;
+        };
+    }>;
+}
+
+declare const google: {
+    accounts: {
+        oauth2: {
+            initTokenClient: (config: {
+                client_id: string;
+                scope: string;
+                callback: (res: {
+                    access_token: string;
+                    expires_in?: number;
+                    error?: string;
+                    error_description?: string;
+                }) => void;
+            }) => {
+                requestAccessToken: (options: { prompt: string }) => void;
+            };
+        };
+    };
+};
 
 const TOKEN_KEY = 'gdrive_token';
 const EXPIRY_KEY = 'gdrive_token_expires_at';
+const MAX_CONCURRENT_REQUESTS = 3;
+
+const sheetIdCache = new Map<string, number>();
+const inFlightRequests = new Map<string, Promise<unknown>>();
+const requestQueue: (() => void)[] = [];
+let activeRequestCount = 0;
+let activeAuthPromise: Promise<string> | null = null;
 
 function isTokenValid(): boolean {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -21,13 +54,6 @@ function isTokenValid(): boolean {
 
 const accessToken = ref<string | null>(isTokenValid() ? localStorage.getItem(TOKEN_KEY) : null);
 const isAuthenticated = ref<boolean>(isTokenValid());
-let activeAuthPromise: Promise<string> | null = null;
-
-const inFlightRequests = new Map<string, Promise<any>>();
-
-const MAX_CONCURRENT_REQUESTS = 3;
-let activeRequestCount = 0;
-const requestQueue: (() => void)[] = [];
 
 function acquireRequestSlot(): Promise<void> {
     if (activeRequestCount < MAX_CONCURRENT_REQUESTS) {
@@ -91,6 +117,7 @@ export function useGoogleSheets() {
         isAuthenticated.value = false;
         activeAuthPromise = null;
         inFlightRequests.clear();
+        sheetIdCache.clear();
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(EXPIRY_KEY);
     }
@@ -119,7 +146,7 @@ export function useGoogleSheets() {
             const client = google.accounts.oauth2.initTokenClient({
                 client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
                 scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar.events',
-                callback: (response: any) => {
+                callback: (response) => {
                     if (response.error) {
                         if (prompt === 'none') {
                             logout();
@@ -140,7 +167,6 @@ export function useGoogleSheets() {
                 },
             });
 
-            // If prompt is 'none', attempt silent renewal without popup window
             client.requestAccessToken({ prompt: prompt === 'none' ? '' : 'select_account' });
         });
     }
@@ -188,7 +214,7 @@ export function useGoogleSheets() {
                 if ((res.status === 429 || res.status === 503) && attempt < maxRetries) {
                     const backoffMs = Math.pow(2, attempt) * 1000 + Math.random() * 800;
                     console.warn(
-                        `[Google API ${res.status}] Rate limit hit. Backing off for ${Math.round(backoffMs)}ms (retry ${attempt + 1}/${maxRetries})...`
+                        `[Google API ${res.status}] Rate limit hit. Backing off for ${Math.round(backoffMs)}ms...`
                     );
                     await wait(backoffMs);
                     continue;
@@ -209,6 +235,46 @@ export function useGoogleSheets() {
         if (clean.includes('@')) clean = clean.split('@')[0] || '';
         if (clean.includes(':')) clean = clean.split(':')[0] || '';
         return clean.trim();
+    }
+
+    async function getSheetNumericId(spreadsheetId: string, sheetName: string): Promise<number> {
+        const cacheKey = `${spreadsheetId}:${sheetName.trim().toLowerCase()}`;
+        if (sheetIdCache.has(cacheKey)) {
+            return sheetIdCache.get(cacheKey)!;
+        }
+
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties(sheetId,title,index)`;
+        const res = await fetchWithAuth(url);
+
+        if (!res.ok) {
+            throw new Error(
+                `Failed to fetch spreadsheet metadata (${res.status}): ${res.statusText}`
+            );
+        }
+
+        const data = (await res.json()) as SheetPropertiesResponse;
+        const sheetsList = data.sheets || [];
+
+        let resolvedSheetId: number | undefined;
+
+        if (sheetName.trim()) {
+            const target = sheetsList.find(
+                (s) => s.properties?.title?.toLowerCase() === sheetName.trim().toLowerCase()
+            );
+            resolvedSheetId = target?.properties?.sheetId;
+        } else {
+            const firstSheet = sheetsList.find((s) => s.properties?.index === 0) || sheetsList[0];
+            resolvedSheetId = firstSheet?.properties?.sheetId;
+        }
+
+        if (resolvedSheetId === undefined) {
+            throw new Error(
+                `Sheet tab "${sheetName || 'default'}" not found in spreadsheet ${spreadsheetId}.`
+            );
+        }
+
+        sheetIdCache.set(cacheKey, resolvedSheetId);
+        return resolvedSheetId;
     }
 
     async function createCalendarEvent(
@@ -239,7 +305,7 @@ export function useGoogleSheets() {
             return '';
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as { id?: string };
         return cleanGoogleCalendarEventId(data.id || '');
     }
 
@@ -256,7 +322,7 @@ export function useGoogleSheets() {
         const encodedCalId = encodeURIComponent(calendarId);
         const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedCalId}/events/${cleanId}`;
 
-        const payload: Record<string, any> = { summary: newSummary };
+        const payload: Record<string, unknown> = { summary: newSummary };
         if (newDescription !== undefined) payload.description = newDescription;
         if (dates?.checkIn && dates?.checkOut) {
             payload.start = { date: dates.checkIn };
@@ -336,11 +402,9 @@ export function useGoogleSheets() {
         id: string,
         fallbackCalId?: string
     ): number {
-        // Strategy 1: Column A match
         let idx = rows.findIndex((r) => String(r[0] || '').trim() === id.trim());
         if (idx !== -1) return idx;
 
-        // Strategy 2: Column K/L match (calendarEventId)
         if (fallbackCalId) {
             const cleanExpId = cleanGoogleCalendarEventId(fallbackCalId);
             idx = rows.findIndex((r) => {
@@ -351,7 +415,6 @@ export function useGoogleSheets() {
             if (idx !== -1) return idx;
         }
 
-        // Strategy 3: Synthetic date pattern match (UNAVAILABLE-YYYY-MM-DD_YYYY-MM-DD)
         const match = id.match(/^(?:UNAVAILABLE|DIRECT)-(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})$/);
         if (match) {
             const [, expectedIn, expectedOut] = match;
@@ -372,11 +435,11 @@ export function useGoogleSheets() {
 
     async function fetchSheetRows(
         spreadsheetId: string,
-        range: string = 'A2:K'
+        range = 'A2:K'
     ): Promise<(string | number)[][]> {
         const cacheKey = `${spreadsheetId}_${range}`;
         if (inFlightRequests.has(cacheKey)) {
-            return inFlightRequests.get(cacheKey)!;
+            return (await inFlightRequests.get(cacheKey)) as (string | number)[][];
         }
 
         const requestPromise = (async () => {
@@ -386,14 +449,14 @@ export function useGoogleSheets() {
             if (!res.ok) {
                 throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
             }
-            const data = await res.json();
-            return (data.values as (string | number)[][]) || [];
+            const data = (await res.json()) as { values?: (string | number)[][] };
+            return data.values || [];
         })().finally(() => {
             inFlightRequests.delete(cacheKey);
         });
 
         inFlightRequests.set(cacheKey, requestPromise);
-        return requestPromise;
+        return (await requestPromise) as (string | number)[][];
     }
 
     async function batchFetchSheetRows(
@@ -405,14 +468,16 @@ export function useGoogleSheets() {
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?${query}`;
         const res = await fetchWithAuth(url);
         if (!res.ok) throw new Error(`Google Sheets Batch API Error (${res.status})`);
-        const data = await res.json();
-        return (data.valueRanges || []).map((vr: any) => vr.values || []);
+        const data = (await res.json()) as {
+            valueRanges?: Array<{ values?: (string | number)[][] }>;
+        };
+        return (data.valueRanges || []).map((vr) => vr.values || []);
     }
 
     async function appendSheetRow(
         spreadsheetId: string,
         values: (string | number)[],
-        range: string = 'A1',
+        range = 'A1',
         calendarId?: string
     ): Promise<string> {
         const finalValues = [...values];
@@ -433,7 +498,9 @@ export function useGoogleSheets() {
         });
 
         if (!res.ok) {
-            const errorBody = await res.json().catch(() => null);
+            const errorBody = (await res.json().catch(() => null)) as {
+                error?: { message?: string };
+            } | null;
             throw new Error(
                 `Google Sheets API Error (${res.status}): ${errorBody?.error?.message || res.statusText}`
             );
@@ -446,7 +513,7 @@ export function useGoogleSheets() {
         spreadsheetId: string,
         id: string,
         values: (string | number)[],
-        sheetName: string = '',
+        sheetName = '',
         calendarId?: string
     ): Promise<void> {
         const searchRange = sheetName
@@ -536,8 +603,6 @@ export function useGoogleSheets() {
             return;
         }
 
-        const targetRowNumber = rowIndex + 2;
-
         if (calendarId) {
             let calEventId = explicitEventId ? cleanGoogleCalendarEventId(explicitEventId) : '';
 
@@ -560,16 +625,42 @@ export function useGoogleSheets() {
             }
         }
 
-        const targetRange = sheetName
-            ? `'${sheetName}'!A${targetRowNumber}:Z${targetRowNumber}`
-            : `A${targetRowNumber}:Z${targetRowNumber}`;
+        const numericSheetId = await getSheetNumericId(spreadsheetId, sheetName);
+        const startRowIndex = rowIndex + 1;
+        const endRowIndex = rowIndex + 2;
+
+        const batchUpdatePayload = {
+            requests: [
+                {
+                    deleteDimension: {
+                        range: {
+                            sheetId: numericSheetId,
+                            dimension: 'ROWS',
+                            startIndex: startRowIndex,
+                            endIndex: endRowIndex,
+                        },
+                    },
+                },
+            ],
+        };
 
         const res = await fetchWithAuth(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(targetRange)}:clear`,
-            { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batchUpdatePayload),
+            }
         );
 
-        if (!res.ok) throw new Error(`Google Sheets API Error (${res.status}): ${res.statusText}`);
+        if (!res.ok) {
+            const errorBody = (await res.json().catch(() => null)) as {
+                error?: { message?: string };
+            } | null;
+            throw new Error(
+                `Google Sheets BatchUpdate Error (${res.status}): ${errorBody?.error?.message || res.statusText}`
+            );
+        }
     }
 
     return {
