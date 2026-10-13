@@ -137,7 +137,7 @@ function handleUserTabChange(tabId: UserTabId): void {
             <div class="flex flex-col">
                 <CardTitle>
                     <template #title>Active Account</template>
-                    <template #subtitle>{{ activeCard.holderName }} credentials</template>
+                    <template #subtitle>{{ activeOwner }} credentials</template>
                 </CardTitle>
                 <div
                     class="flex flex-1 flex-col justify-between space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
@@ -182,7 +182,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                                         Holder
                                     </span>
                                     <span class="font-mono text-xs font-medium text-mist-300">
-                                        {{ activeCard.holderName }}
+                                        {{ activeOwner }}
                                     </span>
                                 </div>
                                 <div class="flex flex-col">
@@ -222,7 +222,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                         <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                             Available Balance
                         </span>
-                        <div class="flex gap-2 font-mono text-lg font-semibold">
+                        <div class="text-md flex gap-2 font-mono font-bold">
                             <span
                                 v-if="activeMetrics.net < 0"
                                 class="text-rose-400">

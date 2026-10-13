@@ -236,11 +236,11 @@ function handleSelectMonth(targetMonthStr: string): void {
                 <button
                     type="button"
                     class="cursor-pointer rounded-xs px-3 py-1.5 transition"
-                    :class="[
+                    :class="
                         activeView === '6M'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
                     @click="
                         activeView = '6M';
                         hoveredIndex = null;
@@ -250,11 +250,11 @@ function handleSelectMonth(targetMonthStr: string): void {
                 <button
                     type="button"
                     class="cursor-pointer rounded-md px-3 py-1.5 transition"
-                    :class="[
+                    :class="
                         activeView === 'YTD'
                             ? 'bg-mist-800 text-lime-400 shadow-sm'
-                            : 'text-mist-400 hover:text-mist-200',
-                    ]"
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
                     @click="
                         activeView = 'YTD';
                         hoveredIndex = null;
@@ -280,7 +280,7 @@ function handleSelectMonth(targetMonthStr: string): void {
                         </span>
                     </div>
                     <p class="flex items-center gap-1 text-xs text-mist-500">
-                        Net income this month for {{ owner }}
+                        Net income this month
                     </p>
                 </div>
 
