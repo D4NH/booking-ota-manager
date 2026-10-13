@@ -65,11 +65,6 @@ function handleMarkComplete(b: Booking): void {
                     :class="isSidebarOpen ? 'max-w-40 opacity-100' : 'max-w-0 opacity-0'">
                     Notifications
                 </span>
-                <span
-                    v-if="isSidebarOpen && totalCount > 0"
-                    class="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-lime-500 px-1 font-mono text-[9px] font-bold text-mist-950 shadow-sm">
-                    {{ totalCount }}
-                </span>
             </div>
             <span
                 v-if="totalCount > 0"
