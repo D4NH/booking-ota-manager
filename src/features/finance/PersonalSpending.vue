@@ -8,6 +8,8 @@ import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
 
+type ViewMode = 'trajectory' | 'breakdown';
+
 interface CoordinatePoint {
     x: number;
     y: number;
@@ -27,6 +29,13 @@ interface XAxisTickLabel {
     x: number;
 }
 
+interface CategoryBreakdown {
+    category: string;
+    amount: number;
+    pct: number;
+    color: string;
+}
+
 interface Props {
     owner?: PersonalOwner | 'Shared' | 'All';
 }
@@ -40,11 +49,23 @@ const PADDING_RIGHT = 12;
 const chartPlotWidth = SVG_WIDTH - PADDING_LEFT - PADDING_RIGHT;
 const chartPlotHeight = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
+const PALETTE: readonly string[] = [
+    '#F43F5E',
+    '#38BDF8',
+    '#F59E0B',
+    '#A855F7',
+    '#34D399',
+    '#EC4899',
+    '#64748B',
+    '#818CF8',
+] as const;
+
 const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
 const { personalFinances, sharedFinances, selectedMonth } = storeToRefs(financeStore);
 
+const activeView = ref<ViewMode>('trajectory');
 const hoveredIndex = ref<number | null>(null);
 
 const currentCycle = computed<string>(() => selectedMonth.value || getCurrentMonth());
@@ -66,45 +87,6 @@ const activeElapsedDay = computed<number>(() => {
     }
     return daysInCurrentMonth.value;
 });
-
-function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
-    const personal = personalFinances.value || [];
-    const shared = sharedFinances.value || [];
-    const dailyMap = Array.from({ length: 32 }, () => 0);
-
-    const checkAndAdd = (item: PersonalFinance | SharedFinance): void => {
-        if (!item?.date) return;
-        if (owner !== 'All' && 'owner' in item && item.owner !== owner) return;
-
-        const normalized = normalizeDate(item.date);
-        if (!normalized.startsWith(cycleStr)) return;
-
-        const category = item.category?.toLowerCase().trim();
-        if (category === 'savings' || category === 'gold') return;
-
-        if (item.type === 'expense' || item.type === 'fixed_cost') {
-            const dayNum = Number(normalized.slice(8, 10));
-            if (dayNum >= 1 && dayNum <= 31) {
-                dailyMap[dayNum] = (dailyMap[dayNum] ?? 0) + (Number(item.amount) || 0);
-            }
-        }
-    };
-
-    if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
-        personal.forEach(checkAndAdd);
-    }
-    if (owner === 'All' || owner === 'Shared') {
-        shared.forEach(checkAndAdd);
-    }
-
-    const cumulative: number[] = [];
-    let runningTotal = 0;
-    for (let day = 1; day <= upToDay; day++) {
-        runningTotal += dailyMap[day] ?? 0;
-        cumulative.push(runningTotal);
-    }
-    return cumulative;
-}
 
 const currentPoints = computed<number[]>(() =>
     calculateDailyCumulative(currentCycle.value, activeElapsedDay.value)
@@ -159,36 +141,12 @@ const yAxisTicks = computed<YAxisTick[]>(() => {
     ];
 });
 
-function mapPointsToCoordinates(data: number[]): CoordinatePoint[] {
-    const stepX = chartPlotWidth / (maxCalendarDays - 1);
-    return data.map((val, i) => {
-        const x = PADDING_LEFT + i * stepX;
-        const normalizedY = maxVal.value > 0 ? val / maxVal.value : 0;
-        const y = PADDING_TOP + (1 - normalizedY) * chartPlotHeight;
-        return { x, y, val, day: i + 1 };
-    });
-}
-
 const currentCoords = computed<CoordinatePoint[]>(() =>
     mapPointsToCoordinates(currentPoints.value)
 );
 const previousCoords = computed<CoordinatePoint[]>(() =>
     mapPointsToCoordinates(previousPoints.value)
 );
-
-function generateSmoothPath(points: CoordinatePoint[]): string {
-    if (!points.length) return '';
-    if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
-
-    let path = `M ${points[0]!.x} ${points[0]!.y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i]!;
-        const p1 = points[i + 1]!;
-        const controlX = (p0.x + p1.x) / 2;
-        path += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
-    }
-    return path;
-}
 
 const currentLinePath = computed<string>(() => generateSmoothPath(currentCoords.value));
 const previousLinePath = computed<string>(() => generateSmoothPath(previousCoords.value));
@@ -211,6 +169,148 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
         x: PADDING_LEFT + (day - 1) * stepX,
     }));
 });
+const scopedExpenseItems = computed<(PersonalFinance | SharedFinance)[]>(() => {
+    const personal = personalFinances.value || [];
+    const shared = sharedFinances.value || [];
+    const cycle = currentCycle.value;
+    const items: (PersonalFinance | SharedFinance)[] = [];
+
+    function checkAndPush(item: PersonalFinance | SharedFinance): void {
+        if (!item?.date) return;
+        if (owner !== 'All' && 'owner' in item && item.owner !== owner) return;
+
+        const normalized = normalizeDate(item.date);
+        if (!normalized.startsWith(cycle)) return;
+
+        const cat = item.category?.toLowerCase().trim();
+        if (cat === 'savings' || cat === 'gold') return;
+
+        if (item.type === 'expense' || item.type === 'fixed_cost') {
+            items.push(item);
+        }
+    }
+
+    if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
+        for (let i = 0; i < personal.length; i++) {
+            const item = personal[i];
+            if (item) checkAndPush(item);
+        }
+    }
+    if (owner === 'All' || owner === 'Shared') {
+        for (let i = 0; i < shared.length; i++) {
+            const item = shared[i];
+            if (item) checkAndPush(item);
+        }
+    }
+
+    return items;
+});
+const breakdownTotal = computed<number>(() => {
+    let sum = 0;
+    const items = scopedExpenseItems.value;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item) sum += Number(item.amount) || 0;
+    }
+    return sum;
+});
+const categoryBreakdowns = computed<CategoryBreakdown[]>(() => {
+    const total = breakdownTotal.value;
+    const map = new Map<string, number>();
+    const items = scopedExpenseItems.value;
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item?.category) continue;
+        const cat = item.category.trim();
+        map.set(cat, (map.get(cat) ?? 0) + (Number(item.amount) || 0));
+    }
+
+    const result: CategoryBreakdown[] = [];
+    let idx = 0;
+    map.forEach((amount, category) => {
+        const pct = total > 0 ? Math.round((amount / total) * 100) : 0;
+        result.push({
+            category,
+            amount,
+            pct,
+            color: PALETTE[idx % PALETTE.length] ?? '#A3E635',
+        });
+        idx++;
+    });
+
+    return result.sort((a, b) => b.amount - a.amount);
+});
+
+function calculateDailyCumulative(cycleStr: string, upToDay: number): number[] {
+    const personal = personalFinances.value || [];
+    const shared = sharedFinances.value || [];
+    const dailyMap = Array.from({ length: 32 }, () => 0);
+
+    function checkAndAdd(item: PersonalFinance | SharedFinance): void {
+        if (!item?.date) return;
+        if (owner !== 'All' && 'owner' in item && item.owner !== owner) return;
+
+        const normalized = normalizeDate(item.date);
+        if (!normalized.startsWith(cycleStr)) return;
+
+        const category = item.category?.toLowerCase().trim();
+        if (category === 'savings' || category === 'gold') return;
+
+        if (item.type === 'expense' || item.type === 'fixed_cost') {
+            const dayNum = Number(normalized.slice(8, 10));
+            if (dayNum >= 1 && dayNum <= 31) {
+                dailyMap[dayNum] = (dailyMap[dayNum] ?? 0) + (Number(item.amount) || 0);
+            }
+        }
+    }
+
+    if (owner === 'All' || owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
+        for (let i = 0; i < personal.length; i++) {
+            const item = personal[i];
+            if (item) checkAndAdd(item);
+        }
+    }
+    if (owner === 'All' || owner === 'Shared') {
+        for (let i = 0; i < shared.length; i++) {
+            const item = shared[i];
+            if (item) checkAndAdd(item);
+        }
+    }
+
+    const cumulative: number[] = [];
+    let runningTotal = 0;
+    for (let day = 1; day <= upToDay; day++) {
+        runningTotal += dailyMap[day] ?? 0;
+        cumulative.push(runningTotal);
+    }
+    return cumulative;
+}
+function mapPointsToCoordinates(data: number[]): CoordinatePoint[] {
+    const stepX = chartPlotWidth / (maxCalendarDays - 1);
+    return data.map((val, i) => {
+        const x = PADDING_LEFT + i * stepX;
+        const normalizedY = maxVal.value > 0 ? val / maxVal.value : 0;
+        const y = PADDING_TOP + (1 - normalizedY) * chartPlotHeight;
+        return { x, y, val, day: i + 1 };
+    });
+}
+function generateSmoothPath(points: CoordinatePoint[]): string {
+    if (!points.length) return '';
+    if (points.length === 1) return `M ${points[0]!.x} ${points[0]!.y}`;
+
+    let path = `M ${points[0]!.x} ${points[0]!.y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i]!;
+        const p1 = points[i + 1]!;
+        const controlX = (p0.x + p1.x) / 2;
+        path += ` C ${controlX} ${p0.y}, ${controlX} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    return path;
+}
+function setViewMode(mode: ViewMode): void {
+    activeView.value = mode;
+}
 </script>
 
 <template>
@@ -218,18 +318,44 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
         <div class="flex shrink-0 items-center justify-between">
             <CardTitle>
                 <template #title>Spending</template>
-                <template #subtitle>Cumulative MTD outflow trajectory</template>
+                <template #subtitle>
+                    {{
+                        activeView === 'trajectory'
+                            ? 'Cumulative MTD outflow trajectory'
+                            : `Outflow distribution across categories for cycle ${currentCycle}`
+                    }}
+                </template>
             </CardTitle>
 
             <div
                 class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
-                <span class="rounded-xs px-3 py-1.5 text-mist-400">
-                    This month vs. last month
-                </span>
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-xs px-3 py-1.5 transition"
+                    :class="
+                        activeView === 'trajectory'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="setViewMode('trajectory')">
+                    Trajectory
+                </button>
+                <button
+                    type="button"
+                    class="cursor-pointer rounded-xs px-3 py-1.5 transition"
+                    :class="
+                        activeView === 'breakdown'
+                            ? 'bg-mist-800 text-lime-400 shadow-sm'
+                            : 'text-mist-400 hover:text-mist-200'
+                    "
+                    @click="setViewMode('breakdown')">
+                    Breakdown
+                </button>
             </div>
         </div>
 
         <div
+            v-if="activeView === 'trajectory'"
             class="flex min-h-0 flex-1 flex-col justify-between space-y-3 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
             @mouseleave="hoveredIndex = null">
             <div class="flex shrink-0 flex-wrap items-baseline justify-between gap-2">
@@ -249,7 +375,7 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
                             {{ Math.abs(pacingPercentage) }}%
                         </span>
                         <span class="text-mist-500">
-                            vs last month on Day {{ activeElapsedDay }} ({{ owner }})
+                            vs last month on Day {{ activeElapsedDay }}
                         </span>
                     </p>
                 </div>
@@ -294,9 +420,9 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
                         </div>
                         <div class="flex justify-between gap-3 text-emerald-400">
                             <span>This Month:</span>
-                            <span class="font-bold">{{
-                                formatIDR(currentPoints[hoveredIndex] ?? 0)
-                            }}</span>
+                            <span class="font-bold">
+                                {{ formatIDR(currentPoints[hoveredIndex] ?? 0) }}
+                            </span>
                         </div>
                         <div class="flex justify-between gap-3 text-mist-400">
                             <span>Last Month:</span>
@@ -428,6 +554,56 @@ const xAxisLabels = computed<XAxisTickLabel[]>(() => {
                             {{ tick.label }}
                         </span>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            v-else
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            <div class="flex flex-col items-baseline gap-1">
+                <span class="font-mono text-base font-semibold">
+                    {{ formatIDR(breakdownTotal) }}
+                </span>
+                <p class="flex items-center gap-1 text-xs text-mist-500">
+                    Total expenses this month
+                </p>
+            </div>
+
+            <div class="min-h-0 flex-1 overflow-auto pr-1">
+                <div
+                    v-for="item in categoryBreakdowns"
+                    :key="item.category"
+                    class="-mx-2 mb-2 rounded-md px-2 pt-1 pb-2 text-xs transition hover:bg-mist-800/40">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-2 py-0.5 font-medium text-mist-200">
+                            <span
+                                class="h-2 w-2 shrink-0 rounded-full"
+                                :style="{ backgroundColor: item.color }" />
+                            <span class="truncate">{{ item.category }}</span>
+                        </span>
+                        <div class="flex shrink-0 items-center gap-2 font-mono">
+                            <span class="text-mist-400">{{ formatIDR(item.amount) }}</span>
+                            <span class="min-w-8 text-right font-semibold text-mist-200">
+                                {{ item.pct }}%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist-950/60">
+                        <div
+                            class="h-full rounded-full transition-all duration-500"
+                            :style="{
+                                width: `${item.pct}%`,
+                                backgroundColor: item.color,
+                            }" />
+                    </div>
+                </div>
+
+                <div
+                    v-if="categoryBreakdowns.length === 0"
+                    class="py-8 text-center text-xs text-mist-400">
+                    No expense entries recorded for {{ owner }} in {{ currentCycle }}.
                 </div>
             </div>
         </div>
