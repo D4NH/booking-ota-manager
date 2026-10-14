@@ -138,15 +138,6 @@ function handleCloseTransferModal(): void {
                     <div>
                         <div class="flex items-center gap-1.5">
                             <span class="text-xs font-semibold">{{ goal.name }}</span>
-                            <span
-                                class="py-0.2 rounded px-1.5 font-mono text-[9px] font-semibold uppercase"
-                                :class="[
-                                    goal.owner === 'Shared'
-                                        ? 'border border-blue-400/20 bg-blue-400/10 text-blue-400'
-                                        : 'border border-mist-700 bg-mist-800 text-mist-300',
-                                ]">
-                                {{ goal.owner.split(' ')[0] }}
-                            </span>
                         </div>
                         <p
                             v-if="goal.notes"
@@ -155,10 +146,12 @@ function handleCloseTransferModal(): void {
                         </p>
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-2.5 font-mono text-xs">
-                        <span class="text-mist-300">{{ formatIDR(goal.allocatedAmount) }}</span>
-                        <span class="text-mist-500">/</span>
-                        <span class="text-mist-200">{{ formatIDR(goal.targetAmount) }}</span>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span
+                            v-if="!goal.isCompleted"
+                            class="font-bold text-blue-400">
+                            {{ goal.progressPct }}%
+                        </span>
                         <fa-icon
                             class="text-xs text-mist-500"
                             icon="pen-to-square" />
@@ -171,25 +164,33 @@ function handleCloseTransferModal(): void {
                         :style="{ width: `${goal.progressPct}%` }" />
                 </div>
 
-                <div class="flex items-center justify-between font-mono text-xs text-mist-400">
-                    <span>
-                        <template v-if="goal.isCompleted">
-                            <strong class="font-sans text-blue-400">
-                                <fa-icon icon="check" /> Goal Achieved
-                            </strong>
-                        </template>
-                        <template v-else>
-                            <span class="font-sans">Need: </span>
-                            <strong class="text-mist-200">
+                <div class="flex items-center justify-between font-mono text-xs font-semibold">
+                    <div class="flex shrink-0 items-center gap-1">
+                        <span class="text-mist-400">{{ formatIDR(goal.allocatedAmount) }}</span>
+                        <span
+                            v-if="!goal.isCompleted"
+                            class="text-[10px]">
+                            /
+                        </span>
+                        <span
+                            v-if="!goal.isCompleted"
+                            class="text-mist-200">
+                            {{ formatIDR(goal.targetAmount) }}
+                        </span>
+                    </div>
+                    <div>
+                        <strong
+                            v-if="goal.isCompleted"
+                            class="font-sans font-medium text-blue-400">
+                            <fa-icon icon="check" /> Goal Achieved
+                        </strong>
+                        <div v-if="!goal.isCompleted">
+                            <span class="">
                                 {{ formatIDR(goal.remainingAmount) }}
-                            </strong>
-                        </template>
-                    </span>
-                    <span
-                        v-if="!goal.isCompleted"
-                        class="font-bold text-blue-400">
-                        {{ goal.progressPct }}%
-                    </span>
+                            </span>
+                            <span class="font-sans font-normal"> left</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
