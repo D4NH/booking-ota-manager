@@ -11,6 +11,25 @@
     --font-mono: 'JetBrains Mono', monospace;
 }
 
+@theme inline {
+    --texttrim-both: trim-both;
+    --texttrim-start: trim-start;
+    --texttrim-end: trim-end;
+
+    --textedge-start-text: text;
+    --textedge-start-cap: cap;
+    --textedge-start-ex: ex;
+    --textedge-end-alphabetic: alphabetic;
+    --textedge-end-text: text;
+}
+
+@utility text-trim-* {
+    text-box: trim-both --value(--textedge-start-*)
+        --modifier(--textedge-end-*, --default(alphabetic));
+    text-box: trim-both --value([*]);
+    text-box-trim: --value(--texttrim-*, 'none');
+}
+
 :root {
     --tf-toast-border-radius: 2px;
 }
