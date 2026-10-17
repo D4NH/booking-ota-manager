@@ -4,10 +4,9 @@ import { storeToRefs } from 'pinia';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { PersonalFinance, SharedFinance, PersonalOwner } from '@/types/finance';
-import { formatDate } from '@/utils/date';
+import { formatDate, getCurrentDate } from '@/utils/date';
 import { sortNewestFirst } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
-
 import AppButton from '@/components/ui/AppButton.vue';
 import CardTitle from '@/components/CardTitle.vue';
 import TransactionNote from '@/components/TransactionNote.vue';
@@ -21,17 +20,25 @@ interface Props {
 const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
-const { removePersonalTransaction, removeSharedTransaction } = useFinanceSync();
+const { removePersonalTransaction, removeSharedTransaction, executeOwnerTransfer } =
+    useFinanceSync();
 const {
     filteredPersonalFinances,
     filteredSharedFinances,
+    filteredTransfers,
     monthlyProjectedIncome,
     monthlyProjectedExpenses,
+    netPropertyProfit,
 } = storeToRefs(financeStore);
 
 const isModalOpen = ref<boolean>(false);
 const editingItem = ref<PersonalFinance | SharedFinance | null>(null);
 const showRecurring = ref<boolean>(false);
+const isTransferModalOpen = ref<boolean>(false);
+const transferAmount = ref<number>(0);
+const transferDate = ref<string>(getCurrentDate());
+const transferNotes = ref<string>('Remaining property profit allocation');
+const isTransferring = ref<boolean>(false);
 
 const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     if (owner === 'Shared') {
@@ -39,6 +46,7 @@ const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     }
     return filteredPersonalFinances.value.filter((i) => i.owner === owner).sort(sortNewestFirst);
 });
+
 const totalRecurringCount = computed<number>(() => {
     const recurringItems = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
     return recurringItems.filter((i) => {
@@ -46,6 +54,32 @@ const totalRecurringCount = computed<number>(() => {
         if (owner === 'Shared') return i.targetLedger === 'Shared';
         return i.owner === owner;
     }).length;
+});
+
+const propertyProfitTotal = computed<number>(() => Math.max(0, netPropertyProfit.value));
+
+const danhTransfersTotal = computed<number>(() =>
+    filteredTransfers.value
+        .filter((t) => t.targetAccount === 'Danh Nguyen')
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+);
+
+const citraTransfersTotal = computed<number>(() =>
+    filteredTransfers.value
+        .filter((t) => t.targetAccount === 'Citra Ayu Wardani')
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+);
+
+const sharedTransfersTotal = computed<number>(() =>
+    filteredTransfers.value
+        .filter((t) => t.targetAccount === 'Shared')
+        .reduce((sum, t) => sum + Number(t.amount || 0), 0)
+);
+
+const remainingPayoutForShared = computed<number>(() => {
+    const distributed =
+        danhTransfersTotal.value + citraTransfersTotal.value + sharedTransfersTotal.value;
+    return Math.max(0, propertyProfitTotal.value - distributed);
 });
 
 function openAddModal(): void {
@@ -66,6 +100,35 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
 }
 function handleCloseModal(): void {
     editingItem.value = null;
+}
+
+function openSharedTransferModal(): void {
+    transferAmount.value = remainingPayoutForShared.value;
+    transferDate.value = getCurrentDate();
+    transferNotes.value = 'Remaining property net profit allocation';
+    isTransferModalOpen.value = true;
+}
+function closeSharedTransferModal(): void {
+    isTransferModalOpen.value = false;
+}
+async function handleConfirmSharedTransfer(): Promise<void> {
+    if (transferAmount.value <= 0 || !transferDate.value || isTransferring.value) return;
+
+    isTransferring.value = true;
+    try {
+        const success = await executeOwnerTransfer({
+            sourcePropertyId: 'piyungan',
+            targetAccount: 'Shared',
+            amount: transferAmount.value,
+            date: transferDate.value,
+            notes: transferNotes.value.trim() || 'Remaining property payout',
+        });
+        if (success) {
+            closeSharedTransferModal();
+        }
+    } finally {
+        isTransferring.value = false;
+    }
 }
 </script>
 
@@ -101,6 +164,55 @@ function handleCloseModal(): void {
             </div>
         </div>
 
+        <div
+            v-if="owner === 'Shared' && propertyProfitTotal > 0"
+            class="my-3 rounded-md border border-mist-800 bg-mist-900/90 p-3 shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-mist-200">
+                            Property Payout Allocation
+                        </span>
+                        <span
+                            class="rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold"
+                            :class="
+                                remainingPayoutForShared > 0
+                                    ? 'border border-amber-400/20 bg-amber-400/10 text-amber-300'
+                                    : 'border border-lime-400/20 bg-lime-400/10 text-lime-400'
+                            ">
+                            {{ remainingPayoutForShared > 0 ? 'Surplus Available' : 'Allocated' }}
+                        </span>
+                    </div>
+                    <p class="mt-1 font-mono text-[11px] text-mist-400">
+                        Net Profit:
+                        <span class="text-mist-200">{{ formatIDR(propertyProfitTotal) }}</span>
+                        &bull; Danh:
+                        <span class="text-lime-400">{{ formatIDR(danhTransfersTotal) }}</span>
+                        &bull; Citra:
+                        <span class="text-sky-300">{{ formatIDR(citraTransfersTotal) }}</span>
+                        &bull; Shared:
+                        <span class="text-amber-300">{{ formatIDR(sharedTransfersTotal) }}</span>
+                    </p>
+                </div>
+
+                <div
+                    v-if="remainingPayoutForShared > 0"
+                    class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-semibold text-amber-300">
+                        {{ formatIDR(remainingPayoutForShared) }}
+                    </span>
+                    <AppButton
+                        label="Transfer to Shared"
+                        color="amber"
+                        @click="openSharedTransferModal">
+                        <template #icon>
+                            <fa-icon icon="money-bill-transfer" />
+                        </template>
+                    </AppButton>
+                </div>
+            </div>
+        </div>
+
         <RecurringChecklist
             v-if="showRecurring"
             :owner="owner"
@@ -109,7 +221,14 @@ function handleCloseModal(): void {
         <div
             v-else
             class="min-h-0 flex-1 overflow-auto rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full table-fixed border-collapse text-left text-sm text-mist-200">
+            <div
+                v-if="currentList.length === 0"
+                class="flex h-full items-center justify-center text-xs">
+                No matching ledger entries logged for {{ owner }}.
+            </div>
+            <table
+                v-else
+                class="w-full table-fixed border-collapse text-left text-sm text-mist-200">
                 <thead
                     class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
                     <tr>
@@ -135,14 +254,7 @@ function handleCloseModal(): void {
                             }}
                         </td>
                         <td class="px-4 py-2.5 font-medium">
-                            <div class="flex items-center gap-1.5">
-                                <span>{{ item.category }}</span>
-                                <span
-                                    v-if="item.category === 'Gold'"
-                                    class="rounded border border-amber-400/20 bg-amber-400/10 px-1 font-mono text-[9px] font-semibold text-amber-400">
-                                    GOLD
-                                </span>
-                            </div>
+                            {{ item.category }}
                         </td>
                         <td class="truncate px-4 py-2.5 text-mist-400">
                             <span
@@ -166,7 +278,7 @@ function handleCloseModal(): void {
                             </span>
                             {{ formatIDR(item.amount) }}
                         </td>
-                        <td class="h-7 px-4 py-2.5 text-center">
+                        <td class="h-7 px-2 py-2.5">
                             <div class="flex items-center justify-end">
                                 <AppButton
                                     variant="icon"
@@ -187,13 +299,6 @@ function handleCloseModal(): void {
                             </div>
                         </td>
                     </tr>
-                    <tr v-if="currentList.length === 0">
-                        <td
-                            colspan="5"
-                            class="py-12 text-center text-mist-400">
-                            No matching ledger entries logged for {{ owner }}.
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -204,5 +309,62 @@ function handleCloseModal(): void {
             :item-to-edit="editingItem"
             @delete-item="handleDelete"
             @closed="handleCloseModal" />
+
+        <div
+            v-if="isTransferModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
+            <div
+                class="w-full max-w-sm rounded-lg border border-mist-700 bg-mist-900 p-5 shadow-2xl">
+                <h3 class="text-sm font-semibold text-mist-100">Transfer Surplus to Shared</h3>
+                <p class="mt-1 text-xs text-mist-400">
+                    Allocate residual property profit to the Shared Household ledger.
+                </p>
+
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-mist-300">Amount (IDR)</label>
+                        <input
+                            v-model.number="transferAmount"
+                            type="number"
+                            min="1"
+                            required
+                            class="mt-1 w-full rounded-md border border-mist-700 bg-mist-800 px-3 py-2 font-mono text-xs text-mist-100 transition outline-none focus:border-amber-400" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-mist-300">Transfer Date</label>
+                        <input
+                            v-model="transferDate"
+                            type="date"
+                            required
+                            class="mt-1 w-full rounded-md border border-mist-700 bg-mist-800 px-3 py-2 text-xs text-mist-100 transition outline-none focus:border-amber-400" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-mist-300">Notes</label>
+                        <input
+                            v-model="transferNotes"
+                            type="text"
+                            placeholder="Remaining property net profit allocation"
+                            class="mt-1 w-full rounded-md border border-mist-700 bg-mist-800 px-3 py-2 text-xs text-mist-100 transition outline-none focus:border-amber-400" />
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <AppButton
+                        label="Cancel"
+                        variant="text"
+                        :disabled="isTransferring"
+                        @click="closeSharedTransferModal" />
+                    <button
+                        type="button"
+                        :disabled="transferAmount <= 0 || !transferDate || isTransferring"
+                        class="cursor-pointer rounded-md bg-amber-400 px-3 py-1.5 text-xs font-semibold text-mist-950 transition hover:bg-amber-300 disabled:opacity-50"
+                        @click="handleConfirmSharedTransfer">
+                        {{ isTransferring ? 'Transferring...' : 'Confirm Transfer' }}
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>

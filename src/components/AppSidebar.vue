@@ -32,7 +32,7 @@ const route = useRoute();
 const { markBookingComplete } = useBookingSync();
 const isSidebarOpen = useStorage<boolean>('sidebar-open', true);
 const stagingStore = useStagingStore();
-const { stagedBookings } = storeToRefs(stagingStore);
+const { stagedBookings, pendingCount } = storeToRefs(stagingStore);
 
 const activeStagedBooking = ref<StagedBooking | null>(null);
 const isFinanceOpen = ref<boolean>(false);
@@ -68,6 +68,13 @@ const pendingPayments = computed<{
         notificationsCount,
     };
 });
+
+const totalNotificationsCount = computed<number>(() => {
+    const paymentsCount = Number(pendingPayments.value?.notificationsCount) || 0;
+    const stagedCount = Number(pendingCount.value) || 0;
+    return paymentsCount + stagedCount;
+});
+const hasNotifications = computed<boolean>(() => totalNotificationsCount.value > 0);
 
 watch(
     () => route.path,
@@ -318,7 +325,7 @@ function handleOpenStaging(stagedItem?: StagedBooking): void {
 
         <SyncSection :is-sidebar-open="isSidebarOpen" />
         <NotificationsDrawer
-            v-if="pendingPayments.notificationsCount > 0"
+            v-if="hasNotifications"
             :is-menu-open="isNotificationOpen"
             :is-sidebar-open="isSidebarOpen"
             :pending-payments="pendingPayments.whatsappPayments"

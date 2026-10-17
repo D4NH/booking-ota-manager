@@ -15,20 +15,29 @@ interface MetricsTotals {
     outflow: number;
     net: number;
     savings: number;
+    assets: number;
     revenueGrowthPct: number | null;
 }
 
 const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
-const { personalFinances, sharedFinances, selectedMonth, previousMonth } =
-    storeToRefs(financeStore);
+const {
+    personalFinances,
+    sharedFinances,
+    selectedMonth,
+    previousMonth,
+    goldAccountAllocation,
+    sbnAccountAllocation,
+    dynamicSavingsAccounts,
+} = storeToRefs(financeStore);
 
 const metrics = computed<MetricsTotals>(() => {
     let inflow = 0;
     let prevInflow = 0;
     let outflow = 0;
     let savings = 0;
+    let assets = 0;
 
     const cycle = selectedMonth.value;
     const prevCycle = previousMonth.value;
@@ -60,6 +69,16 @@ const metrics = computed<MetricsTotals>(() => {
             }
         }
     };
+    const calculateAssets = (owner: string): number => {
+        const gold = goldAccountAllocation.value.find((a) => a.owner === owner);
+        const sbn = sbnAccountAllocation.value.find((a) => a.owner === owner);
+        const savingAccount = dynamicSavingsAccounts.value.find((a) => a.owner === owner);
+        const totalSavings = savingAccount?.balance || 0;
+        const goldValuation = gold?.valuation || 0;
+        const sbnPrincipalAmount = sbn?.principalAmount || 0;
+
+        return goldValuation + sbnPrincipalAmount + totalSavings || 0;
+    };
 
     if (owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
         const targetPersonal = personal.filter((p) => p.owner === owner);
@@ -67,20 +86,22 @@ const metrics = computed<MetricsTotals>(() => {
             const item = targetPersonal[i];
             if (item) processItem(item);
         }
+        assets = calculateAssets(owner);
     }
 
     if (owner === 'Shared') {
-        for (let i = 0; i < shared.length; i++) {
-            const item = shared[i];
+        shared.forEach((item) => {
             if (item) processItem(item);
-        }
+        });
+        assets = calculateAssets(owner);
     }
 
     return {
         inflow,
         outflow,
-        net: inflow - outflow,
+        net: inflow - outflow - savings,
         savings,
+        assets,
         revenueGrowthPct: calculateGrowthPct(inflow, prevInflow),
     };
 });
@@ -149,10 +170,10 @@ const metrics = computed<MetricsTotals>(() => {
 
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
-                Allocated to Savings
+                Total Assets
             </h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(metrics.savings) }}
+                {{ formatIDR(metrics.assets) }}
             </p>
             <p class="text-xs text-mist-500">Reserve deposits</p>
         </div>
