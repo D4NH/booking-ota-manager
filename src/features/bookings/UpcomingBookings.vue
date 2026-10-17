@@ -72,17 +72,16 @@ const displaySections = computed<MonthSection[]>(() => {
                 v-else
                 :key="section.key">
                 <div class="mt-4 mb-3 first:mt-0">
-                    <h3 class="text-xs font-medium text-gray-500 uppercase dark:text-neutral-400">
+                    <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         {{ section.label }}
                     </h3>
                 </div>
-
                 <ol
                     class="relative after:absolute after:top-3 after:bottom-0 after:translate-x-1.75 after:border-s after:border-neutral-700">
                     <li
                         v-for="b in section.items"
                         :key="b.id || b.bookingId"
-                        class="ms-8 mb-4 last:mb-2">
+                        class="ms-8 mb-2 last:mb-1">
                         <div
                             class="absolute -inset-s-1.5 z-10 flex size-7 items-center justify-center">
                             <div

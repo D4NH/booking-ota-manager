@@ -111,7 +111,7 @@ function handleUserTabChange(tabId: UserTabId): void {
         <div
             class="sticky -top-4 z-20 -mx-4 flex items-center justify-between bg-mist-900/25 px-4 py-2.5 backdrop-blur-lg">
             <div
-                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
+                class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs shadow-md select-none">
                 <button
                     v-for="tab in USER_TABS"
                     :key="tab.id"
@@ -140,7 +140,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                     <template #subtitle>{{ activeOwner }} credentials</template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                     <div class="relative mt-4 mr-4 h-48 w-78 self-center select-none">
                         <div
                             class="absolute -top-3 -right-4 z-0 h-full w-full overflow-hidden rounded-xl border border-mist-700 bg-mist-800 shadow-md">

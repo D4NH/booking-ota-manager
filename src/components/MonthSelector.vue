@@ -33,7 +33,7 @@ function handleResetToCurrentMonth(): void {
     <div class="flex gap-2">
         <button
             type="button"
-            class="rounded-md border border-mist-800 px-3 py-2 text-xs shadow-sm transition-colors"
+            class="rounded-md border border-mist-800 px-3 py-2 text-xs shadow-md transition-colors"
             :class="[
                 isCurrentCalendarMonth
                     ? 'cursor-default bg-mist-900 text-mist-500'
@@ -42,7 +42,8 @@ function handleResetToCurrentMonth(): void {
             @click="handleResetToCurrentMonth">
             Today
         </button>
-        <div class="flex w-50 items-center justify-center rounded-md border border-mist-800">
+        <div
+            class="flex w-50 items-center justify-center rounded-md border border-mist-800 shadow-md">
             <button
                 type="button"
                 class="-mt-1 cursor-pointer p-1.5 text-mist-400 transition hover:text-mist-100"

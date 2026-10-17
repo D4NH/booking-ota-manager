@@ -92,7 +92,7 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
         </CardTitle>
 
         <div
-            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4">
+            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4 shadow-md">
             <div class="flex flex-col items-baseline gap-1">
                 <span class="text-md font-mono font-semibold">
                     {{ formatIDR(Math.abs(scopedExpenses)) }}

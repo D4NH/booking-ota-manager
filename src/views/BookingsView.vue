@@ -211,8 +211,8 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
             class="flex flex-1 flex-col items-center justify-center rounded-md border border-mist-800 p-8 text-xs text-mist-400 shadow-md">
             <fa-icon
                 icon="receipt"
-                class="text-2xl text-mist-600" />
-            <p class="mt-2 text-sm">No bookings match the selected criteria</p>
+                class="text-xl text-mist-600" />
+            <p class="mt-2">No bookings match the selected criteria</p>
         </div>
         <BookingsTable
             v-else

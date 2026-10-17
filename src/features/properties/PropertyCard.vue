@@ -45,7 +45,7 @@ function handleImageError(e: Event): void {
             name: 'property-detail',
             params: { id: property.id },
         }"
-        class="group relative flex cursor-pointer overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md transition-all duration-200 hover:border-lime-700 hover:shadow-xl">
+        class="group relative flex cursor-pointer overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md transition-all duration-200 hover:border-lime-700">
         <div class="flex min-w-0 flex-1 flex-col justify-between space-y-4 p-4">
             <!-- Property Name & Location -->
             <div>

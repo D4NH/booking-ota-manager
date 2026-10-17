@@ -133,16 +133,28 @@ function handleCloseModal(): void {
         </div>
 
         <div class="flex-1 rounded-md border border-mist-800 bg-mist-900 shadow-md">
-            <table class="w-full table-fixed border-collapse text-left text-sm text-mist-300">
+            <div
+                v-if="displayedTransactions.length === 0"
+                class="flex flex-1 flex-col items-center justify-center p-8 text-xs text-mist-400">
+                <fa-icon
+                    icon="calendar-days"
+                    class="text-xl text-mist-700" />
+                <span class="ml-2 font-medium text-mist-400">
+                    No records for this unit and month cycle
+                </span>
+            </div>
+            <table
+                v-else
+                class="w-full table-fixed border-collapse text-left text-sm text-mist-300">
                 <thead
                     class="border-b border-mist-800 bg-mist-950/40 text-xs font-bold text-mist-400 uppercase">
                     <tr class="h-12">
-                        <th class="w-30 px-4 py-0">Date</th>
-                        <th class="w-30 px-4 py-0">Property</th>
-                        <th class="w-52 px-4 py-0">Category</th>
-                        <th class="w-auto px-4 py-0">Source</th>
-                        <th class="w-40 px-4 py-0 text-right">Amount</th>
-                        <th class="w-28 px-4 py-0 text-right">Actions</th>
+                        <th class="w-30 px-4 py-2.5">Date</th>
+                        <th class="w-30 px-4 py-2.5">Property</th>
+                        <th class="w-52 px-4 py-2.5">Category</th>
+                        <th class="w-auto px-4 py-2.5">Source</th>
+                        <th class="w-40 px-4 py-2.5 text-right">Amount</th>
+                        <th class="w-28 px-4 py-2.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-mist-800/60">
@@ -150,7 +162,7 @@ function handleCloseModal(): void {
                         v-for="item in paginatedTransactions"
                         :key="item.id"
                         class="h-12 hover:bg-mist-800/40">
-                        <td class="px-4 py-0 font-mono text-xs text-mist-400">
+                        <td class="px-4 py-2.5 font-mono text-xs text-mist-400">
                             {{
                                 formatDate(item.date, {
                                     relativeDay: true,
@@ -159,7 +171,7 @@ function handleCloseModal(): void {
                                 })
                             }}
                         </td>
-                        <td class="h-10 px-4 py-0">
+                        <td class="h-10 px-4 py-2.5">
                             <div class="flex h-full items-center">
                                 <RouterLink
                                     :to="{
@@ -172,10 +184,10 @@ function handleCloseModal(): void {
                                 </RouterLink>
                             </div>
                         </td>
-                        <td class="truncate px-4 py-0 font-medium">
+                        <td class="truncate px-4 py-2.5 font-medium">
                             {{ item.category }}
                         </td>
-                        <td class="truncate px-4 py-0 text-mist-400">
+                        <td class="truncate px-4 py-2.5 text-mist-400">
                             <div class="flex items-center gap-1.5">
                                 <span
                                     v-if="item.id.startsWith('dexie-')"
@@ -185,7 +197,7 @@ function handleCloseModal(): void {
                                 <TransactionNote :notes="item.notes" />
                             </div>
                         </td>
-                        <td class="px-4 py-0 text-right font-mono font-medium">
+                        <td class="px-4 py-2.5 text-right font-mono font-medium">
                             <div class="group relative inline-flex items-center justify-end">
                                 <span
                                     class="pr-1 text-xs"
@@ -194,7 +206,7 @@ function handleCloseModal(): void {
                                             ? 'text-emerald-400'
                                             : 'text-rose-400'
                                     ">
-                                    {{ item.type === 'expense' ? '-' : '+' }}
+                                    {{ item.type === 'income' ? '+' : '-' }}
                                 </span>
                                 <span class="text-xs">
                                     {{ formatIDR(item.amount) }}
@@ -204,7 +216,7 @@ function handleCloseModal(): void {
                                     v-if="item.category === 'Property Payout'"
                                     class="pointer-events-none absolute top-1/2 right-full z-30 mr-2 w-48 -translate-y-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                     <div
-                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
+                                        class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-md">
                                         <div class="flex items-center justify-between font-mono">
                                             <span class="font-medium text-mist-400">
                                                 Payout 15%
@@ -217,7 +229,7 @@ function handleCloseModal(): void {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-0">
+                        <td class="h-7 px-2 py-0">
                             <div
                                 v-if="!item.id.startsWith('dexie')"
                                 class="flex items-center justify-end">
@@ -237,20 +249,6 @@ function handleCloseModal(): void {
                                         <fa-icon icon="trash-can" />
                                     </template>
                                 </AppButton>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="displayedTransactions.length === 0">
-                        <td
-                            colspan="6"
-                            class="py-24 text-center text-mist-400">
-                            <div class="flex items-center justify-center">
-                                <fa-icon
-                                    icon="calendar-days"
-                                    class="text-xl text-mist-700" />
-                                <span class="ml-2 font-medium text-mist-400">
-                                    No records for this unit and month cycle
-                                </span>
                             </div>
                         </td>
                     </tr>

@@ -66,7 +66,7 @@ function handleNavigate(targetRouteName: string): void {
 <template>
     <div class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Total Net Worth
                 </h3>
@@ -75,7 +75,7 @@ function handleNavigate(targetRouteName: string): void {
                 </p>
                 <p class="text-xs text-mist-500">Savings + SBN + Gold</p>
             </div>
-            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Consolidated Cash Flow
                 </h3>
@@ -89,7 +89,7 @@ function handleNavigate(targetRouteName: string): void {
                 </p>
                 <p class="text-xs text-mist-500">Villa net margin + Family cash flow</p>
             </div>
-            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Owner Draws
                 </h3>
@@ -98,7 +98,7 @@ function handleNavigate(targetRouteName: string): void {
                 </p>
                 <p class="text-xs text-mist-500">Transferred to Personal accounts</p>
             </div>
-            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Cash Reserves
                 </h3>
@@ -116,7 +116,7 @@ function handleNavigate(targetRouteName: string): void {
                     <template #subtitle>Gold, investments and savings</template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                     <div class="grid grid-cols-3 gap-2 font-mono text-xs">
                         <div class="flex items-center gap-1.5 text-amber-400">
                             <span class="h-2 w-2 rounded-full bg-amber-400" />
@@ -177,7 +177,7 @@ function handleNavigate(targetRouteName: string): void {
                     </template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1 border-r border-mist-800/80 pr-2">
                             <span
@@ -230,7 +230,7 @@ function handleNavigate(targetRouteName: string): void {
                     <template #subtitle>Piyungan, Wonosari and Bantul rental ledgers</template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                     <div class="grid grid-cols-3 gap-2 font-mono text-xs">
                         <div class="space-y-1">
                             <span class="block text-xs text-mist-500 uppercase">Revenue</span>
@@ -269,7 +269,7 @@ function handleNavigate(targetRouteName: string): void {
                     <template #subtitle>Danh Nguyen, Citra Ayu Wardani and Shared budgets</template>
                 </CardTitle>
                 <div
-                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+                    class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                     <div class="grid grid-cols-3 gap-2 font-mono text-xs">
                         <div class="space-y-1">
                             <span class="block text-xs text-mist-500 uppercase">

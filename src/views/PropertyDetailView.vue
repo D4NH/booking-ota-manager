@@ -107,34 +107,6 @@ function handleEditProperty(): void {
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
-                    Annual Revenue
-                </h3>
-                <p class="font-mono text-lg font-extrabold text-mist-200">
-                    {{ formatIDR(totalYearRevenue) }}
-                </p>
-                <p class="flex items-center gap-1 text-xs">
-                    <span
-                        v-if="totalPayout !== 0"
-                        class="font-medium"
-                        :class="
-                            totalPayout > 0
-                                ? 'text-emerald-400'
-                                : totalPayout < 0
-                                  ? 'text-rose-400'
-                                  : 'text-mist-400'
-                        ">
-                        {{ totalPayout >= 0 ? '+' : '-' }}{{ formatIDR(totalPayout) }}
-                    </span>
-                    <span
-                        v-else
-                        class="font-medium text-mist-500">
-                        No payout
-                    </span>
-                    <span class="text-mist-500">this month</span>
-                </p>
-            </div>
-            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
                 </h3>
                 <p class="font-mono text-lg font-extrabold text-mist-200">
@@ -177,7 +149,6 @@ function handleEditProperty(): void {
                 <p class="font-mono text-lg font-extrabold text-mist-200">{{ formatIDR(adr) }}</p>
                 <p class="text-xs text-mist-500">Per booked night</p>
             </div>
-
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Occupancy
@@ -189,12 +160,40 @@ function handleEditProperty(): void {
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked
                 </p>
             </div>
+            <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
+                    Annual Revenue
+                </h3>
+                <p class="font-mono text-lg font-extrabold text-mist-200">
+                    {{ formatIDR(totalYearRevenue) }}
+                </p>
+                <p class="flex items-center gap-1 text-xs">
+                    <span
+                        v-if="totalPayout !== 0"
+                        class="font-medium"
+                        :class="
+                            totalPayout > 0
+                                ? 'text-emerald-400'
+                                : totalPayout < 0
+                                  ? 'text-rose-400'
+                                  : 'text-mist-400'
+                        ">
+                        {{ totalPayout >= 0 ? '+' : '-' }}{{ formatIDR(totalPayout) }}
+                    </span>
+                    <span
+                        v-else
+                        class="font-medium text-mist-500">
+                        No payout
+                    </span>
+                    <span class="text-mist-500">this month</span>
+                </p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 space-y-4 lg:grid-cols-4 lg:gap-4 lg:space-y-0">
             <!-- Live Operations Sidebar -->
             <div
-                class="flex flex-col space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-xl">
+                class="flex flex-col space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <div class="flex items-center justify-between border-b border-mist-800 pb-3">
                     <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                         Daily Operations
@@ -332,7 +331,7 @@ function handleEditProperty(): void {
 
             <!-- Photo & Property Specs -->
             <div
-                class="col-span-2 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-xl">
+                class="col-span-2 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
                 <div class="relative flex h-full flex-col justify-between overflow-hidden p-4">
                     <img
                         :src="`/images/${id}.jpg`"

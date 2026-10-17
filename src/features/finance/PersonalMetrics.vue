@@ -88,7 +88,7 @@ const metrics = computed<MetricsTotals>(() => {
 
 <template>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Total Income
             </h3>
@@ -122,7 +122,7 @@ const metrics = computed<MetricsTotals>(() => {
             </p>
         </div>
 
-        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Total Expenses
             </h3>
@@ -132,7 +132,7 @@ const metrics = computed<MetricsTotals>(() => {
             <p class="text-xs text-mist-500">Fixed costs & variable spending</p>
         </div>
 
-        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+        <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Net Position
             </h3>

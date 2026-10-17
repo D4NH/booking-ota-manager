@@ -51,7 +51,7 @@ function handleCloseTransferModal(): void {
 </script>
 
 <template>
-    <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-sm">
+    <div class="rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
         <div class="mb-4 flex h-7 items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="h-2.5 w-2.5 rounded-full bg-blue-400" />

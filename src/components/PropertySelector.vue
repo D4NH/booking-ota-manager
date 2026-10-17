@@ -35,7 +35,7 @@ function handleSelect(id: PropertyId | 'all'): void {
 </script>
 
 <template>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shadow-md">
         <div
             class="flex items-center rounded-md border border-mist-800 bg-mist-950/50 p-0.5 text-xs select-none">
             <button

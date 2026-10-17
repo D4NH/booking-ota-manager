@@ -95,7 +95,7 @@ function handleSubmit(): void {
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
         <div
-            class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-xl duration-150 zoom-in-95 fade-in">
+            class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md duration-150 zoom-in-95 fade-in">
             <!-- Modal Header -->
             <div
                 class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">

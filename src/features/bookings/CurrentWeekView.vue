@@ -157,7 +157,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                         <div
                             class="pointer-events-none absolute bottom-3 left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                             <div
-                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
+                                class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-md">
                                 <div>
                                     <span class="mb-1 block font-semibold text-mist-200">
                                         {{ b.guestName }}

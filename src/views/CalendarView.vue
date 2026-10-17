@@ -70,7 +70,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
 </script>
 
 <template>
-    <div class="flex h-full flex-col space-y-4 overflow-hidden p-4">
+    <div class="flex h-full flex-col space-y-4 overflow-hidden p-4 shadow-md">
         <PageTitle>
             <template #title>Calendar</template>
             <template #subtitle>Monthly schedule and room availability</template>
@@ -80,7 +80,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
 
         <!-- Month Navigation Controls -->
         <div
-            class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4">
+            class="flex shrink-0 items-center justify-between rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
@@ -229,7 +229,7 @@ function handleBookingClick(booking: Booking, event: Event): void {
                             <div
                                 class="pointer-events-none absolute top-full left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                                 <div
-                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-xl">
+                                    class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-md">
                                     <div>
                                         <span class="mb-1 block font-semibold text-mist-200">
                                             {{ b.guestName }}

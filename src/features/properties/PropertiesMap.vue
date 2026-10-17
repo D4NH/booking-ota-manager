@@ -36,7 +36,7 @@ function createPropertyPin(prop: Property) {
         className: 'bg-transparent border-0',
         html: `
             <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer group">
-                <div class="relative flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 pr-2.5 py-1 text-xs shadow-xl transition-transform duration-200 group-hover:scale-110">
+                <div class="relative flex items-center gap-1.5 rounded-md border border-mist-800 bg-mist-900 pr-2.5 py-1 text-xs shadow-md transition-transform duration-200 group-hover:scale-110">
                     <span class="h-2 w-2 rounded-md shrink-0 ${theme || 'bg-lime-400'}"></span>
                     <span class="font-semibold text-nowrap capitalize">${prop.id}</span>
                     <span class="font-mono font-semibold text-lime-400 text-[11px] text-nowrap">${propPrice}</span>
