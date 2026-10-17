@@ -5,7 +5,9 @@ import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
 import { formatIDR } from '@/utils/money';
 import type { PersonalOwner } from '@/types/finance';
+
 import CardTitle from '@/components/CardTitle.vue';
+import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePersonalMetrics from '@/features/finance/PersonalMetrics.vue';
 import FinancePersonalTable from '@/features/finance/PersonalTable.vue';
 import SbnInvestment from '@/features/finance/SbnInvestment.vue';
@@ -126,6 +128,7 @@ function handleUserTabChange(tabId: UserTabId): void {
                     <span>{{ tab.label }}</span>
                 </button>
             </div>
+            <MonthSelector />
         </div>
 
         <FinancePersonalMetrics

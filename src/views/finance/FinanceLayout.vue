@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import PageTitle from '@/components/PageTitle.vue';
-import MonthSelector from '@/components/MonthSelector.vue';
 </script>
 
 <template>
@@ -9,8 +8,6 @@ import MonthSelector from '@/components/MonthSelector.vue';
         <PageTitle>
             <template #title>Finance Dashboard</template>
             <template #subtitle>Property, Personal and Shared Finances</template>
-
-            <MonthSelector />
         </PageTitle>
 
         <RouterView />

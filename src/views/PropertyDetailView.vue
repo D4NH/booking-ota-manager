@@ -153,8 +153,11 @@ function handleEditProperty(): void {
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Occupancy
                 </h3>
-                <p class="font-mono text-lg font-extrabold text-lime-400">
-                    {{ occupancyPercentage }}%
+                <p class="flex items-center gap-1 font-mono text-lg font-extrabold text-lime-400">
+                    <span>
+                        {{ occupancyPercentage }}
+                    </span>
+                    <span>%</span>
                 </p>
                 <p class="text-xs text-mist-500">
                     {{ occupiedNights }} / {{ totalCapacityNights }} nights booked

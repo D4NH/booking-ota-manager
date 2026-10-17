@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { PROPERTY_LIST } from '@/config/properties';
 import type { PropertyId } from '@/types/property';
+
+import MonthSelector from '@/components/MonthSelector.vue';
 import FinancePropertyMetrics from '@/features/finance/PropertyMetrics.vue';
 import FinancePropertyTable from '@/features/finance/PropertyTable.vue';
 import FinancePropertyBreakdown from '@/features/finance/PropertyBreakdown.vue';
@@ -60,6 +62,7 @@ function handlePropertyChange(propId: PropertyId | 'all'): void {
                     <span>{{ tab.label }}</span>
                 </button>
             </div>
+            <MonthSelector />
         </div>
 
         <FinancePropertyMetrics

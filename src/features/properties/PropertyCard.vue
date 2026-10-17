@@ -103,7 +103,7 @@ function handleImageError(e: Event): void {
                                                 shortMonth: true,
                                             })
                                         }}
-                                        &bull; {{ b.nights }} night(s)
+                                        &bull; {{ b.nights }} night{{ b.nights > 1 ? 's' : '' }}
                                     </span>
                                     <span class="text-xs font-medium text-mist-500">
                                         via {{ b.listing }}
