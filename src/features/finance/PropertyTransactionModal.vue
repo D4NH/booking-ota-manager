@@ -214,7 +214,7 @@ async function handleDeleteEntry(): Promise<void> {
                             v-model.number="formAmount"
                             input-label="Amount"
                             type="number"
-                            placeholder="150000"
+                            placeholder="150.000"
                             required>
                             <template #icon>
                                 <fa-icon

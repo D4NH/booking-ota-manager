@@ -5,11 +5,18 @@ import type { Property, PropertyId } from '@/types/property';
 import AppButton from '@/components/ui/AppButton.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-interface PropertyFormState extends Omit<Property, 'coordinates' | 'wifi'> {
+interface PropertyFormState extends Omit<
+    Property,
+    'coordinates' | 'wifi' | 'price' | 'bedrooms' | 'bathrooms' | 'plotSize'
+> {
     coordinates: {
         lat: number | '';
         lng: number | '';
     };
+    price: number | '';
+    bedrooms: number | '';
+    bathrooms: number | '';
+    plotSize: number | '';
     wifi: {
         ssid: string;
         pwd: string;
@@ -22,24 +29,24 @@ interface Props {
 
 function createFormData(source?: Partial<Property> | null): PropertyFormState {
     return {
-        id: source?.id || ('' as PropertyId),
-        name: source?.name || '',
-        address: source?.address || '',
+        id: source?.id ?? ('' as PropertyId),
+        name: source?.name ?? '',
+        address: source?.address ?? '',
         coordinates: {
             lat: source?.coordinates?.lat ?? '',
             lng: source?.coordinates?.lng ?? '',
         },
         color: source?.color || '#a3e635',
-        price: source?.price ?? 0,
-        codePrefix: source?.codePrefix || '',
-        bedrooms: source?.bedrooms ?? 0,
-        bathrooms: source?.bathrooms ?? 0,
-        plotSize: source?.plotSize ?? 0,
+        price: source?.price ?? '',
+        codePrefix: source?.codePrefix ?? '',
+        bedrooms: source?.bedrooms ?? '',
+        bathrooms: source?.bathrooms ?? '',
+        plotSize: source?.plotSize ?? '',
         wifi: {
-            ssid: source?.wifi?.ssid || '',
-            pwd: source?.wifi?.pwd || '',
+            ssid: source?.wifi?.ssid ?? '',
+            pwd: source?.wifi?.pwd ?? '',
         },
-        available: source?.available || false,
+        available: source?.available ?? false,
     };
 }
 
@@ -70,7 +77,6 @@ async function handleDeleteProperty(): Promise<void> {
         emit('close');
     }
 }
-
 function handleSubmit(): void {
     if (!form.value.name || !form.value.codePrefix) return;
 
@@ -99,6 +105,10 @@ function handleSubmit(): void {
     const payload: Property = {
         ...form.value,
         id: generatedId,
+        price: Number(form.value.price) || 0,
+        bedrooms: Number(form.value.bedrooms) || 0,
+        bathrooms: Number(form.value.bathrooms) || 0,
+        plotSize: Number(form.value.plotSize) || 0,
         coordinates,
     };
 

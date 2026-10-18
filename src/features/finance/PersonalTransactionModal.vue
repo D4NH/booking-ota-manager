@@ -293,7 +293,7 @@ async function submitRecord(): Promise<void> {
                                 v-model.number="formAmount"
                                 input-label="Amount"
                                 type="number"
-                                placeholder="100000"
+                                placeholder="100.000"
                                 required
                                 @input="handleAmountChange">
                                 <template #icon>

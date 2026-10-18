@@ -123,7 +123,7 @@ async function handleTransfer(): Promise<void> {
                         :input-label="isBothMode ? 'Payout Amount' : 'Amount'"
                         type="number"
                         min="1"
-                        placeholder="100000"
+                        placeholder="100.000"
                         required>
                         <template #icon>
                             <fa-icon

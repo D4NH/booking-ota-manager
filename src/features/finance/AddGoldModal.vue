@@ -203,7 +203,7 @@ async function handleDeleteGold(): Promise<void> {
                                 v-model.number="goldTotalCost"
                                 input-label="Total Purchase Cost"
                                 type="number"
-                                placeholder="15000000"
+                                placeholder="150.000.000"
                                 required>
                                 <template #icon>
                                     <fa-icon
