@@ -27,7 +27,7 @@ const searchQuery = ref<string>('');
 const hiddenStatuses = ref<Booking['status'][]>([]);
 const toggleFilters = ref<boolean>(false);
 
-const { currentDay, unitBookings: propertyBookings } = usePropertyDetails(selectedProperty, {
+const { currentDay, unitBookings } = usePropertyDetails(selectedProperty, {
     includeUnavailable: true,
 });
 
@@ -35,7 +35,7 @@ const filteredBookings = computed<Booking[]>(() => {
     const query = searchQuery.value.trim().toLowerCase();
     const hidden = hiddenStatuses.value;
 
-    return propertyBookings.value.filter((b) => {
+    return unitBookings.value.filter((b) => {
         if (hidden.includes(b.status)) return false;
         if (query) {
             return (
@@ -136,7 +136,7 @@ async function handleDeleteBooking(booking: Booking): Promise<void> {
             <CardTitle>
                 <template #title>All Bookings</template>
                 <template #subtitle>
-                    Showing {{ filteredBookings.length }} of {{ propertyBookings.length }} bookings
+                    Showing {{ filteredBookings.length }} of {{ unitBookings.length }} bookings
                 </template>
             </CardTitle>
 

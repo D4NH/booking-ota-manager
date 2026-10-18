@@ -47,7 +47,7 @@ const monthlyData = computed<MonthlyPropertyRevenue[]>(() => {
         label,
         piyungan: 0,
         wonosari: 0,
-        bantul: 0,
+        banguntapan: 0,
         nusadua: 0,
     }));
 

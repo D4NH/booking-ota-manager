@@ -17,8 +17,10 @@ interface Props {
 const { selectedProperty = 'all', showHeader = true } = defineProps<Props>();
 const modalStore = useModalStore();
 
-const { unitBookings: filteredBookings } = usePropertyDetails(() => selectedProperty);
-const { getStaysForDate, multiDayStyling } = useCalendarGrid(filteredBookings);
+const { unitBookings } = usePropertyDetails(() => selectedProperty, {
+    includeUnavailable: true,
+});
+const { getStaysForDate, multiDayStyling } = useCalendarGrid(unitBookings);
 
 const weekDays = computed(() => {
     const now = new Date();
@@ -155,7 +157,7 @@ function handleBookingClick(booking: Booking, event: Event) {
                         </div>
                         <!-- Hover Details Popover -->
                         <div
-                            class="pointer-events-none absolute bottom-3 left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+                            class="pointer-events-none absolute bottom-6 left-1/2 z-50 mt-1.5 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
                             <div
                                 class="rounded-md border border-mist-800 bg-mist-900 p-2.5 text-xs shadow-md">
                                 <div>

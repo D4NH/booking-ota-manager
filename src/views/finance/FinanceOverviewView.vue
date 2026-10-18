@@ -227,7 +227,7 @@ function handleNavigate(targetRouteName: string): void {
             <div class="flex flex-col">
                 <CardTitle>
                     <template #title>Villa Operations</template>
-                    <template #subtitle>Piyungan, Wonosari and Bantul rental ledgers</template>
+                    <template #subtitle>Piyungan, Wonosari and Banguntapan rental ledgers</template>
                 </CardTitle>
                 <div
                     class="flex flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">

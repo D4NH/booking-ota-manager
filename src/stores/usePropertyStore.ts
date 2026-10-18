@@ -1,8 +1,7 @@
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { db } from '@/db';
 import type { Property, PropertyId } from '@/types/property';
-
 import { toast } from 'vue-toastflow';
 
 const toastConfig = {
@@ -20,12 +19,13 @@ const toastConfig = {
     },
 };
 
+function sanitizePropertyRecord(property: Property): Property {
+    return JSON.parse(JSON.stringify(toRaw(property))) as Property;
+}
 export const usePropertyStore = defineStore('property', () => {
-    const preferredOrder: PropertyId[] = ['piyungan', 'wonosari', 'bantul', 'nusadua'];
-
+    const preferredOrder: PropertyId[] = ['piyungan', 'wonosari', 'banguntapan', 'nusadua'];
     const properties = ref<Property[]>([]);
-
-    const sortedProperties = computed(() => {
+    const sortedProperties = computed<Property[]>(() => {
         return [...properties.value].sort((a, b) => {
             const indexA = preferredOrder.indexOf(a.id);
             const indexB = preferredOrder.indexOf(b.id);
@@ -39,14 +39,14 @@ export const usePropertyStore = defineStore('property', () => {
         properties.value = await db.properties.toArray();
     }
     async function addProperty(property: Property): Promise<void> {
-        const plainRecord = structuredClone(property);
+        const plainRecord = sanitizePropertyRecord(property);
 
         await db.properties.add(plainRecord);
         await loadProperties();
     }
     async function saveProperty(propertyData: Property): Promise<void> {
         await toast.loading(async () => {
-            const cleanProperty = structuredClone(propertyData);
+            const cleanProperty = sanitizePropertyRecord(propertyData);
 
             await db.properties.put(cleanProperty);
             await loadProperties();

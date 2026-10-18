@@ -21,7 +21,7 @@ const modalStore = useModalStore();
 const selectedProperty = ref<PropertyId | 'all'>((route.params.id as PropertyId) || 'all');
 const selectedCheckInDate = ref<string>('');
 
-const { unitBookings: filteredBookings } = usePropertyDetails(selectedProperty, {
+const { unitBookings } = usePropertyDetails(selectedProperty, {
     includeUnavailable: true,
 });
 
@@ -38,7 +38,7 @@ const {
     goToToday,
     setMonth,
     setYear,
-} = useCalendarGrid(filteredBookings);
+} = useCalendarGrid(unitBookings);
 
 watch(
     () => route.params.id,

@@ -1,4 +1,4 @@
-export type PropertyId = 'piyungan' | 'wonosari' | 'bantul' | 'nusadua';
+export type PropertyId = 'piyungan' | 'wonosari' | 'banguntapan' | 'nusadua';
 
 export interface Property {
     id: PropertyId;
@@ -21,7 +21,7 @@ export interface Property {
     available: boolean;
 }
 
-export type LiveStatus = 'Occupied' | 'Checking-in' | 'Checking-out' | 'Vacant';
+export type LiveStatus = 'Occupied' | 'Vacant';
 
 export interface ListingBreakdown {
     listing: string;

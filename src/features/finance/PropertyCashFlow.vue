@@ -310,25 +310,20 @@ function handleSelectMonth(targetMonthStr: string): void {
                         </div>
                         <div class="flex justify-between gap-3 text-emerald-400">
                             <span>Revenue:</span>
-                            <span class="font-bold">{{
-                                formatIDR(barGroups[hoveredIndex]!.income)
-                            }}</span>
+                            <span class="font-bold">
+                                {{ formatIDR(barGroups[hoveredIndex]!.income) }}
+                            </span>
                         </div>
                         <div class="flex justify-between gap-3 text-rose-400">
                             <span>Expenses:</span>
-                            <span class="font-bold">{{
-                                formatIDR(barGroups[hoveredIndex]!.expenses)
-                            }}</span>
+                            <span class="font-bold">
+                                {{ formatIDR(barGroups[hoveredIndex]!.expenses) }}
+                            </span>
                         </div>
                         <div
                             class="flex justify-between gap-3 border-t border-mist-800/80 pt-0.5 text-mist-300">
                             <span>Net:</span>
-                            <span
-                                :class="
-                                    barGroups[hoveredIndex]!.netMargin >= 0
-                                        ? 'text-emerald-400'
-                                        : 'text-rose-400'
-                                ">
+                            <span>
                                 {{ formatIDR(barGroups[hoveredIndex]!.netMargin) }}
                             </span>
                         </div>

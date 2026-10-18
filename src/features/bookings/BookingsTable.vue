@@ -116,13 +116,8 @@ function isCurrentBooking(b: Booking): boolean {
                                     {{ b.listing }}
                                 </span>
                                 <div v-if="showPropertyColumn">
-                                    <span
-                                        v-if="b.bookingId.includes('UNAVAILABLE')"
-                                        class="text-mist-500">
-                                        -
-                                    </span>
                                     <RouterLink
-                                        v-else
+                                        v-if="!b.bookingId.includes('UNAVAILABLE')"
                                         :to="{
                                             name: 'property-detail',
                                             params: { id: b.propertyId },
@@ -136,10 +131,12 @@ function isCurrentBooking(b: Booking): boolean {
                         <td class="px-4 py-0">
                             <div class="flex flex-col justify-center gap-2">
                                 <span class="leading-none font-medium">
-                                    {{ b.guestName }}
+                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.guestName }}
                                 </span>
-                                <span class="font-mono text-xs leading-none text-mist-400">
-                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.bookingId }}
+                                <span
+                                    v-if="!b.bookingId.includes('UNAVAILABLE')"
+                                    class="font-mono text-xs leading-none text-mist-400">
+                                    {{ b.bookingId }}
                                 </span>
                             </div>
                         </td>

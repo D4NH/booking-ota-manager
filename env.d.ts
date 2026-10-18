@@ -11,7 +11,7 @@ interface ImportMetaEnv {
     readonly VITE_GOOGLE_CLIENT_ID: string;
     readonly VITE_SPREADSHEET_ID_PIYUNGAN: string;
     readonly VITE_SPREADSHEET_ID_WONOSARI: string;
-    readonly VITE_SPREADSHEET_ID_BANTUL: string;
+    readonly VITE_SPREADSHEET_ID_BANGUNTAPAN: string;
     readonly VITE_CARTO_API_KEY: string;
 }
 

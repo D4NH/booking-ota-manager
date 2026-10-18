@@ -141,11 +141,6 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
                     No operational expense entries recorded for this cycle.
                 </div>
             </div>
-
-            <div
-                class="flex justify-between border-t border-mist-800/70 pt-3 text-xs text-mist-400">
-                <span>* Excludes Owner Payout Outflows</span>
-            </div>
         </div>
     </div>
 </template>

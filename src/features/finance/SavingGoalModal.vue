@@ -14,7 +14,7 @@ interface Props {
 const { itemToEdit = null } = defineProps<Props>();
 
 const emit = defineEmits<{
-    (e: 'closed'): void;
+    closed: [];
 }>();
 
 const isOpen = defineModel<boolean>({ default: false });

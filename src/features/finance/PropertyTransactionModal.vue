@@ -5,6 +5,7 @@ import { PROPERTY_LIST } from '@/config/properties';
 import { getCurrentDate } from '@/utils/date';
 import type { PropertyFinance, PropertyFinanceType, PropertyCategory } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
+
 import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
