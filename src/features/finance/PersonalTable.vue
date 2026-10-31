@@ -46,7 +46,6 @@ const currentList = computed<(PersonalFinance | SharedFinance)[]>(() => {
     }
     return filteredPersonalFinances.value.filter((i) => i.owner === owner).sort(sortNewestFirst);
 });
-
 const totalRecurringCount = computed<number>(() => {
     const recurringItems = [...monthlyProjectedIncome.value, ...monthlyProjectedExpenses.value];
     return recurringItems.filter((i) => {
@@ -55,27 +54,22 @@ const totalRecurringCount = computed<number>(() => {
         return i.owner === owner;
     }).length;
 });
-
 const propertyProfitTotal = computed<number>(() => Math.max(0, netPropertyProfit.value));
-
 const danhTransfersTotal = computed<number>(() =>
     filteredTransfers.value
         .filter((t) => t.targetAccount === 'Danh Nguyen')
         .reduce((sum, t) => sum + Number(t.amount || 0), 0)
 );
-
 const citraTransfersTotal = computed<number>(() =>
     filteredTransfers.value
         .filter((t) => t.targetAccount === 'Citra Ayu Wardani')
         .reduce((sum, t) => sum + Number(t.amount || 0), 0)
 );
-
 const sharedTransfersTotal = computed<number>(() =>
     filteredTransfers.value
         .filter((t) => t.targetAccount === 'Shared')
         .reduce((sum, t) => sum + Number(t.amount || 0), 0)
 );
-
 const remainingPayoutForShared = computed<number>(() => {
     const distributed =
         danhTransfersTotal.value + citraTransfersTotal.value + sharedTransfersTotal.value;
@@ -101,7 +95,6 @@ async function handleDelete(item: PersonalFinance | SharedFinance): Promise<void
 function handleCloseModal(): void {
     editingItem.value = null;
 }
-
 function openSharedTransferModal(): void {
     transferAmount.value = remainingPayoutForShared.value;
     transferDate.value = getCurrentDate();
@@ -233,7 +226,7 @@ async function handleConfirmSharedTransfer(): Promise<void> {
                     class="sticky top-0 z-10 border-b border-mist-800 bg-mist-950/50 text-xs font-semibold text-mist-400 uppercase backdrop-blur-sm">
                     <tr>
                         <th class="w-28 px-4 py-2.5">Date</th>
-                        <th class="w-36 px-4 py-2.5">Category</th>
+                        <th class="w-40 px-4 py-2.5">Category</th>
                         <th class="w-auto px-4 py-2.5">Notes</th>
                         <th class="w-35 px-4 py-2.5 text-right">Amount</th>
                         <th class="w-24 px-4 py-2.5 text-center">Actions</th>

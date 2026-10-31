@@ -50,7 +50,6 @@ function matchesOwner(item: ProjectedRecurringItem): boolean {
     if (owner === 'Shared') return item.targetLedger === 'Shared';
     return item.targetLedger === 'Personal' && item.owner === owner;
 }
-
 function openSettleModal(item: ProjectedRecurringItem): void {
     itemToSettle.value = item;
     settleDate.value = item.dueDate || getCurrentDate();

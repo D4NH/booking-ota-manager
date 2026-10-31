@@ -30,7 +30,6 @@ const emit = defineEmits<{
 
 const collapsedMonths = defineModel<string[]>('collapsedMonths', { default: () => [] });
 const collapsedSet = computed(() => new Set(collapsedMonths.value));
-const colSpan = computed(() => (showPropertyColumn ? 6 : 6));
 
 function toggleMonth(key: string): void {
     if (collapsedSet.value.has(key)) {
@@ -71,7 +70,7 @@ function isCurrentBooking(b: Booking): boolean {
                     :data-month-key="group.key"
                     class="scroll-mt-10 border-t border-b border-mist-800 bg-mist-950/40">
                     <tr>
-                        <td :colspan="colSpan">
+                        <td colspan="6">
                             <button
                                 type="button"
                                 class="flex w-full cursor-pointer items-center justify-between px-4 py-2.5 font-semibold text-mist-200 hover:bg-mist-800/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-lime-500"

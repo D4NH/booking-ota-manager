@@ -17,11 +17,17 @@ interface DropdownCoordinates {
 
 interface Props {
     inputLabel?: string;
+    disabled?: boolean;
     options?: readonly DropdownItem<T>[];
     placeholder?: string;
 }
 
-const { inputLabel = '', options = [], placeholder = '--' } = defineProps<Props>();
+const {
+    inputLabel = '',
+    options = [],
+    placeholder = '--',
+    disabled = false,
+} = defineProps<Props>();
 const modelValue = defineModel<T | DropdownValue | undefined>();
 
 defineOptions({
@@ -115,7 +121,8 @@ function handleClickOutside(event: MouseEvent): void {
         <button
             ref="triggerButtonRef"
             type="button"
-            class="flex w-full cursor-pointer items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-left text-sm text-mist-500 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden"
+            :disabled="disabled"
+            class="flex w-full cursor-pointer items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 py-1.5 text-left text-sm text-mist-500 transition-colors hover:border-mist-700 focus:border-lime-500 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
             :class="$attrs.class"
             @click="toggleDropdown">
             <span

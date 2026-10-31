@@ -41,11 +41,10 @@ const categoriesShared = [
     'Subscription',
     'Travel & Transport',
 ] as const;
-const savingsInstitutions = ['BCA', 'Bank Jago', 'Seabank', 'Mandiri'] as const;
+const savingsInstitutions = ['BCA', 'Jago', 'Seabank', 'Mandiri'] as const;
 const entryType = [
     { label: 'Income', value: 'income' },
     { label: 'Expense', value: 'expense' },
-    { label: 'Fixed Cost', value: 'fixed_cost' },
 ];
 
 interface Props {
@@ -67,12 +66,11 @@ const {
     editPersonalTransaction,
     editSharedTransaction,
 } = useFinanceSync();
-const { currentGoldPricePerGram, isLoading } = storeToRefs(financeStore);
+const { isLoading } = storeToRefs(financeStore);
 
 const formType = ref<TransactionType>('expense');
 const formCategory = ref<string>(DEFAULT_PERSONAL_CATEGORY);
 const formSavingsInstitution = ref<string>('BCA');
-const formGoldWeightGrams = ref<number | null>(null);
 const formAmount = ref<number | null>(null);
 const formDate = ref(getCurrentDate());
 const formNotes = ref('');
@@ -87,7 +85,6 @@ const availableCategories = computed(() => {
     }));
 });
 const isSavingsCategory = computed(() => formCategory.value.trim().toLowerCase() === 'savings');
-const isGoldCategory = computed(() => formCategory.value.trim().toLowerCase() === 'gold');
 
 watch(
     () => [isOpen.value, itemToEdit, owner] as const,
@@ -104,14 +101,11 @@ watch(
                 'savingsInstitution' in item && item.savingsInstitution
                     ? item.savingsInstitution
                     : 'BCA';
-            formGoldWeightGrams.value =
-                'goldWeightGrams' in item && item.goldWeightGrams ? item.goldWeightGrams : null;
         } else {
             formType.value = 'expense';
             formCategory.value =
                 currentOwner === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
             formSavingsInstitution.value = 'BCA';
-            formGoldWeightGrams.value = null;
             formAmount.value = null;
             formDate.value = getCurrentDate();
             formNotes.value = '';
@@ -127,13 +121,6 @@ watch(formCategory, (newCat) => {
 
 function getDefaultCategory(): string {
     return owner === 'Shared' ? DEFAULT_SHARED_CATEGORY : DEFAULT_PERSONAL_CATEGORY;
-}
-function handleAmountChange(): void {
-    if (isGoldCategory.value && formAmount.value && Number(formAmount.value) > 0) {
-        const rate = currentGoldPricePerGram.value || 2450000;
-        const calculatedGrams = Number(formAmount.value) / rate;
-        formGoldWeightGrams.value = Number(calculatedGrams.toFixed(2));
-    }
 }
 function autofillCreditcardNotes(): void {
     if (!isEditing.value) {
@@ -175,9 +162,6 @@ async function submitRecord(): Promise<void> {
                     savingsInstitution: isSavingsCategory.value
                         ? formSavingsInstitution.value
                         : undefined,
-                    goldWeightGrams: isGoldCategory.value
-                        ? formGoldWeightGrams.value || undefined
-                        : undefined,
                 });
             }
         } else {
@@ -199,9 +183,6 @@ async function submitRecord(): Promise<void> {
                     notes: formNotes.value.trim(),
                     savingsInstitution: isSavingsCategory.value
                         ? formSavingsInstitution.value
-                        : undefined,
-                    goldWeightGrams: isGoldCategory.value
-                        ? formGoldWeightGrams.value || undefined
                         : undefined,
                 });
             }
@@ -252,6 +233,7 @@ async function submitRecord(): Promise<void> {
                             <SelectDropdown
                                 v-model="formType"
                                 input-label="Transaction Type"
+                                :disabled="isSavingsCategory"
                                 :options="entryType" />
 
                             <SelectDropdown
@@ -294,8 +276,7 @@ async function submitRecord(): Promise<void> {
                                 input-label="Amount"
                                 type="number"
                                 placeholder="100.000"
-                                required
-                                @input="handleAmountChange">
+                                required>
                                 <template #icon>
                                     <fa-icon
                                         icon="rupiah-sign"

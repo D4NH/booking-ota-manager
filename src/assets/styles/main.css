@@ -6,7 +6,7 @@
 @import 'tw-animate-css';
 
 @theme {
-    --color-brand-bg: #161b1d;
+    --color-brand-bg: oklch(21.8% 0.008 223.9);
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 }

@@ -35,7 +35,7 @@ const nextUpcoming = computed(
 );
 
 function handleImageError(e: Event): void {
-    (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
+    (e.target as HTMLImageElement).src = '/images/placeholder.png';
 }
 </script>
 

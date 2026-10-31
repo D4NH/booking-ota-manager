@@ -92,18 +92,23 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
         </CardTitle>
 
         <div
-            class="flex min-h-0 flex-1 flex-col justify-between space-y-4 rounded-md border border-mist-800 p-4 shadow-md">
-            <div class="flex flex-col items-baseline gap-1">
+            class="flex min-h-0 flex-1 flex-col overflow-x-auto rounded-md border border-mist-800 p-4 shadow-md">
+            <div class="mb-4 flex flex-none flex-col items-baseline gap-1">
                 <span class="text-md font-mono font-semibold">
                     {{ formatIDR(Math.abs(scopedExpenses)) }}
                 </span>
-                <p class="flex items-center gap-1 text-xs text-mist-500">
-                    Total expenses this month
-                    {{ propertyId !== 'all' ? `(${propertyId})` : '(All Units)' }}
-                </p>
+                <div class="flex items-center gap-1 text-xs text-mist-500">
+                    <span v-if="Array.isArray(categoryExpenses) && categoryExpenses.length === 0">
+                        No operational expense entries recorded for this cycle.
+                    </span>
+                    <span v-else>
+                        Total expenses this month
+                        {{ propertyId !== 'all' ? `(${propertyId})` : '(All Units)' }}
+                    </span>
+                </div>
             </div>
 
-            <div class="flex flex-col justify-between">
+            <div class="flex flex-col justify-center space-y-4">
                 <div
                     v-for="item in categoryExpenses"
                     :key="item.category"
@@ -133,12 +138,6 @@ const categoryExpenses = computed<CategoryBreakdown[]>(() => {
                                 backgroundColor: item.color,
                             }" />
                     </div>
-                </div>
-
-                <div
-                    v-if="categoryExpenses.length === 0"
-                    class="py-6 text-center text-xs text-mist-400">
-                    No operational expense entries recorded for this cycle.
                 </div>
             </div>
         </div>
