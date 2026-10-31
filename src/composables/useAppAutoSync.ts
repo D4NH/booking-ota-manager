@@ -138,7 +138,7 @@ export function useAppAutoSync() {
 
                             if (!sheetId || !sheetId.trim()) return;
 
-                            const rows = await fetchSheetRows(sheetId, 'A2:K');
+                            const rows = await fetchSheetRows(sheetId, 'A2:L');
                             if (rows && rows.length > 0) {
                                 const stats = await bookingStore.importBookingsFromGoogleSheets(
                                     propId,

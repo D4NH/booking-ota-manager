@@ -12,10 +12,11 @@ import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { normalizeBookingId } from '@/utils/booking';
 import { calculateNights } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
+import { generateDoorCode } from '@/utils/lockbox';
 
 export const useBookingStore = defineStore('booking', () => {
     const formatSheetRow = (
-        b: BookingPayload & { calendarEventId?: string }
+        b: BookingPayload & { calendarEventId?: string; doorCode?: string }
     ): (string | number)[] => {
         const payout = Number(b.payout) || 0;
         const ownerPayout = b.ownerPayout ?? calculateOwnerPayout(payout);
@@ -34,6 +35,7 @@ export const useBookingStore = defineStore('booking', () => {
             safeStatus, // Col I (8)
             b.notes || '', // Col J (9)
             b.calendarEventId || '', // Col K (10)
+            b.doorCode || '', // Col L (11)
         ];
     };
 
@@ -67,12 +69,12 @@ export const useBookingStore = defineStore('booking', () => {
             typeof crypto !== 'undefined' && crypto.randomUUID
                 ? crypto.randomUUID()
                 : `${payload.propertyId}-${payload.bookingId}-${Date.now()}`;
-
         const calculatedNights = calculateNights(payload.checkIn, payload.checkOut);
-
+        const doorCode = payload.doorCode || generateDoorCode(payload.bookingId, payload.checkIn);
         const newBooking: Booking = {
             ...payload,
             nights: calculatedNights,
+            doorCode,
             id: newId,
             createdAt: new Date().toISOString(),
         };
@@ -364,6 +366,8 @@ export const useBookingStore = defineStore('booking', () => {
                 : statusMap[rawStatus] || 'Booked';
             const notes = String(row[9] || '').trim();
             const calendarEventId = String(row[10] || '').trim();
+            const existingDoorCode = String(row[11] || '').trim();
+            const doorCode = existingDoorCode || generateDoorCode(bookingId, checkIn);
 
             const existing = existingMap.get(bookingId);
             const payload: Booking & { calendarEventId?: string } = {
@@ -380,6 +384,7 @@ export const useBookingStore = defineStore('booking', () => {
                 status,
                 notes: notes || undefined,
                 calendarEventId: calendarEventId || undefined,
+                doorCode,
                 createdAt: existing?.createdAt || new Date().toISOString(),
             };
 
