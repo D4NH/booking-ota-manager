@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
@@ -50,26 +50,20 @@ const {
     staySections,
 } = usePropertyDetails(() => id);
 
-const customPin = ref<string>('');
-
-watch(
-    () => id,
-    (newId) => {
-        loadPin(newId);
-    },
-    { immediate: true }
-);
-
-function loadPin(propertyId: PropertyId): void {
-    customPin.value = localStorage.getItem(`lockbox_pin_${propertyId}`) || '';
-}
-function handlePinInput(): void {
-    if (customPin.value.trim()) {
-        localStorage.setItem(`lockbox_pin_${id}`, customPin.value.trim());
-    } else {
-        localStorage.removeItem(`lockbox_pin_${id}`);
+const activeBooking = computed<Booking | undefined>(() => {
+    for (let i = 0; i < staySections.value.length; i++) {
+        const section = staySections.value[i];
+        if (section && section.items.length > 0) {
+            return section.items[0];
+        }
     }
-}
+    return nextUpcoming.value;
+});
+
+const activeDoorCode = computed<string>(() => {
+    return activeBooking.value?.doorCode || '----';
+});
+
 function handleAddBooking(propertyId: PropertyId): void {
     modalStore.openBookingModal({ propertyId });
 }
@@ -299,23 +293,17 @@ function handleEditProperty(): void {
                 <!-- Editable Lockbox PIN & Wi-Fi Access -->
                 <div
                     class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
-                    <div class="flex flex-col items-center px-1">
-                        <label
-                            :for="`lockbox-${id}`"
-                            class="block cursor-pointer text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                    <div class="px-1">
+                        <span
+                            class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
                             <fa-icon
                                 icon="key"
                                 class="text-xs" />
-                            Lockbox
-                        </label>
-                        <input
-                            :id="`lockbox-${id}`"
-                            v-model="customPin"
-                            type="text"
-                            inputmode="numeric"
-                            placeholder="----"
-                            class="mt-0.5 w-24 rounded border border-transparent bg-transparent py-0.5 text-center font-mono text-sm font-semibold transition placeholder:text-mist-600 hover:border-mist-700 hover:bg-mist-800/60 focus:border-lime-400 focus:bg-mist-800 focus:ring-1 focus:ring-lime-400 focus:outline-none"
-                            @input="handlePinInput" />
+                            Door Code
+                        </span>
+                        <span class="font-mono text-sm font-semibold">
+                            {{ activeDoorCode }}
+                        </span>
                     </div>
                     <div class="px-1">
                         <span

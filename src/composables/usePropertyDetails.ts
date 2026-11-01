@@ -5,8 +5,7 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Booking } from '@/types/booking';
 import type { Property, PropertyId } from '@/types/property';
-import { getCurrentDate, getCurrentHour } from '@/utils/date';
-import { getActiveLockboxBooking, generatePinForBooking } from '@/utils/lockbox';
+import { getCurrentDate } from '@/utils/date';
 
 interface Options {
     includeUnavailable?: boolean;
@@ -28,7 +27,6 @@ interface Options {
  * - `adr`: Average Daily Rate across booked nights for the current calendar year.
  * - `annualOccupancy`: Occupancy percentage (capped at 100%) based on 365 calendar days.
  * - `nextUpcoming`: First upcoming confirmed reservation after today's date.
- * - `lockboxPin`: Generated access pin for the current active lockbox reservation.
  * - `isOccupied`: Top-level reactive boolean indicating current unit occupancy.
  * - `staySections`: Array of active operational stay buckets (Arriving Today, In-House, etc.).
  * - `currentDay`: Current formatted date key (YYYY-MM-DD).
@@ -51,16 +49,6 @@ export function usePropertyDetails(
         id.value === 'all' ? undefined : properties.value.find((p) => p.id === id.value)
     );
 
-    const lockboxInfo = computed(() =>
-        getActiveLockboxBooking({
-            today: getCurrentDate(),
-            currentHour: getCurrentHour(),
-            currentStays: dailyOps.currentStays.value,
-            todaysArrivals: dailyOps.todaysArrivals.value,
-            todaysDepartures: dailyOps.todaysDepartures.value,
-        })
-    );
-    const lockboxPin = computed(() => generatePinForBooking(lockboxInfo.value.booking));
     const unitData = computed(() => {
         const propId = id.value;
         const currentYearStr = String(new Date().getFullYear());
@@ -122,7 +110,6 @@ export function usePropertyDetails(
         adr: computed(() => unitData.value.adr),
         annualOccupancy: computed(() => unitData.value.occupancy),
         nextUpcoming,
-        lockboxPin,
         isOccupied: dailyOps.isOccupied,
         staySections: dailyOps.staySections,
         todaysArrivals: dailyOps.todaysArrivals,

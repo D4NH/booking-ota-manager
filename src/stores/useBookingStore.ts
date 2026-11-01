@@ -12,7 +12,7 @@ import type { SyncLogEntry, SyncResult, BookingChangeDiff } from '@/types/sync';
 import { normalizeBookingId } from '@/utils/booking';
 import { calculateNights } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
-import { generateDoorCode } from '@/utils/lockbox';
+import { sanitizeDoorCode } from '@/utils/lockbox';
 
 export const useBookingStore = defineStore('booking', () => {
     const formatSheetRow = (
@@ -20,8 +20,9 @@ export const useBookingStore = defineStore('booking', () => {
     ): (string | number)[] => {
         const payout = Number(b.payout) || 0;
         const ownerPayout = b.ownerPayout ?? calculateOwnerPayout(payout);
-        const safeStatus =
+        const status =
             b.status && String(b.status).trim().length > 0 ? String(b.status).trim() : 'Booked';
+        const doorCode = b.doorCode ? `'${b.doorCode.replace(/^'+/, '')}` : '';
 
         return [
             b.bookingId, // Col A (0)
@@ -32,10 +33,10 @@ export const useBookingStore = defineStore('booking', () => {
             b.nights, // Col F (5)
             b.payout, // Col G (6)
             ownerPayout > 0 ? ownerPayout : '', // Col H (7)
-            safeStatus, // Col I (8)
+            status, // Col I (8)
             b.notes || '', // Col J (9)
             b.calendarEventId || '', // Col K (10)
-            b.doorCode || '', // Col L (11)
+            doorCode, // Col L (11)
         ];
     };
 
@@ -70,7 +71,7 @@ export const useBookingStore = defineStore('booking', () => {
                 ? crypto.randomUUID()
                 : `${payload.propertyId}-${payload.bookingId}-${Date.now()}`;
         const calculatedNights = calculateNights(payload.checkIn, payload.checkOut);
-        const doorCode = payload.doorCode || generateDoorCode(payload.bookingId, payload.checkIn);
+        const doorCode = sanitizeDoorCode(payload.doorCode, payload.bookingId, payload.checkIn);
         const newBooking: Booking = {
             ...payload,
             nights: calculatedNights,
@@ -366,8 +367,8 @@ export const useBookingStore = defineStore('booking', () => {
                 : statusMap[rawStatus] || 'Booked';
             const notes = String(row[9] || '').trim();
             const calendarEventId = String(row[10] || '').trim();
-            const existingDoorCode = String(row[11] || '').trim();
-            const doorCode = existingDoorCode || generateDoorCode(bookingId, checkIn);
+            const rawDoorCode = row[11];
+            const doorCode = sanitizeDoorCode(rawDoorCode, bookingId, checkIn);
 
             const existing = existingMap.get(bookingId);
             const payload: Booking & { calendarEventId?: string } = {
