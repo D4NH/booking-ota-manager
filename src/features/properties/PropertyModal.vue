@@ -80,11 +80,10 @@ async function handleDeleteProperty(): Promise<void> {
 function handleSubmit(): void {
     if (!form.value.name || !form.value.codePrefix) return;
 
-    const generatedId = (form.value.id ||
-        form.value.name
-            .toLowerCase()
-            .split('-')[1]
-            ?.replace(/[^a-z0-9]/g, '')) as PropertyId;
+    const generatedId = form.value.name
+        .toLowerCase()
+        .split('-')[1]
+        ?.replace(/[^a-z0-9]/g, '') as PropertyId;
 
     const latVal = form.value.coordinates.lat;
     const lngVal = form.value.coordinates.lng;

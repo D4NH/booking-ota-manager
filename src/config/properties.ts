@@ -96,7 +96,6 @@ export function getPropertySpreadsheetId(
 
 /**
  * Automatically enables calendar sync for the current year and all future years.
- * Any past year is automatically treated as historical archive (calendar skipped).
  */
 export function shouldSyncCalendarForYear(year: number | string | undefined): boolean {
     const currentYear = new Date().getFullYear();
