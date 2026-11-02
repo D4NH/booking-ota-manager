@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useWindowSize } from '@vueuse/core';
 import { useDailyOperations } from '@/composables/useDailyOperations';
 import { useMonthlyMetrics } from '@/composables/useMonthlyMetrics';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -31,12 +32,17 @@ const {
     totalBookingsCount,
     revenueGrowthPercent,
 } = useMonthlyMetrics(bookings);
+const { height } = useWindowSize();
 
 const isPropertiesExpanded = ref(false);
 
 const visibleProperties = computed(() =>
     isPropertiesExpanded.value ? sortedProperties.value : sortedProperties.value.slice(0, 2)
 );
+
+watchEffect(() => {
+    isPropertiesExpanded.value = height.value > 1031;
+});
 
 function handleEditBooking(booking: Booking): void {
     modalStore.openBookingModal({ booking });
