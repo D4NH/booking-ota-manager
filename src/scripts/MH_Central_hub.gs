@@ -6,6 +6,7 @@
  * • Two-Way Google Calendar Sync
  * • Master RFC 5545 iCal Stream for Cloudflare Edge Proxy
  * • Bi-directional Mobile Google Sheets Sync & Cleanup
+ * • Chronological Sheet Sorter (Jan -> Dec by Check-in & Day)
  * ============================================================================
  */
 
@@ -58,6 +59,7 @@ const CONFIG = {
     },
 };
 
+// Patterns to discard immediately (payouts, bank transfers, insurance policies)
 const IGNORED_SUBJECT_PATTERNS = [
     'Dokumen Polis',
     'Polis Perlindungan',
@@ -135,6 +137,20 @@ function doGet(e) {
                     scrapedCount,
                     timestamp: new Date().toISOString(),
                 })
+            ).setMimeType(ContentService.MimeType.JSON);
+        } catch (err) {
+            return ContentService.createTextOutput(
+                JSON.stringify({ success: false, error: err.toString() })
+            ).setMimeType(ContentService.MimeType.JSON);
+        }
+    }
+
+    // ROUTE D: On-Demand Force Sort Across All Property Sheets
+    if (action === 'SORT') {
+        try {
+            sortAllConfiguredSheets();
+            return ContentService.createTextOutput(
+                JSON.stringify({ success: true, message: 'All sheets sorted chronologically' })
             ).setMimeType(ContentService.MimeType.JSON);
         } catch (err) {
             return ContentService.createTextOutput(
@@ -305,7 +321,6 @@ function processOtaEmails() {
     const sheet = stagingSs.getSheets()[0];
     const existingIds = getExistingBookingIds(sheet);
 
-    // Dynamic search query excluding all ignored patterns at the Gmail API level
     const ignoredSubjectsQuery = IGNORED_SUBJECT_PATTERNS.map(function (term) {
         return '-subject:"' + term + '"';
     }).join(' ');
@@ -328,7 +343,6 @@ function processOtaEmails() {
             const subject = msg.getSubject() || '';
             const snippet = (msg.getPlainBody() || '').slice(0, 160);
 
-            // Secondary check in case ignored term appears in body preview
             if (isIgnoredEmail(subject, snippet)) continue;
 
             const from = msg.getFrom().toLowerCase();
@@ -385,92 +399,71 @@ function processOtaEmails() {
 }
 
 // ============================================================================
-// 5. PARSERS (DYNAMIC YEAR RESOLUTION & HARMONIZATION)
+// 5. PARSERS (DYNAMIC YEAR RESOLUTION)
 // ============================================================================
+
+/**
+ * Specifically tailored for Booking.com Lite Security Notification emails:
+ * - Extracts Booking ID & Check-in date directly from subject line / extranet link
+ * - Sets fallback checkout to +1 day so calendar is immediately blocked
+ * - Sets guestName: 'Booking.com Guest' & payout: 0 for review in Vue/Pulse
+ */
 function parseBookingDotComEmail(subject, body, htmlBody, msgDate) {
     try {
         const rawSubject = subject || '';
         const rawBody = body || '';
+        const rawHtml = htmlBody || '';
+        const combined = (
+            rawSubject +
+            '\n' +
+            rawBody +
+            '\n' +
+            rawHtml.replace(/<[^>]+>/g, ' ')
+        ).replace(/[ \t]+/g, ' ');
         const emailYear =
             msgDate instanceof Date ? msgDate.getFullYear() : new Date().getFullYear();
 
+        // 1. Extract Booking ID
         const idMatch =
             rawSubject.match(/\((\d{8,12})/i) ||
-            rawBody.match(/confirmation\s*[—–-]\s*(\d{8,12})/i) ||
-            rawBody.match(/res_id=(\d{8,12})/i);
+            combined.match(/res_id=(\d{8,12})/i) ||
+            combined.match(/Booking confirmation\s*[—–-]\s*(\d{8,12})/i);
         if (!idMatch) return null;
         const bookingId = idMatch[1];
 
+        // 2. Extract Check-in Date from Subject line (e.g. "Saturday, 26 December 2026")
         let checkIn = '';
-        const dateSubjectMatch = rawSubject.match(
-            /(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})/
-        );
-        if (dateSubjectMatch) {
-            checkIn = parseDateToISO(dateSubjectMatch[1], emailYear, msgDate);
+        const subjectDateMatch =
+            rawSubject.match(
+                /,\s*([A-Za-z]+,?\s*\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4})/i
+            ) || rawSubject.match(/(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})/i);
+        if (subjectDateMatch) {
+            checkIn = parseDateToISO(subjectDateMatch[1], emailYear, msgDate);
         } else {
-            const checkInBodyMatch = rawBody.match(
-                /Check-in:?\s*([A-Za-z]+,?\s*\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+,?\s+[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})/i
+            const bodyDateMatch = combined.match(
+                /(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})/i
             );
-            if (checkInBodyMatch) checkIn = parseDateToISO(checkInBodyMatch[1], emailYear, msgDate);
+            if (bodyDateMatch) checkIn = parseDateToISO(bodyDateMatch[1], emailYear, msgDate);
         }
         if (!checkIn) return null;
 
-        let checkOut = '';
-        const checkOutMatch = rawBody.match(
-            /Check-out:?\s*([A-Za-z]+,?\s*\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+,?\s+[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})/i
-        );
-        if (checkOutMatch) {
-            checkOut = parseDateToISO(checkOutMatch[1], emailYear, msgDate);
-        } else {
-            const d = new Date(checkIn);
-            d.setDate(d.getDate() + 1);
-            checkOut = normalizeDateStr(d);
-        }
+        // 3. Set temporary +1 day checkout so dates can be safely locked on Google Calendar
+        const d = new Date(checkIn);
+        d.setDate(d.getDate() + 1);
+        const checkOut = normalizeDateStr(d);
 
-        // Harmonize cross-year single-year boundary
-        if (
-            checkOut.startsWith('2027') &&
-            checkIn.startsWith('2026') &&
-            checkIn.slice(5) > checkOut.slice(5)
-        ) {
-            checkIn = '2027' + checkIn.slice(4);
-        }
-
-        let guestName = 'Booking.com Guest';
-        const guestMatch = rawBody.match(/Guest name:?\s*([^\n\r]+)/i);
-        if (guestMatch) guestName = guestMatch[1].trim();
-
-        let grossAmount = 0;
-        const payoutMatch =
-            rawBody.match(/(?:Total price|Price|Total|Tarif)?[\s:]*(?:IDR|Rp\.?)\s*([\d.,]+)/i) ||
-            rawBody.match(/(?:IDR|Rp\.?)\s*([\d.,]+)/i);
-        if (payoutMatch) grossAmount = parseCurrencyNumber(payoutMatch[1]);
-
-        const commissionPct = CONFIG.BOOKING_COM_COMMISSION_PCT || 19.2;
-        const netPayout = grossAmount > 0 ? Math.round(grossAmount * (1 - commissionPct / 100)) : 0;
-
-        const formattedGross =
-            grossAmount > 0
-                ? 'Rp ' + String(grossAmount).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-                : '0';
-
-        const notes =
-            grossAmount > 0
-                ? `[Gross: ${formattedGross} | -${commissionPct}% BDC] Imported from Booking.com Email`
-                : 'Imported from Booking.com Email';
-
-        const propertyId = resolvePropertyId(rawSubject + ' ' + rawBody);
+        const propertyId = resolvePropertyId(combined);
 
         return {
             propertyId,
             bookingId,
             listing: 'Booking.com',
-            guestName,
+            guestName: 'Booking.com Guest',
             checkIn,
             checkOut,
-            nights: calculateNights(checkIn, checkOut),
-            payout: netPayout,
-            notes,
+            nights: 1,
+            payout: 0,
+            notes: 'Lite Alert - Check Pulse/Extranet for Name & Price',
         };
     } catch (err) {
         return null;
@@ -513,14 +506,6 @@ function parseTiketEmail(subject, body, htmlBody, msgDate) {
         }
 
         if (!checkIn || !checkOut) return null;
-
-        if (
-            checkOut.startsWith('2027') &&
-            checkIn.startsWith('2026') &&
-            checkIn.slice(5) > checkOut.slice(5)
-        ) {
-            checkIn = '2027' + checkIn.slice(4);
-        }
 
         let guestName = 'Tiket.com Guest';
         const guestMatch =
@@ -612,11 +597,6 @@ function parseAirbnbEmail(subject, body, htmlBody, msgDate) {
 
         if (!checkIn || !checkOut) return null;
 
-        // Harmonize Airbnb date spans where year only appears on check-out
-        if (checkOut.startsWith('2027') && checkIn.startsWith('2026')) {
-            checkIn = '2027' + checkIn.slice(4);
-        }
-
         let payout = 0;
         const earnMatch =
             combined.match(/You earn[\s:]*(?:Rp|IDR)?\s*([0-9.,]+)/i) ||
@@ -671,14 +651,6 @@ function parseTripEmail(subject, body, htmlBody, msgDate) {
 
         if (!checkIn || !checkOut) return null;
 
-        if (
-            checkOut.startsWith('2027') &&
-            checkIn.startsWith('2026') &&
-            checkIn.slice(5) > checkOut.slice(5)
-        ) {
-            checkIn = '2027' + checkIn.slice(4);
-        }
-
         let guestName = 'Trip.com Guest';
         const guestMatch = combined.match(
             /(?:Guest Name|Nama Tamu)[\s:]*([A-Za-z/.\s]+?)(?=\s*(?:Room Type|Tipe Kamar|Bed type|Staying period|Periode|\n|\r|<|$))/i
@@ -718,7 +690,7 @@ function parseTripEmail(subject, body, htmlBody, msgDate) {
 }
 
 // ============================================================================
-// 6. TWO-WAY GOOGLE CALENDAR & SHEET SYNCHRONIZATION
+// 6. TWO-WAY GOOGLE CALENDAR, SHEET SYNC & CHRONOLOGICAL SORT
 // ============================================================================
 function blockCalendarDates(booking) {
     try {
@@ -747,6 +719,50 @@ function blockCalendarDates(booking) {
     } catch (err) {
         return '';
     }
+}
+
+/**
+ * Sorts a property booking sheet chronologically:
+ * Primary Sort: Column D (Check-in, 4) Ascending (Jan -> Dec, Day 1 -> 31)
+ * Secondary Sort: Column E (Check-out, 5) Ascending
+ */
+function sortPropertySheet(sheet) {
+    if (!sheet) return;
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 2) return;
+
+    const lastCol = Math.max(sheet.getLastColumn(), 12);
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, lastCol);
+
+    dataRange.sort([
+        { column: 4, ascending: true }, // Col D: Check-in (Jan -> Dec)
+        { column: 5, ascending: true }, // Col E: Check-out
+    ]);
+
+    console.log(`Sorted "${sheet.getName()}" chronologically by check-in date.`);
+}
+
+/**
+ * Utility to sort all configured property sheets on demand
+ */
+function sortAllConfiguredSheets() {
+    Object.keys(CONFIG.PROPERTIES).forEach(function (propKey) {
+        const prop = CONFIG.PROPERTIES[propKey];
+        if (!prop.sheets || !prop.sheets.length) return;
+
+        prop.sheets.forEach(function (sheetObj) {
+            if (!sheetObj.id) return;
+            try {
+                const ss = SpreadsheetApp.openById(sheetObj.id);
+                const sheet = sheetObj.sheetName
+                    ? ss.getSheetByName(sheetObj.sheetName)
+                    : ss.getSheets()[0];
+                if (sheet) sortPropertySheet(sheet);
+            } catch (err) {
+                console.warn(`Could not sort sheet ${sheetObj.id}: ${err.toString()}`);
+            }
+        });
+    });
 }
 
 function syncManualSheetBookingsToCalendar() {
@@ -789,12 +805,33 @@ function syncManualSheetBookingsToCalendar() {
                     const status = String(row[8] || '')
                         .trim()
                         .toLowerCase();
-                    const notes = String(row[9] || '').trim();
+                    let payout = Number(row[6]) || 0;
+                    let notes = String(row[9] || '').trim();
                     const calEventId = String(row[10] || '').trim();
 
                     let doorCode = String(row[11] || '')
                         .trim()
                         .replace(/^'+/, '');
+
+                    // If Booking.com payout was entered as gross without deduction in Google Sheets
+                    if (
+                        listing.toLowerCase() === 'booking.com' &&
+                        payout > 0 &&
+                        !notes.includes('[-19.2% BDC]')
+                    ) {
+                        const commissionPct = CONFIG.BOOKING_COM_COMMISSION_PCT || 19.2;
+                        const netAmount = Math.round(payout * (1 - commissionPct / 100));
+                        const formattedGross =
+                            'Rp ' + String(payout).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                        notes =
+                            `[Gross: ${formattedGross} | -${commissionPct}% BDC] ${notes}`.trim();
+
+                        // Overwrite Column G (Payout, 7) with Net, and Column J (Notes, 10) with audit note
+                        sheet.getRange(rowNumber, 7).setValue(netAmount);
+                        sheet.getRange(rowNumber, 10).setValue(notes);
+                        payout = netAmount;
+                    }
 
                     // Backfill doorCode if empty or containing letters (Col 12)
                     if ((!doorCode || /\D/.test(doorCode)) && status !== 'unavailable') {
@@ -875,8 +912,10 @@ function syncManualSheetBookingsToCalendar() {
                         const newEvent = calendar.createAllDayEvent(summary, startDate, endDate, {
                             description: desc,
                         });
+
                         const newCalId = newEvent.getId().split('@')[0];
                         sheet.getRange(rowNumber, 11).setValue(newCalId);
+                        values[i][10] = newCalId; // Update in-memory so sort check knows it is generated!
                         console.log(`Created calendar event for ${guestName} on row ${rowNumber}`);
                         continue;
                     }
@@ -923,6 +962,28 @@ function syncManualSheetBookingsToCalendar() {
                         }
                     }
                 }
+
+                // ==================================================================
+                // CASE 4: CHRONOLOGICAL RESORT (Runs once outside the row loop)
+                // ==================================================================
+                const allCalendarEventsGenerated = values.every(function (r) {
+                    const st = String(r[8] || '')
+                        .trim()
+                        .toLowerCase();
+                    if (st === 'cancelled' || st === 'delete') return true;
+                    const hasDates = r[3] && r[4];
+                    if (!hasDates) return true; // Skip blank rows
+                    const cId = String(r[10] || '').trim();
+                    return cId.length > 0;
+                });
+
+                if (allCalendarEventsGenerated) {
+                    sortPropertySheet(sheet);
+                } else {
+                    console.log(
+                        `Skipped sorting "${sheet.getName()}": pending calendarEventId generation.`
+                    );
+                }
             } catch (err) {
                 console.error(`Error syncing sheet ${sheetObj.id}:`, err);
             }
@@ -933,6 +994,14 @@ function syncManualSheetBookingsToCalendar() {
 // ============================================================================
 // 7. UTILITIES
 // ============================================================================
+function onOpen() {
+    SpreadsheetApp.getUi()
+        .createMenu('Mai House Jogja')
+        .addItem('Sort Bookings Chronologically', 'sortAllConfiguredSheets')
+        .addItem('Sync Calendar & Door Codes', 'syncManualSheetBookingsToCalendar')
+        .addToUi();
+}
+
 function archiveEmailByBookingId(bookingId, labelName) {
     try {
         const cleanId = String(bookingId).replace(/^'+/, '').trim();
