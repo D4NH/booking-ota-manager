@@ -5,19 +5,42 @@ import { useBookingStore } from '@/stores/useBookingStore';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { useStagingStore } from '@/stores/useStagingStore';
 import { PROPERTY_LIST, PROPERTY_CONFIGS } from '@/config/properties';
-import type { BookingChannel, StagedBooking } from '@/types/booking';
+import type { BookingChannel, StagedBooking, BookingPayload } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
+import { sanitizeDoorCode } from '@/utils/lockbox';
 import { toast } from 'vue-toastflow';
-
 import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-const listingOptions = [
+interface OptionItem {
+    label: string;
+    value: string;
+}
+
+interface FormState {
+    propertyId: PropertyId;
+    bookingId: string;
+    guestName: string;
+    checkIn: string;
+    checkOut: string;
+    nights: number;
+    payout: number | '';
+    listing: BookingChannel;
+    notes: string;
+}
+
+interface Props {
+    modelValue?: boolean;
+    booking?: StagedBooking | null;
+    stagingSpreadsheetId: string;
+}
+
+const LISTING_OPTIONS: OptionItem[] = [
     { label: 'Airbnb', value: 'Airbnb' },
     { label: 'Booking.com', value: 'Booking.com' },
     { label: 'Tiket.com', value: 'Tiket.com' },
@@ -26,16 +49,12 @@ const listingOptions = [
     { label: 'Whatsapp', value: 'Whatsapp' },
 ];
 
-const propertyOptions = PROPERTY_LIST.map((property) => ({
+const PROPERTY_OPTIONS: OptionItem[] = PROPERTY_LIST.map((property) => ({
     label: property.name,
     value: property.id,
 }));
 
-interface Props {
-    modelValue?: boolean;
-    booking?: StagedBooking | null;
-    stagingSpreadsheetId: string;
-}
+const BOOKING_COM_COMMISSION_RATE = 0.192;
 
 const { modelValue = false, booking = null, stagingSpreadsheetId } = defineProps<Props>();
 const emit = defineEmits<{
@@ -49,21 +68,30 @@ const stagingStore = useStagingStore();
 const { saveBooking } = useBookingSync();
 const { deleteSheetRowById } = useGoogleSheets();
 
-const isProcessing = ref(false);
-
-const form = ref({
-    propertyId: 'piyungan' as PropertyId,
+const isProcessing = ref<boolean>(false);
+const form = ref<FormState>({
+    propertyId: 'piyungan',
     bookingId: '',
     guestName: '',
     checkIn: '',
     checkOut: '',
     nights: 1,
-    payout: '' as number | '',
-    listing: 'Airbnb' as BookingChannel,
+    payout: '',
+    listing: 'Airbnb',
     notes: '',
 });
 
-const ownerPayoutDisplay = computed<number>((): number => calculateOwnerPayout(form.value.payout));
+const isBookingDotCom = computed<boolean>(() => form.value.listing === 'Booking.com');
+const effectivePayout = computed<number>(() => {
+    const raw = Number(form.value.payout) || 0;
+    if (isBookingDotCom.value && raw > 0) {
+        return Math.round(raw * (1 - BOOKING_COM_COMMISSION_RATE));
+    }
+    return raw;
+});
+const ownerPayoutDisplay = computed<number>((): number =>
+    calculateOwnerPayout(effectivePayout.value)
+);
 const stayDates = computed<[string, string]>({
     get: (): [string, string] => [form.value.checkIn, form.value.checkOut],
     set: ([start, end]: [string, string]) => {
@@ -74,7 +102,7 @@ const stayDates = computed<[string, string]>({
         }
     },
 });
-const formHasConflict = computed(() => {
+const formHasConflict = computed<boolean>(() => {
     if (!form.value.propertyId || !form.value.checkIn || !form.value.checkOut) return false;
     return Boolean(
         bookingStore.hasDateConflict(
@@ -127,24 +155,42 @@ async function handleApprove(): Promise<void> {
     try {
         await toast.loading(
             async () => {
-                await saveBooking(
-                    {
-                        propertyId: form.value.propertyId,
-                        bookingId: form.value.bookingId.trim() || targetItem.bookingId,
-                        listing: form.value.listing,
-                        guestName: form.value.guestName.trim(),
-                        checkIn: form.value.checkIn,
-                        checkOut: form.value.checkOut,
-                        nights: Number(form.value.nights) || 1,
-                        payout: Number(form.value.payout) || 0,
-                        ownerPayout: ownerPayoutDisplay.value,
-                        status: 'Booked',
-                        notes: form.value.notes.trim(),
-                        calendarEventId: targetItem.calendarEventId,
-                    },
-                    null,
-                    { silent: true }
+                const rawPayout = Number(form.value.payout) || 0;
+                let finalNotes = form.value.notes.trim();
+
+                if (
+                    isBookingDotCom.value &&
+                    rawPayout > 0 &&
+                    !finalNotes.includes('[-19.2% BDC]')
+                ) {
+                    const formattedGross = 'Rp ' + rawPayout.toLocaleString('id-ID');
+                    const grossTag = `[Gross: ${formattedGross} | -19.2% BDC]`;
+                    finalNotes = finalNotes ? `${grossTag} ${finalNotes}` : grossTag;
+                }
+
+                const doorCode = sanitizeDoorCode(
+                    targetItem.doorCode,
+                    form.value.bookingId.trim() || targetItem.bookingId,
+                    form.value.checkIn
                 );
+
+                const payload: BookingPayload = {
+                    propertyId: form.value.propertyId,
+                    bookingId: form.value.bookingId.trim() || targetItem.bookingId,
+                    listing: form.value.listing,
+                    guestName: form.value.guestName.trim(),
+                    checkIn: form.value.checkIn,
+                    checkOut: form.value.checkOut,
+                    nights: Number(form.value.nights) || 1,
+                    payout: effectivePayout.value,
+                    ownerPayout: ownerPayoutDisplay.value,
+                    status: 'Booked',
+                    notes: finalNotes || undefined,
+                    calendarEventId: targetItem.calendarEventId,
+                    doorCode,
+                };
+
+                await saveBooking(payload, null, { silent: true });
                 await deleteSheetRowById(stagingSpreadsheetId, targetItem.id, {
                     sheetName: 'Sheet1',
                 });
@@ -278,7 +324,7 @@ async function handleReject(): Promise<void> {
                                 v-model="form.propertyId"
                                 input-label="Property"
                                 placeholder="Select property"
-                                :options="propertyOptions">
+                                :options="PROPERTY_OPTIONS">
                                 <template #icon>
                                     <fa-icon
                                         icon="house"
@@ -290,7 +336,7 @@ async function handleReject(): Promise<void> {
                                 v-model="form.listing"
                                 input-label="Channel"
                                 placeholder="Select channel"
-                                :options="listingOptions" />
+                                :options="LISTING_OPTIONS" />
                         </div>
 
                         <!-- Booking ID & Guest Name -->
@@ -347,29 +393,39 @@ async function handleReject(): Promise<void> {
 
                         <!-- Channel Payout & 15% Owner Cut -->
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <TextInput
-                                id="reviewPayout"
-                                v-model.number="form.payout"
-                                input-label="Payout"
-                                type="number"
-                                min="0"
-                                placeholder="1.000.000"
-                                required>
-                                <template #icon>
-                                    <fa-icon
-                                        icon="rupiah-sign"
-                                        class="text-xs" />
-                                </template>
-                            </TextInput>
+                            <div>
+                                <TextInput
+                                    id="reviewPayout"
+                                    v-model.number="form.payout"
+                                    :input-label="
+                                        isBookingDotCom ? 'Gross Price from Extranet' : 'Payout'
+                                    "
+                                    type="number"
+                                    min="0"
+                                    placeholder="1.000.000"
+                                    required>
+                                    <template #icon>
+                                        <fa-icon
+                                            icon="rupiah-sign"
+                                            class="text-xs" />
+                                    </template>
+                                </TextInput>
+
+                                <p
+                                    v-if="isBookingDotCom && form.payout"
+                                    class="mt-1 font-mono text-[11px] font-semibold text-lime-400">
+                                    Host Net (-19.2%): {{ formatIDR(effectivePayout) }}
+                                </p>
+                            </div>
 
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-mist-400">
-                                    Owner Payout (15%)
+                                    Owner Payout
                                 </label>
                                 <div
                                     class="flex h-9.5 items-center justify-between rounded-md border border-mist-800 bg-mist-950/50 px-3 font-mono text-sm font-semibold text-mist-300 select-none">
-                                    <span>{{ formatIDR(ownerPayoutDisplay) }}</span>
-                                    <span class="text-[10px] font-normal text-mist-500">
+                                    <span class="text-xs">{{ formatIDR(ownerPayoutDisplay) }}</span>
+                                    <span class="text-[12px] font-normal text-mist-400">
                                         15% share
                                     </span>
                                 </div>
@@ -419,7 +475,7 @@ async function handleReject(): Promise<void> {
                                         v-if="isProcessing"
                                         #icon>
                                         <span
-                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                            class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent" />
                                     </template>
                                     <span v-if="isProcessing">Processing..</span>
                                 </AppButton>
