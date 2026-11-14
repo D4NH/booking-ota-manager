@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, watchEffect } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useStorage } from '@vueuse/core';
+import { useStorage, useWindowSize } from '@vueuse/core';
 import { useBookingSync } from '@/composables/useBookingSync';
 import { PROPERTY_CONFIGS, getPropertyStyle } from '@/config/properties';
 import { useBookingStore } from '@/stores/useBookingStore';
@@ -33,6 +33,7 @@ const { markBookingComplete } = useBookingSync();
 const isSidebarOpen = useStorage<boolean>('sidebar-open', true);
 const stagingStore = useStagingStore();
 const { stagedBookings, pendingCount } = storeToRefs(stagingStore);
+const { width } = useWindowSize();
 
 const activeStagedBooking = ref<StagedBooking | null>(null);
 const isFinanceOpen = ref<boolean>(false);
@@ -97,6 +98,10 @@ watch(
     () => pendingPayments.value.notificationsCount > 0,
     () => (isNotificationOpen.value = false)
 );
+
+watchEffect(() => {
+    isSidebarOpen.value = width.value > 600;
+});
 
 function handleEditBooking(booking: Booking): void {
     modalStore.openBookingModal({ booking });
