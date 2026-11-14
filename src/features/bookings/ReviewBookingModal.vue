@@ -158,15 +158,15 @@ async function handleApprove(): Promise<void> {
                 const rawPayout = Number(form.value.payout) || 0;
                 let finalNotes = form.value.notes.trim();
 
-                if (
-                    isBookingDotCom.value &&
-                    rawPayout > 0 &&
-                    !finalNotes.includes('[-19.2% BDC]')
-                ) {
-                    const formattedGross = 'Rp ' + rawPayout.toLocaleString('id-ID');
+                const isAlreadyTagged = /\[Gross:.*?BDC\]/i.test(finalNotes);
+
+                if (isBookingDotCom.value && rawPayout > 0 && !isAlreadyTagged) {
+                    const formattedGross = 'Rp ' + Math.round(rawPayout).toLocaleString('id-ID');
                     const grossTag = `[Gross: ${formattedGross} | -19.2% BDC]`;
                     finalNotes = finalNotes ? `${grossTag} ${finalNotes}` : grossTag;
                 }
+
+                finalNotes = finalNotes.replace(/(\[Gross:.*?BDC\]\s*)+/gi, '$1').trim();
 
                 const doorCode = sanitizeDoorCode(
                     targetItem.doorCode,

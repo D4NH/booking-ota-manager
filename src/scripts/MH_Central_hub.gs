@@ -814,15 +814,17 @@ function syncManualSheetBookingsToCalendar() {
                         .replace(/^'+/, '');
 
                     // If Booking.com payout was entered as gross without deduction in Google Sheets
+                    const isAlreadyDeducted =
+                        /\[Gross:.*?BDC\]/i.test(notes) || notes.includes('-19.2% BDC');
+
                     if (
                         listing.toLowerCase() === 'booking.com' &&
                         payout > 0 &&
-                        !notes.includes('[-19.2% BDC]')
+                        !isAlreadyDeducted
                     ) {
                         const commissionPct = CONFIG.BOOKING_COM_COMMISSION_PCT || 19.2;
                         const netAmount = Math.round(payout * (1 - commissionPct / 100));
-                        const formattedGross =
-                            'Rp ' + String(payout).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        const formattedGross = 'Rp ' + Math.round(payout).toLocaleString('id-ID');
 
                         notes =
                             `[Gross: ${formattedGross} | -${commissionPct}% BDC] ${notes}`.trim();
