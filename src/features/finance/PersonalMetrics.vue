@@ -157,13 +157,13 @@ const metrics = computed<MetricsTotals>(() => {
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Net Position
             </h3>
-            <div class="flex gap-2 font-mono text-lg font-semibold">
+            <div class="flex gap-1 font-mono text-lg font-extrabold">
                 <span
                     v-if="metrics.net < 0"
                     class="text-rose-400">
                     -
                 </span>
-                <span>{{ formatIDR(Math.abs(metrics.net)) }}</span>
+                <span class="text-mist-200">{{ formatIDR(Math.abs(metrics.net)) }}</span>
             </div>
             <p class="text-xs text-mist-500">Current cycle cash retention</p>
         </div>
