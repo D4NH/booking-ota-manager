@@ -1,44 +1,83 @@
 import { computed, type Ref, type ShallowRef } from 'vue';
-import { db } from '@/db';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
+import { db } from '@/db';
 import { normalizeDate } from '@/utils/date';
+import type {
+    PersonalFinance,
+    SharedFinance,
+    AggregatedSavingsAccount,
+    PersonalOwner,
+    OwnerMonthlyMetrics,
+} from '@/types/finance';
 import {
     REGEX_SAVINGS_TAG,
     isDateInMonth,
     sortNewestFirst,
     calculateGrowthPct,
 } from '@/utils/finance';
-import type { PersonalFinance, SharedFinance, AggregatedSavingsAccount } from '@/types/finance';
 
 const SPREADSHEET_ID = import.meta.env.VITE_FINANCE_SPREADSHEET_ID as string;
 
-type LedgerItem = {
-    date: string;
-    amount: number;
-    type: string;
-    owner?: string;
-};
+function calculateOwnerMetrics(
+    personalList: PersonalFinance[],
+    sharedList: SharedFinance[],
+    owner: PersonalOwner | 'Shared',
+    currentCycle: string,
+    prevCycle: string
+): OwnerMonthlyMetrics {
+    let inflow = 0;
+    let outflow = 0;
+    let savings = 0;
+    let prevInflow = 0;
+    let prevOutflow = 0;
 
-function sumTransactions(
-    list: LedgerItem[],
-    targetMonth: string,
-    type: 'income' | 'expense',
-    ownerName?: string
-): number {
-    let sum = 0;
-    for (let i = 0; i < list.length; i++) {
-        const item = list[i];
-        if (!item || !isDateInMonth(item.date, targetMonth)) continue;
-        if (ownerName && item.owner !== ownerName) continue;
+    const items: (PersonalFinance | SharedFinance)[] =
+        owner === 'Shared' ? sharedList : personalList.filter((item) => item.owner === owner);
 
-        const isMatch =
-            type === 'income'
-                ? item.type === 'income'
-                : item.type === 'expense' || item.type === 'fixed_cost';
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item?.date) continue;
 
-        if (isMatch) sum += Number(item.amount) || 0;
+        const category = item.category?.toLowerCase().trim();
+        const amount = Number(item.amount) || 0;
+        const isCurrent = isDateInMonth(item.date, currentCycle);
+        const isPrev = isDateInMonth(item.date, prevCycle);
+        const isIncome = item.type === 'income';
+        const isExpense = item.type === 'expense' || item.type === 'fixed_cost';
+
+        if (isCurrent) {
+            if (category === 'savings') {
+                savings += amount;
+            } else if (category !== 'gold') {
+                if (isIncome) {
+                    inflow += amount;
+                } else if (isExpense) {
+                    outflow += amount;
+                }
+            }
+        }
+
+        if (isPrev) {
+            if (category !== 'savings' && category !== 'gold') {
+                if (isIncome) {
+                    prevInflow += amount;
+                } else if (isExpense) {
+                    prevOutflow += amount;
+                }
+            }
+        }
     }
-    return sum;
+
+    return {
+        inflow,
+        outflow,
+        savings,
+        net: inflow - outflow - savings,
+        prevInflow,
+        prevOutflow,
+        revenueGrowthPct: calculateGrowthPct(inflow, prevInflow),
+        expenseGrowthPct: calculateGrowthPct(outflow, prevOutflow),
+    };
 }
 
 export function usePersonalFinance(
@@ -49,24 +88,21 @@ export function usePersonalFinance(
 ) {
     const { appendSheetRow, updateSheetRowById, deleteSheetRowById } = useGoogleSheets();
 
-    const filteredPersonalFinances = computed(() =>
+    const filteredPersonalFinances = computed<PersonalFinance[]>(() =>
         personalFinances.value
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
             .sort(sortNewestFirst)
     );
-
-    const filteredSharedFinances = computed(() =>
+    const filteredSharedFinances = computed<SharedFinance[]>(() =>
         sharedFinances.value
             .filter((item) => isDateInMonth(item.date, selectedMonth.value))
             .sort(sortNewestFirst)
     );
-
     const dynamicSavingsTransactions = computed<PersonalFinance[]>(() =>
         personalFinances.value
             .filter((item) => item.category.trim().toLowerCase() === 'savings')
             .sort(sortNewestFirst)
     );
-
     const dynamicSavingsAccounts = computed<AggregatedSavingsAccount[]>(() => {
         const groups = new Map<string, AggregatedSavingsAccount>();
         const txs = dynamicSavingsTransactions.value;
@@ -105,89 +141,68 @@ export function usePersonalFinance(
 
         return Array.from(groups.values()).sort((a, b) => b.balance - a.balance);
     });
-
     const dynamicTotalSavings = computed<number>(() =>
         dynamicSavingsAccounts.value.reduce((sum, acc) => sum + acc.balance, 0)
     );
+    const danhMetrics = computed<OwnerMonthlyMetrics>(() =>
+        calculateOwnerMetrics(
+            personalFinances.value,
+            sharedFinances.value,
+            'Danh Nguyen',
+            selectedMonth.value,
+            previousMonth.value
+        )
+    );
+    const citraMetrics = computed<OwnerMonthlyMetrics>(() =>
+        calculateOwnerMetrics(
+            personalFinances.value,
+            sharedFinances.value,
+            'Citra Ayu Wardani',
+            selectedMonth.value,
+            previousMonth.value
+        )
+    );
+    const sharedMetrics = computed<OwnerMonthlyMetrics>(() =>
+        calculateOwnerMetrics(
+            personalFinances.value,
+            sharedFinances.value,
+            'Shared',
+            selectedMonth.value,
+            previousMonth.value
+        )
+    );
+    const allHouseholdMetrics = computed<OwnerMonthlyMetrics>(() => {
+        const d = danhMetrics.value;
+        const c = citraMetrics.value;
+        const s = sharedMetrics.value;
+        const inflow = d.inflow + c.inflow + s.inflow;
+        const outflow = d.outflow + c.outflow + s.outflow;
+        const savings = d.savings + c.savings + s.savings;
+        const prevInflow = d.prevInflow + c.prevInflow + s.prevInflow;
+        const prevOutflow = d.prevOutflow + c.prevOutflow + s.prevOutflow;
 
-    // Current Month Metrics
-    const danhMonthlyRevenue = computed(() =>
-        sumTransactions(personalFinances.value, selectedMonth.value, 'income', 'Danh Nguyen')
-    );
-    const danhMonthlyExpenses = computed(() =>
-        sumTransactions(personalFinances.value, selectedMonth.value, 'expense', 'Danh Nguyen')
-    );
-    const danhNetBalance = computed(() => danhMonthlyRevenue.value - danhMonthlyExpenses.value);
+        return {
+            inflow,
+            outflow,
+            savings,
+            net: inflow - outflow - savings,
+            prevInflow,
+            prevOutflow,
+            revenueGrowthPct: calculateGrowthPct(inflow, prevInflow),
+            expenseGrowthPct: calculateGrowthPct(outflow, prevOutflow),
+        };
+    });
 
-    const citraMonthlyRevenue = computed(() =>
-        sumTransactions(personalFinances.value, selectedMonth.value, 'income', 'Citra Ayu Wardani')
-    );
-    const citraMonthlyExpenses = computed(() =>
-        sumTransactions(personalFinances.value, selectedMonth.value, 'expense', 'Citra Ayu Wardani')
-    );
-    const citraNetBalance = computed(() => citraMonthlyRevenue.value - citraMonthlyExpenses.value);
-
-    const sharedMonthlyRevenue = computed(() =>
-        sumTransactions(sharedFinances.value, selectedMonth.value, 'income')
-    );
-    const sharedMonthlyExpenses = computed(() =>
-        sumTransactions(sharedFinances.value, selectedMonth.value, 'expense')
-    );
-    const sharedNetBalance = computed(
-        () => sharedMonthlyRevenue.value - sharedMonthlyExpenses.value
-    );
-    const combinedMonthlyRevenue = computed(
-        () => danhMonthlyRevenue.value + citraMonthlyRevenue.value + sharedMonthlyRevenue.value
-    );
-
-    // Previous Month Baselines
-    const danhPreviousMonthRevenue = computed(() =>
-        sumTransactions(personalFinances.value, previousMonth.value, 'income', 'Danh Nguyen')
-    );
-    const danhPreviousMonthExpenses = computed(() =>
-        sumTransactions(personalFinances.value, previousMonth.value, 'expense', 'Danh Nguyen')
-    );
-
-    const citraPreviousMonthRevenue = computed(() =>
-        sumTransactions(personalFinances.value, previousMonth.value, 'income', 'Citra Ayu Wardani')
-    );
-    const citraPreviousMonthExpenses = computed(() =>
-        sumTransactions(personalFinances.value, previousMonth.value, 'expense', 'Citra Ayu Wardani')
-    );
-
-    const sharedPreviousMonthRevenue = computed(() =>
-        sumTransactions(sharedFinances.value, previousMonth.value, 'income')
-    );
-    const sharedPreviousMonthExpenses = computed(() =>
-        sumTransactions(sharedFinances.value, previousMonth.value, 'expense')
-    );
-
-    // Growth Rates
-    const danhRevenueGrowthPct = computed(() =>
-        calculateGrowthPct(danhMonthlyRevenue.value, danhPreviousMonthRevenue.value)
-    );
-    const danhExpenseGrowthPct = computed(() =>
-        calculateGrowthPct(danhMonthlyExpenses.value, danhPreviousMonthExpenses.value)
-    );
-
-    const citraRevenueGrowthPct = computed(() =>
-        calculateGrowthPct(citraMonthlyRevenue.value, citraPreviousMonthRevenue.value)
-    );
-    const citraExpenseGrowthPct = computed(() =>
-        calculateGrowthPct(citraMonthlyExpenses.value, citraPreviousMonthExpenses.value)
-    );
-
-    const sharedRevenueGrowthPct = computed(() =>
-        calculateGrowthPct(sharedMonthlyRevenue.value, sharedPreviousMonthRevenue.value)
-    );
-    const sharedExpenseGrowthPct = computed(() =>
-        calculateGrowthPct(sharedMonthlyExpenses.value, sharedPreviousMonthExpenses.value)
-    );
-
+    function getOwnerFinancialMetrics(
+        owner: PersonalOwner | 'Shared' | 'All' = 'All'
+    ): OwnerMonthlyMetrics {
+        if (owner === 'All') return allHouseholdMetrics.value;
+        if (owner === 'Danh Nguyen') return danhMetrics.value;
+        if (owner === 'Citra Ayu Wardani') return citraMetrics.value;
+        return sharedMetrics.value;
+    }
     async function addPersonalTransaction(payload: Omit<PersonalFinance, 'id'>): Promise<void> {
-        if (!SPREADSHEET_ID) {
-            throw new Error('Missing Google Sheets database configuration. Operation aborted.');
-        }
+        if (!SPREADSHEET_ID) throw new Error('Missing Google Sheets database configuration.');
 
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
@@ -222,7 +237,7 @@ export function usePersonalFinance(
     async function addSharedTransaction(payload: Omit<SharedFinance, 'id'>): Promise<void> {
         const id = crypto.randomUUID();
         const cleanDate = normalizeDate(payload.date);
-        const createdAt = new Date().toISOString(); // Local timestamp
+        const createdAt = new Date().toISOString();
 
         const item: SharedFinance = {
             ...payload,
@@ -310,35 +325,7 @@ export function usePersonalFinance(
         dynamicSavingsTransactions,
         dynamicSavingsAccounts,
         dynamicTotalSavings,
-
-        // Current Month
-        danhNetBalance,
-        citraNetBalance,
-        sharedNetBalance,
-        danhMonthlyRevenue,
-        danhMonthlyExpenses,
-        citraMonthlyRevenue,
-        citraMonthlyExpenses,
-        sharedMonthlyRevenue,
-        sharedMonthlyExpenses,
-        combinedMonthlyRevenue,
-
-        // Previous Month
-        danhPreviousMonthRevenue,
-        danhPreviousMonthExpenses,
-        citraPreviousMonthRevenue,
-        citraPreviousMonthExpenses,
-        sharedPreviousMonthRevenue,
-        sharedPreviousMonthExpenses,
-
-        // Growth
-        danhRevenueGrowthPct,
-        danhExpenseGrowthPct,
-        citraRevenueGrowthPct,
-        citraExpenseGrowthPct,
-        sharedRevenueGrowthPct,
-        sharedExpenseGrowthPct,
-
+        getOwnerFinancialMetrics,
         addPersonalTransaction,
         addSharedTransaction,
         updatePersonalTransaction,
