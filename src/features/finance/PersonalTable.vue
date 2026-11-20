@@ -50,7 +50,7 @@ const totalRecurringCount = computed<number>(() => {
     return recurringItems.filter((i) => {
         if (i.isSettled) return false;
         if (owner === 'Shared') return i.targetLedger === 'Shared';
-        return i.owner === owner;
+        return i.targetLedger === 'Personal' && i.owner === owner;
     }).length;
 });
 const propertyProfitTotal = computed<number>(() =>

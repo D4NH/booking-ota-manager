@@ -469,9 +469,12 @@ function handleSelectMonth(targetMonthStr: string): void {
                                     stroke-width="1.5" />
 
                                 <rect
-                                    :x="pt.x - chartPlotWidth / coordinates.length / 2"
+                                    :x="
+                                        pt.x -
+                                        chartPlotWidth / Math.max(1, coordinates.length - 1) / 2
+                                    "
                                     :y="0"
-                                    :width="chartPlotWidth / coordinates.length"
+                                    :width="chartPlotWidth / Math.max(1, coordinates.length - 1)"
                                     :height="SVG_HEIGHT"
                                     fill="transparent"
                                     class="cursor-pointer"

@@ -137,6 +137,8 @@ const matrixData = computed<StreamPoint[]>(() => {
             const item = personal[i];
             if (!item?.date || item.type !== 'income') continue;
             if (normalizeDate(item.date).slice(0, 7) !== cycle) continue;
+            if (item.category === 'Owner Payout' || item.notes?.startsWith('Payout from '))
+                continue;
 
             const text = `${item.category || ''} ${item.notes || ''}`;
             if (!/SR022|SR021|ORI|SBN|yield|coupon/i.test(text)) {
