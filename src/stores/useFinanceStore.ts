@@ -1177,58 +1177,22 @@ export const useFinanceStore = defineStore('finance', () => {
         isLoading,
         error,
 
-        // Property Domain
+        // Property
         unifiedPropertyFinances: propertyDomain.unifiedPropertyFinances,
         filteredPropertyFinances: propertyDomain.filteredPropertyFinances,
-        monthlyPropertyRevenue: propertyDomain.monthlyPropertyRevenue,
-        monthlyPropertyExpenses: propertyDomain.monthlyPropertyExpenses,
-        monthlyOwnerDraws: propertyDomain.monthlyOwnerDraws,
-        netPropertyProfit: propertyDomain.netPropertyProfit,
-        previousMonthPropertyRevenue: propertyDomain.previousMonthPropertyRevenue,
-        previousMonthPropertyExpenses: propertyDomain.previousMonthPropertyExpenses,
-        propertyRevenueGrowthPct: propertyDomain.propertyRevenueGrowthPct,
-        propertyExpenseGrowthPct: propertyDomain.propertyExpenseGrowthPct,
+        getPropertyFinancialMetrics: propertyDomain.getPropertyFinancialMetrics,
         addPropertyTransaction: propertyDomain.addPropertyTransaction,
         updatePropertyTransaction: propertyDomain.updatePropertyTransaction,
         deletePropertyTransaction,
         persistDexieBookingsToRemoteSheet: propertyDomain.persistDexieBookingsToRemoteSheet,
 
-        // Personal & Shared Domain
+        // Personal & Shared
         filteredPersonalFinances: personalDomain.filteredPersonalFinances,
         filteredSharedFinances: personalDomain.filteredSharedFinances,
         dynamicSavingsTransactions: personalDomain.dynamicSavingsTransactions,
         dynamicSavingsAccounts: personalDomain.dynamicSavingsAccounts,
         dynamicTotalSavings: personalDomain.dynamicTotalSavings,
-
-        // Current
-        danhNetBalance: personalDomain.danhNetBalance,
-        citraNetBalance: personalDomain.citraNetBalance,
-        sharedNetBalance: personalDomain.sharedNetBalance,
-        danhMonthlyRevenue: personalDomain.danhMonthlyRevenue,
-        danhMonthlyExpenses: personalDomain.danhMonthlyExpenses,
-        citraMonthlyRevenue: personalDomain.citraMonthlyRevenue,
-        citraMonthlyExpenses: personalDomain.citraMonthlyExpenses,
-        sharedMonthlyRevenue: personalDomain.sharedMonthlyRevenue,
-        sharedMonthlyExpenses: personalDomain.sharedMonthlyExpenses,
-        combinedMonthlyRevenue: personalDomain.combinedMonthlyRevenue,
-
-        // Previous
-        danhPreviousMonthRevenue: personalDomain.danhPreviousMonthRevenue,
-        danhPreviousMonthExpenses: personalDomain.danhPreviousMonthExpenses,
-        citraPreviousMonthRevenue: personalDomain.citraPreviousMonthRevenue,
-        citraPreviousMonthExpenses: personalDomain.citraPreviousMonthExpenses,
-        sharedPreviousMonthRevenue: personalDomain.sharedPreviousMonthRevenue,
-        sharedPreviousMonthExpenses: personalDomain.sharedPreviousMonthExpenses,
-
-        // Growth Rates
-        danhRevenueGrowthPct: personalDomain.danhRevenueGrowthPct,
-        danhExpenseGrowthPct: personalDomain.danhExpenseGrowthPct,
-        citraRevenueGrowthPct: personalDomain.citraRevenueGrowthPct,
-        citraExpenseGrowthPct: personalDomain.citraExpenseGrowthPct,
-        sharedRevenueGrowthPct: personalDomain.sharedRevenueGrowthPct,
-        sharedExpenseGrowthPct: personalDomain.sharedExpenseGrowthPct,
-
-        // Actions
+        getOwnerFinancialMetrics: personalDomain.getOwnerFinancialMetrics,
         addPersonalTransaction: personalDomain.addPersonalTransaction,
         addSharedTransaction: personalDomain.addSharedTransaction,
         updatePersonalTransaction: personalDomain.updatePersonalTransaction,
@@ -1249,6 +1213,7 @@ export const useFinanceStore = defineStore('finance', () => {
         sbnTotalCollectedYield,
         sbnAccountAllocation,
 
+        // Gold
         goldAssets,
         totalGoldGrams,
         totalGoldCostBasis,
@@ -1283,7 +1248,7 @@ export const useFinanceStore = defineStore('finance', () => {
         netProjectedRecurringSpread: computed(() => recurringMetrics.value.spread),
         settleRecurringItem,
 
-        // Sync Actions
+        // Sync
         loadLocalFinanceData,
         fetchFinancialData,
     };
