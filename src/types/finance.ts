@@ -243,3 +243,25 @@ export interface ComputedSavingGoal extends SavingGoal {
     isCompleted: boolean; // true when allocatedAmount >= targetAmount
     remainingAmount: number; // targetAmount - allocatedAmount
 }
+
+export interface OwnerMonthlyMetrics {
+    inflow: number;
+    outflow: number;
+    savings: number;
+    net: number;
+    prevInflow: number;
+    prevOutflow: number;
+    revenueGrowthPct: number | null;
+    expenseGrowthPct: number | null;
+}
+
+export interface PropertyMonthlyMetrics {
+    revenue: number;
+    expenses: number;
+    netProfit: number;
+    ownerDraws: number;
+    prevRevenue: number;
+    prevExpenses: number;
+    revenueGrowthPct: number | null;
+    expenseGrowthPct: number | null;
+}

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
+import type { PersonalOwner, OwnerMonthlyMetrics } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
-import type { PersonalOwner } from '@/types/finance';
 
 import CardTitle from '@/components/CardTitle.vue';
 import MonthSelector from '@/components/MonthSelector.vue';
@@ -46,18 +45,6 @@ const route = useRoute();
 const router = useRouter();
 const financeStore = useFinanceStore();
 
-const {
-    danhNetBalance,
-    danhMonthlyRevenue,
-    danhMonthlyExpenses,
-    citraNetBalance,
-    citraMonthlyRevenue,
-    citraMonthlyExpenses,
-    sharedNetBalance,
-    sharedMonthlyRevenue,
-    sharedMonthlyExpenses,
-} = storeToRefs(financeStore);
-
 const activeUserTab = computed<UserTabId>(() => {
     const queryUser = String(route.query.user || '').toLowerCase();
     const match = USER_TABS.find((t) => t.id === queryUser);
@@ -67,27 +54,9 @@ const activeOwner = computed<PersonalOwner | 'Shared'>(() => {
     const match = USER_TABS.find((t) => t.id === activeUserTab.value);
     return match ? match.owner : 'Danh Nguyen';
 });
-const activeMetrics = computed<{ net: number; in: number; out: number }>(() => {
-    if (activeOwner.value === 'Citra Ayu Wardani') {
-        return {
-            net: citraNetBalance.value,
-            in: citraMonthlyRevenue.value,
-            out: citraMonthlyExpenses.value,
-        };
-    }
-    if (activeOwner.value === 'Shared') {
-        return {
-            net: sharedNetBalance.value,
-            in: sharedMonthlyRevenue.value,
-            out: sharedMonthlyExpenses.value,
-        };
-    }
-    return {
-        net: danhNetBalance.value,
-        in: danhMonthlyRevenue.value,
-        out: danhMonthlyExpenses.value,
-    };
-});
+const activeMetrics = computed<OwnerMonthlyMetrics>(() =>
+    financeStore.getOwnerFinancialMetrics(activeOwner.value)
+);
 const activeCard = computed<CardDisplayInfo>(() => {
     return {
         bankName: 'BCA',
@@ -239,12 +208,12 @@ function handleUserTabChange(tabId: UserTabId): void {
                             <div>
                                 <span class="block text-xs text-mist-500">In</span>
                                 <span class="font-semibold text-emerald-400">+</span>
-                                {{ formatIDR(activeMetrics.in) }}
+                                {{ formatIDR(activeMetrics.inflow) }}
                             </div>
                             <div class="text-right">
                                 <span class="block text-xs text-mist-500">Out</span>
                                 <span class="font-semibold text-rose-400">-</span>
-                                {{ formatIDR(activeMetrics.out) }}
+                                {{ formatIDR(activeMetrics.outflow + activeMetrics.savings) }}
                             </div>
                         </div>
                     </div>

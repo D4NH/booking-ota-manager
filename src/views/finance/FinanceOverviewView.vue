@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
+import type { OwnerMonthlyMetrics, PropertyMonthlyMetrics } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 
 import CardTitle from '@/components/CardTitle.vue';
@@ -11,48 +12,36 @@ import IncomeEngineMatrixChart from '@/features/finance/IncomeEngineMatrixChart.
 
 const router = useRouter();
 const financeStore = useFinanceStore();
+const { totalOwnerDraws, portfolioSummary, dynamicTotalSavings } = storeToRefs(financeStore);
 
-const {
-    netPropertyProfit,
-    monthlyPropertyRevenue,
-    monthlyPropertyExpenses,
-    combinedMonthlyRevenue,
-    totalOwnerDraws,
-    portfolioSummary,
-    dynamicTotalSavings,
-} = storeToRefs(financeStore);
-
+const propertyMetrics = computed<PropertyMonthlyMetrics>(() =>
+    financeStore.getPropertyFinancialMetrics('all')
+);
+const householdMetrics = computed<OwnerMonthlyMetrics>(() =>
+    financeStore.getOwnerFinancialMetrics('All')
+);
 const totalHouseholdNetWorth = computed<number>(() => {
     const sbn = portfolioSummary.value.sbnTotalPrincipal || 0;
     const gold = portfolioSummary.value.goldCurrentValuation || 0;
     const savings = dynamicTotalSavings.value || 0;
     return sbn + gold + savings;
 });
-
-const monthlyHouseholdOutflows = computed<number>(() => {
-    return (
-        financeStore.danhMonthlyExpenses +
-        financeStore.citraMonthlyExpenses +
-        financeStore.sharedMonthlyExpenses
-    );
-});
-
-const totalUnifiedCashFlow = computed<number>(() => {
-    return netPropertyProfit.value + combinedMonthlyRevenue.value - monthlyHouseholdOutflows.value;
-});
-
+const totalUnifiedCashFlow = computed<number>(
+    () =>
+        propertyMetrics.value.netProfit +
+        householdMetrics.value.inflow -
+        householdMetrics.value.outflow
+);
 const savingsAllocationPct = computed<number>(() => {
     if (totalHouseholdNetWorth.value <= 0) return 0;
     return Math.round((dynamicTotalSavings.value / totalHouseholdNetWorth.value) * 100);
 });
-
 const sbnAllocationPct = computed<number>(() => {
     if (totalHouseholdNetWorth.value <= 0) return 0;
     return Math.round(
         (portfolioSummary.value.sbnTotalPrincipal / totalHouseholdNetWorth.value) * 100
     );
 });
-
 const goldAllocationPct = computed<number>(() => {
     if (totalHouseholdNetWorth.value <= 0) return 0;
     return Math.max(0, 100 - savingsAllocationPct.value - sbnAllocationPct.value);
@@ -105,7 +94,7 @@ function handleNavigate(targetRouteName: string): void {
                 <p class="font-mono text-lg font-extrabold text-mist-200">
                     {{ formatIDR(dynamicTotalSavings) }}
                 </p>
-                <p class="text-xs text-mist-500">Available in BCA, Jago & Blu deposits</p>
+                <p class="text-xs text-mist-500">Available in BCA, Jago &amp; Blu deposits</p>
             </div>
         </div>
 
@@ -185,10 +174,10 @@ function handleNavigate(targetRouteName: string): void {
                                 Villa Net Profit
                             </span>
                             <p class="text-md font-mono font-bold text-mist-200">
-                                {{ formatIDR(netPropertyProfit) }}
+                                {{ formatIDR(propertyMetrics.netProfit) }}
                             </p>
                             <span class="block text-xs text-mist-500">
-                                Gross: {{ formatIDR(monthlyPropertyRevenue) }}
+                                Gross: {{ formatIDR(propertyMetrics.revenue) }}
                             </span>
                         </div>
                         <div class="space-y-1 pl-2">
@@ -197,10 +186,10 @@ function handleNavigate(targetRouteName: string): void {
                                 Household Outflows
                             </span>
                             <p class="text-md font-mono font-bold text-mist-200">
-                                {{ formatIDR(monthlyHouseholdOutflows) }}
+                                {{ formatIDR(householdMetrics.outflow) }}
                             </p>
                             <span class="block text-xs text-mist-500">
-                                Inflows: {{ formatIDR(combinedMonthlyRevenue) }}
+                                Inflows: {{ formatIDR(householdMetrics.inflow) }}
                             </span>
                         </div>
                     </div>
@@ -235,19 +224,19 @@ function handleNavigate(targetRouteName: string): void {
                         <div class="space-y-1">
                             <span class="block text-xs text-mist-500 uppercase">Revenue</span>
                             <span class="font-semibold text-mist-200">
-                                {{ formatIDR(monthlyPropertyRevenue) }}
+                                {{ formatIDR(propertyMetrics.revenue) }}
                             </span>
                         </div>
                         <div class="space-y-1 text-center">
                             <span class="block text-xs text-mist-500 uppercase">Expenses</span>
                             <span class="font-semibold text-mist-200">
-                                {{ formatIDR(monthlyPropertyExpenses) }}
+                                {{ formatIDR(propertyMetrics.expenses) }}
                             </span>
                         </div>
                         <div class="space-y-1 text-right">
                             <span class="block text-xs text-mist-500 uppercase">Net Margin</span>
                             <span class="font-semibold text-mist-200">
-                                {{ formatIDR(netPropertyProfit) }}
+                                {{ formatIDR(propertyMetrics.netProfit) }}
                             </span>
                         </div>
                     </div>
@@ -265,7 +254,7 @@ function handleNavigate(targetRouteName: string): void {
 
             <div class="flex flex-col">
                 <CardTitle>
-                    <template #title>Personal & Family</template>
+                    <template #title>Personal &amp; Family</template>
                     <template #subtitle>Danh Nguyen, Citra Ayu Wardani and Shared budgets</template>
                 </CardTitle>
                 <div
@@ -276,7 +265,7 @@ function handleNavigate(targetRouteName: string): void {
                                 Inflow Receipts
                             </span>
                             <span class="font-semibold text-mist-200">
-                                {{ formatIDR(combinedMonthlyRevenue) }}
+                                {{ formatIDR(householdMetrics.inflow) }}
                             </span>
                         </div>
                         <div class="space-y-1 text-center">
@@ -284,7 +273,7 @@ function handleNavigate(targetRouteName: string): void {
                                 Living Outflows
                             </span>
                             <span class="font-semibold text-mist-200">
-                                {{ formatIDR(monthlyHouseholdOutflows) }}
+                                {{ formatIDR(householdMetrics.outflow) }}
                             </span>
                         </div>
                         <div class="space-y-1 text-right">

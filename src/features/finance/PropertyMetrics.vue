@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
 import { usePropertyDetails } from '@/composables/usePropertyDetails';
 import { useFinanceStore } from '@/stores/useFinanceStore';
-import { isDateInMonth, calculateGrowthPct } from '@/utils/finance';
-import { formatIDR } from '@/utils/money';
+import type { PropertyMonthlyMetrics } from '@/types/finance';
 import type { PropertyId } from '@/types/property';
-import type { PropertyFinance } from '@/types/finance';
+import { formatIDR } from '@/utils/money';
 
 interface Props {
     propertyId?: PropertyId | 'all';
@@ -15,87 +13,10 @@ interface Props {
 const { propertyId = 'all' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
-const { unifiedPropertyFinances, selectedMonth, previousMonth } = storeToRefs(financeStore);
 const { totalYearRevenue } = usePropertyDetails(() => propertyId);
 
-const currentMonthItems = computed<PropertyFinance[]>(() => {
-    const list = unifiedPropertyFinances.value || [];
-    return list.filter((item) => {
-        if (!item?.date) return false;
-        if (propertyId !== 'all' && item.propertyId !== propertyId) return false;
-        return isDateInMonth(item.date, selectedMonth.value);
-    });
-});
-const previousMonthItems = computed<PropertyFinance[]>(() => {
-    const list = unifiedPropertyFinances.value || [];
-    return list.filter((item) => {
-        if (!item?.date) return false;
-        if (propertyId !== 'all' && item.propertyId !== propertyId) return false;
-        return isDateInMonth(item.date, previousMonth.value);
-    });
-});
-const monthlyRevenue = computed<number>(() => {
-    let sum = 0;
-    const items = currentMonthItems.value;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item) continue;
-        if (
-            item.type === 'income' &&
-            item.category !== 'Owner Payout' &&
-            item.category !== 'Mai House Jogja Share'
-        ) {
-            sum += Number(item.amount) || 0;
-        }
-    }
-    return sum;
-});
-const monthlyExpenses = computed<number>(() => {
-    let sum = 0;
-    const items = currentMonthItems.value;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item) continue;
-        if (item.type === 'expense' && item.category !== 'Owner Payout Outflow') {
-            sum += Number(item.amount) || 0;
-        }
-    }
-    return sum;
-});
-const netPropertyProfit = computed<number>(() => monthlyRevenue.value - monthlyExpenses.value);
-const previousMonthRevenue = computed<number>(() => {
-    let sum = 0;
-    const items = previousMonthItems.value;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item) continue;
-        if (
-            item.type === 'income' &&
-            item.category !== 'Owner Payout' &&
-            item.category !== 'Mai House Jogja Share'
-        ) {
-            sum += Number(item.amount) || 0;
-        }
-    }
-    return sum;
-});
-const previousMonthExpenses = computed<number>(() => {
-    let sum = 0;
-    const items = previousMonthItems.value;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item) continue;
-        if (item.type === 'expense' && item.category !== 'Owner Payout Outflow') {
-            sum += Number(item.amount) || 0;
-        }
-    }
-    return sum;
-});
-const revenueGrowthPct = computed<number | null>(() =>
-    calculateGrowthPct(monthlyRevenue.value, previousMonthRevenue.value)
-);
-const expenseGrowthPct = computed<number | null>(() =>
-    calculateGrowthPct(monthlyExpenses.value, previousMonthExpenses.value)
+const metrics = computed<PropertyMonthlyMetrics>(() =>
+    financeStore.getPropertyFinancialMetrics(propertyId)
 );
 </script>
 
@@ -104,23 +25,25 @@ const expenseGrowthPct = computed<number | null>(() =>
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Earnings</h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(monthlyRevenue) }}
+                {{ formatIDR(metrics.revenue) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span
-                    v-if="revenueGrowthPct !== null"
+                    v-if="metrics.revenueGrowthPct !== null"
                     class="font-medium"
                     :class="
-                        revenueGrowthPct > 0
+                        metrics.revenueGrowthPct > 0
                             ? 'text-emerald-400'
-                            : revenueGrowthPct < 0
+                            : metrics.revenueGrowthPct < 0
                               ? 'text-rose-400'
                               : 'text-mist-400'
                     ">
                     <fa-icon
                         class="text-[10px]"
-                        :icon="revenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'" />
-                    {{ Math.abs(revenueGrowthPct) }}%
+                        :icon="
+                            metrics.revenueGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                        " />
+                    {{ Math.abs(metrics.revenueGrowthPct) }}%
                 </span>
                 <span
                     v-else
@@ -134,23 +57,25 @@ const expenseGrowthPct = computed<number | null>(() =>
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Expenses</h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(monthlyExpenses) }}
+                {{ formatIDR(metrics.expenses) }}
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span
-                    v-if="expenseGrowthPct !== null"
+                    v-if="metrics.expenseGrowthPct !== null"
                     class="font-medium"
                     :class="
-                        expenseGrowthPct > 0
+                        metrics.expenseGrowthPct > 0
                             ? 'text-rose-400'
-                            : expenseGrowthPct < 0
+                            : metrics.expenseGrowthPct < 0
                               ? 'text-emerald-400'
                               : 'text-mist-400'
                     ">
                     <fa-icon
                         class="text-[10px]"
-                        :icon="expenseGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'" />
-                    {{ Math.abs(expenseGrowthPct) }}%
+                        :icon="
+                            metrics.expenseGrowthPct >= 0 ? 'arrow-trend-up' : 'arrow-trend-down'
+                        " />
+                    {{ Math.abs(metrics.expenseGrowthPct) }}%
                 </span>
                 <span
                     v-else
@@ -164,7 +89,7 @@ const expenseGrowthPct = computed<number | null>(() =>
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">Net Profit</h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(netPropertyProfit) }}
+                {{ formatIDR(metrics.netProfit) }}
             </p>
             <p class="text-xs text-mist-500">Operating margin</p>
         </div>
@@ -178,7 +103,7 @@ const expenseGrowthPct = computed<number | null>(() =>
             </p>
             <p class="flex items-center gap-1 text-xs">
                 <span class="font-medium text-emerald-400">
-                    {{ monthlyRevenue >= 0 ? '+' : '' }}{{ formatIDR(monthlyRevenue) }}
+                    {{ metrics.revenue >= 0 ? '+' : '' }}{{ formatIDR(metrics.revenue) }}
                 </span>
                 <span class="text-mist-500">this cycle</span>
             </p>

@@ -2,113 +2,37 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useFinanceStore } from '@/stores/useFinanceStore';
+import type { PersonalOwner, OwnerMonthlyMetrics } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
-import { isDateInMonth, calculateGrowthPct } from '@/utils/finance';
-import type { PersonalOwner, PersonalFinance, SharedFinance } from '@/types/finance';
 
 interface Props {
     owner?: PersonalOwner | 'Shared';
 }
 
-interface MetricsTotals {
-    inflow: number;
-    outflow: number;
-    net: number;
-    savings: number;
-    assets: number;
-    revenueGrowthPct: number | null;
-}
-
 const { owner = 'Danh Nguyen' } = defineProps<Props>();
 
 const financeStore = useFinanceStore();
-const {
-    personalFinances,
-    sharedFinances,
-    selectedMonth,
-    previousMonth,
-    goldAccountAllocation,
-    sbnAccountAllocation,
-    dynamicSavingsAccounts,
-} = storeToRefs(financeStore);
+const { goldAccountAllocation, sbnAccountAllocation, dynamicSavingsAccounts } =
+    storeToRefs(financeStore);
 
-const metrics = computed<MetricsTotals>(() => {
-    let inflow = 0;
-    let prevInflow = 0;
-    let outflow = 0;
-    let savings = 0;
-    let assets = 0;
+const metrics = computed<OwnerMonthlyMetrics>(() => financeStore.getOwnerFinancialMetrics(owner));
+const totalAssets = computed<number>(() => calculateAssets(owner));
 
-    const cycle = selectedMonth.value;
-    const prevCycle = previousMonth.value;
-    const personal = personalFinances.value || [];
-    const shared = sharedFinances.value || [];
+function calculateAssets(targetOwner: PersonalOwner | 'Shared'): number {
+    const gold = goldAccountAllocation.value.find((a) => a.owner === targetOwner);
+    const sbn = sbnAccountAllocation.value.find((a) => a.owner === targetOwner);
+    const savingAccounts = dynamicSavingsAccounts.value.filter((a) => a.owner === targetOwner);
 
-    const processItem = (item: PersonalFinance | SharedFinance): void => {
-        if (!item?.date) return;
-        const category = item.category?.toLowerCase().trim();
-        const amount = Number(item.amount) || 0;
+    const savingsTotal = savingAccounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
+    const goldValuation = Number(gold?.valuation || 0);
+    const sbnPrincipal = Number(sbn?.principalAmount || 0);
 
-        if (isDateInMonth(item.date, cycle)) {
-            if (category === 'savings') {
-                savings += amount;
-                return;
-            }
-            if (category === 'gold') return;
-
-            if (item.type === 'income') {
-                inflow += amount;
-            } else if (item.type === 'expense' || item.type === 'fixed_cost') {
-                outflow += amount;
-            }
-        }
-
-        if (isDateInMonth(item.date, prevCycle)) {
-            if (category !== 'savings' && category !== 'gold' && item.type === 'income') {
-                prevInflow += amount;
-            }
-        }
-    };
-    const calculateAssets = (owner: string): number => {
-        const gold = goldAccountAllocation.value.find((a) => a.owner === owner);
-        const sbn = sbnAccountAllocation.value.find((a) => a.owner === owner);
-        const savingAccount = dynamicSavingsAccounts.value.find((a) => a.owner === owner);
-        const totalSavings = savingAccount?.balance || 0;
-        const goldValuation = gold?.valuation || 0;
-        const sbnPrincipalAmount = sbn?.principalAmount || 0;
-
-        return goldValuation + sbnPrincipalAmount + totalSavings || 0;
-    };
-
-    if (owner === 'Danh Nguyen' || owner === 'Citra Ayu Wardani') {
-        const targetPersonal = personal.filter((p) => p.owner === owner);
-        for (let i = 0; i < targetPersonal.length; i++) {
-            const item = targetPersonal[i];
-            if (item) processItem(item);
-        }
-        assets = calculateAssets(owner);
-    }
-
-    if (owner === 'Shared') {
-        shared.forEach((item) => {
-            if (item) processItem(item);
-        });
-        assets = calculateAssets(owner);
-    }
-
-    return {
-        inflow,
-        outflow,
-        net: inflow - outflow - savings,
-        savings,
-        assets,
-        revenueGrowthPct: calculateGrowthPct(inflow, prevInflow),
-    };
-});
+    return goldValuation + sbnPrincipal + savingsTotal;
+}
 </script>
 
 <template>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                 Total Income
@@ -148,9 +72,9 @@ const metrics = computed<MetricsTotals>(() => {
                 Total Expenses
             </h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(metrics.outflow) }}
+                {{ formatIDR(metrics.outflow + metrics.savings) }}
             </p>
-            <p class="text-xs text-mist-500">Fixed costs & variable spending</p>
+            <p class="text-xs text-mist-500">Fixed costs &amp; variable spending</p>
         </div>
 
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
@@ -173,7 +97,7 @@ const metrics = computed<MetricsTotals>(() => {
                 Total Assets
             </h3>
             <p class="font-mono text-lg font-extrabold text-mist-200">
-                {{ formatIDR(metrics.assets) }}
+                {{ formatIDR(totalAssets) }}
             </p>
             <p class="text-xs text-mist-500">Reserve deposits</p>
         </div>

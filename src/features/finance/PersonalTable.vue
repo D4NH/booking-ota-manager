@@ -28,7 +28,6 @@ const {
     filteredTransfers,
     monthlyProjectedIncome,
     monthlyProjectedExpenses,
-    netPropertyProfit,
 } = storeToRefs(financeStore);
 
 const isModalOpen = ref<boolean>(false);
@@ -54,7 +53,9 @@ const totalRecurringCount = computed<number>(() => {
         return i.owner === owner;
     }).length;
 });
-const propertyProfitTotal = computed<number>(() => Math.max(0, netPropertyProfit.value));
+const propertyProfitTotal = computed<number>(() =>
+    Math.max(0, financeStore.getPropertyFinancialMetrics('all').netProfit)
+);
 const danhTransfersTotal = computed<number>(() =>
     filteredTransfers.value
         .filter((t) => t.targetAccount === 'Danh Nguyen')
