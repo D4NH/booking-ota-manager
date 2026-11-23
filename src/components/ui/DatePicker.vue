@@ -122,12 +122,20 @@ const displayValue = computed<string>(() => {
 
     if (mode === 'range') {
         if (rangeStart.value && rangeEnd.value) {
-            const startTxt = formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true });
-            const endTxt = formatDate(rangeEnd.value, { shortWeekday: true, shortMonth: true });
+            const startTxt = formatDate(rangeStart.value, {
+                shortWeekday: true,
+                shortMonth: true,
+                includeYear: true,
+            });
+            const endTxt = formatDate(rangeEnd.value, {
+                shortWeekday: true,
+                shortMonth: true,
+                includeYear: true,
+            });
             return `${startTxt} → ${endTxt}`;
         }
         if (rangeStart.value) {
-            return `${formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true })} → Select checkout`;
+            return `${formatDate(rangeStart.value, { shortWeekday: true, shortMonth: true, includeYear: true })} → Select checkout`;
         }
         return placeholder || 'Select stay dates';
     }
