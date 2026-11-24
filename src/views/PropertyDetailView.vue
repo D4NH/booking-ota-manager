@@ -98,7 +98,7 @@ function handleEditProperty(): void {
         </PageTitle>
 
         <!-- Metric Stats -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
@@ -187,208 +187,217 @@ function handleEditProperty(): void {
             </div>
         </div>
 
-        <div class="grid grid-cols-1 space-y-4 lg:grid-cols-4 lg:gap-4 lg:space-y-0">
-            <!-- Live Operations Sidebar -->
-            <div
-                class="flex flex-col space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
-                <div class="flex items-center justify-between border-b border-mist-800 pb-3">
-                    <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
-                        Daily Operations
-                    </span>
-                </div>
+        <div class="mt-8">
+            <CardTitle>
+                <template #title>Properties</template>
+                <template #subtitle> Operational status and unit specifications </template>
+            </CardTitle>
+            <div class="grid grid-cols-1 space-y-4 xl:grid-cols-4 xl:gap-4 xl:space-y-0">
+                <!-- Live Operations Sidebar -->
+                <div
+                    class="flex flex-col space-y-4 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+                    <div class="flex items-center justify-between border-b border-mist-800 pb-3">
+                        <span class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
+                            Daily Operations
+                        </span>
+                    </div>
 
-                <div class="flex flex-1 flex-col justify-center">
-                    <div
-                        v-if="staySections.length"
-                        class="space-y-4">
+                    <div class="flex flex-1 flex-col justify-center">
                         <div
-                            v-for="section in staySections"
-                            :key="section.label">
-                            <span
-                                class="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold"
-                                :class="[
-                                    section.label === 'Arriving Today'
-                                        ? 'text-lime-400'
-                                        : 'text-amber-400',
-                                ]">
-                                {{ section.label }}
-                            </span>
-
+                            v-if="staySections.length"
+                            class="space-y-4">
                             <div
-                                v-for="b in section.items"
-                                :key="b.id || b.bookingId"
-                                class="-mx-2 -mt-0.5 -mb-1 cursor-pointer rounded-md px-2 pt-0.5 pb-1 transition hover:bg-mist-800/40"
-                                @click="handleEditBooking(b)">
-                                <div class="flex justify-between space-y-1">
-                                    <div class="flex flex-col items-start space-y-1">
-                                        <span class="truncate text-sm font-semibold">
-                                            {{ b.guestName }}
-                                        </span>
-                                        <span class="text-xs text-mist-400">
-                                            {{
-                                                formatDate(b.checkIn, {
-                                                    shortWeekday: true,
-                                                    shortMonth: true,
-                                                })
-                                            }}
-                                            &rarr;
-                                            {{
-                                                formatDate(b.checkOut, {
-                                                    shortWeekday: true,
-                                                    shortMonth: true,
-                                                })
-                                            }}
-                                            &bull; {{ b.nights }} night(s)
-                                        </span>
-                                        <span class="text-xs font-medium text-mist-500">
-                                            via {{ b.listing }}
-                                        </span>
-                                    </div>
-                                    <div class="flex flex-col items-end space-y-1">
-                                        <span class="font-mono text-xs font-semibold text-nowrap">
-                                            {{ formatIDR(b.payout) }}
-                                        </span>
-                                        <span
-                                            class="mt-0.5 text-xs"
-                                            :class="getStatusStyle(b.status)">
-                                            {{ b.status }}
-                                        </span>
+                                v-for="section in staySections"
+                                :key="section.label">
+                                <span
+                                    class="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold"
+                                    :class="[
+                                        section.label === 'Arriving Today'
+                                            ? 'text-lime-400'
+                                            : 'text-amber-400',
+                                    ]">
+                                    {{ section.label }}
+                                </span>
+
+                                <div
+                                    v-for="b in section.items"
+                                    :key="b.id || b.bookingId"
+                                    class="-mx-2 -mt-0.5 -mb-1 cursor-pointer rounded-md px-2 pt-0.5 pb-1 transition hover:bg-mist-800/40"
+                                    @click="handleEditBooking(b)">
+                                    <div class="flex justify-between space-y-1">
+                                        <div class="flex flex-col items-start space-y-1">
+                                            <span class="truncate text-sm font-semibold">
+                                                {{ b.guestName }}
+                                            </span>
+                                            <span class="text-xs text-mist-400">
+                                                {{
+                                                    formatDate(b.checkIn, {
+                                                        shortWeekday: true,
+                                                        shortMonth: true,
+                                                    })
+                                                }}
+                                                &rarr;
+                                                {{
+                                                    formatDate(b.checkOut, {
+                                                        shortWeekday: true,
+                                                        shortMonth: true,
+                                                    })
+                                                }}
+                                                &bull; {{ b.nights }} night(s)
+                                            </span>
+                                            <span class="text-xs font-medium text-mist-500">
+                                                via {{ b.listing }}
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col items-end space-y-1">
+                                            <span
+                                                class="font-mono text-xs font-semibold text-nowrap">
+                                                {{ formatIDR(b.payout) }}
+                                            </span>
+                                            <span
+                                                class="mt-0.5 text-xs"
+                                                :class="getStatusStyle(b.status)">
+                                                {{ b.status }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div
-                        v-else
-                        class="text-center text-xs text-mist-500">
-                        <fa-icon
-                            icon="house-circle-check"
-                            class="text-xl text-mist-700" />
-                        <span class="ml-2 font-medium text-mist-400">
-                            No active in-house guest
-                        </span>
-                        <p
-                            v-if="nextUpcoming"
-                            class="mt-1 text-[11px]">
-                            Next:
-                            {{
-                                formatDate(nextUpcoming.checkIn, {
-                                    shortWeekday: true,
-                                    shortMonth: true,
-                                    relativeDay: true,
-                                })
-                            }}
-                            -
-                            {{ nextUpcoming.guestName }}
-                        </p>
-                        <p
+                        <div
                             v-else
-                            class="mt-1 text-[11px]">
-                            Unit is vacant and ready for check-in
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Editable Lockbox PIN & Wi-Fi Access -->
-                <div
-                    class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
-                    <div class="px-1">
-                        <span
-                            class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                            class="text-center text-xs text-mist-500">
                             <fa-icon
-                                icon="key"
-                                class="text-xs" />
-                            Door Code
-                        </span>
-                        <span class="font-mono text-sm font-semibold">
-                            {{ activeDoorCode }}
-                        </span>
-                    </div>
-                    <div class="px-1">
-                        <span
-                            class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
-                            <fa-icon
-                                icon="wifi"
-                                class="text-xs" />
-                            {{ selectedProperty.wifi?.ssid }}
-                        </span>
-                        <span class="font-mono text-sm font-semibold">
-                            {{ selectedProperty.wifi?.pwd || '----' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Photo & Property Specs -->
-            <div
-                class="col-span-2 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
-                <div class="relative flex h-full flex-col justify-between overflow-hidden p-4">
-                    <img
-                        :src="`/images/${id}.jpg`"
-                        :alt="selectedProperty.name"
-                        class="pointer-events-none absolute inset-0 h-full w-full mask-b-from-15% mask-b-to-95% object-cover" />
-
-                    <div class="relative z-10 flex items-center">
-                        <OccupiedTag :is-occupied="isOccupied" />
-                    </div>
-
-                    <div class="relative z-10 mt-12 space-y-2">
-                        <div class="border-b border-mist-600/50 pb-3">
-                            <div class="flex gap-2">
-                                <h3 class="truncate text-lg font-semibold">
-                                    {{ selectedProperty.name }}
-                                </h3>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer hover:text-mist-300"
-                                    @click="handleEditProperty">
-                                    <fa-icon icon="pen-to-square" />
-                                </button>
-                            </div>
-                            <p class="mt-1 max-w-md truncate text-xs leading-relaxed text-mist-300">
-                                <fa-icon
-                                    icon="location-dot"
-                                    class="shrink-0 text-[10px] text-mist-400" />
-                                {{ selectedProperty.address }}
+                                icon="house-circle-check"
+                                class="text-xl text-mist-700" />
+                            <span class="ml-2 font-medium text-mist-400">
+                                No active in-house guest
+                            </span>
+                            <p
+                                v-if="nextUpcoming"
+                                class="mt-1 text-[11px]">
+                                Next:
+                                {{
+                                    formatDate(nextUpcoming.checkIn, {
+                                        shortWeekday: true,
+                                        shortMonth: true,
+                                        relativeDay: true,
+                                    })
+                                }}
+                                -
+                                {{ nextUpcoming.guestName }}
+                            </p>
+                            <p
+                                v-else
+                                class="mt-1 text-[11px]">
+                                Unit is vacant and ready for check-in
                             </p>
                         </div>
+                    </div>
 
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 text-xs font-medium text-mist-200">
-                                <span>
+                    <!-- Editable Lockbox PIN & Wi-Fi Access -->
+                    <div
+                        class="grid grid-cols-2 divide-x divide-mist-800 border-t border-mist-800 pt-3 text-center">
+                        <div class="px-1">
+                            <span
+                                class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                                <fa-icon
+                                    icon="key"
+                                    class="text-xs" />
+                                Door Code
+                            </span>
+                            <span class="font-mono text-sm font-semibold">
+                                {{ activeDoorCode }}
+                            </span>
+                        </div>
+                        <div class="px-1">
+                            <span
+                                class="block text-xs font-semibold tracking-wider text-mist-500 uppercase">
+                                <fa-icon
+                                    icon="wifi"
+                                    class="text-xs" />
+                                {{ selectedProperty.wifi?.ssid }}
+                            </span>
+                            <span class="font-mono text-sm font-semibold">
+                                {{ selectedProperty.wifi?.pwd || '----' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo & Property Specs -->
+                <div
+                    class="col-span-2 overflow-hidden rounded-md border border-mist-800 bg-mist-900 shadow-md">
+                    <div class="relative flex h-full flex-col justify-between overflow-hidden p-4">
+                        <img
+                            :src="`/images/${id}.jpg`"
+                            :alt="selectedProperty.name"
+                            class="pointer-events-none absolute inset-0 h-full w-full mask-b-from-15% mask-b-to-95% object-cover" />
+
+                        <div class="relative z-10 flex items-center">
+                            <OccupiedTag :is-occupied="isOccupied" />
+                        </div>
+
+                        <div class="relative z-10 mt-12 space-y-2">
+                            <div class="border-b border-mist-600/50 pb-3">
+                                <div class="flex gap-2">
+                                    <h3 class="truncate text-lg font-semibold">
+                                        {{ selectedProperty.name }}
+                                    </h3>
+                                    <button
+                                        type="button"
+                                        class="cursor-pointer hover:text-mist-300"
+                                        @click="handleEditProperty">
+                                        <fa-icon icon="pen-to-square" />
+                                    </button>
+                                </div>
+                                <p
+                                    class="mt-1 max-w-md truncate text-xs leading-relaxed text-mist-300">
                                     <fa-icon
-                                        icon="bed"
-                                        class="mr-1 text-mist-400" />
-                                    {{ selectedProperty.bedrooms }} Bedrooms
-                                </span>
-                                <span>&bull;</span>
-                                <span>
-                                    <fa-icon
-                                        icon="bath"
-                                        class="mr-1 text-mist-400" />
-                                    {{ selectedProperty.bathrooms }} Bathrooms
-                                </span>
-                                <span>&bull;</span>
-                                <span>
-                                    <fa-icon
-                                        icon="ruler-combined"
-                                        class="mr-1 text-mist-400" />
-                                    {{ selectedProperty.plotSize }} m²
-                                </span>
+                                        icon="location-dot"
+                                        class="shrink-0 text-[10px] text-mist-400" />
+                                    {{ selectedProperty.address }}
+                                </p>
                             </div>
-                            <div>
-                                <span class="font-mono text-sm font-semibold">
-                                    {{ formatIDR(selectedProperty.price) }}
-                                </span>
-                                <span class="text-[11px] text-mist-500"> / night</span>
+
+                            <div class="flex items-center justify-between">
+                                <div
+                                    class="flex items-center gap-4 text-xs font-medium text-mist-200">
+                                    <span>
+                                        <fa-icon
+                                            icon="bed"
+                                            class="mr-1 text-mist-400" />
+                                        {{ selectedProperty.bedrooms }} Bedrooms
+                                    </span>
+                                    <span>&bull;</span>
+                                    <span>
+                                        <fa-icon
+                                            icon="bath"
+                                            class="mr-1 text-mist-400" />
+                                        {{ selectedProperty.bathrooms }} Bathrooms
+                                    </span>
+                                    <span>&bull;</span>
+                                    <span>
+                                        <fa-icon
+                                            icon="ruler-combined"
+                                            class="mr-1 text-mist-400" />
+                                        {{ selectedProperty.plotSize }} m²
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="font-mono text-sm font-semibold">
+                                        {{ formatIDR(selectedProperty.price) }}
+                                    </span>
+                                    <span class="text-[11px] text-mist-500"> / night</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <PropertyLocationMap :property="selectedProperty" />
+                <PropertyLocationMap :property="selectedProperty" />
+            </div>
         </div>
 
         <!-- Weekly Overview -->
@@ -412,19 +421,19 @@ function handleEditProperty(): void {
                 class="shrink-0" />
         </div>
 
-        <div class="grid grid-cols-2 grid-rows-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:grid-rows-2">
             <!-- Property Analytics -->
             <MonthlyRevenuePacing
-                class="col-start-1"
+                class="xl:col-start-1"
                 :current-revenue="totalPayout"
                 :property="selectedProperty" />
 
             <ForwardBookingHorizon
-                class="row-start-2"
+                class="xl:row-start-2"
                 :bookings="unitBookings"
                 :property="selectedProperty" />
 
-            <div class="col-start-2 row-span-2 h-170 overflow-y-scroll">
+            <div class="overflow-y-scroll xl:col-start-2 xl:row-span-2">
                 <UpcomingBookings
                     :limit="15"
                     :bookings="unitBookings"

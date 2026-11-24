@@ -107,7 +107,7 @@ function handleAddProperty(): void {
         </div>
 
         <!-- Analytics Charts -->
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <MonthlyEarnings
                 :weekly-data="getWeeklyComparison(bookings, 'all')"
                 :monthly-data="getMonthlyComparison(bookings, 'all')" />
@@ -115,8 +115,9 @@ function handleAddProperty(): void {
             <ChannelDistribution :bookings="bookings" />
         </div>
 
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <AnnualRevenue
+                class="h-98.25 xl:h-full"
                 :bookings="bookings"
                 :total-revenue="totalYearRevenue" />
 

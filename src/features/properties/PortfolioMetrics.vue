@@ -50,7 +50,7 @@ const metrics = computed(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <!-- Revenue -->
         <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">

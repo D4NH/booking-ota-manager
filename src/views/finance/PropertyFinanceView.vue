@@ -70,7 +70,7 @@ function handlePropertyChange(propId: PropertyId | 'all'): void {
             class="-mt-2"
             :property-id="selectedProperty" />
 
-        <div class="grid h-105 grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 xl:h-105 xl:grid-cols-2">
             <FinancePropertyBreakdown
                 :key="`breakdown-${selectedProperty}`"
                 :property-id="selectedProperty" />

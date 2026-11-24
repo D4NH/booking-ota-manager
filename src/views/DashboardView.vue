@@ -62,7 +62,7 @@ function handleEditBooking(booking: Booking): void {
         </PageTitle>
 
         <!-- Monthly Summary -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div class="space-y-1 rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
                 <h3 class="text-xs font-semibold tracking-wider text-mist-400 uppercase">
                     Monthly Revenue
@@ -137,10 +137,13 @@ function handleEditBooking(booking: Booking): void {
         </div>
 
         <!-- Recent Bookings & Revenue Performance-->
-        <div class="grid grid-cols-1 gap-4 md:h-105 lg:grid-cols-2">
-            <UpcomingBookings
-                :bookings="bookings"
-                @edit-booking="handleEditBooking" />
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div class="relative min-h-0">
+                <UpcomingBookings
+                    class="xl:absolute xl:inset-0"
+                    :bookings="bookings"
+                    @edit-booking="handleEditBooking" />
+            </div>
 
             <RevenuePerformance :bookings="bookings" />
         </div>

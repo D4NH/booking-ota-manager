@@ -31,6 +31,7 @@ const sortedUpcomingBookings = computed<Booking[]>(() => {
         .filter((b) => b.status !== 'Unavailable' && b.checkIn >= today)
         .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 });
+
 const displaySections = computed<MonthSection[]>(() => {
     const list = sortedUpcomingBookings.value;
 
@@ -51,14 +52,14 @@ const displaySections = computed<MonthSection[]>(() => {
 </script>
 
 <template>
-    <div class="flex h-full min-h-0 flex-col overflow-y-auto">
-        <CardTitle>
+    <div class="flex h-full min-h-0 flex-col">
+        <CardTitle class="shrink-0">
             <template #title>Upcoming Bookings</template>
             <template #subtitle>Next confirmed reservations across all units</template>
         </CardTitle>
 
         <div
-            class="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
+            class="flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-auto rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md">
             <div
                 v-if="sortedUpcomingBookings.length === 0"
                 class="flex flex-1 flex-col items-center justify-center p-8 text-xs text-mist-400">
@@ -94,7 +95,6 @@ const displaySections = computed<MonthSection[]>(() => {
                         <div
                             class="group -mx-1 flex grow cursor-pointer items-center justify-between p-1 transition hover:bg-mist-800/40"
                             @click="emit('edit-booking', b)">
-                            <!-- Guest Info & Property -->
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="truncate">
                                     <div class="flex items-center gap-2">
@@ -125,7 +125,6 @@ const displaySections = computed<MonthSection[]>(() => {
                                     </p>
                                 </div>
                             </div>
-                            <!-- Payout & Status -->
                             <div class="shrink-0 text-right">
                                 <span class="mr-0.5 block font-mono text-xs font-bold">
                                     {{ formatIDR(b.payout) }}

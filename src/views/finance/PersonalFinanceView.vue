@@ -105,7 +105,7 @@ function handleUserTabChange(tabId: UserTabId): void {
             class="-mt-2"
             :owner="activeOwner" />
 
-        <div class="grid h-110 grid-cols-1 gap-4 lg:grid-cols-4">
+        <div class="grid grid-cols-1 xl:grid-cols-4 xl:gap-4">
             <div class="flex flex-col">
                 <CardTitle>
                     <template #title>Active Account</template>
@@ -220,13 +220,15 @@ function handleUserTabChange(tabId: UserTabId): void {
                 </div>
             </div>
 
-            <FinancePersonalTable
-                :key="`table-${activeOwner}`"
-                :owner="activeOwner"
-                class="col-span-1 lg:col-span-3" />
+            <div class="relative col-span-1 sm:h-110 xl:col-span-3">
+                <FinancePersonalTable
+                    :key="`table-${activeOwner}`"
+                    :owner="activeOwner"
+                    class="xl:absolute xl:inset-0" />
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <PersonalCashFlow
                 :key="`cashflow-${activeOwner}`"
                 :owner="activeOwner" />
@@ -239,7 +241,7 @@ function handleUserTabChange(tabId: UserTabId): void {
             <template #title>Asset Allocation</template>
             <template #subtitle>Gold, investments and savings</template>
         </CardTitle>
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
             <GoldInvestment
                 :key="`gold-${activeOwner}`"
                 :owner="activeOwner" />

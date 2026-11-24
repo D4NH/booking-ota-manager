@@ -145,7 +145,7 @@ function getBarHeightPct(amount: number): number {
         </div>
 
         <div
-            class="flex min-h-0 flex-1 flex-col rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md"
+            class="flex min-h-0 flex-1 flex-col rounded-md border border-mist-800 bg-mist-900 p-4 pb-8 shadow-md"
             @mouseleave="hoveredIndex = null">
             <div class="flex items-start justify-between gap-4">
                 <div class="flex flex-col space-y-1">
