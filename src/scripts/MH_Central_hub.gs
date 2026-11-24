@@ -378,7 +378,7 @@ function processOtaEmails() {
                     Number(booking.nights) || 1,
                     Number(booking.payout) || 0,
                     'Pending Approval',
-                    booking.notes || 'Imported from ' + booking.listing + ' confirmation email',
+                    booking.notes,
                     calendarEventId || '',
                 ]);
 
@@ -880,6 +880,16 @@ function syncManualSheetBookingsToCalendar() {
                             startDate.getMonth(),
                             startDate.getDate() + 1
                         );
+                    }
+
+                    // Keep Column F (Nights) synced for both new rows (Case 2) and edited dates (Case 3)
+                    const calculatedNights = Math.max(
+                        1,
+                        Math.round((endDate.getTime() - startDate.getTime()) / 86400000)
+                    );
+                    if ((Number(row[5]) || 0) !== calculatedNights) {
+                        sheet.getRange(rowNumber, 6).setValue(calculatedNights);
+                        values[i][5] = calculatedNights;
                     }
 
                     // Case 2: New Row (Auto-fill ID and create Calendar Event)
