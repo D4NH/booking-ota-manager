@@ -130,12 +130,17 @@ function isCurrentBooking(b: Booking): boolean {
                         <td class="px-4 py-0">
                             <div class="flex flex-col justify-center gap-2">
                                 <span class="leading-none font-medium">
-                                    {{ b.bookingId.includes('UNAVAILABLE') ? '-' : b.guestName }}
+                                    {{ b.guestName }}
                                 </span>
                                 <span
                                     v-if="!b.bookingId.includes('UNAVAILABLE')"
                                     class="font-mono text-xs leading-none text-mist-400">
                                     {{ b.bookingId }}
+                                </span>
+                                <span
+                                    v-if="b.bookingId.includes('UNAVAILABLE') && b.notes"
+                                    class="font-mono text-xs leading-none text-mist-400">
+                                    {{ b.notes }}
                                 </span>
                             </div>
                         </td>

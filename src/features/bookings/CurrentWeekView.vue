@@ -147,6 +147,11 @@ function handleBookingClick(booking: Booking, event: Event) {
                                     class="text-[10px] text-mist-400">
                                     {{ b.listing }}
                                 </div>
+                                <div
+                                    v-else
+                                    class="text-[10px] text-mist-400">
+                                    {{ b.notes }}
+                                </div>
                             </div>
                             <!-- Continuation Strip -->
                             <div

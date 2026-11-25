@@ -210,10 +210,9 @@ function handleBookingClick(booking: Booking, event: Event): void {
                                 </div>
                                 <div
                                     v-if="
-                                        (b.checkIn === day.dateStr ||
-                                            dayIndex % 7 === 0 ||
-                                            b.nights === 1) &&
-                                        b.status !== 'Unavailable'
+                                        b.checkIn === day.dateStr ||
+                                        dayIndex % 7 === 0 ||
+                                        b.nights === 1
                                     "
                                     class="mt-1 truncate text-[10px] text-mist-400">
                                     {{ b.listing }}

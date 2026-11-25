@@ -189,7 +189,7 @@ function handleEditProperty(): void {
 
         <div class="mt-8">
             <CardTitle>
-                <template #title>Properties</template>
+                <template #title>Property</template>
                 <template #subtitle> Operational status and unit specifications </template>
             </CardTitle>
             <div class="grid grid-cols-1 space-y-4 xl:grid-cols-4 xl:gap-4 xl:space-y-0">
@@ -422,24 +422,21 @@ function handleEditProperty(): void {
         </div>
 
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:grid-rows-2">
+            <UpcomingBookings
+                class="xl:row-span-2"
+                :limit="15"
+                :bookings="unitBookings"
+                :show-property="false"
+                @edit-booking="handleEditBooking" />
+
             <!-- Property Analytics -->
             <MonthlyRevenuePacing
-                class="xl:col-start-1"
                 :current-revenue="totalPayout"
                 :property="selectedProperty" />
 
             <ForwardBookingHorizon
-                class="xl:row-start-2"
                 :bookings="unitBookings"
                 :property="selectedProperty" />
-
-            <div class="overflow-y-scroll xl:col-start-2 xl:row-span-2">
-                <UpcomingBookings
-                    :limit="15"
-                    :bookings="unitBookings"
-                    :show-property="false"
-                    @edit-booking="handleEditBooking" />
-            </div>
         </div>
     </div>
 </template>

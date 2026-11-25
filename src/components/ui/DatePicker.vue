@@ -398,7 +398,7 @@ function handleClickOutside(event: MouseEvent): void {
             </span>
             <fa-icon
                 v-if="mode !== 'month'"
-                class="text-mist-500"
+                class="-mr-1 text-mist-500"
                 icon="calendar-days" />
         </button>
 
