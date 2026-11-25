@@ -21,6 +21,7 @@ const CONFIG = {
     STAGING_SHEET_ID: PROPS.STAGING_SHEET_ID || '',
 
     BOOKING_COM_COMMISSION_PCT: Number(PROPS.BOOKING_COM_COMMISSION_PCT) || 19.2,
+    OWNER_PAYOUT_PCT: Number(PROPS.OWNER_PAYOUT_PCT) || 15,
     SCRAPER_DAYS_LOOKBACK: Number(PROPS.SCRAPER_DAYS_LOOKBACK) || 4,
 
     PROPERTIES: {
@@ -808,51 +809,14 @@ function syncManualSheetBookingsToCalendar() {
                     let payout = Number(row[6]) || 0;
                     let notes = String(row[9] || '').trim();
                     const calEventId = String(row[10] || '').trim();
-
                     let doorCode = String(row[11] || '')
                         .trim()
                         .replace(/^'+/, '');
 
-                    // If Booking.com payout was entered as gross without deduction in Google Sheets
-                    const isAlreadyDeducted =
-                        /\[Gross:.*?BDC\]/i.test(notes) || notes.includes('-19.2% BDC');
+                    const isBlocked =
+                        status === 'unavailable' || listing.toLowerCase() === 'unavailable';
 
-                    if (
-                        listing.toLowerCase() === 'booking.com' &&
-                        payout > 0 &&
-                        !isAlreadyDeducted
-                    ) {
-                        const commissionPct = CONFIG.BOOKING_COM_COMMISSION_PCT || 19.2;
-                        const netAmount = Math.round(payout * (1 - commissionPct / 100));
-                        const formattedGross = 'Rp ' + Math.round(payout).toLocaleString('id-ID');
-
-                        notes =
-                            `[Gross: ${formattedGross} | -${commissionPct}% BDC] ${notes}`.trim();
-
-                        // Overwrite Column G (Payout, 7) with Net, and Column J (Notes, 10) with audit note
-                        sheet.getRange(rowNumber, 7).setValue(netAmount);
-                        sheet.getRange(rowNumber, 10).setValue(notes);
-                        payout = netAmount;
-                    }
-
-                    // Backfill doorCode if empty or containing letters (Col 12)
-                    if ((!doorCode || /\D/.test(doorCode)) && status !== 'unavailable') {
-                        const digits = String(bookingId).replace(/\D/g, '');
-                        if (digits.length >= 4) {
-                            doorCode = digits.slice(-4);
-                        } else {
-                            let hash = 0;
-                            const seed = String(bookingId) + '_' + String(checkInRaw);
-                            for (let s = 0; s < seed.length; s++) {
-                                hash = (hash << 5) - hash + seed.charCodeAt(s);
-                                hash |= 0;
-                            }
-                            doorCode = String((Math.abs(hash) % 9000) + 1000);
-                        }
-                        sheet.getRange(rowNumber, 12).setValue("'" + doorCode);
-                    }
-
-                    // Case 1: Cancelled
+                    // Case 1: Cancelled (Run first so we don't update rows about to be deleted)
                     if (status === 'cancelled' || status === 'delete') {
                         if (calEventId) {
                             try {
@@ -870,6 +834,61 @@ function syncManualSheetBookingsToCalendar() {
                         continue;
                     }
 
+                    // Auto-deduct Booking.com 19.2% if entered as gross
+                    const isAlreadyDeducted =
+                        /\[Gross:.*?BDC\]/i.test(notes) || notes.includes('-19.2% BDC');
+
+                    if (
+                        listing.toLowerCase() === 'booking.com' &&
+                        payout > 0 &&
+                        !isAlreadyDeducted
+                    ) {
+                        const commissionPct = CONFIG.BOOKING_COM_COMMISSION_PCT || 19.2;
+                        const netAmount = Math.round(payout * (1 - commissionPct / 100));
+                        const formattedGross = 'Rp ' + Math.round(payout).toLocaleString('id-ID');
+
+                        notes =
+                            `[Gross: ${formattedGross} | -${commissionPct}% BDC] ${notes}`.trim();
+
+                        sheet.getRange(rowNumber, 7).setValue(netAmount);
+                        sheet.getRange(rowNumber, 10).setValue(notes);
+                        values[i][6] = netAmount;
+                        values[i][9] = notes;
+                        payout = netAmount;
+                    }
+
+                    // Auto-calculate 15% Owner Payout (Column H / 8) from finalized payout
+                    const ownerPct = CONFIG.OWNER_PAYOUT_PCT || 15;
+                    const expectedOwnerPayout =
+                        !isBlocked && payout > 0 ? Math.round(payout * (ownerPct / 100)) : '';
+                    const currentOwnerPayout =
+                        row[7] === '' || row[7] === null || row[7] === undefined
+                            ? ''
+                            : Number(row[7]);
+
+                    if (currentOwnerPayout !== expectedOwnerPayout) {
+                        sheet.getRange(rowNumber, 8).setValue(expectedOwnerPayout);
+                        values[i][7] = expectedOwnerPayout;
+                    }
+
+                    // Backfill doorCode if empty or containing letters (Column L / 12)
+                    if ((!doorCode || /\D/.test(doorCode)) && !isBlocked) {
+                        const digits = String(bookingId).replace(/\D/g, '');
+                        if (digits.length >= 4) {
+                            doorCode = digits.slice(-4);
+                        } else {
+                            let hash = 0;
+                            const seed = String(bookingId) + '_' + String(checkInRaw);
+                            for (let s = 0; s < seed.length; s++) {
+                                hash = (hash << 5) - hash + seed.charCodeAt(s);
+                                hash |= 0;
+                            }
+                            doorCode = String((Math.abs(hash) % 9000) + 1000);
+                        }
+                        sheet.getRange(rowNumber, 12).setValue("'" + doorCode);
+                        values[i][11] = "'" + doorCode;
+                    }
+
                     const startDate = parseSheetDate(checkInRaw);
                     let endDate = parseSheetDate(checkOutRaw);
                     if (!startDate || !endDate) continue;
@@ -882,7 +901,7 @@ function syncManualSheetBookingsToCalendar() {
                         );
                     }
 
-                    // Keep Column F (Nights) synced for both new rows (Case 2) and edited dates (Case 3)
+                    // Auto-calculate Total Nights (Column F / 6) for new & edited rows
                     const calculatedNights = Math.max(
                         1,
                         Math.round((endDate.getTime() - startDate.getTime()) / 86400000)
@@ -894,8 +913,6 @@ function syncManualSheetBookingsToCalendar() {
 
                     // Case 2: New Row (Auto-fill ID and create Calendar Event)
                     if (!bookingId) {
-                        const isBlocked =
-                            status === 'unavailable' || listing.toLowerCase() === 'unavailable';
                         const inStr = Utilities.formatDate(startDate, 'GMT+0700', 'yyyy-MM-dd');
                         const outStr = Utilities.formatDate(endDate, 'GMT+0700', 'yyyy-MM-dd');
 
@@ -904,10 +921,9 @@ function syncManualSheetBookingsToCalendar() {
                             : 'DIRECT-' + inStr + '_' + outStr;
 
                         sheet.getRange(rowNumber, 1).setValue(bookingId);
+                        values[i][0] = bookingId;
                     }
 
-                    const isBlocked =
-                        status === 'unavailable' || listing.toLowerCase() === 'unavailable';
                     const summary = isBlocked
                         ? notes || 'Unavailable'
                         : listing + ' - ' + guestName;
@@ -927,7 +943,7 @@ function syncManualSheetBookingsToCalendar() {
 
                         const newCalId = newEvent.getId().split('@')[0];
                         sheet.getRange(rowNumber, 11).setValue(newCalId);
-                        values[i][10] = newCalId; // Update in-memory so sort check knows it is generated!
+                        values[i][10] = newCalId;
                         console.log(`Created calendar event for ${guestName} on row ${rowNumber}`);
                         continue;
                     }
@@ -967,6 +983,7 @@ function syncManualSheetBookingsToCalendar() {
                                 );
                                 const recreatedId = recreated.getId().split('@')[0];
                                 sheet.getRange(rowNumber, 11).setValue(recreatedId);
+                                values[i][10] = recreatedId;
                                 console.log(`Recreated missing event for row ${rowNumber}`);
                             }
                         } catch (err) {
