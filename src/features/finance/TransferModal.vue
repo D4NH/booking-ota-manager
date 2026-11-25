@@ -1,47 +1,54 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useFinanceStore } from '@/stores/useFinanceStore';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useFinanceSync } from '@/composables/useFinanceSync';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import type { TransferTargetAccount } from '@/types/finance';
+import { getCurrentDate } from '@/utils/date';
 
 import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
-const sourceOptions = [{ label: 'Mai House Jogja', value: 'piyungan' }];
-const targetOptions = [
+interface DropdownOption<T = string> {
+    label: string;
+    value: T;
+}
+
+const SOURCE_OPTIONS: readonly DropdownOption<string>[] = [
+    { label: 'Mai House Jogja', value: 'piyungan' },
+];
+
+const TARGET_OPTIONS: readonly DropdownOption<TransferTargetAccount>[] = [
     { label: 'Shared Household', value: 'Shared' },
     { label: 'Citra / Danh', value: 'Split' },
     { label: 'Citra Ayu Wardani', value: 'Citra Ayu Wardani' },
     { label: 'Danh Nguyen', value: 'Danh Nguyen' },
 ];
 
-interface Props {
-    modelValue?: boolean;
-}
+const isOpen = defineModel<boolean>({ default: false });
 
-const { modelValue = false } = defineProps<Props>();
-const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
-}>();
-
+useEscapeKey(closeModal, {
+    enabled: isOpen,
+    disabled: () => isLoading.value || isSubmitting.value,
+});
 const financeStore = useFinanceStore();
 const { executeOwnerTransfer } = useFinanceSync();
 const { isLoading } = storeToRefs(financeStore);
 
-const sourcePropertyId = ref('piyungan');
+const sourcePropertyId = ref<string>('piyungan');
 const targetAccount = ref<TransferTargetAccount>('Split');
 const amount = ref<number | null>(null);
-const date = ref(new Date().toISOString().slice(0, 10));
-const notes = ref('');
-const isSubmitting = ref(false);
+const date = ref<string>(getCurrentDate());
+const notes = ref<string>('');
+const isSubmitting = ref<boolean>(false);
 
-const isBothMode = computed(() => targetAccount.value === 'Split');
+const isBothMode = computed<boolean>(() => targetAccount.value === 'Split');
 
 function closeModal(): void {
-    emit('update:modelValue', false);
+    isOpen.value = false;
 }
 async function handleTransfer(): Promise<void> {
     if (isSubmitting.value || !amount.value || !date.value) return;
@@ -74,7 +81,7 @@ async function handleTransfer(): Promise<void> {
 
 <template>
     <div
-        v-if="modelValue"
+        v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 backdrop-blur-sm">
         <div
             class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md duration-150 zoom-in-95 fade-in">
@@ -102,13 +109,13 @@ async function handleTransfer(): Promise<void> {
                     v-model="sourcePropertyId"
                     input-label="Source Entity"
                     placeholder="Select source"
-                    :options="sourceOptions" />
+                    :options="SOURCE_OPTIONS" />
 
                 <SelectDropdown
                     v-model="targetAccount"
                     input-label="Target Account"
                     placeholder="Select account"
-                    :options="targetOptions" />
+                    :options="TARGET_OPTIONS" />
 
                 <div class="grid grid-cols-2 gap-4">
                     <DatePicker
@@ -153,7 +160,7 @@ async function handleTransfer(): Promise<void> {
                             v-if="isSubmitting"
                             #icon>
                             <span
-                                class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent"></span>
+                                class="mx-1 h-3 w-3 animate-spin rounded-full border-2 border-mist-900 border-t-transparent" />
                         </template>
                         <span v-if="isSubmitting">Saving..</span>
                     </AppButton>

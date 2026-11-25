@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { toast } from 'vue-toastflow';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useGoogleSheets } from '@/composables/useGoogleSheets';
-import { useBookingStore } from '@/stores/useBookingStore';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { useStagingStore } from '@/stores/useStagingStore';
 import { PROPERTY_LIST, PROPERTY_CONFIGS } from '@/config/properties';
+import { useBookingStore } from '@/stores/useBookingStore';
+import { useStagingStore } from '@/stores/useStagingStore';
 import type { BookingChannel, StagedBooking, BookingPayload } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
 import { formatIDR } from '@/utils/money';
 import { sanitizeDoorCode } from '@/utils/lockbox';
-import { toast } from 'vue-toastflow';
+
 import AppButton from '@/components/ui/AppButton.vue';
 import DatePicker from '@/components/ui/DatePicker.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -35,7 +37,6 @@ interface FormState {
 }
 
 interface Props {
-    modelValue?: boolean;
     booking?: StagedBooking | null;
     stagingSpreadsheetId: string;
 }
@@ -56,17 +57,21 @@ const PROPERTY_OPTIONS: OptionItem[] = PROPERTY_LIST.map((property) => ({
 
 const BOOKING_COM_COMMISSION_RATE = 0.192;
 
-const { modelValue = false, booking = null, stagingSpreadsheetId } = defineProps<Props>();
+const { booking = null, stagingSpreadsheetId } = defineProps<Props>();
 const emit = defineEmits<{
-    'update:modelValue': [val: boolean];
     approved: [bookingId: string];
     rejected: [bookingId: string];
 }>();
+const isOpen = defineModel<boolean>({ default: false });
 
 const bookingStore = useBookingStore();
 const stagingStore = useStagingStore();
 const { saveBooking } = useBookingSync();
 const { deleteSheetRowById } = useGoogleSheets();
+useEscapeKey(closeModal, {
+    enabled: () => isOpen.value && Boolean(booking),
+    disabled: () => isProcessing.value,
+});
 
 const isProcessing = ref<boolean>(false);
 const form = ref<FormState>({
@@ -89,9 +94,7 @@ const effectivePayout = computed<number>(() => {
     }
     return raw;
 });
-const ownerPayoutDisplay = computed<number>((): number =>
-    calculateOwnerPayout(effectivePayout.value)
-);
+const ownerPayoutDisplay = computed<number>(() => calculateOwnerPayout(effectivePayout.value));
 const stayDates = computed<[string, string]>({
     get: (): [string, string] => [form.value.checkIn, form.value.checkOut],
     set: ([start, end]: [string, string]) => {
@@ -139,7 +142,7 @@ watch(
 );
 
 function closeModal(): void {
-    emit('update:modelValue', false);
+    isOpen.value = false;
 }
 async function handleApprove(): Promise<void> {
     if (isProcessing.value || !booking) return;
@@ -223,13 +226,14 @@ async function handleApprove(): Promise<void> {
     }
 }
 async function handleReject(): Promise<void> {
-    if (!booking) return;
+    if (isProcessing.value || !booking) return;
 
     const confirmed = window.confirm(
         `Reject incoming booking ${booking.bookingId} (${booking.guestName})? This will delete the staging row and remove the calendar block.`
     );
     if (!confirmed) return;
 
+    isProcessing.value = true;
     const targetItem = booking;
     const targetCalendarId = PROPERTY_CONFIGS[targetItem.propertyId]?.calendarId;
 
@@ -268,6 +272,8 @@ async function handleReject(): Promise<void> {
         );
     } catch (e) {
         console.error('Rejection failed:', e);
+    } finally {
+        isProcessing.value = false;
     }
 }
 </script>
@@ -282,7 +288,7 @@ async function handleReject(): Promise<void> {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0">
             <div
-                v-if="modelValue && booking"
+                v-if="isOpen && booking"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-xs">
                 <div
                     class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-5 shadow-lg duration-150 zoom-in-95 fade-in">
@@ -292,7 +298,7 @@ async function handleReject(): Promise<void> {
                         <div>
                             <div class="flex items-center gap-2">
                                 <h2 class="text-base font-semibold">
-                                    Review & Approve Reservation
+                                    Review &amp; Approve Reservation
                                 </h2>
                                 <span
                                     v-if="formHasConflict"

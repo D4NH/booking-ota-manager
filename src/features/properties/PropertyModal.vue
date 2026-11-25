@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { usePropertyStore } from '@/stores/usePropertyStore';
 import type { Property, PropertyId } from '@/types/property';
+
 import AppButton from '@/components/ui/AppButton.vue';
 import TextInput from '@/components/ui/TextInput.vue';
 
@@ -27,6 +29,28 @@ interface Props {
     propertyToEdit?: Property | null;
 }
 
+const { propertyToEdit = null } = defineProps<Props>();
+const emit = defineEmits<{
+    close: [];
+    save: [payload: Property];
+}>();
+
+const propertyStore = usePropertyStore();
+
+useEscapeKey(closeModal);
+
+const form = ref<PropertyFormState>(createFormData(propertyToEdit));
+
+const isEditing = computed<boolean>(() => Boolean(propertyToEdit?.id));
+
+watch(
+    () => propertyToEdit,
+    (newVal) => {
+        form.value = createFormData(newVal);
+    },
+    { immediate: true }
+);
+
 function createFormData(source?: Partial<Property> | null): PropertyFormState {
     return {
         id: source?.id ?? ('' as PropertyId),
@@ -50,40 +74,27 @@ function createFormData(source?: Partial<Property> | null): PropertyFormState {
     };
 }
 
-const { propertyToEdit = null } = defineProps<Props>();
-const emit = defineEmits<{
-    close: [];
-    save: [payload: Property];
-}>();
-
-const propertyStore = usePropertyStore();
-
-const form = ref<PropertyFormState>(createFormData(propertyToEdit));
-
-const isEditing = computed<boolean>(() => Boolean(propertyToEdit?.id));
-
-watch(
-    () => propertyToEdit,
-    (newVal) => {
-        form.value = createFormData(newVal);
-    },
-    { immediate: true }
-);
+function closeModal(): void {
+    emit('close');
+}
 
 async function handleDeleteProperty(): Promise<void> {
     if (!propertyToEdit?.id) return;
     if (window.confirm(`Delete property ${propertyToEdit.name}?`)) {
         await propertyStore.deleteProperty(propertyToEdit.id);
-        emit('close');
+        closeModal();
     }
 }
+
 function handleSubmit(): void {
     if (!form.value.name || !form.value.codePrefix) return;
 
-    const generatedId = form.value.name
-        .toLowerCase()
-        .split('-')[1]
-        ?.replace(/[^a-z0-9]/g, '') as PropertyId;
+    const generatedId = (form.value.id ||
+        form.value.name
+            .toLowerCase()
+            .split('-')[1]
+            ?.replace(/[^a-z0-9]/g, '') ||
+        form.value.name.toLowerCase().replace(/[^a-z0-9]/g, '')) as PropertyId;
 
     const latVal = form.value.coordinates.lat;
     const lngVal = form.value.coordinates.lng;
@@ -112,7 +123,7 @@ function handleSubmit(): void {
     };
 
     emit('save', payload);
-    emit('close');
+    closeModal();
 }
 </script>
 
@@ -121,7 +132,6 @@ function handleSubmit(): void {
         class="fixed inset-0 z-50 flex items-center justify-center bg-mist-950/75 p-4 backdrop-blur-sm">
         <div
             class="w-full max-w-2xl animate-in space-y-4 overflow-hidden rounded-md border border-mist-800 bg-mist-900 p-4 shadow-md duration-150 zoom-in-95 fade-in">
-            <!-- Modal Header -->
             <div
                 class="-mt-4 -mr-4 -ml-4 flex items-center justify-between border-b border-mist-800 bg-mist-950/60 p-4">
                 <div>
@@ -141,7 +151,7 @@ function handleSubmit(): void {
                 </div>
                 <AppButton
                     variant="icon"
-                    @click="emit('close')">
+                    @click="closeModal">
                     <template #icon>
                         <fa-icon icon="xmark" />
                     </template>
@@ -151,7 +161,6 @@ function handleSubmit(): void {
             <form
                 class="max-h-[80vh] space-y-4 overflow-y-auto"
                 @submit.prevent="handleSubmit">
-                <!-- Name & Code Prefix -->
                 <div class="grid grid-cols-9 items-end">
                     <div class="col-span-8 w-full">
                         <TextInput
@@ -179,7 +188,6 @@ function handleSubmit(): void {
                     </div>
                 </div>
 
-                <!-- Code Prefix & Theme Color -->
                 <div class="grid grid-cols-3 gap-3">
                     <TextInput
                         id="prefix"
@@ -242,7 +250,6 @@ function handleSubmit(): void {
                     </template>
                 </TextInput>
 
-                <!-- GPS Coordinates -->
                 <div class="space-y-2 rounded-md border border-mist-800 bg-mist-950/40 p-3">
                     <span
                         class="block text-[11px] font-semibold tracking-wider text-mist-400 uppercase">
@@ -266,7 +273,6 @@ function handleSubmit(): void {
                     </div>
                 </div>
 
-                <!-- Bedrooms & Bathrooms -->
                 <div class="grid grid-cols-3 gap-3">
                     <TextInput
                         id="bedrooms"
@@ -312,7 +318,6 @@ function handleSubmit(): void {
                     </TextInput>
                 </div>
 
-                <!-- Guest Wi-Fi Credentials -->
                 <div class="space-y-2 rounded-md border border-mist-800 bg-mist-950/40 p-3">
                     <span
                         class="block text-[11px] font-semibold tracking-wider text-mist-400 uppercase">
@@ -334,7 +339,6 @@ function handleSubmit(): void {
                     </div>
                 </div>
 
-                <!-- Modal Actions -->
                 <div
                     class="flex items-center gap-3"
                     :class="[isEditing ? 'justify-between' : 'justify-end']">
@@ -353,7 +357,7 @@ function handleSubmit(): void {
                         <AppButton
                             label="Cancel"
                             variant="text"
-                            @click="emit('close')" />
+                            @click="closeModal" />
                         <AppButton
                             type="submit"
                             :label="isEditing ? 'Save Changes' : 'Create Property'" />

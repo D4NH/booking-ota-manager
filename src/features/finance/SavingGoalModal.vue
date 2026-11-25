@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import type { SavingGoal, PersonalOwner } from '@/types/finance';
 
@@ -19,6 +20,10 @@ const emit = defineEmits<{
 
 const isOpen = defineModel<boolean>({ default: false });
 
+useEscapeKey(closeModal, {
+    enabled: isOpen,
+    disabled: () => isSubmitting.value,
+});
 const { createSavingGoal, editSavingGoal, removeSavingGoal } = useFinanceSync();
 
 const ownerOptions = [

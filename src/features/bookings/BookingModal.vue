@@ -2,11 +2,12 @@
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useBookingSync } from '@/composables/useBookingSync';
-import { useBookingStore } from '@/stores/useBookingStore';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { CHANNEL_WARNINGS } from '@/config/constants';
 import { BOOKING_STATUS } from '@/config/status';
+import { useBookingStore } from '@/stores/useBookingStore';
 import { usePropertyStore } from '@/stores/usePropertyStore';
-import type { Booking, BookingChannel } from '@/types/booking';
+import type { Booking, BookingChannel, BookingPayload, BookingStatus } from '@/types/booking';
 import type { PropertyId } from '@/types/property';
 import { calculateNights, getCurrentDate } from '@/utils/date';
 import { calculateOwnerPayout } from '@/utils/finance';
@@ -22,7 +23,26 @@ interface ListingOption {
     value: string;
 }
 
-const bookingChannels: BookingChannel[] = [
+interface BookingFormState {
+    propertyId: PropertyId | '';
+    bookingId: string;
+    guestName: string;
+    checkIn: string;
+    checkOut: string;
+    nights: number;
+    payout: number | '';
+    listing: BookingChannel | '';
+    status: BookingStatus;
+    notes: string;
+}
+
+interface Props {
+    bookingToEdit?: Booking | null;
+    currentProperty?: PropertyId | 'all';
+    checkInDate?: string;
+}
+
+const BOOKING_CHANNELS: readonly BookingChannel[] = [
     'Airbnb',
     'Booking.com',
     'Tiket.com',
@@ -31,42 +51,30 @@ const bookingChannels: BookingChannel[] = [
     'Whatsapp',
 ];
 
-const listingOptions: ListingOption[] = bookingChannels.map((channel) => ({
+const LISTING_OPTIONS: ListingOption[] = BOOKING_CHANNELS.map((channel) => ({
     label: channel,
     value: channel,
 }));
 
-const statusOptions: ListingOption[] = BOOKING_STATUS.map((status) => ({
+const STATUS_OPTIONS: ListingOption[] = BOOKING_STATUS.map((status) => ({
     label: status,
     value: status,
 }));
+
+const { bookingToEdit = null, currentProperty = 'all', checkInDate = '' } = defineProps<Props>();
+const emit = defineEmits<{
+    close: [];
+    save: [payload: BookingPayload];
+}>();
 
 const propertyStore = usePropertyStore();
 const { sortedProperties } = storeToRefs(propertyStore);
 const bookingStore = useBookingStore();
 const { deleteBooking } = useBookingSync();
 
-const {
-    bookingToEdit = null,
-    currentProperty = 'all',
-    checkInDate = null,
-} = defineProps<{
-    bookingToEdit?: Booking | null;
-    currentProperty?: PropertyId | 'all';
-    checkInDate?: string;
-}>();
-const emit = defineEmits<{
-    close: [];
-    save: [payload: Omit<Booking, 'id' | 'createdAt'>];
-}>();
+useEscapeKey(closeModal);
 
-const resolveInitialProperty = (): PropertyId | '' => {
-    if (bookingToEdit?.propertyId) return bookingToEdit.propertyId as PropertyId;
-    if (currentProperty && currentProperty !== 'all') return currentProperty;
-    return '';
-};
-
-const form = ref({
+const form = ref<BookingFormState>({
     propertyId: resolveInitialProperty(),
     bookingId: bookingToEdit?.bookingId || '',
     guestName: bookingToEdit?.guestName || '',
@@ -79,7 +87,10 @@ const form = ref({
     notes: bookingToEdit?.notes || '',
 });
 
-const ownerPayoutDisplay = computed<number>((): number => calculateOwnerPayout(form.value.payout));
+const ownerPayoutDisplay = computed<number>(() =>
+    calculateOwnerPayout(Number(form.value.payout) || 0)
+);
+
 const stayDates = computed<[string, string]>({
     get: (): [string, string] => [form.value.checkIn, form.value.checkOut],
     set: ([start, end]: [string, string]) => {
@@ -94,8 +105,9 @@ const validationError = computed<string | null>(() => {
     if (!form.value.checkIn || !form.value.checkOut) return null;
     if (!form.value.propertyId) return 'Please select a property.';
     if (!form.value.listing) return 'Please select a channel.';
-    if (form.value.checkIn >= form.value.checkOut)
+    if (form.value.checkIn >= form.value.checkOut) {
         return 'Check-out date must be after check-in date.';
+    }
 
     const conflictingBooking = bookingStore.hasDateConflict(
         form.value.propertyId,
@@ -110,25 +122,38 @@ const validationError = computed<string | null>(() => {
 
     return null;
 });
-const channelWarning = computed<string | undefined>(() => CHANNEL_WARNINGS[form.value.listing]);
-const checkInMinDate = computed(() => (bookingToEdit ? '' : getCurrentDate()));
-const propertyType = computed(() =>
+const channelWarning = computed<string | undefined>(() =>
+    form.value.listing ? CHANNEL_WARNINGS[form.value.listing] : undefined
+);
+const checkInMinDate = computed<string>(() => (bookingToEdit ? '' : getCurrentDate()));
+const propertyType = computed<ListingOption[]>(() =>
     sortedProperties.value.map((property) => ({
         label: property.name,
         value: property.id,
     }))
 );
 
+function resolveInitialProperty(): PropertyId | '' {
+    if (bookingToEdit?.propertyId) return bookingToEdit.propertyId as PropertyId;
+    if (currentProperty && currentProperty !== 'all') return currentProperty;
+    return '';
+}
+
+function closeModal(): void {
+    emit('close');
+}
 async function handleDeleteBooking(): Promise<void> {
     if (!bookingToEdit) return;
-    await deleteBooking(bookingToEdit);
-    emit('close');
+    const deleted = await deleteBooking(bookingToEdit);
+    if (deleted) {
+        closeModal();
+    }
 }
 function handleSubmit(): void {
     if (validationError.value) return;
 
     const propertyId = form.value.propertyId;
-    if (!propertyId) return;
+    if (!propertyId || !form.value.listing) return;
 
     emit('save', {
         propertyId,
@@ -139,11 +164,11 @@ function handleSubmit(): void {
         nights: Number(form.value.nights),
         payout: Number(form.value.payout),
         ownerPayout: ownerPayoutDisplay.value,
-        listing: form.value.listing as Booking['listing'],
+        listing: form.value.listing,
         status: form.value.status,
         notes: form.value.notes?.trim(),
     });
-    emit('close');
+    closeModal();
 }
 </script>
 
@@ -161,7 +186,7 @@ function handleSubmit(): void {
                     </h2>
                     <AppButton
                         variant="icon"
-                        @click="emit('close')">
+                        @click="closeModal">
                         <template #icon>
                             <fa-icon icon="xmark" />
                         </template>
@@ -248,12 +273,12 @@ function handleSubmit(): void {
                             v-model="form.listing"
                             input-label="Channel"
                             placeholder="Select channel"
-                            :options="listingOptions" />
+                            :options="LISTING_OPTIONS" />
                         <SelectDropdown
                             v-model="form.status"
                             input-label="Status"
                             placeholder="Select status"
-                            :options="statusOptions" />
+                            :options="STATUS_OPTIONS" />
                         <TextInput
                             id="payout"
                             v-model.number="form.payout"
@@ -306,7 +331,7 @@ function handleSubmit(): void {
                             <AppButton
                                 label="Cancel"
                                 variant="text"
-                                @click="emit('close')" />
+                                @click="closeModal" />
                             <AppButton
                                 type="submit"
                                 :disabled="Boolean(validationError)"

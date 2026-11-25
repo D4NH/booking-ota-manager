@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useFinanceStore } from '@/stores/useFinanceStore';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useFinanceSync } from '@/composables/useFinanceSync';
+import { useFinanceStore } from '@/stores/useFinanceStore';
 import { getCurrentDate, getPreviousMonthName } from '@/utils/date';
 import type {
     TransactionType,
@@ -59,6 +60,10 @@ const emit = defineEmits<{
 }>();
 const isOpen = defineModel<boolean>({ default: false });
 
+useEscapeKey(closeModal, {
+    enabled: isOpen,
+    disabled: () => isSubmitting.value,
+});
 const financeStore = useFinanceStore();
 const {
     addPersonalTransaction,

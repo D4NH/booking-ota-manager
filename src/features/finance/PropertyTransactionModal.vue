@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useFinanceSync } from '@/composables/useFinanceSync';
 import { PROPERTY_LIST } from '@/config/properties';
 import { getCurrentDate } from '@/utils/date';
@@ -65,13 +66,16 @@ const emit = defineEmits<{
 }>();
 const isOpen = defineModel<boolean>({ default: false });
 
+useEscapeKey(closeModal, {
+    enabled: isOpen,
+    disabled: () => isSubmitting.value,
+});
 const { addPropertyTransaction, editPropertyTransaction, removePropertyTransaction } =
     useFinanceSync();
 
-const initialPropertyId =
-    !defaultPropertyId || defaultPropertyId === 'all' ? '' : defaultPropertyId;
-
-const formPropertyId = ref<PropertyId | ''>(initialPropertyId);
+const formPropertyId = ref<PropertyId | ''>(
+    !defaultPropertyId || defaultPropertyId === 'all' ? '' : defaultPropertyId
+);
 const formType = ref<PropertyFinanceType>('expense');
 const formCategory = ref<PropertyCategory>('Supplies');
 const formAmount = ref<number | null>(null);
@@ -146,10 +150,17 @@ async function submitTransaction(): Promise<void> {
 }
 async function handleDeleteEntry(): Promise<void> {
     const item = itemToEdit;
-    if (!item) return;
+    if (!item || isSubmitting.value) return;
 
-    await removePropertyTransaction(item.id, item.category);
-    closeModal();
+    isSubmitting.value = true;
+    try {
+        const success = await removePropertyTransaction(item.id, item.category);
+        if (success) {
+            closeModal();
+        }
+    } finally {
+        isSubmitting.value = false;
+    }
 }
 </script>
 

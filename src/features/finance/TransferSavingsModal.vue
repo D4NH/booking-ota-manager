@@ -2,11 +2,12 @@
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-toastflow';
-import { useFinanceStore } from '@/stores/useFinanceStore';
+import { useEscapeKey } from '@/composables/useEscapeKey';
 import { useFinanceSync } from '@/composables/useFinanceSync';
+import { useFinanceStore } from '@/stores/useFinanceStore';
+import type { PersonalOwner } from '@/types/finance';
 import { formatIDR } from '@/utils/money';
 import { getCurrentDate } from '@/utils/date';
-import type { PersonalOwner } from '@/types/finance';
 
 import AppButton from '@/components/ui/AppButton.vue';
 import SelectDropdown from '@/components/ui/SelectDropdown.vue';
@@ -30,6 +31,10 @@ const emit = defineEmits<{
 }>();
 const isOpen = defineModel<boolean>({ default: false });
 
+useEscapeKey(closeModal, {
+    enabled: isOpen,
+    disabled: () => isSubmitting.value,
+});
 const financeStore = useFinanceStore();
 const { dynamicSavingsAccounts } = storeToRefs(financeStore);
 const { addPersonalTransaction, addSharedTransaction } = useFinanceSync();
